@@ -1,0 +1,11 @@
+{
+  "name": "haven-space",
+  "version": "1.0.0",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1"
+  }
+}
