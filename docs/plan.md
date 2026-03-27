@@ -50,18 +50,21 @@
 #### For Boarders
 
 1. **Advanced Search & Filtering**
+
    - Filter by: price range, distance from university, amenities (WiFi, AC, kitchen)
    - Map view with distance calculator
    - Virtual tours (photo galleries, floor plans)
    - Comparison tool (side-by-side property comparison)
 
 2. **Transparent Information Display**
+
    - Complete house rules displayed upfront
    - Utility cost breakdown
    - Landlord verification badge
    - Reviews/ratings from previous boarders
 
 3. **Secure Payment System**
+
    - Online payment integration (GCash, PayMaya, bank transfer)
    - Automatic receipt generation
    - Payment schedule calendar
@@ -76,18 +79,21 @@
 #### For Landlords
 
 1. **Automated Rent Collection**
+
    - Recurring payment setup
    - Automatic late fee calculation
    - Digital receipt generation
    - Payment reconciliation dashboard
 
 2. **Tenant Screening System**
+
    - Application review workflow
    - Reference check templates
    - Approval/rejection workflows
    - Tenant history tracking
 
 3. **Financial Management**
+
    - Revenue tracking by property
    - Expense tracking (maintenance, utilities)
    - Financial reports (monthly, quarterly)
@@ -104,11 +110,13 @@
 #### For Boarders
 
 1. **Digital Contract Signing**
+
    - E-signature integration
    - Contract template library
    - Document storage
 
 2. **Roommate Matching**
+
    - Compatibility questionnaire
    - Roommate search filters
    - Introduction messaging
@@ -121,12 +129,14 @@
 #### For Landlords
 
 1. **Maintenance Management**
+
    - Vendor directory
    - Maintenance scheduling
    - Cost tracking per property
    - Preventive maintenance reminders
 
 2. **Occupancy Optimization**
+
    - Vacancy alerts
    - Dynamic pricing suggestions
    - Lease renewal tracking
@@ -142,11 +152,13 @@
 #### For Both
 
 1. **Mobile App**
+
    - Push notifications
    - Offline mode
    - Mobile payment
 
 2. **Analytics Dashboard**
+
    - Market trends
    - Pricing benchmarks
    - Occupancy rates by area
