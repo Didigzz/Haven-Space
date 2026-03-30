@@ -271,6 +271,28 @@ git commit -m "docs: update README with setup instructions"
 git commit -m "style: fix line endings for GitHub Actions"
 ```
 
+### Pull Request Template
+
+When preparing to push or create a PR, automatically read and use the PR template from `.github/pull_request_template.md`.
+
+**Instructions:**
+
+1. Before pushing, run `git log origin/<branch>..HEAD --oneline` to review new commits
+2. Read `.github/pull_request_template.md` to get the PR structure
+3. Generate a PR description by filling in the template based on commit messages
+4. Use `gh pr create --fill` or paste the generated description when creating the PR on GitHub
+
+**Template Location:** `.github/pull_request_template.md`
+
+**Template Structure:**
+
+- **What was done** - Brief summary of changes
+- **Changes** - Detailed breakdown by feature/area
+- **Testing** - Commands to verify changes
+- **Screenshots** - UI change visuals (if applicable)
+- **Related Issue** - Links to issues (e.g., `Closes #123`)
+- **Checklist** - Standard PR quality checks
+
 ### Branch Naming Convention
 
 Format: `<type>/<description>`
