@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Property Location - Haven Space</title>
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/maps.css" />
+  </head>
+  <body>
+    <div class="landlord-map-container">
+      <!-- Map Section -->
+      <div class="map-section">
+        <div id="map"></div>
+        <!-- Back Button -->
+        <a href="../index.html" class="map-back-btn">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to Dashboard
+        </a>
+        <!-- Map Controls -->
+        <div class="map-controls">
+          <button class="map-control-btn" id="locate-me" title="Use my location">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="map-instruction">Drag the pin to set your property's exact location.</div>
+      </div>
+
+      <!-- Right side form panel -->
+      <div class="property-form-panel">
+        <div class="form-header">
+          <h2>Pin Location & Details</h2>
+          <p>Add a property directly from the map.</p>
+        </div>
+
+        <form id="map-property-form" class="property-form">
+          <div class="form-group">
+            <label for="prop-name">Property Name</label>
+            <input type="text" id="prop-name" placeholder="e.g. Sunrise Dormitory" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="prop-type">Property Type</label>
+              <select id="prop-type" required>
+                <option value="boarding-house">Boarding House</option>
+                <option value="dormitory">Dormitory</option>
+                <option value="apartment">Apartment</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="prop-price">Monthly Rent (₱)</label>
+              <input type="number" id="prop-price" placeholder="4500" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="prop-location">Address</label>
+            <textarea id="prop-location" rows="2" placeholder="Full address" required></textarea>
+          </div>
+
+          <div class="form-row coordinates-row">
+            <div class="form-group">
+              <label for="prop-lat">Latitude</label>
+              <input type="text" id="prop-lat" readonly />
+            </div>
+            <div class="form-group">
+              <label for="prop-lng">Longitude</label>
+              <input type="text" id="prop-lng" readonly />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-save-property">Save Property Location</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="../../../js/views/landlord/maps.js"></script>
+  </body>
+</html>
