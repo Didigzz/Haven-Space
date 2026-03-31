@@ -362,18 +362,57 @@ function initializeDynamicCards() {
 }
 
 /**
+ * Update card to show Utilities Load status (post-contract)
+ * High utility feature for Philippine boarders - prevents running out of electricity at 2 AM
+ */
+function updateUtilitiesCard(card) {
+  const label = card.querySelector('.boarder-stat-label');
+  const value = card.querySelector('.boarder-stat-value');
+  const description = card.querySelector('.boarder-stat-description');
+  const icon = card.querySelector('.boarder-stat-icon');
+
+  if (label) label.textContent = 'Utilities Load';
+  if (icon) {
+    icon.className = 'boarder-stat-icon orange';
+    icon.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    `;
+  }
+  if (value) value.textContent = '₱450';
+  if (description) {
+    description.innerHTML = `
+      <span class="status-dot status-dot-warning"></span>
+      5 kWh remaining • ₱1.00/kWh
+    `;
+  }
+}
+
+/**
  * Update dynamic cards based on user's contract/application phase
  * Cards switch content automatically when user signs contract
  */
 function updateDynamicCards() {
+  const utilitiesCard = document.querySelector('[data-dynamic-card="utilities"]');
   const maintenanceCard = document.querySelector('[data-dynamic-card="maintenance"]');
   const leaseCard = document.querySelector('[data-dynamic-card="lease"]');
-
-  if (!maintenanceCard || !leaseCard) return;
 
   const isPostContract =
     dashboardState.contractStatus === 'contract' ||
     dashboardState.contractStatus === 'active-lease';
+
+  // Update utilities card (only shown post-contract)
+  if (utilitiesCard) {
+    if (isPostContract) {
+      updateUtilitiesCard(utilitiesCard);
+    } else {
+      // Hide utilities card for applicants (not relevant yet)
+      utilitiesCard.style.display = 'none';
+    }
+  }
+
+  if (!maintenanceCard || !leaseCard) return;
 
   if (isPostContract) {
     // Switch to Maintenance Status and Lease Timeline

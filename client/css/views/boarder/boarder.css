@@ -248,6 +248,11 @@
   color: var(--dashboard-purple);
 }
 
+.boarder-stat-icon.orange {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--dashboard-warning);
+}
+
 .boarder-stat-icon svg {
   width: 20px;
   height: 20px;
