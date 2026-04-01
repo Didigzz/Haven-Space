@@ -18,25 +18,72 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let selectedRole = null;
 
-  // Role selection
+  // Check for pending Google OAuth signup
+  const urlParams = new URLSearchParams(window.location.search);
+  const oauthPending = urlParams.get('oauth') === 'pending';
+
+  if (oauthPending) {
+    // User is coming from Google OAuth, skip to step 2
+    step1.classList.add('hidden');
+    step2.classList.remove('hidden');
+    headerLinkContainer.classList.remove('hidden');
+
+    // Fetch pending user data from session
+    fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success && result.data) {
+          const pendingUser = result.data;
+          if (pendingUser.first_name) {
+            document.getElementById('firstName').value = pendingUser.first_name;
+          }
+          if (pendingUser.last_name) {
+            document.getElementById('lastName').value = pendingUser.last_name;
+          }
+          if (pendingUser.email) {
+            document.getElementById('email').value = pendingUser.email;
+            document.getElementById('email').readOnly = true; // Email from Google is verified
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching pending user data:', err);
+      });
+  }
+
+  // Role selection - handle both card click and radio change
   roleCards.forEach(card => {
-    card.addEventListener('click', function () {
-      const input = this.querySelector('input[type="radio"]');
-      input.checked = true;
-      selectedRole = input.value;
+    const input = card.querySelector('input[type="radio"]');
 
-      // Update visual state
-      roleCards.forEach(c => c.classList.remove('selected'));
-      this.classList.add('selected');
+    // Listen for radio button change (works for native label clicking)
+    input.addEventListener('change', function () {
+      if (this.checked) {
+        selectedRole = this.value;
 
-      // Enable continue button
-      continueBtn.disabled = false;
+        // Update visual state
+        roleCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
 
-      // Update button text based on role
-      if (selectedRole === 'landlord') {
-        continueBtn.textContent = 'Join as a Landlord';
-      } else {
-        continueBtn.textContent = 'Apply as a Boarder';
+        // Enable continue button
+        continueBtn.disabled = false;
+
+        // Update button text based on role
+        if (selectedRole === 'landlord') {
+          continueBtn.textContent = 'Join as a Landlord';
+        } else {
+          continueBtn.textContent = 'Apply as a Boarder';
+        }
+      }
+    });
+
+    // Also handle card click for better UX
+    card.addEventListener('click', function (e) {
+      // Prevent double-triggering if clicking directly on radio
+      if (e.target !== input) {
+        input.checked = true;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
   });
@@ -121,13 +168,23 @@ document.addEventListener('DOMContentLoaded', function () {
     eyeClosed.classList.toggle('hidden');
   });
 
-  // Social signup buttons
-  document.querySelector('.social-btn-google')?.addEventListener('click', function () {
-    console.log('Google signup clicked');
-    // TODO: Implement Google OAuth
-    alert('Google signup to be implemented');
+  // Google OAuth signup - works from step 1 or step 2
+  document.querySelectorAll('.social-btn-google').forEach(btn => {
+    btn.addEventListener('click', function () {
+      // If on step 1 and no role selected, prompt user
+      if (!step1.classList.contains('hidden') && !selectedRole) {
+        alert('Please select your role first (Boarder or Landlord)');
+        return;
+      }
+      // Redirect to Google OAuth authorize endpoint with role preference
+      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=${
+        selectedRole || ''
+      }`;
+      window.location.href = authUrl;
+    });
   });
 
+  // Apple signup button (placeholder for future implementation)
   document.querySelector('.social-btn-apple')?.addEventListener('click', function () {
     console.log('Apple signup clicked');
     // TODO: Implement Apple OAuth
@@ -138,6 +195,45 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('signupForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
+    // Check if this is a Google OAuth pending user completing signup
+    if (oauthPending) {
+      // Complete Google OAuth signup with role selection
+      try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/auth/google/finalize-signup.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            role: selectedRole,
+            country: e.target.country.value,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // Store user info
+          localStorage.setItem('user', JSON.stringify(result.user));
+
+          // Redirect based on role
+          if (result.user.role === 'landlord') {
+            window.location.href = '../../landlord/index.html';
+          } else {
+            window.location.href = '../../boarder/index.html';
+          }
+        } else {
+          alert(result.error || 'Signup failed');
+        }
+      } catch (error) {
+        console.error('Error during Google OAuth signup:', error);
+        alert('An error occurred. Please try again.');
+      }
+      return;
+    }
+
+    // Regular email/password signup
     const formData = new FormData(this);
     const data = {
       role: selectedRole,

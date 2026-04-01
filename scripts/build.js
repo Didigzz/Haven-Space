@@ -105,6 +105,7 @@ const cssFiles = [
 
 // Copy JS files
 const jsFiles = [
+  'js/config.js',
   'js/main.js',
   'js/components/logo-cloud.js',
   'js/components/navbar.js',
@@ -142,6 +143,13 @@ const jsFiles = [
   'js/auth/login.js',
   'js/auth/signup.js',
   'js/auth/forgot-password.js',
+];
+
+// Copy component HTML templates
+const componentFiles = [
+  'components/sidebar.html',
+  'components/navbar.html',
+  'components/logo-cloud.html',
 ];
 
 // Copy images
@@ -320,6 +328,11 @@ jsFiles.forEach(file => {
 
 // Copy images to assets/ folder
 imageFiles.forEach(file => {
+  copyFile(file, file);
+});
+
+// Copy component HTML templates to components/ folder
+componentFiles.forEach(file => {
   copyFile(file, file);
 });
 
