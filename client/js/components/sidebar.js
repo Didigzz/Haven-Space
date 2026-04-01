@@ -14,24 +14,23 @@ const NAV_CONFIG = {
         { label: 'Dashboard', href: '../boarder/index.html', icon: 'home' },
         {
           label: 'My Lease',
-          href: '../applications/index.html',
+          href: '../boarder/lease/index.html',
           icon: 'application',
         },
-        { label: 'Messages', href: '../messages/index.html', icon: 'chat', badge: '3' },
-        { label: 'Payments', href: '../payments/index.html', icon: 'payment' },
+        { label: 'Messages', href: '../boarder/messages/index.html', icon: 'chat', badge: '3' },
+        { label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' },
       ],
     },
     {
       group: 'Support',
       items: [
-        { label: 'Maintenance', href: '../maintenance/index.html', icon: 'settings' },
-        { label: 'Notices', href: '../notices/index.html', icon: 'announcement' },
-        { label: 'Find a Room', href: '../rooms/index.html', icon: 'search' },
+        { label: 'Maintenance', href: '../boarder/maintenance/index.html', icon: 'settings' },
+        { label: 'Notices', href: '../boarder/notices/index.html', icon: 'announcement' },
+        { label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' },
         {
           label: 'Room History',
-          href: '#',
+          href: '../boarder/room-history/index.html',
           icon: 'history',
-          // TODO: Create room history page for utility and maintenance logs
         },
       ],
     },
@@ -133,7 +132,7 @@ export function initSidebar(options = {}) {
       if (logoImg) logoImg.src = `${basePath}/assets/images/Haven_Space_Logo.png`;
       if (logoLink) logoLink.href = `${basePath}/views/public/index.html`;
 
-      renderNavigation(role);
+      renderNavigation(role, basePath);
       updateUserInfo(user);
       setActiveState();
       setupToggleHandler();
@@ -158,9 +157,34 @@ function resolveBasePath() {
 }
 
 /**
- * Render navigation items based on role
+ * Resolve navigation href based on base path
+ * Converts relative paths like '../boarder/lease/index.html' to absolute paths
+ * @param {string} href - Navigation href
+ * @param {string} basePath - Base path from resolveBasePath()
+ * @returns {string} Resolved href
  */
-function renderNavigation(role) {
+function resolveNavHref(href, basePath) {
+  // If href is already absolute or starts with http/https, return as-is
+  if (href.startsWith('/') || href.startsWith('http') || href === '#') {
+    return href;
+  }
+
+  // If href starts with '../', remove it and prepend basePath/views/
+  if (href.startsWith('../')) {
+    const relativePath = href.replace(/^\.\.\//, '');
+    return `${basePath}/views/${relativePath}`;
+  }
+
+  // For other relative paths, prepend basePath
+  return `${basePath}/${href}`;
+}
+
+/**
+ * Render navigation items based on role
+ * @param {string} role - User role
+ * @param {string} basePath - Base path for resolving hrefs
+ */
+function renderNavigation(role, basePath) {
   const navContent = document.getElementById('sidebar-nav-content');
   if (!navContent) return;
 
@@ -170,7 +194,7 @@ function renderNavigation(role) {
       group => `
 <div class="sidebar-nav-group">
   <div class="sidebar-nav-title">${group.group}</div>
-  ${group.items.map(renderNavItem).join('')}
+  ${group.items.map(item => renderNavItem(item, basePath)).join('')}
 </div>`
     )
     .join('');
@@ -181,13 +205,17 @@ function renderNavigation(role) {
 
 /**
  * Render a single nav item
+ * @param {Object} item - Navigation item config
+ * @param {string} basePath - Base path for resolving hrefs
  */
-function renderNavItem(item) {
+function renderNavItem(item, basePath) {
   const icon = getIcon(item.icon);
+  // Resolve href with base path
+  const resolvedHref = resolveNavHref(item.href, basePath);
 
   // Check if this is a dropdown item
   if (item.dropdown && item.children) {
-    const childrenHtml = item.children.map(child => renderNavChildItem(child)).join('');
+    const childrenHtml = item.children.map(child => renderNavChildItem(child, basePath)).join('');
 
     return `
 <div class="sidebar-nav-dropdown">
@@ -209,7 +237,7 @@ function renderNavItem(item) {
   // Regular nav item (no dropdown)
   const badge = item.badge ? `<span class="sidebar-nav-badge">${item.badge}</span>` : '';
 
-  return `<a href="${item.href}" class="sidebar-nav-item" data-href="${item.href}">
+  return `<a href="${resolvedHref}" class="sidebar-nav-item" data-href="${resolvedHref}">
   ${icon}
   <span class="sidebar-nav-item-text">${item.label}</span>
   ${badge}
@@ -218,10 +246,15 @@ function renderNavItem(item) {
 
 /**
  * Render a child item within a dropdown
+ * @param {Object} child - Navigation child item config
+ * @param {string} basePath - Base path for resolving hrefs
  */
-function renderNavChildItem(child) {
+function renderNavChildItem(child, basePath) {
   const icon = getIcon(child.icon);
-  return `<a href="${child.href}" class="sidebar-nav-child-item" data-href="${child.href}">
+  // Resolve href with base path
+  const resolvedHref = resolveNavHref(child.href, basePath);
+
+  return `<a href="${resolvedHref}" class="sidebar-nav-child-item" data-href="${resolvedHref}">
   ${icon}
   <span class="sidebar-nav-item-text">${child.label}</span>
 </a>`;

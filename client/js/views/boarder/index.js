@@ -7,6 +7,8 @@
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { loadDashboardData } from './dashboard.js';
+import { initFindARoom } from './boarder-find-a-room.js';
+import { initLeasePage } from './lease.js';
 
 /**
  * Initialize Boarder Dashboard
@@ -45,6 +47,17 @@ export function initBoarderDashboard() {
 
   // Load dashboard data
   loadDashboardData();
+
+  // Initialize specific pages based on current view
+  const currentPath = window.location.pathname;
+
+  if (currentPath.includes('find-a-room')) {
+    initFindARoom();
+  }
+
+  if (currentPath.includes('lease')) {
+    initLeasePage();
+  }
 
   console.log('BoarderDashboard: Initialized');
 }
