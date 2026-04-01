@@ -53,25 +53,37 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
-  // Role selection
+  // Role selection - handle both card click and radio change
   roleCards.forEach(card => {
-    card.addEventListener('click', function () {
-      const input = this.querySelector('input[type="radio"]');
-      input.checked = true;
-      selectedRole = input.value;
+    const input = card.querySelector('input[type="radio"]');
 
-      // Update visual state
-      roleCards.forEach(c => c.classList.remove('selected'));
-      this.classList.add('selected');
+    // Listen for radio button change (works for native label clicking)
+    input.addEventListener('change', function () {
+      if (this.checked) {
+        selectedRole = this.value;
 
-      // Enable continue button
-      continueBtn.disabled = false;
+        // Update visual state
+        roleCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
 
-      // Update button text based on role
-      if (selectedRole === 'landlord') {
-        continueBtn.textContent = 'Join as a Landlord';
-      } else {
-        continueBtn.textContent = 'Apply as a Boarder';
+        // Enable continue button
+        continueBtn.disabled = false;
+
+        // Update button text based on role
+        if (selectedRole === 'landlord') {
+          continueBtn.textContent = 'Join as a Landlord';
+        } else {
+          continueBtn.textContent = 'Apply as a Boarder';
+        }
+      }
+    });
+
+    // Also handle card click for better UX
+    card.addEventListener('click', function (e) {
+      // Prevent double-triggering if clicking directly on radio
+      if (e.target !== input) {
+        input.checked = true;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
   });
