@@ -378,7 +378,13 @@ function setupLogoutHandler() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', e => {
       e.preventDefault();
-      console.log('Logout clicked');
+      
+      // Clear authentication data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      const basePath = resolveBasePath();
+      window.location.href = `${basePath}/views/public/auth/login.html`;
     });
   }
 }

@@ -1,3 +1,5 @@
+import CONFIG from '../config.js';
+
 document.addEventListener('DOMContentLoaded', function () {
   const passwordToggle = document.getElementById('passwordToggle');
   const passwordInput = document.getElementById('password');
@@ -14,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Form submission
-  loginForm.addEventListener('submit', function (e) {
+  loginForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const formData = new FormData(this);
@@ -23,9 +25,35 @@ document.addEventListener('DOMContentLoaded', function () {
       password: formData.get('password'),
     };
 
-    console.log('Login data:', data);
-    // TODO: Send to backend
-    alert('Login functionality to be implemented with backend');
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Store JWT and user info
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+
+        // Redirect based on role
+        if (result.user.role === 'landlord') {
+          window.location.href = '../../landlord/index.html';
+        } else {
+          window.location.href = '../../boarder/index.html';
+        }
+      } else {
+        alert(result.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert('An error occurred. Please try again.');
+    }
   });
 
   // Social login buttons

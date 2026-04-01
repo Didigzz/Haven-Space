@@ -1,3 +1,5 @@
+import CONFIG from '../config.js';
+
 document.addEventListener('DOMContentLoaded', function () {
   const step1 = document.getElementById('step1');
   const step2 = document.getElementById('step2');
@@ -133,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Form submission
-  document.getElementById('signupForm').addEventListener('submit', function (e) {
+  document.getElementById('signupForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const formData = new FormData(this);
@@ -144,12 +146,29 @@ document.addEventListener('DOMContentLoaded', function () {
       email: formData.get('email'),
       password: formData.get('password'),
       country: formData.get('country'),
-      newsletter: formData.get('newsletter') === 'on',
       terms: formData.get('terms') === 'on',
     };
 
-    console.log('Signup data:', data);
-    // TODO: Send to backend
-    alert('Signup functionality to be implemented with backend');
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Registration successful! Please login.');
+        window.location.href = 'login.html';
+      } else {
+        alert(result.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Error during signup:', error);
+      alert('An error occurred. Please try again.');
+    }
   });
 });

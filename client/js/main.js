@@ -3,9 +3,36 @@ import { initSidebar } from './components/sidebar.js';
 import { initNavbar } from './components/navbar.js';
 import { loadDashboardData } from './views/boarder/dashboard.js';
 import { initLandlordDashboard } from './views/landlord/landlord.js';
+import CONFIG from './config.js';
+
+/**
+ * Redirect to login page based on current path
+ */
+function redirectToLogin() {
+  const path = window.location.pathname;
+  let loginPath = '';
+  
+  if (path.includes('/views/public/auth/')) {
+    loginPath = 'login.html';
+  } else if (path.includes('/views/boarder/index.html') || path.includes('/views/landlord/index.html')) {
+    loginPath = '../public/auth/login.html';
+  } else if (path.includes('/views/boarder/') || path.includes('/views/landlord/')) {
+    // For subfolders like boarder/applications/
+    loginPath = '../../public/auth/login.html';
+  } else {
+    // Default fallback
+    loginPath = 'views/public/auth/login.html';
+  }
+  
+  window.location.href = loginPath;
+}
 
 // Initialize components
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  let user = userStr ? JSON.parse(userStr) : null;
+
   // Only init logo cloud if element exists (homepage only)
   if (document.getElementById('logoSlider')) {
     initLogoCloud();
@@ -13,38 +40,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initFloatingHeader();
 
+  // Detect if this is a dashboard page
+  const isLandlordDashboard = document.querySelector('.landlord-dashboard');
+  const isBoarderDashboard = document.querySelector('.boarder-dashboard');
+  const isDashboard = isLandlordDashboard || isBoarderDashboard;
+
+  // Auth Guard
+  if (isDashboard) {
+    if (!token) {
+      console.warn('No token found. Redirecting to login...');
+      redirectToLogin();
+      return;
+    }
+
+    // Verify token with backend
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Token invalid or expired');
+      }
+
+      const result = await response.json();
+      // Use the user data from the token payload (or the user object returned by me.php)
+      user = result.user; 
+      localStorage.setItem('user', JSON.stringify(user));
+
+      // Role-based Access Control
+      if (isLandlordDashboard && user.role !== 'landlord') {
+        console.warn('User is not a landlord. Redirecting to boarder dashboard...');
+        window.location.href = '../../boarder/index.html';
+        return;
+      }
+      if (isBoarderDashboard && user.role !== 'boarder') {
+        console.warn('User is not a boarder. Redirecting to landlord dashboard...');
+        window.location.href = '../../landlord/index.html';
+        return;
+      }    } catch (error) {
+      console.error('Auth verification failed:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      redirectToLogin();
+      return;
+    }
+  }
+
   // Only init sidebar if container exists (dashboard pages only)
   if (document.getElementById('sidebar-container')) {
-    // Detect if this is a landlord dashboard page
-    const isLandlordDashboard = document.querySelector('.landlord-dashboard');
-    const isBoarderDashboard = document.querySelector('.boarder-dashboard');
+    const userData = user ? {
+      name: user.first_name ? `${user.first_name} ${user.last_name}` : user.email,
+      initials: user.first_name ? `${user.first_name[0]}${user.last_name[0]}` : user.email[0].toUpperCase(),
+      role: user.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'User',
+    } : {
+      name: 'Guest',
+      initials: 'G',
+      role: 'Guest',
+    };
 
     if (isLandlordDashboard) {
       initSidebar({
         role: 'landlord',
-        user: {
-          name: 'Juan Dela Cruz',
-          initials: 'JD',
-          role: 'Landlord',
-        },
+        user: userData,
       });
 
       // Initialize landlord dashboard
       initLandlordDashboard({
-        user: {
-          name: 'Juan',
-          initials: 'JD',
-          role: 'Landlord',
-        },
+        user: userData,
       });
     } else if (isBoarderDashboard) {
       initSidebar({
         role: 'boarder',
-        user: {
-          name: 'Juan Dela Cruz',
-          initials: 'JD',
-          role: 'Boarder',
-        },
+        user: userData,
       });
 
       // Initialize boarder dashboard
@@ -53,23 +123,25 @@ document.addEventListener('DOMContentLoaded', () => {
       // Default to boarder for other dashboard pages
       initSidebar({
         role: 'boarder',
-        user: {
-          name: 'Juan Dela Cruz',
-          initials: 'JD',
-          role: 'Boarder',
-        },
+        user: userData,
       });
     }
   }
 
   // Only init navbar if container exists (dashboard pages only)
   if (document.getElementById('navbar-container')) {
+    const userData = user ? {
+      name: user.first_name ? `${user.first_name} ${user.last_name}` : user.email,
+      initials: user.first_name ? `${user.first_name[0]}${user.last_name[0]}` : user.email[0].toUpperCase(),
+      avatarUrl: '', // Will use default sample.png
+    } : {
+      name: 'Guest',
+      initials: 'G',
+      avatarUrl: '',
+    };
+
     initNavbar({
-      user: {
-        name: 'Juan Dela Cruz',
-        initials: 'JD',
-        avatarUrl: '', // Will use default sample.png
-      },
+      user: userData,
       notificationCount: 3,
     });
   }
