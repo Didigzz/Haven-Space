@@ -56,16 +56,26 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Social login buttons
+  // Google OAuth login
   document.querySelector('.social-btn-google')?.addEventListener('click', function () {
-    console.log('Google login clicked');
-    // TODO: Implement Google OAuth
-    alert('Google login to be implemented');
+    // Redirect to Google OAuth authorize endpoint
+    const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
+    window.location.href = authUrl;
   });
 
+  // Apple login button (placeholder for future implementation)
   document.querySelector('.social-btn-apple')?.addEventListener('click', function () {
     console.log('Apple login clicked');
     // TODO: Implement Apple OAuth
     alert('Apple login to be implemented');
   });
+
+  // Check for OAuth error in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const error = urlParams.get('error');
+  if (error) {
+    alert('Login error: ' + decodeURIComponent(error));
+    // Clean up URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 });
