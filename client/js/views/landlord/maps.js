@@ -59,14 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (locateBtn) {
     locateBtn.addEventListener('click', () => {
       if (navigator.geolocation) {
+        locateBtn.classList.add('loading');
         navigator.geolocation.getCurrentPosition(
           position => {
             const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
             marker.setLatLng(latlng);
             updateInputs(latlng);
             map.flyTo(latlng, 16);
+            locateBtn.classList.remove('loading');
           },
           error => {
+            locateBtn.classList.remove('loading');
             alert('Could not get your location. Please check browser permissions.');
           }
         );
@@ -75,6 +78,38 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Auto-detect location on page load
+  function autoDetectLocation() {
+    if (!navigator.geolocation) return;
+
+    locateBtn?.classList.add('loading');
+
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const latlng = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        marker.setLatLng(latlng);
+        updateInputs(latlng);
+        map.flyTo(latlng, 16);
+        locateBtn?.classList.remove('loading');
+      },
+      () => {
+        // Silently fail - user can still drag or click button
+        locateBtn?.classList.remove('loading');
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+  }
+
+  // Trigger auto-detection after setup
+  autoDetectLocation();
 
   // Handle Form Submit
   if (form) {

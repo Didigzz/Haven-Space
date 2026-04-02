@@ -27,6 +27,16 @@ body {
   height: 100%;
 }
 
+/* Hide Leaflet attribution watermark */
+.leaflet-control-attribution {
+  display: none;
+}
+
+/* Hide default Leaflet zoom control (+ and - buttons) */
+.leaflet-control-zoom {
+  display: none;
+}
+
 .map-controls {
   position: absolute;
   bottom: 24px;
@@ -60,6 +70,24 @@ body {
 .map-control-btn svg {
   width: 20px;
   height: 20px;
+}
+
+.map-control-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.map-control-btn.loading svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .map-instruction {
