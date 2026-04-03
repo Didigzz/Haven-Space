@@ -8,94 +8,123 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  checks: write
 
 jobs:
   code-review:
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.draft == false }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Run ESLint
-        run: bun run lint
-        continue-on-error: true
-        id: eslint
-
-      - name: Check formatting
-        run: bun run format:check
-        continue-on-error: true
-        id: prettier
-
-      - name: Get PR files
-        id: files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            client/**/*.js
-            client/**/*.html
-            client/**/*.css
-            server/**/*.php
-
-      - name: Count changes
-        id: stats
+      - name: Get PR diff
+        id: diff
         run: |
-          echo "added=$(echo '${{ steps.files.outputs.added_files }}' | tr ',' '\n' | wc -l)" >> $GITHUB_OUTPUT
-          echo "modified=$(echo '${{ steps.files.outputs.modified_files }}' | tr ',' '\n' | wc -l)" >> $GITHUB_OUTPUT
-          echo "deleted=$(echo '${{ steps.files.outputs.deleted_files }}' | tr ',' '\n' | wc -l)" >> $GITHUB_OUTPUT
+          git diff origin/${{ github.event.pull_request.base.sha }}..origin/${{ github.event.pull_request.head.sha }} > pr_diff.txt 2>/dev/null || echo "" > pr_diff.txt
+          if [ ! -s pr_diff.txt ]; then
+            echo "empty=true" >> $GITHUB_OUTPUT
+          else
+            echo "empty=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Generate review summary
+      - name: AI Code Review
+        if: steps.diff.outputs.empty != 'true'
         id: review
-        run: |
-          echo "## 🔍 Automated Code Review" > review.md
-          echo "" >> review.md
-          echo "### 📊 Summary" >> review.md
-          echo "- **Files Added**: ${{ steps.stats.outputs.added }}" >> review.md
-          echo "- **Files Modified**: ${{ steps.stats.outputs.modified }}" >> review.md
-          echo "- **Files Deleted**: ${{ steps.stats.outputs.deleted }}" >> review.md
-          echo "" >> review.md
-          
-          if [ "${{ steps.eslint.outcome }}" = "failure" ]; then
-            echo "### ❌ ESLint Issues Found" >> review.md
-            echo "Please fix ESLint errors before merging." >> review.md
-            echo "" >> review.md
-          else
-            echo "### ✅ ESLint Check Passed" >> review.md
-            echo "" >> review.md
-          fi
-          
-          if [ "${{ steps.prettier.outcome }}" = "failure" ]; then
-            echo "### ❌ Formatting Issues Found" >> review.md
-            echo "Run \`bun run format\` to fix formatting issues." >> review.md
-            echo "" >> review.md
-          else
-            echo "### ✅ Code Formatting Passed" >> review.md
-            echo "" >> review.md
-          fi
-
-      - name: Post review comment
-        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const { execSync } = require('child_process');
             const fs = require('fs');
-            const review = fs.readFileSync('review.md', 'utf8');
+            
+            const diff = fs.readFileSync('pr_diff.txt', 'utf8');
+            
+            if (!diff || diff.trim().length === 0) {
+              core.setOutput('skipped', 'true');
+              return;
+            }
+            
+            const maxDiffLength = 60000;
+            const truncatedDiff = diff.length > maxDiffLength 
+              ? diff.substring(0, maxDiffLength) + '\n\n[Diff truncated due to size]' 
+              : diff;
+            
+            const prompt = `You are an expert code reviewer reviewing a pull request for a web application called Haven Space (boarder/landlord matching platform).
+
+Technology stack:
+- Frontend: HTML5, CSS3, Vanilla JavaScript (ES6+)
+- Backend: PHP 8.0+ with MySQL/MariaDB
+- Styling: Custom CSS with CSS custom properties
+
+Review the following git diff and provide a comprehensive, professional code review. Focus on:
+
+1. **Code Quality**: Readability, maintainability, naming conventions
+2. **Potential Bugs**: Logic errors, edge cases, race conditions
+3. **Security**: XSS, SQL injection, input validation, authentication issues
+4. **Performance**: Unnecessary DOM manipulation, inefficient queries, memory leaks
+5. **Best Practices**: ES6+ usage, CSS efficiency, PHP prepared statements
+6. **Accessibility**: Semantic HTML, ARIA attributes, keyboard navigation
+
+Format your response as markdown. Be specific, actionable, and constructive. Reference specific files and line numbers when possible.
+
+If the code is good, acknowledge it. If there are issues, prioritize them by severity.
+
+Here's the diff to review:
+
+\`\`\`diff
+${truncatedDiff}
+\`\`\``;
+
+            let reviewBody = '';
+            let reviewError = '';
+            
+            try {
+              const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${{ secrets.OPENAI_API_KEY }}`
+                },
+                body: JSON.stringify({
+                  model: 'gpt-4o-mini',
+                  messages: [
+                    {
+                      role: 'system',
+                      content: 'You are a senior code reviewer specializing in web applications (JavaScript, CSS, PHP). Provide thorough, professional code reviews with specific, actionable feedback.'
+                    },
+                    { role: 'user', content: prompt }
+                  ],
+                  max_tokens: 4000,
+                  temperature: 0.3
+                })
+              });
+              
+              if (!response.ok) {
+                const errorData = await response.json();
+                reviewError = `OpenAI API error: ${errorData.error?.message || response.statusText}`;
+              } else {
+                const data = await response.json();
+                reviewBody = data.choices[0].message.content;
+              }
+            } catch (err) {
+              reviewError = `Failed to call OpenAI API: ${err.message}`;
+            }
+            
+            if (reviewError && !reviewBody) {
+              reviewBody = `## Code Review\n\nUnable to complete AI review due to API error: ${reviewError}\n\nPlease review manually.`;
+            }
+            
+            if (!reviewBody) {
+              reviewBody = '## Code Review\n\nNo significant changes detected or diff too large to analyze.';
+            }
             
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
-              body: review,
+              body: reviewBody,
               event: 'COMMENT'
             });
+
