@@ -23,6 +23,30 @@
   --dashboard-blue-light: #dbeafe;
 }
 
+/* ===== Maintenance Page Variables ===== */
+:root {
+  --maintenance-primary: #4a7c23;
+  --maintenance-primary-dark: #2d4a14;
+  --maintenance-primary-light: #7cb342;
+  --maintenance-surface: #ffffff;
+  --maintenance-surface-alt: #f8faf8;
+  --maintenance-border: #e5e5e5;
+  --maintenance-border-light: #f0f0f0;
+  --maintenance-text-primary: #1a1a1a;
+  --maintenance-text-secondary: #555555;
+  --maintenance-text-muted: #999999;
+  --maintenance-accent-green: #22c55e;
+  --maintenance-accent-blue: #3b82f6;
+  --maintenance-accent-orange: #f59e0b;
+  --maintenance-accent-red: #ef4444;
+  --maintenance-accent-cyan: #06b6d4;
+  --maintenance-accent-purple: #8b5cf6;
+  --maintenance-radius: 8px;
+  --maintenance-radius-lg: 12px;
+  --maintenance-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --maintenance-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
 /* ===== Layout ===== */
 .landlord-dashboard {
   display: flex;
