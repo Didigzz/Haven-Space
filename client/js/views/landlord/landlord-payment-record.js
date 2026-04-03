@@ -111,7 +111,7 @@ const pendingPaymentsData = [
 // State management
 let selectedPaymentId = null;
 let selectedPaymentMethod = 'gcash';
-let uploadedFiles = {
+const uploadedFiles = {
   gcash: [],
   bank: [],
   card: [],
@@ -154,7 +154,9 @@ function formatDateForInput(dateString) {
  */
 function populateBoarderDropdown() {
   const select = document.getElementById('boarderPaymentSelect');
-  if (!select) return;
+  if (!select) {
+    return;
+  }
 
   // Filter out already recorded payments
   const availablePayments = pendingPaymentsData.filter(p => p.status !== 'recorded');
@@ -185,7 +187,9 @@ function populateBoarderDropdown() {
  */
 function displaySelectedPayment(paymentId) {
   const payment = pendingPaymentsData.find(p => p.id === parseInt(paymentId));
-  if (!payment) return;
+  if (!payment) {
+    return;
+  }
 
   selectedPaymentId = payment.id;
 
@@ -276,7 +280,9 @@ function updatePaymentSummary(payment) {
 function prefillBoarderPaymentDetails(payment) {
   const submission = payment.boarderSubmittedPayment;
 
-  if (!submission) return;
+  if (!submission) {
+    return;
+  }
 
   console.log('Boarder already submitted payment:', submission);
 
@@ -286,9 +292,15 @@ function prefillBoarderPaymentDetails(payment) {
     const payerNumber = document.getElementById('gcashPayerNumber');
     const paymentDate = document.getElementById('gcashPaymentDate');
 
-    if (refNumber) refNumber.value = submission.referenceNumber || '';
-    if (payerNumber) payerNumber.value = submission.payerNumber || '';
-    if (paymentDate) paymentDate.value = submission.paymentDate || '';
+    if (refNumber) {
+      refNumber.value = submission.referenceNumber || '';
+    }
+    if (payerNumber) {
+      payerNumber.value = submission.payerNumber || '';
+    }
+    if (paymentDate) {
+      paymentDate.value = submission.paymentDate || '';
+    }
 
     // Switch to GCash method
     selectPaymentMethod('gcash');
@@ -297,9 +309,15 @@ function prefillBoarderPaymentDetails(payment) {
     const bankName = document.getElementById('bankName');
     const paymentDate = document.getElementById('bankPaymentDate');
 
-    if (refNumber) refNumber.value = submission.referenceNumber || '';
-    if (bankName) bankName.value = submission.bankName || '';
-    if (paymentDate) paymentDate.value = submission.paymentDate || '';
+    if (refNumber) {
+      refNumber.value = submission.referenceNumber || '';
+    }
+    if (bankName) {
+      bankName.value = submission.bankName || '';
+    }
+    if (paymentDate) {
+      paymentDate.value = submission.paymentDate || '';
+    }
 
     // Switch to Bank Transfer method
     selectPaymentMethod('bank');
@@ -406,7 +424,9 @@ function selectPaymentMethod(method) {
  */
 function handleFileUpload(method, files) {
   const previewContainer = document.getElementById(`${method}FilePreview`);
-  if (!previewContainer) return;
+  if (!previewContainer) {
+    return;
+  }
 
   Array.from(files).forEach(file => {
     // Validate file size (max 5MB)
@@ -490,31 +510,53 @@ function validateForm() {
     const payerNumber = document.getElementById('gcashPayerNumber')?.value.trim();
     const paymentDate = document.getElementById('gcashPaymentDate')?.value;
 
-    if (!refNumber) errors.push('GCash reference number is required.');
-    if (!payerNumber) errors.push('GCash payer number is required.');
-    if (!paymentDate) errors.push('Payment date is required.');
+    if (!refNumber) {
+      errors.push('GCash reference number is required.');
+    }
+    if (!payerNumber) {
+      errors.push('GCash payer number is required.');
+    }
+    if (!paymentDate) {
+      errors.push('Payment date is required.');
+    }
   } else if (selectedPaymentMethod === 'bank') {
     const refNumber = document.getElementById('bankReferenceNumber')?.value.trim();
     const bankName = document.getElementById('bankName')?.value;
     const paymentDate = document.getElementById('bankPaymentDate')?.value;
 
-    if (!refNumber) errors.push('Bank reference number is required.');
-    if (!bankName) errors.push('Bank name is required.');
-    if (!paymentDate) errors.push('Payment date is required.');
+    if (!refNumber) {
+      errors.push('Bank reference number is required.');
+    }
+    if (!bankName) {
+      errors.push('Bank name is required.');
+    }
+    if (!paymentDate) {
+      errors.push('Payment date is required.');
+    }
   } else if (selectedPaymentMethod === 'card') {
     const refNumber = document.getElementById('cardReferenceNumber')?.value.trim();
     const cardType = document.getElementById('cardType')?.value;
     const paymentDate = document.getElementById('cardPaymentDate')?.value;
 
-    if (!refNumber) errors.push('Transaction reference number is required.');
-    if (!cardType) errors.push('Card type is required.');
-    if (!paymentDate) errors.push('Payment date is required.');
+    if (!refNumber) {
+      errors.push('Transaction reference number is required.');
+    }
+    if (!cardType) {
+      errors.push('Card type is required.');
+    }
+    if (!paymentDate) {
+      errors.push('Payment date is required.');
+    }
   } else if (selectedPaymentMethod === 'cash') {
     const receivedBy = document.getElementById('cashReceivedBy')?.value.trim();
     const paymentDate = document.getElementById('cashPaymentDate')?.value;
 
-    if (!receivedBy) errors.push('Received by name is required.');
-    if (!paymentDate) errors.push('Payment date is required.');
+    if (!receivedBy) {
+      errors.push('Received by name is required.');
+    }
+    if (!paymentDate) {
+      errors.push('Payment date is required.');
+    }
   }
 
   // Check amount
@@ -541,7 +583,9 @@ function validateForm() {
  */
 function getPaymentData() {
   const payment = pendingPaymentsData.find(p => p.id === selectedPaymentId);
-  if (!payment) return null;
+  if (!payment) {
+    return null;
+  }
 
   const baseData = {
     paymentId: selectedPaymentId,
@@ -618,7 +662,9 @@ function showConfirmationModal(paymentData) {
   const modal = document.getElementById('paymentConfirmationModal');
   const detailsContainer = document.getElementById('confirmationDetails');
 
-  if (!modal || !detailsContainer) return;
+  if (!modal || !detailsContainer) {
+    return;
+  }
 
   const methodLabels = {
     gcash: 'GCash',

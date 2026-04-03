@@ -7,5 +7,4 @@ build/
 .env
 .idea/
 .vscode/.worktrees/
-.husky/
 .worktrees/  

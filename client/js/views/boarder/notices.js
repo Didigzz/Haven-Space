@@ -188,7 +188,9 @@ function initCardActions() {
  */
 function initFeaturedActions() {
   const featuredCard = document.querySelector('.notices-featured-card');
-  if (!featuredCard) return;
+  if (!featuredCard) {
+    return;
+  }
 
   const acknowledgeBtn = featuredCard.querySelector('[data-action="acknowledge"]');
   const dismissBtn = featuredCard.querySelector('[data-action="dismiss"]');

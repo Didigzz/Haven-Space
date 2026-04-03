@@ -152,7 +152,9 @@ function setupFormHandlers() {
   const addCustomAmenityBtn = document.getElementById('add-custom-amenity-btn');
   const customAmenityInput = document.getElementById('custom-amenity-input');
 
-  if (!form || !uploadArea || !fileInput) return;
+  if (!form || !uploadArea || !fileInput) {
+    return;
+  }
 
   // Initialize photo upload handlers
   initPhotoUpload(uploadArea, fileInput);
@@ -200,7 +202,9 @@ function setupFormHandlers() {
   if (addCustomAmenityBtn && customAmenityInput) {
     addCustomAmenityBtn.addEventListener('click', handleAddCustomAmenity);
     customAmenityInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') handleAddCustomAmenity();
+      if (e.key === 'Enter') {
+        handleAddCustomAmenity();
+      }
     });
   }
 }
@@ -209,7 +213,9 @@ function setupFormHandlers() {
  * Check if there are unsaved changes
  */
 function hasUnsavedChanges() {
-  if (!originalProperty) return false;
+  if (!originalProperty) {
+    return false;
+  }
 
   const form = document.getElementById('edit-property-form');
   const formData = new FormData(form);
@@ -298,7 +304,9 @@ function handleFiles(files) {
  */
 function renderPhotoGrid() {
   const grid = document.getElementById('photo-preview-grid');
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   grid.innerHTML = '';
 
@@ -428,7 +436,9 @@ function setupDragToReorder(grid) {
  */
 function removePhoto(photoId) {
   const photoIndex = uploadedPhotos.findIndex(p => p.id === photoId);
-  if (photoIndex === -1) return;
+  if (photoIndex === -1) {
+    return;
+  }
 
   const photo = uploadedPhotos[photoIndex];
 
@@ -572,14 +582,20 @@ function handlePropertyTypeChange() {
   const otherGroup = document.getElementById('property-type-other-group');
   const otherInput = document.getElementById('property-type-other');
 
-  if (!select || !otherGroup) return;
+  if (!select || !otherGroup) {
+    return;
+  }
 
   if (select.value === 'others') {
     otherGroup.style.display = 'block';
-    if (otherInput) otherInput.required = true;
+    if (otherInput) {
+      otherInput.required = true;
+    }
   } else {
     otherGroup.style.display = 'none';
-    if (otherInput) otherInput.required = false;
+    if (otherInput) {
+      otherInput.required = false;
+    }
   }
 }
 
@@ -591,14 +607,20 @@ function handleCapacityChange() {
   const customGroup = document.getElementById('property-capacity-custom-group');
   const customInput = document.getElementById('property-capacity-custom');
 
-  if (!select || !customGroup) return;
+  if (!select || !customGroup) {
+    return;
+  }
 
   if (select.value === 'custom') {
     customGroup.style.display = 'block';
-    if (customInput) customInput.required = true;
+    if (customInput) {
+      customInput.required = true;
+    }
   } else {
     customGroup.style.display = 'none';
-    if (customInput) customInput.required = false;
+    if (customInput) {
+      customInput.required = false;
+    }
   }
 }
 
@@ -614,10 +636,14 @@ function handleAddCustomAmenity() {
   const input = document.getElementById('custom-amenity-input');
   const listContainer = document.getElementById('custom-amenities-list');
 
-  if (!input || !listContainer) return;
+  if (!input || !listContainer) {
+    return;
+  }
 
   const value = input.value.trim();
-  if (!value) return;
+  if (!value) {
+    return;
+  }
 
   // Add to array
   customAmenitiesList.push(value);
@@ -697,7 +723,9 @@ function initRoomManagement() {
   const updateCapacityBtn = document.getElementById('update-capacity-btn');
   const imageUploadInput = document.getElementById('room-image-upload');
 
-  if (!capacityInput || !updateCapacityBtn) return;
+  if (!capacityInput || !updateCapacityBtn) {
+    return;
+  }
 
   // Initialize with sample rooms based on property
   initializeRoomsData();
@@ -747,7 +775,9 @@ function initRoomManagement() {
  */
 function initializeRoomsData() {
   const roomsInput = document.getElementById('room-capacity-input');
-  if (!roomsInput) return;
+  if (!roomsInput) {
+    return;
+  }
 
   roomCapacity = parseInt(roomsInput.value) || 10;
 
@@ -832,7 +862,9 @@ function handleUpdateRoomCapacity() {
  */
 function renderRoomsList() {
   const roomsList = document.getElementById('rooms-list');
-  if (!roomsList) return;
+  if (!roomsList) {
+    return;
+  }
 
   roomsList.innerHTML = '';
 
@@ -903,7 +935,9 @@ function renderRoomsList() {
  */
 function updateRoomStatus(roomId, newStatus) {
   const room = roomsData.find(r => r.id === roomId);
-  if (!room) return;
+  if (!room) {
+    return;
+  }
 
   room.status = newStatus;
 
@@ -916,7 +950,9 @@ function updateRoomStatus(roomId, newStatus) {
  */
 function triggerRoomImageUpload(roomId) {
   const room = roomsData.find(r => r.id === roomId);
-  if (!room) return;
+  if (!room) {
+    return;
+  }
 
   currentRoomForUpload = room;
 
@@ -932,9 +968,13 @@ function triggerRoomImageUpload(roomId) {
  */
 function handleRoomImageUpload(e) {
   const files = e.target.files;
-  if (!files || files.length === 0) return;
+  if (!files || files.length === 0) {
+    return;
+  }
 
-  if (!currentRoomForUpload) return;
+  if (!currentRoomForUpload) {
+    return;
+  }
 
   // Process uploaded files
   Array.from(files).forEach(file => {
@@ -958,7 +998,9 @@ function handleRoomImageUpload(e) {
  */
 function openImagePreview(imageUrl, roomId) {
   const modal = document.getElementById('image-preview-modal');
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
 
   const previewImage = document.getElementById('image-preview-source');
   if (previewImage) {
@@ -982,7 +1024,9 @@ function openImagePreview(imageUrl, roomId) {
  * Close modal
  */
 function closeModal(modal) {
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
   modal.classList.remove('active');
   document.body.style.overflow = '';
 }
@@ -992,7 +1036,9 @@ function closeModal(modal) {
  */
 function deleteRoomImage(roomId, imageUrl) {
   const room = roomsData.find(r => r.id === roomId);
-  if (!room || !room.images) return;
+  if (!room || !room.images) {
+    return;
+  }
 
   room.images = room.images.filter(img => img !== imageUrl);
 
