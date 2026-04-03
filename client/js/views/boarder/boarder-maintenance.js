@@ -192,7 +192,7 @@ function initPrintButton() {
 function updateStats() {
   const tickets = document.querySelectorAll('.maintenance-ticket-card');
 
-  let total = tickets.length;
+  const total = tickets.length;
   let pending = 0;
   let completed = 0;
   let inProgress = 0;
@@ -202,11 +202,17 @@ function updateStats() {
     const status = ticket.dataset.status;
     const isUrgent = ticket.dataset.urgent === 'true';
 
-    if (status === 'pending') pending++;
-    else if (status === 'completed') completed++;
-    else if (status === 'in-progress') inProgress++;
+    if (status === 'pending') {
+      pending++;
+    } else if (status === 'completed') {
+      completed++;
+    } else if (status === 'in-progress') {
+      inProgress++;
+    }
 
-    if (isUrgent) urgent++;
+    if (isUrgent) {
+      urgent++;
+    }
   });
 
   // Update stat values
@@ -215,10 +221,18 @@ function updateStats() {
   const statCompleted = document.getElementById('stat-completed');
   const statUrgent = document.getElementById('stat-urgent');
 
-  if (statTotal) statTotal.textContent = total;
-  if (statPending) statPending.textContent = pending;
-  if (statCompleted) statCompleted.textContent = completed;
-  if (statUrgent) statUrgent.textContent = urgent;
+  if (statTotal) {
+    statTotal.textContent = total;
+  }
+  if (statPending) {
+    statPending.textContent = pending;
+  }
+  if (statCompleted) {
+    statCompleted.textContent = completed;
+  }
+  if (statUrgent) {
+    statUrgent.textContent = urgent;
+  }
 }
 
 /**
@@ -227,7 +241,9 @@ function updateStats() {
 function addTicket(ticketData) {
   const container = document.getElementById('maintenance-tickets-container');
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   const ticketCard = createTicketCard(ticketData);
   container.prepend(ticketCard);

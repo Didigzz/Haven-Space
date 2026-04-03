@@ -371,12 +371,16 @@ function updateUtilitiesCard(card) {
   const description = card.querySelector('.boarder-stat-description');
   const icon = card.querySelector('.boarder-stat-icon');
 
-  if (label) label.textContent = 'Utilities Load';
+  if (label) {
+    label.textContent = 'Utilities Load';
+  }
   if (icon) {
     icon.className = 'boarder-stat-icon orange';
     icon.innerHTML = getIcon('lightning');
   }
-  if (value) value.textContent = '₱450';
+  if (value) {
+    value.textContent = '₱450';
+  }
   if (description) {
     description.innerHTML = `
       <span class="status-dot status-dot-warning"></span>
@@ -408,7 +412,9 @@ function updateDynamicCards() {
     }
   }
 
-  if (!maintenanceCard || !leaseCard) return;
+  if (!maintenanceCard || !leaseCard) {
+    return;
+  }
 
   if (isPostContract) {
     // Switch to Maintenance Status and Lease Timeline
@@ -430,11 +436,15 @@ function updateMaintenanceCard(card) {
   const description = card.querySelector('.boarder-stat-description');
   const icon = card.querySelector('.boarder-stat-icon');
 
-  if (label) label.textContent = 'Maintenance Status';
+  if (label) {
+    label.textContent = 'Maintenance Status';
+  }
   if (icon) {
     icon.innerHTML = getIcon('wrenchScrewdriver');
   }
-  if (value) value.textContent = 'No Issues';
+  if (value) {
+    value.textContent = 'No Issues';
+  }
   if (description) {
     description.innerHTML = `
       <span class="status-dot status-dot-success"></span>
@@ -452,11 +462,15 @@ function updateLeaseCard(card) {
   const description = card.querySelector('.boarder-stat-description');
   const icon = card.querySelector('.boarder-stat-icon');
 
-  if (label) label.textContent = 'Lease Timeline';
+  if (label) {
+    label.textContent = 'Lease Timeline';
+  }
   if (icon) {
     icon.innerHTML = getIcon('calendarDays');
   }
-  if (value) value.textContent = '11 months';
+  if (value) {
+    value.textContent = '11 months';
+  }
   if (description) {
     description.innerHTML = `
       <span class="status-dot status-dot-info"></span>
@@ -474,11 +488,15 @@ function updateApplicationProgressCard(card) {
   const description = card.querySelector('.boarder-stat-description');
   const icon = card.querySelector('.boarder-stat-icon');
 
-  if (label) label.textContent = 'Application Progress';
+  if (label) {
+    label.textContent = 'Application Progress';
+  }
   if (icon) {
     icon.innerHTML = getIcon('shieldCheck');
   }
-  if (value) value.textContent = '2/4 Steps';
+  if (value) {
+    value.textContent = '2/4 Steps';
+  }
   if (description) {
     description.innerHTML = `
       <span class="status-dot status-dot-success"></span>
@@ -496,11 +514,15 @@ function updateLeaseTimelineCard(card) {
   const description = card.querySelector('.boarder-stat-description');
   const icon = card.querySelector('.boarder-stat-icon');
 
-  if (label) label.textContent = 'Lease Timeline';
+  if (label) {
+    label.textContent = 'Lease Timeline';
+  }
   if (icon) {
     icon.innerHTML = getIcon('calendarDays');
   }
-  if (value) value.textContent = 'Starting Soon';
+  if (value) {
+    value.textContent = 'Starting Soon';
+  }
   if (description) {
     description.innerHTML = `
       <span class="status-dot status-dot-info"></span>

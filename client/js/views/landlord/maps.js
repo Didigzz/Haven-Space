@@ -81,7 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Auto-detect location on page load
   function autoDetectLocation() {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      return;
+    }
 
     locateBtn?.classList.add('loading');
 

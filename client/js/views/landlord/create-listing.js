@@ -11,7 +11,7 @@ const MAX_PHOTOS = 10;
 const MAX_FILE_SIZE_MB = 5;
 
 // Store uploaded photos
-let uploadedPhotos = [];
+const uploadedPhotos = [];
 
 /**
  * Initialize the create listing form
@@ -27,7 +27,9 @@ export function initCreateListing() {
   const addCustomAmenityBtn = document.getElementById('add-custom-amenity-btn');
   const customAmenityInput = document.getElementById('custom-amenity-input');
 
-  if (!form || !uploadArea || !fileInput) return;
+  if (!form || !uploadArea || !fileInput) {
+    return;
+  }
 
   // Initialize photo upload handlers
   initPhotoUpload(uploadArea, fileInput);
@@ -63,7 +65,9 @@ export function initCreateListing() {
   if (addCustomAmenityBtn && customAmenityInput) {
     addCustomAmenityBtn.addEventListener('click', handleAddCustomAmenity);
     customAmenityInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') handleAddCustomAmenity();
+      if (e.key === 'Enter') {
+        handleAddCustomAmenity();
+      }
     });
   }
 }
@@ -143,7 +147,9 @@ function handleFiles(files) {
  */
 function renderPhotoGrid() {
   const grid = document.getElementById('photo-preview-grid');
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   grid.innerHTML = '';
 
@@ -184,7 +190,9 @@ function renderPhotoGrid() {
  */
 function removePhoto(photoId) {
   const photoIndex = uploadedPhotos.findIndex(p => p.id === photoId);
-  if (photoIndex === -1) return;
+  if (photoIndex === -1) {
+    return;
+  }
 
   // Revoke object URL to free memory
   URL.revokeObjectURL(uploadedPhotos[photoIndex].preview);
@@ -290,14 +298,20 @@ function handlePropertyTypeChange() {
   const otherGroup = document.getElementById('property-type-other-group');
   const otherInput = document.getElementById('property-type-other');
 
-  if (!select || !otherGroup) return;
+  if (!select || !otherGroup) {
+    return;
+  }
 
   if (select.value === 'others') {
     otherGroup.style.display = 'block';
-    if (otherInput) otherInput.required = true;
+    if (otherInput) {
+      otherInput.required = true;
+    }
   } else {
     otherGroup.style.display = 'none';
-    if (otherInput) otherInput.required = false;
+    if (otherInput) {
+      otherInput.required = false;
+    }
   }
 }
 
@@ -309,14 +323,20 @@ function handleCapacityChange() {
   const customGroup = document.getElementById('property-capacity-custom-group');
   const customInput = document.getElementById('property-capacity-custom');
 
-  if (!select || !customGroup) return;
+  if (!select || !customGroup) {
+    return;
+  }
 
   if (select.value === 'custom') {
     customGroup.style.display = 'block';
-    if (customInput) customInput.required = true;
+    if (customInput) {
+      customInput.required = true;
+    }
   } else {
     customGroup.style.display = 'none';
-    if (customInput) customInput.required = false;
+    if (customInput) {
+      customInput.required = false;
+    }
   }
 }
 
@@ -332,10 +352,14 @@ function handleAddCustomAmenity() {
   const input = document.getElementById('custom-amenity-input');
   const listContainer = document.getElementById('custom-amenities-list');
 
-  if (!input || !listContainer) return;
+  if (!input || !listContainer) {
+    return;
+  }
 
   const value = input.value.trim();
-  if (!value) return;
+  if (!value) {
+    return;
+  }
 
   // Add to array
   customAmenitiesList.push(value);

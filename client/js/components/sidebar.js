@@ -115,7 +115,9 @@ export function initSidebar(options = {}) {
   } = options;
 
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   // Calculate base path from URL depth
   const basePath = resolveBasePath();
@@ -129,8 +131,12 @@ export function initSidebar(options = {}) {
       // Fix logo path
       const logoImg = container.querySelector('.sidebar-logo-img');
       const logoLink = container.querySelector('.sidebar-logo');
-      if (logoImg) logoImg.src = `${basePath}/assets/images/Haven_Space_Logo.png`;
-      if (logoLink) logoLink.href = `${basePath}/views/public/index.html`;
+      if (logoImg) {
+        logoImg.src = `${basePath}/assets/images/Haven_Space_Logo.png`;
+      }
+      if (logoLink) {
+        logoLink.href = `${basePath}/views/public/index.html`;
+      }
 
       renderNavigation(role, basePath);
       updateUserInfo(user);
@@ -150,9 +156,15 @@ export function initSidebar(options = {}) {
  */
 function resolveBasePath() {
   const path = window.location.pathname;
-  if (path.includes('/client/views/')) return '/client';
-  if (path.includes('/frontend/views/')) return '/frontend';
-  if (path.includes('/views/')) return '';
+  if (path.includes('/client/views/')) {
+    return '/client';
+  }
+  if (path.includes('/frontend/views/')) {
+    return '/frontend';
+  }
+  if (path.includes('/views/')) {
+    return '';
+  }
   return '';
 }
 
@@ -191,7 +203,9 @@ function resolveNavHref(href, basePath) {
  */
 function renderNavigation(role, basePath) {
   const navContent = document.getElementById('sidebar-nav-content');
-  if (!navContent) return;
+  if (!navContent) {
+    return;
+  }
 
   const config = NAV_CONFIG[role] || NAV_CONFIG.boarder;
   navContent.innerHTML = config
@@ -288,13 +302,19 @@ function setupDropdownHandlers() {
         );
 
         allDropdowns.forEach(d => {
-          if (d !== content) d.style.display = 'none';
+          if (d !== content) {
+            d.style.display = 'none';
+          }
         });
         allDropdownContainers.forEach(d => {
-          if (d !== dropdown) d.classList.remove('sidebar-nav-dropdown-open');
+          if (d !== dropdown) {
+            d.classList.remove('sidebar-nav-dropdown-open');
+          }
         });
         allIcons.forEach(i => {
-          if (i !== icon) i.style.transform = 'rotate(0deg)';
+          if (i !== icon) {
+            i.style.transform = 'rotate(0deg)';
+          }
         });
 
         // Toggle current dropdown
@@ -321,9 +341,15 @@ function updateUserInfo(user) {
   const name = document.getElementById('sidebar-profile-name');
   const roleEl = document.getElementById('sidebar-profile-role');
 
-  if (avatar) avatar.textContent = user.initials || 'JD';
-  if (name) name.textContent = user.name || 'Juan Dela Cruz';
-  if (roleEl) roleEl.textContent = user.role || 'Boarder';
+  if (avatar) {
+    avatar.textContent = user.initials || 'JD';
+  }
+  if (name) {
+    name.textContent = user.name || 'Juan Dela Cruz';
+  }
+  if (roleEl) {
+    roleEl.textContent = user.role || 'Boarder';
+  }
 }
 
 /**
@@ -349,7 +375,9 @@ function setActiveState() {
           dropdown.classList.add('sidebar-nav-dropdown-open');
           const toggle = dropdown.querySelector('.sidebar-nav-dropdown-toggle');
           const icon = dropdown.querySelector('.sidebar-dropdown-icon');
-          if (toggle) toggle.classList.add('active');
+          if (toggle) {
+            toggle.classList.add('active');
+          }
           if (icon) {
             icon.style.transform = 'rotate(180deg)';
             icon.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';

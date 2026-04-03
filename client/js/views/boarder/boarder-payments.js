@@ -82,13 +82,23 @@ export function getPaymentStatus(dueDate, paidDate = null) {
  * @returns {string} Formatted string
  */
 export function formatDaysRemaining(days) {
-  if (days === null) return '';
-  if (days === 0) return 'Today';
-  if (days === 1) return '1 day';
-  if (days <= 7) return `${days} days`;
+  if (days === null) {
+    return '';
+  }
+  if (days === 0) {
+    return 'Today';
+  }
+  if (days === 1) {
+    return '1 day';
+  }
+  if (days <= 7) {
+    return `${days} days`;
+  }
   const weeks = Math.floor(days / 7);
   const remainingDays = days % 7;
-  if (remainingDays === 0) return `${weeks} week${weeks > 1 ? 's' : ''}`;
+  if (remainingDays === 0) {
+    return `${weeks} week${weeks > 1 ? 's' : ''}`;
+  }
   return `${weeks} week${weeks > 1 ? 's' : ''}, ${remainingDays} day${
     remainingDays > 1 ? 's' : ''
   }`;
@@ -100,7 +110,9 @@ export function formatDaysRemaining(days) {
  * @param {Object} status - Status object from getPaymentStatus()
  */
 export function applyStatusToElement(element, status) {
-  if (!element || !status) return;
+  if (!element || !status) {
+    return;
+  }
 
   // Remove all status classes
   element.classList.remove(

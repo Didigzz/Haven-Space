@@ -41,12 +41,18 @@ function initConversationSwitching() {
       const name = item.querySelector('.conversation-name').textContent;
       const avatarSrc = item.querySelector('.conversation-avatar img').src;
 
-      if (chatName) chatName.textContent = name;
-      if (chatAvatar) chatAvatar.src = avatarSrc;
+      if (chatName) {
+        chatName.textContent = name;
+      }
+      if (chatAvatar) {
+        chatAvatar.src = avatarSrc;
+      }
 
       // Clear search input if active
       const searchInput = document.getElementById('messages-search-input');
-      if (searchInput) searchInput.value = '';
+      if (searchInput) {
+        searchInput.value = '';
+      }
 
       // Scroll to bottom of chat
       scrollToBottom();
@@ -59,7 +65,9 @@ function initConversationSwitching() {
  */
 function initSearchMessages() {
   const searchInput = document.getElementById('messages-search-input');
-  if (!searchInput) return;
+  if (!searchInput) {
+    return;
+  }
 
   searchInput.addEventListener('input', e => {
     const searchTerm = e.target.value.toLowerCase();
@@ -88,7 +96,9 @@ function initSendMessage() {
   const sendBtn = document.getElementById('chat-send-btn');
   const chatMessages = document.getElementById('chat-messages');
 
-  if (!chatInput || !sendBtn || !chatMessages) return;
+  if (!chatInput || !sendBtn || !chatMessages) {
+    return;
+  }
 
   // Send on button click
   sendBtn.addEventListener('click', () => {
@@ -105,7 +115,9 @@ function initSendMessage() {
 
   function sendMessage() {
     const messageText = chatInput.value.trim();
-    if (!messageText) return;
+    if (!messageText) {
+      return;
+    }
 
     // Create message element
     const messageItem = document.createElement('div');
@@ -154,7 +166,9 @@ function initNewMessageModal() {
   const cancelBtn = document.getElementById('modal-cancel-btn');
   const form = document.getElementById('new-message-form');
 
-  if (!newMessageBtn || !modal) return;
+  if (!newMessageBtn || !modal) {
+    return;
+  }
 
   // Open modal
   newMessageBtn.addEventListener('click', () => {
@@ -168,10 +182,14 @@ function initNewMessageModal() {
   }
 
   // Close on close button click
-  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeModal);
+  }
 
   // Close on cancel button click
-  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', closeModal);
+  }
 
   // Close on overlay click
   modal.addEventListener('click', e => {
@@ -261,7 +279,9 @@ function simulateResponse() {
   const chatMessages = document.getElementById('chat-messages');
   const chatAvatar = document.querySelector('.chat-header .chat-avatar img');
 
-  if (!chatMessages || !chatAvatar) return;
+  if (!chatMessages || !chatAvatar) {
+    return;
+  }
 
   const responses = [
     'Thanks for your message!',

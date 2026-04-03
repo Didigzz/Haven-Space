@@ -115,7 +115,9 @@ export function initMyProperties() {
   const filterStatus = document.getElementById('filter-status');
   const sortBy = document.getElementById('sort-by');
 
-  if (!searchInput) return;
+  if (!searchInput) {
+    return;
+  }
 
   // Initialize sidebar and navbar
   initSidebar({
@@ -156,19 +158,29 @@ function loadProperties() {
   const emptyState = document.getElementById('empty-state');
   const loadingState = document.getElementById('loading-state');
 
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   // Show loading state
-  if (loadingState) loadingState.style.display = 'block';
-  if (emptyState) emptyState.style.display = 'none';
+  if (loadingState) {
+    loadingState.style.display = 'block';
+  }
+  if (emptyState) {
+    emptyState.style.display = 'none';
+  }
   grid.style.display = 'none';
 
   // Simulate API delay
   setTimeout(() => {
-    if (loadingState) loadingState.style.display = 'none';
+    if (loadingState) {
+      loadingState.style.display = 'none';
+    }
 
     if (propertiesData.length === 0) {
-      if (emptyState) emptyState.style.display = 'block';
+      if (emptyState) {
+        emptyState.style.display = 'block';
+      }
     } else {
       grid.style.display = 'grid';
       renderProperties(propertiesData);
@@ -181,7 +193,9 @@ function loadProperties() {
  */
 function renderProperties(properties) {
   const grid = document.getElementById('properties-grid');
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   grid.innerHTML = '';
 
@@ -271,7 +285,9 @@ function createPropertyCard(property) {
  */
 function handlePropertyAction(action, id) {
   const property = propertiesData.find(p => p.id === id);
-  if (!property) return;
+  if (!property) {
+    return;
+  }
 
   currentProperty = property;
 
@@ -293,7 +309,9 @@ function handlePropertyAction(action, id) {
  */
 function openPropertyModal(property) {
   const modal = document.getElementById('property-modal');
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
 
   // Populate modal data
   document.getElementById('modal-property-name').textContent = property.name;
@@ -377,7 +395,9 @@ function editProperty(property) {
  */
 function confirmDelete(property) {
   const modal = document.getElementById('delete-modal');
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
 
   document.getElementById('delete-property-name').textContent = property.name;
   modal.classList.add('active');
@@ -438,7 +458,9 @@ function setupModalHandlers() {
  * Close modal
  */
 function closeModal(modal) {
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
   modal.classList.remove('active');
   document.body.style.overflow = '';
   currentProperty = null;
@@ -488,14 +510,16 @@ function filterAndSortProperties(searchQuery = '') {
   const filterStatus = document.getElementById('filter-status');
   const sortBy = document.getElementById('sort-by');
 
-  if (!searchInput || !filterStatus || !sortBy) return;
+  if (!searchInput || !filterStatus || !sortBy) {
+    return;
+  }
 
   const query = searchQuery || searchInput.value.toLowerCase().trim();
   const statusFilter = filterStatus.value;
   const sortOption = sortBy.value;
 
   // Filter
-  let filtered = propertiesData.filter(property => {
+  const filtered = propertiesData.filter(property => {
     // Search filter
     const matchesSearch =
       !query ||

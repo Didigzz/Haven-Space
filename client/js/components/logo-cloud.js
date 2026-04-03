@@ -6,7 +6,9 @@
 export function initLogoCloud() {
   const slider = document.getElementById('logoSlider');
   console.log('Logo cloud init:', slider ? 'found' : 'not found');
-  if (!slider) return;
+  if (!slider) {
+    return;
+  }
 
   let currentSpeed = 80; // base speed
   let isTransitioning = false;
@@ -16,11 +18,15 @@ export function initLogoCloud() {
   // Calculate the width of one complete set of logos
   const logoTrack = slider.querySelector('.logo-track');
   console.log('Logo track:', logoTrack ? 'found' : 'not found');
-  if (!logoTrack) return;
+  if (!logoTrack) {
+    return;
+  }
 
   const getTrackWidth = () => {
     const img = logoTrack.querySelector('img');
-    if (!img) return 0;
+    if (!img) {
+      return 0;
+    }
     const gap = 42;
     // Use getBoundingClientRect for more accurate measurement
     const logoWidth = img.getBoundingClientRect().width;

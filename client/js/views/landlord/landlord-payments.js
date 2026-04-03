@@ -365,7 +365,9 @@ function createActivityItem(activity) {
  */
 function renderPayments() {
   const tableBody = document.getElementById('paymentsTableBody');
-  if (!tableBody) return;
+  if (!tableBody) {
+    return;
+  }
 
   tableBody.innerHTML = paymentsData.map(payment => createPaymentRow(payment)).join('');
 }
@@ -375,7 +377,9 @@ function renderPayments() {
  */
 function renderActivity() {
   const activityList = document.getElementById('paymentActivityList');
-  if (!activityList) return;
+  if (!activityList) {
+    return;
+  }
 
   activityList.innerHTML = recentActivityData
     .map(activity => createActivityItem(activity))
@@ -393,7 +397,9 @@ function filterByStatus(status) {
     const paymentId = parseInt(row.dataset.paymentId);
     const payment = paymentsData.find(p => p.id === paymentId);
 
-    if (!payment) return;
+    if (!payment) {
+      return;
+    }
 
     const statusInfo = calculatePaymentStatus(payment.dueDate, payment.paidDate);
 
@@ -422,7 +428,9 @@ function filterByProperty(property) {
     const paymentId = parseInt(row.dataset.paymentId);
     const payment = paymentsData.find(p => p.id === paymentId);
 
-    if (!payment) return;
+    if (!payment) {
+      return;
+    }
 
     if (property === 'all' || payment.property.toLowerCase().includes(property)) {
       row.style.display = '';
@@ -438,13 +446,17 @@ function filterByProperty(property) {
  */
 function showPaymentDetails(paymentId) {
   const payment = paymentsData.find(p => p.id === paymentId);
-  if (!payment) return;
+  if (!payment) {
+    return;
+  }
 
   const status = calculatePaymentStatus(payment.dueDate, payment.paidDate);
   const modalBody = document.getElementById('modalBody');
   const modal = document.getElementById('paymentModal');
 
-  if (!modalBody || !modal) return;
+  if (!modalBody || !modal) {
+    return;
+  }
 
   modalBody.innerHTML = `
     <div class="payment-detail-row">

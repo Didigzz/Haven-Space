@@ -5,7 +5,7 @@
  */
 
 // Payment state
-let paymentState = {
+const paymentState = {
   selectedMethod: 'gcash',
   amount: 5500.0,
   period: 'January 2025',
@@ -110,9 +110,15 @@ function showPaymentForm(method) {
   const cardForm = document.getElementById('cardPaymentForm');
 
   // Hide all forms
-  if (gcashForm) gcashForm.style.display = 'none';
-  if (bankForm) bankForm.style.display = 'none';
-  if (cardForm) cardForm.style.display = 'none';
+  if (gcashForm) {
+    gcashForm.style.display = 'none';
+  }
+  if (bankForm) {
+    bankForm.style.display = 'none';
+  }
+  if (cardForm) {
+    cardForm.style.display = 'none';
+  }
 
   // Show selected form
   if (method === 'gcash' && gcashForm) {
@@ -270,7 +276,9 @@ function handleFileUpload(event) {
  * @returns {string} Formatted file size
  */
 function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -430,13 +438,20 @@ function showSuccessModal(paymentData) {
   const methodEl = document.getElementById('modalMethod');
   const dateEl = document.getElementById('modalDate');
 
-  if (refNumberEl) refNumberEl.textContent = paymentData.referenceNumber;
-  if (amountEl)
+  if (refNumberEl) {
+    refNumberEl.textContent = paymentData.referenceNumber;
+  }
+  if (amountEl) {
     amountEl.textContent = `₱${paymentData.amount.toLocaleString('en-PH', {
       minimumFractionDigits: 2,
     })}`;
-  if (methodEl) methodEl.textContent = paymentData.method;
-  if (dateEl) dateEl.textContent = paymentData.date;
+  }
+  if (methodEl) {
+    methodEl.textContent = paymentData.method;
+  }
+  if (dateEl) {
+    dateEl.textContent = paymentData.date;
+  }
 
   if (modal) {
     modal.style.display = 'flex';
@@ -461,7 +476,9 @@ function showErrorModal(message = 'There was an error processing your payment. P
   const modal = document.getElementById('errorModal');
   const messageEl = document.getElementById('errorMessage');
 
-  if (messageEl) messageEl.textContent = message;
+  if (messageEl) {
+    messageEl.textContent = message;
+  }
 
   if (modal) {
     modal.style.display = 'flex';
@@ -511,7 +528,9 @@ function handleRetry() {
 function startQRTimer() {
   const timerElement = document.getElementById('qrTimer');
 
-  if (!timerElement) return;
+  if (!timerElement) {
+    return;
+  }
 
   // Clear existing timer
   if (paymentState.qrTimer) {
@@ -535,7 +554,9 @@ function startQRTimer() {
  */
 function updateTimerDisplay() {
   const timerElement = document.getElementById('qrTimer');
-  if (!timerElement) return;
+  if (!timerElement) {
+    return;
+  }
 
   const minutes = Math.floor(paymentState.qrTimeRemaining / 60);
   const seconds = paymentState.qrTimeRemaining % 60;
@@ -583,7 +604,9 @@ function showToast(message, type = 'success') {
   const toast = document.getElementById('toast');
   const toastMessage = document.getElementById('toastMessage');
 
-  if (!toast || !toastMessage) return;
+  if (!toast || !toastMessage) {
+    return;
+  }
 
   // Set message and type
   toastMessage.textContent = message;

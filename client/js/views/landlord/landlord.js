@@ -27,7 +27,9 @@ export function initLandlordDashboard(config = {}) {
  */
 function updateGreeting(name) {
   const greetingElement = document.querySelector('.landlord-greeting h1');
-  if (!greetingElement) return;
+  if (!greetingElement) {
+    return;
+  }
 
   const hour = new Date().getHours();
   let greeting = 'Good afternoon';

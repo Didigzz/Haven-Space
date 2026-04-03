@@ -25,7 +25,9 @@ export function initNavbar(options = {}) {
   } = options;
 
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   // Calculate base path from URL depth
   const basePath = resolveBasePath();
@@ -63,9 +65,15 @@ export function initNavbar(options = {}) {
  */
 function resolveBasePath() {
   const path = window.location.pathname;
-  if (path.includes('/client/views/')) return '/client';
-  if (path.includes('/frontend/views/')) return '/frontend';
-  if (path.includes('/views/')) return '';
+  if (path.includes('/client/views/')) {
+    return '/client';
+  }
+  if (path.includes('/frontend/views/')) {
+    return '/frontend';
+  }
+  if (path.includes('/views/')) {
+    return '';
+  }
   return '';
 }
 
@@ -183,9 +191,15 @@ function setupUserMenuHandlers(user) {
   const menuName = document.getElementById('navbar-user-menu-name');
   const menuEmail = document.getElementById('navbar-user-menu-email');
 
-  if (menuAvatar) menuAvatar.textContent = user.initials || 'JD';
-  if (menuName) menuName.textContent = user.name || 'Juan Dela Cruz';
-  if (menuEmail) menuEmail.textContent = user.email || 'juan@example.com';
+  if (menuAvatar) {
+    menuAvatar.textContent = user.initials || 'JD';
+  }
+  if (menuName) {
+    menuName.textContent = user.name || 'Juan Dela Cruz';
+  }
+  if (menuEmail) {
+    menuEmail.textContent = user.email || 'juan@example.com';
+  }
 
   // Profile menu item
   const profileBtn = document.getElementById('navbar-menu-profile');
