@@ -217,11 +217,15 @@ document.addEventListener('DOMContentLoaded', function () {
           // Store user info
           localStorage.setItem('user', JSON.stringify(result.user));
 
-          // Redirect based on role
+          // Redirect based on role - use absolute paths for GitHub Pages compatibility
+          const basePath = window.location.pathname.includes('github.io')
+            ? '/Haven-Space/client/views/'
+            : '/client/views/';
+
           if (result.user.role === 'landlord') {
-            window.location.href = '../../landlord/index.html';
+            window.location.href = `${basePath}landlord/index.html`;
           } else {
-            window.location.href = '../../boarder/index.html';
+            window.location.href = `${basePath}boarder/index.html`;
           }
         } else {
           alert(result.error || 'Signup failed');

@@ -20,13 +20,23 @@ use App\Core\Database\Connection;
 
 session_start();
 
+// Dynamically determine the base URL for redirects
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+$baseUrl = $protocol . '://' . $host; // Document root is already /api in Docker
+
+// Helper function to build redirect URLs
+function buildRedirectUrl($baseUrl, $path) {
+    return $baseUrl . $path;
+}
+
 // Check for OAuth error from Google
 if (isset($_GET['error'])) {
     $errorMessage = $_GET['error_description'] ?? $_GET['error'] ?? 'Google authentication failed';
     error_log('Google OAuth error: ' . $errorMessage);
-    
+
     // Redirect to login with error
-    $redirectUrl = '../../../views/public/auth/login.html?error=' . urlencode($errorMessage);
+    $redirectUrl = buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=' . urlencode($errorMessage));
     header('Location: ' . $redirectUrl);
     exit;
 }
@@ -35,7 +45,7 @@ if (isset($_GET['error'])) {
 $code = $_GET['code'] ?? null;
 if (!$code) {
     error_log('Google OAuth callback: No authorization code received');
-    header('Location: ../../../views/public/auth/login.html?error=No%20authorization%20code%20received');
+    header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=No%20authorization%20code%20received'));
     exit;
 }
 
@@ -45,7 +55,7 @@ $storedState = $_SESSION['oauth_state'] ?? null;
 
 if (!$state || !$storedState || $state !== $storedState) {
     error_log('Google OAuth callback: Invalid state parameter - possible CSRF attack');
-    header('Location: ../../../views/public/auth/login.html?error=Invalid%20state%20parameter');
+    header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=Invalid%20state%20parameter'));
     exit;
 }
 
@@ -105,7 +115,7 @@ try {
                 $userRole = $user['role'];
             } else {
                 // Ask user to login with existing method first
-                header('Location: ../../../views/public/auth/login.html?error=Email%20already%20registered.%20Please%20login%20with%20your%20existing%20account%20and%20link%20Google%20from%20your%20profile.');
+                header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=Email%20already%20registered.%20Please%20login%20with%20your%20existing%20account%20and%20link%20Google%20from%20your%20profile.'));
                 exit;
             }
         } else {
@@ -124,9 +134,9 @@ try {
                     'refresh_token' => $refreshToken,
                     'email_verified' => $emailVerified,
                 ];
-                
+
                 // Redirect to signup page for role selection
-                header('Location: ../../../views/public/auth/signup.html?oauth=pending');
+                header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/signup.html?oauth=pending'));
                 exit;
             }
             
@@ -208,24 +218,25 @@ try {
     unset($_SESSION['oauth_role_preference']);
     
     // Redirect to appropriate dashboard
-    $redirectUrl = $userRole === 'landlord' 
-        ? '../../../views/landlord/index.html' 
-        : '../../../views/boarder/index.html';
-    
-    header('Location: ' . $redirectUrl);
+    // Use absolute paths for GitHub Pages compatibility
+    $redirectPath = $userRole === 'landlord'
+        ? '/client/views/landlord/index.html'
+        : '/client/views/boarder/index.html';
+
+    header('Location: ' . buildRedirectUrl($baseUrl, $redirectPath));
     exit;
     
 } catch (\Exception $e) {
     error_log('Google OAuth callback error: ' . $e->getMessage());
-    
+
     // Clear session data on error
     unset($_SESSION['oauth_state']);
     unset($_SESSION['oauth_action']);
     unset($_SESSION['oauth_role_preference']);
     unset($_SESSION['pending_google_user']);
-    
+
     // Redirect to login with error
     $errorMessage = urlencode('Google authentication failed: ' . $e->getMessage());
-    header('Location: ../../../views/public/auth/login.html?error=' . $errorMessage);
+    header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=' . $errorMessage));
     exit;
 }
