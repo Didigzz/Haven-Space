@@ -1,9 +1,36 @@
+import CONFIG from '../config.js';
+import { getIcon } from '../shared/icons.js';
+import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ * Replaces inline SVGs with centralized icon library calls
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const passwordToggle = document.getElementById('passwordToggle');
   const passwordInput = document.getElementById('password');
   const eyeOpen = passwordToggle.querySelector('.eye-open');
   const eyeClosed = passwordToggle.querySelector('.eye-closed');
   const loginForm = document.getElementById('loginForm');
+
+  // Inject icons from centralized library
+  injectIcons();
 
   // Password visibility toggle
   passwordToggle.addEventListener('click', function () {
@@ -14,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Form submission
-  loginForm.addEventListener('submit', function (e) {
+  loginForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const formData = new FormData(this);
@@ -23,21 +50,77 @@ document.addEventListener('DOMContentLoaded', function () {
       password: formData.get('password'),
     };
 
-    console.log('Login data:', data);
-    // TODO: Send to backend
-    alert('Login functionality to be implemented with backend');
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Store user info (token is now in httpOnly cookie)
+        localStorage.setItem('user', JSON.stringify(result.user));
+
+        // Redirect based on role - detect Apache setup vs GitHub Pages
+        const pathname = window.location.pathname;
+        let basePath;
+
+        if (pathname.includes('github.io')) {
+          // GitHub Pages deployment
+          basePath = '/Haven-Space/client/views/';
+        } else {
+          // Apache setup: document root points to client folder
+          // OR local development with Apache
+          basePath = '/views/';
+        }
+
+        if (result.user.role === 'admin') {
+          window.location.href = `${basePath}admin/index.html`;
+        } else if (result.user.role === 'landlord') {
+          window.location.href = `${basePath}landlord/index.html`;
+        } else {
+          // Boarder: check status and redirect conditionally
+          const boarderStatus = result.user.boarder_status || 'new';
+          updateBoarderStatus(boarderStatus);
+
+          const redirectPath = getBoarderRedirectPath({
+            ...result.user,
+            boarderStatus,
+          });
+          window.location.href = redirectPath;
+        }
+      } else {
+        alert(result.error || 'Login failed');
+      }
+    } catch (error) {
+      alert('An error occurred. Please try again.');
+    }
   });
 
-  // Social login buttons
+  // Google OAuth login
   document.querySelector('.social-btn-google')?.addEventListener('click', function () {
-    console.log('Google login clicked');
-    // TODO: Implement Google OAuth
-    alert('Google login to be implemented');
+    // Redirect to Google OAuth authorize endpoint
+    const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
+    window.location.href = authUrl;
   });
 
+  // Apple login button (placeholder for future implementation)
   document.querySelector('.social-btn-apple')?.addEventListener('click', function () {
-    console.log('Apple login clicked');
     // TODO: Implement Apple OAuth
     alert('Apple login to be implemented');
   });
+
+  // Check for OAuth error in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const error = urlParams.get('error');
+  if (error) {
+    alert('Login error: ' + decodeURIComponent(error));
+    // Clean up URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 });

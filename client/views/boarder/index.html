@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
     <title>Boarder Dashboard - Haven Space</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,9 +14,17 @@
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/components/sidebar.css" />
     <link rel="stylesheet" href="../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../css/components/status-banner.css" />
     <link rel="stylesheet" href="../../css/views/boarder/boarder.css" />
+    <!-- Leaflet CSS for Map -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
   </head>
-  <body>
+  <body data-view="boarder" data-dashboard-type="boarder">
     <div class="boarder-dashboard">
       <!-- Sidebar Container -->
       <div id="sidebar-container"></div>
@@ -27,14 +36,24 @@
 
         <!-- Content Wrapper -->
         <div class="boarder-content">
-          <!-- Top Bar with Search -->
+          <!-- Status Banner Container (conditionally shown based on boarder status) -->
+          <div
+            id="boarder-status-banner-container"
+            class="boarder-status-banner-wrapper"
+            style="display: none"
+          >
+            <!-- Banner will be injected here by JavaScript -->
+          </div>
+
+          <!-- Top Bar with Greeting -->
           <div class="boarder-topbar">
             <div class="boarder-greeting">
-              <h1>Good afternoon, Juan! 👋</h1>
-              <p>Find your perfect boarding house without the hassle.</p>
+              <h1>Welcome home to Sunrise Dormitory, Room 402</h1>
+              <p>Manage your lease, utilities, and maintenance requests</p>
             </div>
             <div class="boarder-topbar-actions">
-              <a href="maps/index.html" class="boarder-btn boarder-btn-outline">
+              <!-- TODO: Integrate with backend API for payment processing -->
+              <a href="./payments/pay.html" class="boarder-btn boarder-btn-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -45,35 +64,44 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                   />
                 </svg>
-                Map View
-              </a>
-              <a href="../applications/index.html" class="boarder-btn boarder-btn-primary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                My Applications
+                Pay Rent
               </a>
             </div>
           </div>
 
-          <!-- Problem-Solving Stats Grid -->
+          <!-- Resident Mode Stats Grid -->
           <div class="boarder-stats-grid">
+            <!-- Total Outstanding Balance Card -->
             <div class="boarder-stat-card">
               <div class="boarder-stat-header">
-                <span class="boarder-stat-label">Applications Status</span>
+                <span class="boarder-stat-label">Total Outstanding Balance</span>
+                <div class="boarder-stat-icon orange">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="boarder-stat-value">₱6,200</div>
+              <div class="boarder-stat-description">Includes rent and current utility charges</div>
+            </div>
+
+            <!-- Utility Consumption Card -->
+            <div class="boarder-stat-card">
+              <div class="boarder-stat-header">
+                <span class="boarder-stat-label">Current Utilities</span>
                 <div class="boarder-stat-icon blue">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -85,44 +113,19 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                     />
                   </svg>
                 </div>
               </div>
-              <div class="boarder-stat-value">3 Active</div>
-              <div class="boarder-stat-description">
-                <span class="status-dot status-dot-success"></span>
-                1 approved, 2 pending review
-              </div>
+              <div class="boarder-stat-value">₱750</div>
+              <div class="boarder-stat-description">Electricity: ₱500 | Water: ₱250</div>
             </div>
 
+            <!-- Lease Period Card -->
             <div class="boarder-stat-card">
               <div class="boarder-stat-header">
-                <span class="boarder-stat-label">Payment Security</span>
-                <div class="boarder-stat-icon green">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div class="boarder-stat-value">100% Secure</div>
-              <div class="boarder-stat-description">All payments protected & verified</div>
-            </div>
-
-            <div class="boarder-stat-card">
-              <div class="boarder-stat-header">
-                <span class="boarder-stat-label">Time Saved</span>
+                <span class="boarder-stat-label">Lease Period</span>
                 <div class="boarder-stat-icon purple">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -134,15 +137,16 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
                 </div>
               </div>
-              <div class="boarder-stat-value">8.5 hrs</div>
-              <div class="boarder-stat-description">vs. traditional house hunting</div>
+              <div class="boarder-stat-value">Month 4 / 12</div>
+              <div class="boarder-stat-description">Next Renewal: Sept 2025</div>
             </div>
 
+            <!-- Next Payment Card -->
             <div class="boarder-stat-card">
               <div class="boarder-stat-header">
                 <span class="boarder-stat-label">Next Payment</span>
@@ -162,17 +166,14 @@
                   </svg>
                 </div>
               </div>
-              <div class="boarder-stat-value">12 days</div>
-              <div class="boarder-stat-description">
-                <span class="status-dot status-dot-warning"></span>
-                ₱5,500 due on Feb 1
-              </div>
+              <div class="boarder-stat-value">12 Days Left</div>
+              <div class="boarder-stat-description">₱5,500 due on Feb 1</div>
             </div>
           </div>
 
           <!-- Main Dashboard Grid - First Row -->
           <div class="boarder-dashboard-grid">
-            <!-- Application Tracker (Replaces Recent Bookings) -->
+            <!-- Room Announcements & Quick Actions -->
             <div class="boarder-section">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
@@ -186,12 +187,12 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
                     />
                   </svg>
-                  Application Tracker
+                  Room Announcements
                 </h2>
-                <a href="../applications/index.html" class="boarder-view-all">
+                <a href="./announcements/index.html" class="boarder-view-all">
                   View all
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -208,155 +209,182 @@
                   </svg>
                 </a>
               </div>
-              <div class="boarder-applications-timeline">
-                <!-- Application Item with Timeline -->
-                <div class="boarder-application-card">
-                  <div class="boarder-application-header">
-                    <div class="boarder-application-info">
-                      <h3 class="boarder-application-name">Sunrise Dormitory</h3>
-                      <p class="boarder-application-location">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        Sampaloc, Manila
-                      </p>
-                    </div>
-                    <span class="boarder-status-badge boarder-status-approved">Approved</span>
+
+              <!-- Announcements List -->
+              <div class="boarder-announcements-list">
+                <!-- Announcement Item 1 -->
+                <div class="boarder-announcement-item">
+                  <div class="boarder-announcement-icon blue">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
                   </div>
-                  <div class="boarder-application-timeline">
-                    <div class="boarder-timeline-item completed">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Application Submitted</div>
-                        <div class="boarder-timeline-date">Jan 10, 2025</div>
-                      </div>
-                    </div>
-                    <div class="boarder-timeline-item completed">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Under Review</div>
-                        <div class="boarder-timeline-date">Jan 12, 2025</div>
-                      </div>
-                    </div>
-                    <div class="boarder-timeline-item completed">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Background Check Passed</div>
-                        <div class="boarder-timeline-date">Jan 13, 2025</div>
-                      </div>
-                    </div>
-                    <div class="boarder-timeline-item completed">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Application Approved</div>
-                        <div class="boarder-timeline-date">Jan 15, 2025</div>
-                      </div>
-                    </div>
-                    <div class="boarder-timeline-item active">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Contract Signing</div>
-                        <div class="boarder-timeline-date">Pending</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="boarder-application-actions">
-                    <button class="boarder-btn boarder-btn-outline boarder-btn-sm">
-                      View Details
-                    </button>
-                    <button class="boarder-btn boarder-btn-primary boarder-btn-sm">
-                      Sign Contract
-                    </button>
+                  <div class="boarder-announcement-content">
+                    <h4 class="boarder-announcement-title">Water Maintenance Scheduled</h4>
+                    <p class="boarder-announcement-text">
+                      Water interruption on Wednesday, 9 AM - 12 PM for pipe repairs.
+                    </p>
+                    <span class="boarder-announcement-date">Jan 18, 2025</span>
                   </div>
                 </div>
 
-                <!-- Second Application -->
-                <div class="boarder-application-card">
-                  <div class="boarder-application-header">
-                    <div class="boarder-application-info">
-                      <h3 class="boarder-application-name">Green Valley Boarding House</h3>
-                      <p class="boarder-application-location">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        Diliman, Quezon City
-                      </p>
-                    </div>
-                    <span class="boarder-status-badge boarder-status-pending">Under Review</span>
+                <!-- Announcement Item 2 -->
+                <div class="boarder-announcement-item">
+                  <div class="boarder-announcement-icon green">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
                   </div>
-                  <div class="boarder-application-timeline">
-                    <div class="boarder-timeline-item completed">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Application Submitted</div>
-                        <div class="boarder-timeline-date">Jan 18, 2025</div>
-                      </div>
-                    </div>
-                    <div class="boarder-timeline-item completed">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Under Review</div>
-                        <div class="boarder-timeline-date">Jan 19, 2025</div>
-                      </div>
-                    </div>
-                    <div class="boarder-timeline-item current">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Waiting for Landlord Decision</div>
-                        <div class="boarder-timeline-date">Expected by Jan 25</div>
-                      </div>
-                    </div>
-                    <div class="boarder-timeline-item">
-                      <div class="boarder-timeline-dot"></div>
-                      <div class="boarder-timeline-content">
-                        <div class="boarder-timeline-title">Background Check</div>
-                        <div class="boarder-timeline-date">Pending</div>
-                      </div>
-                    </div>
+                  <div class="boarder-announcement-content">
+                    <h4 class="boarder-announcement-title">WiFi Password Updated</h4>
+                    <p class="boarder-announcement-text">
+                      New WiFi password has been posted on the notice board.
+                    </p>
+                    <span class="boarder-announcement-date">Jan 15, 2025</span>
                   </div>
-                  <div class="boarder-application-actions">
-                    <button class="boarder-btn boarder-btn-outline boarder-btn-sm">
-                      View Details
-                    </button>
-                    <button class="boarder-btn boarder-btn-outline boarder-btn-sm">Withdraw</button>
+                </div>
+
+                <!-- Announcement Item 3 -->
+                <div class="boarder-announcement-item">
+                  <div class="boarder-announcement-icon orange">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
                   </div>
+                  <div class="boarder-announcement-content">
+                    <h4 class="boarder-announcement-title">Monthly Fire Drill</h4>
+                    <p class="boarder-announcement-text">
+                      Mandatory fire drill this Friday at 3 PM. All residents must participate.
+                    </p>
+                    <span class="boarder-announcement-date">Jan 12, 2025</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions Section -->
+              <div class="boarder-quick-actions-section">
+                <h3 class="boarder-quick-actions-title">Quick Actions</h3>
+                <div class="boarder-quick-actions-grid">
+                  <!-- TODO: Integrate with backend API for maintenance requests -->
+                  <a href="../maintenance/create.html" class="boarder-action-btn">
+                    <div class="boarder-action-icon blue">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                    <span class="boarder-action-label">Report Maintenance</span>
+                  </a>
+
+                  <!-- TODO: Integrate with backend API for guest pass requests -->
+                  <a href="#" class="boarder-action-btn">
+                    <div class="boarder-action-icon green">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                        />
+                      </svg>
+                    </div>
+                    <span class="boarder-action-label">Guest Pass Request</span>
+                  </a>
+
+                  <!-- TODO: Integrate with backend API for contract viewing -->
+                  <a href="../applications/index.html" class="boarder-action-btn">
+                    <div class="boarder-action-icon purple">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </div>
+                    <span class="boarder-action-label">View Contract</span>
+                  </a>
+
+                  <!-- TODO: Integrate with backend API for landlord communication -->
+                  <a href="./messages/index.html" class="boarder-action-btn">
+                    <div class="boarder-action-icon pink">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                        />
+                      </svg>
+                    </div>
+                    <span class="boarder-action-label">Contact Landlord</span>
+                  </a>
                 </div>
               </div>
             </div>
 
-            <!-- Payment Center with Traffic Light Status -->
+            <!-- Payment Center - Single Residence Focus -->
             <div class="boarder-section">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
@@ -375,7 +403,7 @@
                   </svg>
                   Payment Center
                 </h2>
-                <a href="../payments/index.html" class="boarder-view-all">
+                <a href="./payments/index.html" class="boarder-view-all">
                   View all
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -392,91 +420,77 @@
                   </svg>
                 </a>
               </div>
-              <div class="boarder-payment-status-list">
-                <!-- Green Status - Safe -->
-                <div class="boarder-payment-status-card boarder-payment-green">
-                  <div class="boarder-payment-status-header">
-                    <div class="boarder-payment-status-indicator">
-                      <span class="boarder-traffic-light boarder-light-green"></span>
-                      <span class="boarder-payment-status-label">On Track</span>
-                    </div>
-                    <span class="boarder-payment-days">30+ days left</span>
+              <div class="boarder-payment-simple-list">
+                <!-- Current Month -->
+                <div class="boarder-payment-simple-card current">
+                  <div class="boarder-payment-simple-header">
+                    <span class="boarder-payment-period">Current Month</span>
+                    <span class="boarder-payment-status-badge unpaid">Unpaid</span>
                   </div>
-                  <div class="boarder-payment-status-body">
-                    <h4 class="boarder-payment-property-name">Sunrise Dormitory</h4>
-                    <p class="boarder-payment-amount">₱5,500</p>
-                    <p class="boarder-payment-due-date">Due: February 15, 2025</p>
+                  <div class="boarder-payment-simple-body">
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Amount</span>
+                      <span class="boarder-payment-value">₱5,500</span>
+                    </div>
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Due Date</span>
+                      <span class="boarder-payment-value">Feb 1, 2025</span>
+                    </div>
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Days Left</span>
+                      <span class="boarder-payment-value highlight">12 days</span>
+                    </div>
+                  </div>
+                  <!-- TODO: Integrate with backend API for payment processing -->
+                  <a
+                    href="./payments/pay.html"
+                    class="boarder-btn boarder-btn-primary boarder-btn-full"
+                    >Pay Now</a
+                  >
+                </div>
+
+                <!-- Previous Month - Paid -->
+                <div class="boarder-payment-simple-card history">
+                  <div class="boarder-payment-simple-header">
+                    <span class="boarder-payment-period">Previous Month</span>
+                    <span class="boarder-payment-status-badge paid">Paid</span>
+                  </div>
+                  <div class="boarder-payment-simple-body">
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Amount</span>
+                      <span class="boarder-payment-value">₱5,500</span>
+                    </div>
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Paid On</span>
+                      <span class="boarder-payment-value">Jan 3, 2025</span>
+                    </div>
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Payment Method</span>
+                      <span class="boarder-payment-value">GCash</span>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Yellow Status - Warning -->
-                <div class="boarder-payment-status-card boarder-payment-yellow">
-                  <div class="boarder-payment-status-header">
-                    <div class="boarder-payment-status-indicator">
-                      <span class="boarder-traffic-light boarder-light-yellow"></span>
-                      <span class="boarder-payment-status-label">Due Soon</span>
-                    </div>
-                    <span class="boarder-payment-days">9 days left</span>
+                <!-- Two Months Ago - Paid -->
+                <div class="boarder-payment-simple-card history">
+                  <div class="boarder-payment-simple-header">
+                    <span class="boarder-payment-period">December 2024</span>
+                    <span class="boarder-payment-status-badge paid">Paid</span>
                   </div>
-                  <div class="boarder-payment-status-body">
-                    <h4 class="boarder-payment-property-name">Cozy Student Dorm</h4>
-                    <p class="boarder-payment-amount">₱4,500</p>
-                    <p class="boarder-payment-due-date">Due: January 31, 2025</p>
-                    <div class="boarder-payment-warning">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                        />
-                      </svg>
-                      Reminder sent to your email
+                  <div class="boarder-payment-simple-body">
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Amount</span>
+                      <span class="boarder-payment-value">₱5,500</span>
+                    </div>
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Paid On</span>
+                      <span class="boarder-payment-value">Dec 2, 2024</span>
+                    </div>
+                    <div class="boarder-payment-row">
+                      <span class="boarder-payment-label">Payment Method</span>
+                      <span class="boarder-payment-value">Bank Transfer</span>
                     </div>
                   </div>
-                  <button class="boarder-btn boarder-btn-primary boarder-btn-full">Pay Now</button>
-                </div>
-
-                <!-- Red Status - Overdue -->
-                <div class="boarder-payment-status-card boarder-payment-red">
-                  <div class="boarder-payment-status-header">
-                    <div class="boarder-payment-status-indicator">
-                      <span class="boarder-traffic-light boarder-light-red"></span>
-                      <span class="boarder-payment-status-label">Overdue</span>
-                    </div>
-                    <span class="boarder-payment-days">3 days overdue</span>
-                  </div>
-                  <div class="boarder-payment-status-body">
-                    <h4 class="boarder-payment-property-name">Metro Boarding House</h4>
-                    <p class="boarder-payment-amount">₱5,000</p>
-                    <p class="boarder-payment-due-date">Was due: January 20, 2025</p>
-                    <div class="boarder-payment-overdue-notice">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <div>
-                        <strong>Late fee applied:</strong> ₱250
-                        <br />
-                        <strong>Total due:</strong> ₱5,250
-                      </div>
-                    </div>
-                  </div>
-                  <button class="boarder-btn boarder-btn-primary boarder-btn-full">Pay Now</button>
                 </div>
               </div>
             </div>
@@ -522,8 +536,21 @@
               </div>
               <div class="boarder-map-preview">
                 <div class="boarder-map-container">
-                  <!-- Placeholder for interactive map -->
-                  <div class="boarder-map-placeholder">
+                  <div id="dashboard-map" class="dashboard-map"></div>
+                  <!-- Map property markers will be dynamically added here -->
+                </div>
+                <div class="boarder-map-stats">
+                  <div class="boarder-map-stat">
+                    <span class="boarder-map-stat-value">127</span>
+                    <span class="boarder-map-stat-label">Properties nearby</span>
+                  </div>
+                  <div class="boarder-map-stat">
+                    <span class="boarder-map-stat-value">2.5km</span>
+                    <span class="boarder-map-stat-label">From your location</span>
+                  </div>
+                </div>
+                <div class="boarder-map-actions">
+                  <button class="boarder-btn boarder-btn-outline">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -534,60 +561,28 @@
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                       />
                     </svg>
-                    <p>Interactive Map View</p>
-                    <p class="boarder-map-hint">
-                      Search properties by location, distance from university, and amenities
-                    </p>
-                  </div>
-                  <!-- Map property markers would be dynamically added here -->
-                  <div class="boarder-map-stats">
-                    <div class="boarder-map-stat">
-                      <span class="boarder-map-stat-value">127</span>
-                      <span class="boarder-map-stat-label">Properties nearby</span>
-                    </div>
-                    <div class="boarder-map-stat">
-                      <span class="boarder-map-stat-value">2.5km</span>
-                      <span class="boarder-map-stat-label">From your location</span>
-                    </div>
-                  </div>
+                    Use My Location
+                  </button>
+                  <button class="boarder-btn boarder-btn-outline">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    Draw Search Area
+                  </button>
                 </div>
-              </div>
-              <div class="boarder-map-actions">
-                <button class="boarder-btn boarder-btn-outline">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                  </svg>
-                  Use My Location
-                </button>
-                <button class="boarder-btn boarder-btn-outline">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  Draw Search Area
-                </button>
               </div>
             </div>
 
@@ -1032,7 +1027,7 @@
                 <span class="boarder-action-label">New Application</span>
               </a>
 
-              <a href="../payments/index.html" class="boarder-action-btn">
+              <a href="./payments/index.html" class="boarder-action-btn">
                 <div class="boarder-action-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1058,5 +1053,12 @@
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
+    <!-- Leaflet JS for Map -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="../../js/views/boarder/dashboard-map.js"></script>
   </body>
 </html>

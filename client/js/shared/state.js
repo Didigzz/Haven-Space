@@ -44,12 +44,21 @@ export function setState(newState) {
  */
 export function loadState() {
   try {
-    const saved = localStorage.getItem('haven_state');
-    if (saved) {
-      currentState = { ...initialState, ...JSON.parse(saved) };
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+
+    if (token && user) {
+      currentState = {
+        ...initialState,
+        isAuthenticated: true,
+        user: JSON.parse(user),
+        token: token,
+      };
+    } else {
+      currentState = { ...initialState };
     }
   } catch (e) {
-    console.warn('Failed to load state from localStorage');
+    console.warn('Failed to load state from localStorage', e);
     currentState = { ...initialState };
   }
   return currentState;
@@ -61,9 +70,11 @@ export function loadState() {
 export function clearState() {
   currentState = { ...initialState };
   try {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     localStorage.removeItem('haven_state');
   } catch (e) {
-    console.warn('Failed to clear state from localStorage');
+    console.warn('Failed to clear state from localStorage', e);
   }
   window.dispatchEvent(new CustomEvent('statechange', { detail: currentState }));
 }

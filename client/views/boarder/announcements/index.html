@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Announcements - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-announcements.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="boarder-content">
+          <!-- Page Header -->
+          <div class="boarder-page-header">
+            <div class="boarder-page-title">
+              <h1>
+                <span class="icon-placeholder" data-icon="bellAlert"></span>
+                Announcements
+              </h1>
+              <p>Stay updated with important announcements from your landlord</p>
+            </div>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="announcement-filter-tabs">
+            <button class="announcement-filter-tab active" data-filter="all">
+              <span class="icon-placeholder" data-icon="grid2x2"></span>
+              All
+            </button>
+            <button class="announcement-filter-tab" data-filter="unread">
+              <span class="icon-placeholder" data-icon="eye"></span>
+              Unread
+            </button>
+            <button class="announcement-filter-tab" data-filter="urgent">
+              <span class="icon-placeholder" data-icon="exclamationTriangle"></span>
+              Urgent
+            </button>
+            <button class="announcement-filter-tab" data-filter="maintenance">
+              <span class="icon-placeholder" data-icon="wrenchScrewdriver"></span>
+              Maintenance
+            </button>
+            <button class="announcement-filter-tab" data-filter="general">
+              <span class="icon-placeholder" data-icon="clipboard"></span>
+              General
+            </button>
+          </div>
+
+          <!-- Announcements List -->
+          <div class="boarder-announcements-list" id="announcements-list">
+            <!-- Announcement Item 1 - Unread -->
+            <div
+              class="boarder-announcement-item unread"
+              data-category="maintenance"
+              data-priority="medium"
+            >
+              <div class="boarder-announcement-icon blue">
+                <span class="icon-placeholder" data-icon="info"></span>
+              </div>
+              <div class="boarder-announcement-content">
+                <div class="boarder-announcement-header">
+                  <div class="boarder-announcement-badges">
+                    <span class="boarder-announcement-badge boarder-announcement-badge-maintenance"
+                      >Maintenance</span
+                    >
+                    <span class="boarder-announcement-badge boarder-announcement-badge-medium"
+                      >Medium</span
+                    >
+                  </div>
+                  <button class="boarder-mark-read-btn" title="Mark as read">
+                    <span class="icon-placeholder" data-icon="checkSimple"></span>
+                  </button>
+                </div>
+                <h3 class="boarder-announcement-title">Water Maintenance Scheduled</h3>
+                <p class="boarder-announcement-text">
+                  Water interruption on Wednesday, 9 AM - 12 PM for pipe repairs. Please store
+                  enough water for your needs during this time.
+                </p>
+                <div class="boarder-announcement-meta">
+                  <span class="boarder-announcement-date">
+                    <span class="icon-placeholder" data-icon="calendar"></span>
+                    Jan 18, 2025
+                  </span>
+                  <span class="boarder-announcement-from">
+                    <span class="icon-placeholder" data-icon="user"></span>
+                    Juan Dela Cruz (Landlord)
+                  </span>
+                </div>
+              </div>
+              <div class="boarder-announcement-unread-dot"></div>
+            </div>
+
+            <!-- Announcement Item 2 - Read -->
+            <div class="boarder-announcement-item" data-category="general" data-priority="low">
+              <div class="boarder-announcement-icon green">
+                <span class="icon-placeholder" data-icon="checkCircle"></span>
+              </div>
+              <div class="boarder-announcement-content">
+                <div class="boarder-announcement-header">
+                  <div class="boarder-announcement-badges">
+                    <span class="boarder-announcement-badge boarder-announcement-badge-general"
+                      >General</span
+                    >
+                    <span class="boarder-announcement-badge boarder-announcement-badge-low"
+                      >Low</span
+                    >
+                  </div>
+                </div>
+                <h3 class="boarder-announcement-title">WiFi Password Updated</h3>
+                <p class="boarder-announcement-text">
+                  New WiFi password has been posted on the announcement board. Please check the
+                  common area for the updated credentials.
+                </p>
+                <div class="boarder-announcement-meta">
+                  <span class="boarder-announcement-date">
+                    <span class="icon-placeholder" data-icon="calendar"></span>
+                    Jan 15, 2025
+                  </span>
+                  <span class="boarder-announcement-from">
+                    <span class="icon-placeholder" data-icon="user"></span>
+                    Juan Dela Cruz (Landlord)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcement Item 3 - Urgent -->
+            <div class="boarder-announcement-item" data-category="urgent" data-priority="high">
+              <div class="boarder-announcement-icon orange">
+                <span class="icon-placeholder" data-icon="exclamationTriangle"></span>
+              </div>
+              <div class="boarder-announcement-content">
+                <div class="boarder-announcement-header">
+                  <div class="boarder-announcement-badges">
+                    <span class="boarder-announcement-badge boarder-announcement-badge-urgent"
+                      >Urgent</span
+                    >
+                    <span class="boarder-announcement-badge boarder-announcement-badge-high"
+                      >High</span
+                    >
+                  </div>
+                </div>
+                <h3 class="boarder-announcement-title">Monthly Fire Drill</h3>
+                <p class="boarder-announcement-text">
+                  Mandatory fire drill this Friday at 3 PM. All residents must participate. Please
+                  gather at the designated assembly point.
+                </p>
+                <div class="boarder-announcement-meta">
+                  <span class="boarder-announcement-date">
+                    <span class="icon-placeholder" data-icon="calendar"></span>
+                    Jan 12, 2025
+                  </span>
+                  <span class="boarder-announcement-from">
+                    <span class="icon-placeholder" data-icon="user"></span>
+                    Juan Dela Cruz (Landlord)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcement Item 4 - Reminder -->
+            <div class="boarder-announcement-item" data-category="reminder" data-priority="medium">
+              <div class="boarder-announcement-icon purple">
+                <span class="icon-placeholder" data-icon="bell"></span>
+              </div>
+              <div class="boarder-announcement-content">
+                <div class="boarder-announcement-header">
+                  <div class="boarder-announcement-badges">
+                    <span class="boarder-announcement-badge boarder-announcement-badge-reminder"
+                      >Reminder</span
+                    >
+                    <span class="boarder-announcement-badge boarder-announcement-badge-medium"
+                      >Medium</span
+                    >
+                  </div>
+                </div>
+                <h3 class="boarder-announcement-title">Rent Payment Reminder</h3>
+                <p class="boarder-announcement-text">
+                  This is a friendly reminder that rent payment for February is due on the 1st.
+                  Please ensure timely payment to avoid late fees.
+                </p>
+                <div class="boarder-announcement-meta">
+                  <span class="boarder-announcement-date">
+                    <span class="icon-placeholder" data-icon="calendar"></span>
+                    Jan 10, 2025
+                  </span>
+                  <span class="boarder-announcement-from">
+                    <span class="icon-placeholder" data-icon="user"></span>
+                    Juan Dela Cruz (Landlord)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/boarder/announcements.js"></script>
+    <script type="module">
+      import { getIcon } from '../../../js/shared/icons.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.icon-placeholder').forEach(el => {
+          const iconName = el.dataset.icon;
+          const className = el.className.replace('icon-placeholder', '').trim();
+          const iconHtml = getIcon(iconName, { className });
+          el.outerHTML = iconHtml;
+        });
+      });
+    </script>
+  </body>
+</html>

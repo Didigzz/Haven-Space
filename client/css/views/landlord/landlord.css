@@ -23,6 +23,30 @@
   --dashboard-blue-light: #dbeafe;
 }
 
+/* ===== Maintenance Page Variables ===== */
+:root {
+  --maintenance-primary: #4a7c23;
+  --maintenance-primary-dark: #2d4a14;
+  --maintenance-primary-light: #7cb342;
+  --maintenance-surface: #ffffff;
+  --maintenance-surface-alt: #f8faf8;
+  --maintenance-border: #e5e5e5;
+  --maintenance-border-light: #f0f0f0;
+  --maintenance-text-primary: #1a1a1a;
+  --maintenance-text-secondary: #555555;
+  --maintenance-text-muted: #999999;
+  --maintenance-accent-green: #22c55e;
+  --maintenance-accent-blue: #3b82f6;
+  --maintenance-accent-orange: #f59e0b;
+  --maintenance-accent-red: #ef4444;
+  --maintenance-accent-cyan: #06b6d4;
+  --maintenance-accent-purple: #8b5cf6;
+  --maintenance-radius: 8px;
+  --maintenance-radius-lg: 12px;
+  --maintenance-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --maintenance-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
 /* ===== Layout ===== */
 .landlord-dashboard {
   display: flex;
@@ -49,6 +73,17 @@
   position: sticky;
   top: 0;
   z-index: 50;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* When navbar is hidden, add smooth transition */
+#navbar-container[style*='display: none'] {
+  opacity: 0;
+}
+
+/* Main content adjustment when navbar is hidden */
+.landlord-main.no-navbar .landlord-content {
+  padding-top: 24px;
 }
 
 /* Content wrapper for padding below navbar */
@@ -857,4 +892,81 @@
   .landlord-payment-meta {
     align-items: flex-start;
   }
+}
+
+/* ===== Pending Verification Banner ===== */
+.landlord-pending-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  animation: bannerSlideIn 0.4s ease-out;
+}
+
+@keyframes bannerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landlord-pending-banner-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.landlord-pending-banner-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #d97706;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landlord-pending-banner-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.landlord-pending-banner-text {
+  flex: 1;
+}
+
+.landlord-pending-banner-text strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400e;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.landlord-pending-banner-text p {
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== Disabled Action State (read-only mode) ===== */
+.landlord-action-disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  user-select: none;
+  filter: grayscale(30%);
+}
+
+.landlord-action-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
 }

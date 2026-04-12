@@ -1,106 +1,58 @@
-import { initLogoCloud } from './components/logo-cloud.js';
-import { initSidebar } from './components/sidebar.js';
-import { initNavbar } from './components/navbar.js';
-import { loadDashboardData } from './views/boarder/dashboard.js';
-import { initLandlordDashboard } from './views/landlord/landlord.js';
-
-// Initialize components
-document.addEventListener('DOMContentLoaded', () => {
-  // Only init logo cloud if element exists (homepage only)
-  if (document.getElementById('logoSlider')) {
-    initLogoCloud();
-  }
-
-  initFloatingHeader();
-
-  // Only init sidebar if container exists (dashboard pages only)
-  if (document.getElementById('sidebar-container')) {
-    // Detect if this is a landlord dashboard page
-    const isLandlordDashboard = document.querySelector('.landlord-dashboard');
-    const isBoarderDashboard = document.querySelector('.boarder-dashboard');
-
-    if (isLandlordDashboard) {
-      initSidebar({
-        role: 'landlord',
-        user: {
-          name: 'Juan Dela Cruz',
-          initials: 'JD',
-          role: 'Landlord',
-        },
-      });
-
-      // Initialize landlord dashboard
-      initLandlordDashboard({
-        user: {
-          name: 'Juan',
-          initials: 'JD',
-          role: 'Landlord',
-        },
-      });
-    } else if (isBoarderDashboard) {
-      initSidebar({
-        role: 'boarder',
-        user: {
-          name: 'Juan Dela Cruz',
-          initials: 'JD',
-          role: 'Boarder',
-        },
-      });
-
-      // Initialize boarder dashboard
-      loadDashboardData();
-    } else {
-      // Default to boarder for other dashboard pages
-      initSidebar({
-        role: 'boarder',
-        user: {
-          name: 'Juan Dela Cruz',
-          initials: 'JD',
-          role: 'Boarder',
-        },
-      });
-    }
-  }
-
-  // Only init navbar if container exists (dashboard pages only)
-  if (document.getElementById('navbar-container')) {
-    initNavbar({
-      user: {
-        name: 'Juan Dela Cruz',
-        initials: 'JD',
-        avatarUrl: '', // Will use default sample.png
-      },
-      notificationCount: 3,
-    });
-  }
-});
+/**
+ * Main Entry Point - View Router
+ *
+ * Detects current view and initializes appropriate components
+ * Uses data attributes on body to detect view type
+ * Uses dynamic imports to isolate failures - a broken view won't break others
+ */
 
 /**
- * Floating Header - Scroll-triggered transition
- * Transitions header from full-width to floating pill on scroll
+ * Detect current view and initialize appropriate components
+ * Uses data attribute on body to detect view type
  */
-function initFloatingHeader() {
-  const navbar = document.querySelector('.navbar');
-  const scrollThreshold = 50; // px to trigger floating state
+async function detectAndInitialize() {
+  const body = document.body;
+  const view = body.dataset.view || 'public';
 
-  if (!navbar) return;
-
-  const handleScroll = () => {
-    if (window.scrollY > scrollThreshold) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
+  // Initialize appropriate dashboard based on view type
+  switch (view) {
+    case 'boarder': {
+      const { initBoarderDashboard } = await import('./views/boarder/index.js');
+      initBoarderDashboard();
+      break;
     }
-  };
+    case 'landlord': {
+      const { initLandlordDashboardEntry } = await import('./views/landlord/index.js');
+      initLandlordDashboardEntry();
+      break;
+    }
+    case 'admin': {
+      const { initAdminDashboard } = await import('./views/admin/index.js');
+      initAdminDashboard();
+      break;
+    }
+    case 'haven-ai': {
+      const { initHavenAIPage } = await import('./views/public/haven-ai.js');
+      initHavenAIPage();
+      break;
+    }
+    case 'public':
+    default: {
+      const { initPublicViews } = await import('./views/public/index.js');
+      initPublicViews();
+      break;
+    }
+  }
+}
 
-  // Add scroll listener
-  window.addEventListener('scroll', handleScroll, { passive: true });
+// Initialize on DOM ready
+function initialize() {
+  detectAndInitialize();
+}
 
-  // Initial check in case page loads mid-scroll
-  handleScroll();
-
-  // Cleanup function (for SPA navigation or component unmounting)
-  return () => {
-    window.removeEventListener('scroll', handleScroll);
-  };
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  // DOM already loaded, initialize immediately
+  initialize();
 }

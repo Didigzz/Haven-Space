@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>My Lease - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-lease.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="boarder-content lease-page-content">
+          <!-- Lease Header Card -->
+          <div class="lease-header-card">
+            <div class="lease-header-main">
+              <div class="lease-property-badge">
+                <span class="icon-placeholder" data-icon="building"></span>
+                <span>Sunrise Dormitory</span>
+              </div>
+              <h1 class="lease-property-title">Room 402 • University Avenue</h1>
+              <p class="lease-property-subtitle">Your home away from home since September 2024</p>
+            </div>
+            <div class="lease-status-pill active">
+              <span class="lease-status-indicator"></span>
+              <span class="lease-status-text">Active Lease</span>
+            </div>
+          </div>
+
+          <!-- Lease Progress Banner -->
+          <div class="lease-progress-banner">
+            <div class="lease-progress-content">
+              <div class="lease-progress-info">
+                <span class="lease-progress-label">Lease Progress</span>
+                <div class="lease-progress-bar-container">
+                  <div class="lease-progress-bar">
+                    <div class="lease-progress-fill" style="width: 33%"></div>
+                  </div>
+                  <span class="lease-progress-percentage">Month 4 of 12</span>
+                </div>
+              </div>
+              <div class="lease-progress-stats">
+                <div class="lease-progress-stat">
+                  <span class="lease-progress-stat-value">240</span>
+                  <span class="lease-progress-stat-label">Days Left</span>
+                </div>
+                <div class="lease-progress-stat-divider"></div>
+                <div class="lease-progress-stat">
+                  <span class="lease-progress-stat-value">Aug 31, 2025</span>
+                  <span class="lease-progress-stat-label">Lease Ends</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Information Cards -->
+          <div class="lease-key-info-grid">
+            <div class="lease-key-card lease-key-card-primary">
+              <div class="lease-key-card-header">
+                <div class="lease-key-card-icon">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <span class="lease-key-card-label">Monthly Rent</span>
+              </div>
+              <div class="lease-key-card-value">₱5,500</div>
+              <div class="lease-key-card-footer">
+                <span class="lease-key-card-note">Due on 1st of each month</span>
+              </div>
+            </div>
+
+            <div class="lease-key-card">
+              <div class="lease-key-card-header">
+                <div class="lease-key-card-icon lease-key-card-icon-blue">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                </div>
+                <span class="lease-key-card-label">Security Deposit</span>
+              </div>
+              <div class="lease-key-card-value">₱11,000</div>
+              <div class="lease-key-card-footer">
+                <span class="lease-key-card-note">2 months rent</span>
+              </div>
+            </div>
+
+            <div class="lease-key-card">
+              <div class="lease-key-card-header">
+                <div class="lease-key-card-icon lease-key-card-icon-purple">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <span class="lease-key-card-label">Lease Duration</span>
+              </div>
+              <div class="lease-key-card-value">12 Months</div>
+              <div class="lease-key-card-footer">
+                <span class="lease-key-card-note">Sept 1, 2024 - Aug 31, 2025</span>
+              </div>
+            </div>
+
+            <div class="lease-key-card lease-key-card-action">
+              <div class="lease-key-card-header">
+                <div class="lease-key-card-icon lease-key-card-icon-orange">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
+                  </svg>
+                </div>
+                <span class="lease-key-card-label">Need Help?</span>
+              </div>
+              <div class="lease-key-card-action-content">
+                <a href="../messages/index.html" class="lease-contact-btn"> Contact Landlord </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Content Sections -->
+          <div class="lease-main-grid">
+            <!-- Lease Details Section -->
+            <div class="lease-section lease-details-section">
+              <div class="lease-section-header">
+                <div class="lease-section-title-wrapper">
+                  <div class="lease-section-icon-wrapper">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <h2 class="lease-section-title">Lease Information</h2>
+                </div>
+              </div>
+
+              <div class="lease-info-card">
+                <div class="lease-info-row">
+                  <div class="lease-info-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    <span>Property Address</span>
+                  </div>
+                  <div class="lease-info-value">
+                    Sunrise Dormitory, Room 402<br />
+                    123 University Avenue, College Town
+                  </div>
+                </div>
+
+                <div class="lease-info-row">
+                  <div class="lease-info-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                    <span>Lease Type</span>
+                  </div>
+                  <div class="lease-info-value">
+                    <span class="lease-badge">Fixed-term</span>
+                    <span class="lease-info-subtext">12 months contract</span>
+                  </div>
+                </div>
+
+                <div class="lease-info-row">
+                  <div class="lease-info-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span>Lease Period</span>
+                  </div>
+                  <div class="lease-info-value">September 1, 2024 — August 31, 2025</div>
+                </div>
+
+                <div class="lease-info-row">
+                  <div class="lease-info-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>Payment Details</span>
+                  </div>
+                  <div class="lease-info-value">
+                    <div class="lease-payment-breakdown">
+                      <span class="lease-payment-item">Monthly: <strong>₱5,500</strong></span>
+                      <span class="lease-payment-item">Security: <strong>₱11,000</strong></span>
+                    </div>
+                    <span class="lease-info-subtext">Due on the 1st of each month</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contact Information -->
+              <div class="lease-contacts-card">
+                <h3 class="lease-contacts-title">Contact Information</h3>
+                <div class="lease-contacts-grid">
+                  <div class="lease-contact-item">
+                    <div class="lease-contact-avatar">
+                      <span>MS</span>
+                    </div>
+                    <div class="lease-contact-details">
+                      <span class="lease-contact-name">Maria Santos</span>
+                      <span class="lease-contact-role">Landlord</span>
+                      <a href="tel:+639123456789" class="lease-contact-link">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                          />
+                        </svg>
+                        +63 912 345 6789
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="lease-contact-item">
+                    <div class="lease-contact-avatar lease-contact-avatar-secondary">
+                      <span>JC</span>
+                    </div>
+                    <div class="lease-contact-details">
+                      <span class="lease-contact-name">Juan Dela Cruz</span>
+                      <span class="lease-contact-role">Property Manager</span>
+                      <a href="mailto:manager@sunrisedorm.com" class="lease-contact-link">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                        manager@sunrisedorm.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Documents & Rules Section -->
+            <div class="lease-section lease-documents-section">
+              <div class="lease-section-header">
+                <div class="lease-section-title-wrapper">
+                  <div class="lease-section-icon-wrapper">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <h2 class="lease-section-title">Documents</h2>
+                </div>
+              </div>
+
+              <div class="lease-documents-wrapper">
+                <!-- Document Item -->
+                <div class="lease-document-card">
+                  <div class="lease-document-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="lease-document-content">
+                    <h4 class="lease-document-title">Lease Agreement</h4>
+                    <p class="lease-document-meta">PDF • 2.4 MB • Updated Sept 1, 2024</p>
+                  </div>
+                  <button class="lease-download-btn" data-doc-id="lease-agreement">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Document Item -->
+                <div class="lease-document-card">
+                  <div class="lease-document-icon lease-document-icon-green">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                  <div class="lease-document-content">
+                    <h4 class="lease-document-title">House Rules</h4>
+                    <p class="lease-document-meta">PDF • 856 KB • Updated Sept 1, 2024</p>
+                  </div>
+                  <button class="lease-download-btn" data-doc-id="house-rules">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Document Item -->
+                <div class="lease-document-card">
+                  <div class="lease-document-icon lease-document-icon-purple">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                      />
+                    </svg>
+                  </div>
+                  <div class="lease-document-content">
+                    <h4 class="lease-document-title">Inventory Checklist</h4>
+                    <p class="lease-document-meta">PDF • 1.2 MB • Updated Sept 5, 2024</p>
+                  </div>
+                  <button class="lease-download-btn" data-doc-id="inventory-checklist">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Document Item -->
+                <div class="lease-document-card">
+                  <div class="lease-document-icon lease-document-icon-orange">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="lease-document-content">
+                    <h4 class="lease-document-title">Move-in Inspection</h4>
+                    <p class="lease-document-meta">PDF • 3.1 MB • Updated Sept 10, 2024</p>
+                  </div>
+                  <button class="lease-download-btn" data-doc-id="inspection-report">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- House Rules Preview -->
+              <div class="lease-rules-preview">
+                <div class="lease-section-header">
+                  <div class="lease-section-title-wrapper">
+                    <div class="lease-section-icon-wrapper">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                    </div>
+                    <h2 class="lease-section-title">House Rules</h2>
+                  </div>
+                </div>
+
+                <div class="lease-rules-list">
+                  <div class="lease-rule-item">
+                    <div class="lease-rule-dot"></div>
+                    <div class="lease-rule-content">
+                      <h4 class="lease-rule-title">Quiet Hours</h4>
+                      <p class="lease-rule-text">10:00 PM to 6:00 AM daily</p>
+                    </div>
+                  </div>
+
+                  <div class="lease-rule-item">
+                    <div class="lease-rule-dot lease-rule-dot-green"></div>
+                    <div class="lease-rule-content">
+                      <h4 class="lease-rule-title">Guest Policy</h4>
+                      <p class="lease-rule-text">
+                        Max 3 consecutive nights, register at front desk
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="lease-rule-item">
+                    <div class="lease-rule-dot lease-rule-dot-orange"></div>
+                    <div class="lease-rule-content">
+                      <h4 class="lease-rule-title">Pet Policy</h4>
+                      <p class="lease-rule-text">Not allowed without written consent</p>
+                    </div>
+                  </div>
+
+                  <div class="lease-rule-item">
+                    <div class="lease-rule-dot lease-rule-dot-purple"></div>
+                    <div class="lease-rule-content">
+                      <h4 class="lease-rule-title">Utilities</h4>
+                      <p class="lease-rule-text">
+                        Included up to ₱500/month, excess billed separately
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment History Section -->
+          <div class="lease-section lease-history-section">
+            <div class="lease-section-header">
+              <div class="lease-section-title-wrapper">
+                <div class="lease-section-icon-wrapper">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                </div>
+                <h2 class="lease-section-title">Payment History</h2>
+                <a href="../payments/index.html" class="lease-view-all-link">
+                  View all
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="lease-payment-history-table">
+              <div class="lease-table-header">
+                <span class="lease-table-col">Period</span>
+                <span class="lease-table-col">Amount</span>
+                <span class="lease-table-col">Due Date</span>
+                <span class="lease-table-col">Paid On</span>
+                <span class="lease-table-col">Status</span>
+              </div>
+
+              <div class="lease-table-body">
+                <!-- Payment Row -->
+                <div class="lease-table-row">
+                  <span class="lease-table-cell">January 2025</span>
+                  <span class="lease-table-cell lease-table-cell-bold">₱5,500</span>
+                  <span class="lease-table-cell">Feb 1, 2025</span>
+                  <span class="lease-table-cell">Jan 3, 2025</span>
+                  <span class="lease-table-cell">
+                    <span class="lease-status-badge lease-status-paid">Paid</span>
+                  </span>
+                </div>
+
+                <!-- Payment Row -->
+                <div class="lease-table-row">
+                  <span class="lease-table-cell">December 2024</span>
+                  <span class="lease-table-cell lease-table-cell-bold">₱5,500</span>
+                  <span class="lease-table-cell">Jan 1, 2025</span>
+                  <span class="lease-table-cell">Dec 28, 2024</span>
+                  <span class="lease-table-cell">
+                    <span class="lease-status-badge lease-status-paid">Paid</span>
+                  </span>
+                </div>
+
+                <!-- Payment Row -->
+                <div class="lease-table-row">
+                  <span class="lease-table-cell">November 2024</span>
+                  <span class="lease-table-cell lease-table-cell-bold">₱5,500</span>
+                  <span class="lease-table-cell">Dec 1, 2024</span>
+                  <span class="lease-table-cell">Nov 30, 2024</span>
+                  <span class="lease-table-cell">
+                    <span class="lease-status-badge lease-status-paid">Paid</span>
+                  </span>
+                </div>
+
+                <!-- Payment Row -->
+                <div class="lease-table-row">
+                  <span class="lease-table-cell">October 2024</span>
+                  <span class="lease-table-cell lease-table-cell-bold">₱5,500</span>
+                  <span class="lease-table-cell">Nov 1, 2024</span>
+                  <span class="lease-table-cell">Oct 29, 2024</span>
+                  <span class="lease-table-cell">
+                    <span class="lease-status-badge lease-status-paid">Paid</span>
+                  </span>
+                </div>
+
+                <!-- Payment Row -->
+                <div class="lease-table-row">
+                  <span class="lease-table-cell">September 2024</span>
+                  <span class="lease-table-cell lease-table-cell-bold">₱5,500</span>
+                  <span class="lease-table-cell">Oct 1, 2024</span>
+                  <span class="lease-table-cell">Sep 25, 2024</span>
+                  <span class="lease-table-cell">
+                    <span class="lease-status-badge lease-status-paid">Paid</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module" src="../../../js/main.js"></script>
+  </body>
+</html>

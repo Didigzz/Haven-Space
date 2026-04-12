@@ -3,6 +3,8 @@
  * Handles editing property details and managing photos with drag-to-reorder
  */
 
+import { getIcon } from '../../shared/icons.js';
+
 // Maximum number of photos allowed
 const MAX_PHOTOS = 10;
 // Maximum file size in MB
@@ -111,7 +113,6 @@ function loadPropertyData(id) {
   document.getElementById('property-description').value = property.description;
   document.getElementById('property-price').value = property.price;
   document.getElementById('property-deposit').value = property.deposit;
-  document.getElementById('property-rooms').value = property.rooms;
   document.getElementById('property-capacity').value = property.capacity;
   document.getElementById('property-status').value = property.status;
   document.getElementById('property-address').value = property.address;
@@ -119,6 +120,12 @@ function loadPropertyData(id) {
   document.getElementById('property-province').value = property.province;
   document.getElementById('property-latitude').value = property.latitude || '';
   document.getElementById('property-longitude').value = property.longitude || '';
+
+  // Set room capacity from property.rooms
+  const roomCapacityInput = document.getElementById('room-capacity-input');
+  if (roomCapacityInput) {
+    roomCapacityInput.value = property.rooms;
+  }
 
   // Set amenities
   const amenityCheckboxes = document.querySelectorAll('input[name="amenities"]');
@@ -145,10 +152,15 @@ function setupFormHandlers() {
   const addCustomAmenityBtn = document.getElementById('add-custom-amenity-btn');
   const customAmenityInput = document.getElementById('custom-amenity-input');
 
-  if (!form || !uploadArea || !fileInput) return;
+  if (!form || !uploadArea || !fileInput) {
+    return;
+  }
 
   // Initialize photo upload handlers
   initPhotoUpload(uploadArea, fileInput);
+
+  // Initialize room management
+  initRoomManagement();
 
   // Form submission
   form.addEventListener('submit', handleFormSubmit);
@@ -190,7 +202,9 @@ function setupFormHandlers() {
   if (addCustomAmenityBtn && customAmenityInput) {
     addCustomAmenityBtn.addEventListener('click', handleAddCustomAmenity);
     customAmenityInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') handleAddCustomAmenity();
+      if (e.key === 'Enter') {
+        handleAddCustomAmenity();
+      }
     });
   }
 }
@@ -199,7 +213,9 @@ function setupFormHandlers() {
  * Check if there are unsaved changes
  */
 function hasUnsavedChanges() {
-  if (!originalProperty) return false;
+  if (!originalProperty) {
+    return false;
+  }
 
   const form = document.getElementById('edit-property-form');
   const formData = new FormData(form);
@@ -288,7 +304,9 @@ function handleFiles(files) {
  */
 function renderPhotoGrid() {
   const grid = document.getElementById('photo-preview-grid');
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   grid.innerHTML = '';
 
@@ -305,24 +323,20 @@ function renderPhotoGrid() {
       <div class="photo-overlay">
         ${index === 0 ? '<span class="photo-badge">Cover</span>' : '<span></span>'}
         <div style="display: flex; gap: 0.25rem;">
-          <button 
-            type="button" 
-            class="photo-drag-handle" 
+          <button
+            type="button"
+            class="photo-drag-handle"
             title="Drag to reorder"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
-            </svg>
+            ${getIcon('list')}
           </button>
-          <button 
-            type="button" 
-            class="photo-remove-btn" 
+          <button
+            type="button"
+            class="photo-remove-btn"
             data-photo-id="${photo.id}"
             title="Remove photo"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            ${getIcon('xMark')}
           </button>
         </div>
       </div>
@@ -422,7 +436,9 @@ function setupDragToReorder(grid) {
  */
 function removePhoto(photoId) {
   const photoIndex = uploadedPhotos.findIndex(p => p.id === photoId);
-  if (photoIndex === -1) return;
+  if (photoIndex === -1) {
+    return;
+  }
 
   const photo = uploadedPhotos[photoIndex];
 
@@ -503,6 +519,10 @@ async function handleFormSubmit(e) {
   // Get custom amenities
   const customAmenities = getCustomAmenities();
 
+  // Get room capacity from the room management section
+  const roomCapacityInput = document.getElementById('room-capacity-input');
+  const propertyRooms = roomCapacityInput ? parseInt(roomCapacityInput.value) : 0;
+
   const data = {
     id: propertyId,
     propertyName: formData.get('propertyName'),
@@ -510,7 +530,7 @@ async function handleFormSubmit(e) {
     propertyDescription: formData.get('propertyDescription'),
     propertyPrice: parseFloat(formData.get('propertyPrice')),
     propertyDeposit: parseFloat(formData.get('propertyDeposit')),
-    propertyRooms: parseInt(formData.get('propertyRooms')),
+    propertyRooms: propertyRooms,
     propertyCapacity: propertyCapacity,
     propertyStatus: formData.get('propertyStatus'),
     propertyAddress: formData.get('propertyAddress'),
@@ -562,14 +582,20 @@ function handlePropertyTypeChange() {
   const otherGroup = document.getElementById('property-type-other-group');
   const otherInput = document.getElementById('property-type-other');
 
-  if (!select || !otherGroup) return;
+  if (!select || !otherGroup) {
+    return;
+  }
 
   if (select.value === 'others') {
     otherGroup.style.display = 'block';
-    if (otherInput) otherInput.required = true;
+    if (otherInput) {
+      otherInput.required = true;
+    }
   } else {
     otherGroup.style.display = 'none';
-    if (otherInput) otherInput.required = false;
+    if (otherInput) {
+      otherInput.required = false;
+    }
   }
 }
 
@@ -581,14 +607,20 @@ function handleCapacityChange() {
   const customGroup = document.getElementById('property-capacity-custom-group');
   const customInput = document.getElementById('property-capacity-custom');
 
-  if (!select || !customGroup) return;
+  if (!select || !customGroup) {
+    return;
+  }
 
   if (select.value === 'custom') {
     customGroup.style.display = 'block';
-    if (customInput) customInput.required = true;
+    if (customInput) {
+      customInput.required = true;
+    }
   } else {
     customGroup.style.display = 'none';
-    if (customInput) customInput.required = false;
+    if (customInput) {
+      customInput.required = false;
+    }
   }
 }
 
@@ -604,10 +636,14 @@ function handleAddCustomAmenity() {
   const input = document.getElementById('custom-amenity-input');
   const listContainer = document.getElementById('custom-amenities-list');
 
-  if (!input || !listContainer) return;
+  if (!input || !listContainer) {
+    return;
+  }
 
   const value = input.value.trim();
-  if (!value) return;
+  if (!value) {
+    return;
+  }
 
   // Add to array
   customAmenitiesList.push(value);
@@ -623,9 +659,7 @@ function handleAddCustomAmenity() {
       /'/g,
       "\\'"
     )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
+      ${getIcon('xMark', { width: 16, height: 16 })}
     </button>
   `;
 
@@ -657,9 +691,7 @@ function removeCustomAmenity(value) {
           /'/g,
           "\\'"
         )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          ${getIcon('xMark', { width: 16, height: 16 })}
         </button>
       `;
       listContainer.appendChild(tag);
@@ -672,6 +704,346 @@ function removeCustomAmenity(value) {
  */
 function getCustomAmenities() {
   return customAmenitiesList;
+}
+
+/* ============================================
+   Room Availability Management
+   ============================================ */
+
+// Store room data
+let roomCapacity = 10;
+let roomsData = [];
+let currentRoomForUpload = null;
+
+/**
+ * Initialize room management
+ */
+function initRoomManagement() {
+  const capacityInput = document.getElementById('room-capacity-input');
+  const updateCapacityBtn = document.getElementById('update-capacity-btn');
+  const imageUploadInput = document.getElementById('room-image-upload');
+
+  if (!capacityInput || !updateCapacityBtn) {
+    return;
+  }
+
+  // Initialize with sample rooms based on property
+  initializeRoomsData();
+
+  // Update capacity button
+  updateCapacityBtn.addEventListener('click', handleUpdateRoomCapacity);
+
+  // Room status change handler (delegated)
+  document.getElementById('rooms-list').addEventListener('change', e => {
+    if (e.target.classList.contains('room-status-select')) {
+      const roomId = e.target.dataset.roomId;
+      const newStatus = e.target.value;
+      updateRoomStatus(roomId, newStatus);
+    }
+  });
+
+  // Upload image button handler (delegated)
+  document.getElementById('rooms-list').addEventListener('click', e => {
+    const uploadBtn = e.target.closest('.btn-upload-image');
+    if (uploadBtn) {
+      const roomId = uploadBtn.dataset.roomId;
+      triggerRoomImageUpload(roomId);
+    }
+  });
+
+  // Room image click handler (delegated)
+  document.getElementById('rooms-list').addEventListener('click', e => {
+    const img = e.target.closest('.room-image-preview img');
+    if (img) {
+      const roomId = img.dataset.roomId;
+      const imageUrl = img.src;
+      openImagePreview(imageUrl, roomId);
+    }
+  });
+
+  // Image upload handler
+  if (imageUploadInput) {
+    imageUploadInput.addEventListener('change', handleRoomImageUpload);
+  }
+
+  // Render rooms
+  renderRoomsList();
+}
+
+/**
+ * Initialize rooms data based on property
+ */
+function initializeRoomsData() {
+  const roomsInput = document.getElementById('room-capacity-input');
+  if (!roomsInput) {
+    return;
+  }
+
+  roomCapacity = parseInt(roomsInput.value) || 10;
+
+  // Check if we have existing room data (from property)
+  // For demo, create sample rooms
+  if (roomsData.length === 0) {
+    roomsData = Array.from({ length: roomCapacity }, (_, i) => ({
+      id: `r${i + 1}`,
+      number: `Room ${101 + i}`,
+      status: i < 8 ? 'occupied' : 'available',
+      images: [],
+    }));
+
+    // Add some sample images to a few rooms
+    if (roomsData[8]) {
+      roomsData[8].images = ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'];
+    }
+  }
+
+  // Update capacity input
+  const capacityInput = document.getElementById('room-capacity-input');
+  if (capacityInput) {
+    capacityInput.value = roomCapacity;
+  }
+}
+
+/**
+ * Handle update room capacity
+ */
+function handleUpdateRoomCapacity() {
+  const capacityInput = document.getElementById('room-capacity-input');
+  const newCapacity = parseInt(capacityInput.value, 10);
+
+  if (!newCapacity || newCapacity < 1) {
+    alert('Please enter a valid number of rooms (minimum 1)');
+    return;
+  }
+
+  const currentLength = roomsData.length;
+
+  if (newCapacity > currentLength) {
+    // Add new rooms
+    const newRooms = Array.from({ length: newCapacity - currentLength }, (_, i) => ({
+      id: `r${Date.now()}-${i}`,
+      number: `Room ${currentLength + i + 1}`,
+      status: 'available',
+      images: [],
+    }));
+    roomsData = [...roomsData, ...newRooms];
+  } else if (newCapacity < currentLength) {
+    // Remove excess rooms (keep occupied ones first)
+    const occupiedRooms = roomsData.filter(r => r.status === 'occupied');
+    const availableRooms = roomsData.filter(r => r.status === 'available');
+
+    if (occupiedRooms.length > newCapacity) {
+      // Keep only the first N occupied rooms
+      roomsData = occupiedRooms.slice(0, newCapacity);
+    } else {
+      // Keep all occupied rooms and fill remaining with available
+      const remainingSlots = newCapacity - occupiedRooms.length;
+      roomsData = [...occupiedRooms, ...availableRooms.slice(0, remainingSlots)];
+    }
+  }
+
+  roomCapacity = newCapacity;
+
+  // Update the property rooms input
+  const roomsInput = document.getElementById('property-rooms');
+  if (roomsInput) {
+    roomsInput.value = newCapacity;
+  }
+
+  // Re-render rooms list
+  renderRoomsList();
+
+  // Show success feedback
+  alert(`Room capacity updated to ${newCapacity} rooms.`);
+}
+
+/**
+ * Render rooms list
+ */
+function renderRoomsList() {
+  const roomsList = document.getElementById('rooms-list');
+  if (!roomsList) {
+    return;
+  }
+
+  roomsList.innerHTML = '';
+
+  if (roomsData.length === 0) {
+    roomsList.innerHTML =
+      '<p class="empty-rooms-message">No rooms configured yet. Set room capacity to get started.</p>';
+    return;
+  }
+
+  roomsData.forEach(room => {
+    const roomEl = document.createElement('div');
+    roomEl.className = `room-item ${room.status}`;
+    roomEl.dataset.roomId = room.id;
+
+    const statusLabel = room.status === 'available' ? 'Available' : 'Occupied';
+    const imageCount = room.images ? room.images.length : 0;
+
+    roomEl.innerHTML = `
+      <div class="room-item-header">
+        <div class="room-info">
+          <span class="room-number">${room.number}</span>
+          <span class="room-status-badge ${room.status}">${statusLabel}</span>
+        </div>
+        <div class="room-actions">
+          <select class="room-status-select" data-room-id="${room.id}">
+            <option value="available" ${
+              room.status === 'available' ? 'selected' : ''
+            }>Available</option>
+            <option value="occupied" ${
+              room.status === 'occupied' ? 'selected' : ''
+            }>Occupied</option>
+          </select>
+          ${
+            room.status === 'available'
+              ? `
+            <button type="button" class="btn-upload-image" data-room-id="${
+              room.id
+            }" title="Upload images">
+              ${getIcon('photo')}
+              ${imageCount > 0 ? imageCount : 'Add'}
+            </button>
+          `
+              : ''
+          }
+        </div>
+      </div>
+      ${
+        imageCount > 0
+          ? `
+        <div class="room-image-preview">
+          ${room.images
+            .slice(0, 3)
+            .map(img => `<img src="${img}" alt="${room.number}" data-room-id="${room.id}" />`)
+            .join('')}
+          ${imageCount > 3 ? `<span class="more-images">+${imageCount - 3}</span>` : ''}
+        </div>
+      `
+          : ''
+      }
+    `;
+
+    roomsList.appendChild(roomEl);
+  });
+}
+
+/**
+ * Update room status
+ */
+function updateRoomStatus(roomId, newStatus) {
+  const room = roomsData.find(r => r.id === roomId);
+  if (!room) {
+    return;
+  }
+
+  room.status = newStatus;
+
+  // Re-render to update UI
+  renderRoomsList();
+}
+
+/**
+ * Trigger room image upload
+ */
+function triggerRoomImageUpload(roomId) {
+  const room = roomsData.find(r => r.id === roomId);
+  if (!room) {
+    return;
+  }
+
+  currentRoomForUpload = room;
+
+  const imageUploadInput = document.getElementById('room-image-upload');
+  if (imageUploadInput) {
+    imageUploadInput.dataset.roomId = roomId;
+    imageUploadInput.click();
+  }
+}
+
+/**
+ * Handle room image upload
+ */
+function handleRoomImageUpload(e) {
+  const files = e.target.files;
+  if (!files || files.length === 0) {
+    return;
+  }
+
+  if (!currentRoomForUpload) {
+    return;
+  }
+
+  // Process uploaded files
+  Array.from(files).forEach(file => {
+    // Create object URL for preview
+    const imageUrl = URL.createObjectURL(file);
+    if (!currentRoomForUpload.images) {
+      currentRoomForUpload.images = [];
+    }
+    currentRoomForUpload.images.push(imageUrl);
+  });
+
+  // Re-render rooms list
+  renderRoomsList();
+
+  // Reset input
+  e.target.value = '';
+}
+
+/**
+ * Open image preview modal
+ */
+function openImagePreview(imageUrl, roomId) {
+  const modal = document.getElementById('image-preview-modal');
+  if (!modal) {
+    return;
+  }
+
+  const previewImage = document.getElementById('image-preview-source');
+  if (previewImage) {
+    previewImage.src = imageUrl;
+  }
+
+  // Store room info for delete action
+  const deleteBtn = document.getElementById('delete-room-image');
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      deleteRoomImage(roomId, imageUrl);
+      closeModal(modal);
+    };
+  }
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Close modal
+ */
+function closeModal(modal) {
+  if (!modal) {
+    return;
+  }
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+/**
+ * Delete room image
+ */
+function deleteRoomImage(roomId, imageUrl) {
+  const room = roomsData.find(r => r.id === roomId);
+  if (!room || !room.images) {
+    return;
+  }
+
+  room.images = room.images.filter(img => img !== imageUrl);
+
+  // Re-render rooms list
+  renderRoomsList();
 }
 
 // Initialize on page load

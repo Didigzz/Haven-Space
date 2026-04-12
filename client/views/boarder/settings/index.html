@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Settings - Boarder Dashboard - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-settings.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="boarder-content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <div class="page-icon-box">
+                <span class="icon-placeholder" data-icon="settings"></span>
+              </div>
+              <div class="page-text-content">
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">Manage your account preferences and settings</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Tabs -->
+          <div class="settings-tabs">
+            <button class="settings-tab active" data-tab="profile">
+              <span class="icon-placeholder" data-icon="user"></span>
+              Profile
+            </button>
+            <button class="settings-tab" data-tab="notifications">
+              <span class="icon-placeholder" data-icon="bell"></span>
+              Notifications
+            </button>
+            <button class="settings-tab" data-tab="privacy">
+              <span class="icon-placeholder" data-icon="shieldCheck"></span>
+              Privacy & Security
+            </button>
+            <button class="settings-tab" data-tab="documents">
+              <span class="icon-placeholder" data-icon="document"></span>
+              Documents
+            </button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="settings-content">
+            <!-- Profile Tab -->
+            <div class="settings-panel active" id="profile-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Profile Information</h2>
+                <p class="settings-card-description">
+                  Update your personal information and profile picture
+                </p>
+
+                <form class="settings-form" id="profile-form">
+                  <div class="profile-avatar-section">
+                    <img
+                      src="../../../assets/images/sample.png"
+                      alt="Profile Avatar"
+                      class="profile-avatar"
+                      id="profile-avatar-preview"
+                    />
+                    <div class="profile-avatar-actions">
+                      <button type="button" class="btn btn-outline btn-sm" id="change-avatar-btn">
+                        Change Photo
+                      </button>
+                      <input type="file" id="avatar-input" accept="image/*" style="display: none" />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="first-name">First Name</label>
+                      <input
+                        type="text"
+                        id="first-name"
+                        class="form-control"
+                        value="Juan"
+                        required
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="last-name">Last Name</label>
+                      <input
+                        type="text"
+                        id="last-name"
+                        class="form-control"
+                        value="Dela Cruz"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      class="form-control"
+                      value="juan@example.com"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" class="form-control" value="+63 912 345 6789" />
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div class="settings-panel" id="notifications-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Notification Preferences</h2>
+                <p class="settings-card-description">
+                  Choose what notifications you receive and how
+                </p>
+
+                <div class="notification-settings">
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Payment Reminders</h4>
+                      <p>Get notified about upcoming rent payments</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="payment-reminders" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Maintenance Updates</h4>
+                      <p>Status updates on your maintenance requests</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="maintenance-updates" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Announcements</h4>
+                      <p>Important announcements from your landlord</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="announcements" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Messages</h4>
+                      <p>New messages from landlord or property manager</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="messages" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Lease Renewals</h4>
+                      <p>Notifications about lease renewal deadlines</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="lease-renewals" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn btn-primary" id="save-notifications">
+                    Save Preferences
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Privacy & Security Tab -->
+            <div class="settings-panel" id="privacy-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Change Password</h2>
+                <p class="settings-card-description">
+                  Update your password to keep your account secure
+                </p>
+
+                <form class="settings-form" id="password-form">
+                  <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="settings-card">
+                <h2 class="settings-card-title">Two-Factor Authentication</h2>
+                <p class="settings-card-description">
+                  Add an extra layer of security to your account
+                </p>
+
+                <div class="two-factor-section">
+                  <div class="two-factor-status">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Two-factor authentication is currently disabled</span>
+                  </div>
+                  <button type="button" class="btn btn-outline" id="enable-2fa">Enable 2FA</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="settings-panel" id="documents-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">My Documents</h2>
+                <p class="settings-card-description">
+                  View and manage documents shared by your landlord
+                </p>
+
+                <div class="documents-list" id="boarder-documents-list">
+                  <div class="document-item">
+                    <div class="document-icon-box">
+                      <span class="icon-placeholder" data-icon="document"></span>
+                    </div>
+                    <div class="document-info">
+                      <h4 class="document-title">House Rules</h4>
+                      <p class="document-meta">Shared on Jan 15, 2025 • PDF</p>
+                    </div>
+                    <button class="btn btn-outline btn-sm document-download-btn">
+                      <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                      Download
+                    </button>
+                  </div>
+
+                  <div class="document-item">
+                    <div class="document-icon-box">
+                      <span class="icon-placeholder" data-icon="document"></span>
+                    </div>
+                    <div class="document-info">
+                      <h4 class="document-title">Lease Agreement</h4>
+                      <p class="document-meta">Shared on Dec 1, 2024 • PDF</p>
+                    </div>
+                    <button class="btn btn-outline btn-sm document-download-btn">
+                      <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                      Download
+                    </button>
+                  </div>
+
+                  <div class="document-item">
+                    <div class="document-icon-box">
+                      <span class="icon-placeholder" data-icon="document"></span>
+                    </div>
+                    <div class="document-info">
+                      <h4 class="document-title">Emergency Contacts</h4>
+                      <p class="document-meta">Shared on Nov 20, 2024 • PDF</p>
+                    </div>
+                    <button class="btn btn-outline btn-sm document-download-btn">
+                      <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/boarder/settings.js"></script>
+    <script type="module">
+      import { getIcon } from '../../../js/shared/icons.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.icon-placeholder').forEach(el => {
+          const iconName = el.dataset.icon;
+          const className = el.className.replace('icon-placeholder', '').trim();
+          const iconHtml = getIcon(iconName, { className });
+          el.outerHTML = iconHtml;
+        });
+      });
+    </script>
+  </body>
+</html>

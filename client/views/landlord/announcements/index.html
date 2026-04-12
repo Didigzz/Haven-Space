@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Announcements - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-announcements.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="landlord-content">
+          <!-- Page Header -->
+          <div class="landlord-page-header">
+            <div class="landlord-page-title">
+              <h1>
+                <span
+                  data-icon="announcement"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+                Announcements
+              </h1>
+              <p>Create and manage announcements for your boarders</p>
+            </div>
+            <div class="landlord-page-actions">
+              <button class="landlord-btn landlord-btn-primary" id="create-announcement-btn">
+                <span
+                  data-icon="plus"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+                Create Announcement
+              </button>
+            </div>
+          </div>
+
+          <!-- Create Announcement Modal -->
+          <div class="landlord-modal-overlay" id="announcement-modal-overlay">
+            <div
+              class="landlord-announcement-form-container"
+              id="announcement-form-container"
+              role="dialog"
+              aria-labelledby="modal-title"
+              aria-modal="true"
+            >
+              <div class="landlord-announcement-form-card">
+                <div class="landlord-form-header">
+                  <h2 id="modal-title">Create New Announcement</h2>
+                  <button class="landlord-close-form" id="close-form-btn">
+                    <span
+                      data-icon="xMark"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                  </button>
+                </div>
+
+                <form class="landlord-form" id="announcement-form">
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-title">
+                      Title <span class="landlord-required">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="announcement-title"
+                      class="landlord-form-input"
+                      placeholder="e.g., Water Maintenance Scheduled"
+                      required
+                    />
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-category">
+                      Category
+                    </label>
+                    <select id="announcement-category" class="landlord-form-select">
+                      <option value="general">General</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="urgent">Urgent</option>
+                      <option value="reminder">Reminder</option>
+                      <option value="event">Event</option>
+                    </select>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-priority">
+                      Priority
+                    </label>
+                    <select id="announcement-priority" class="landlord-form-select">
+                      <option value="low">Low</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-description">
+                      Description <span class="landlord-required">*</span>
+                    </label>
+                    <textarea
+                      id="announcement-description"
+                      class="landlord-form-textarea"
+                      placeholder="Write your announcement here..."
+                      rows="6"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-properties">
+                      Target Properties
+                    </label>
+                    <div class="landlord-checkbox-group">
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="all" checked />
+                        <span>All Properties</span>
+                      </label>
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="sunrise" />
+                        <span>Sunrise Dormitory</span>
+                      </label>
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="green-valley" />
+                        <span>Green Valley</span>
+                      </label>
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="metro" />
+                        <span>Metro Boarding</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-date">
+                      Publish Date
+                    </label>
+                    <input type="date" id="announcement-date" class="landlord-form-input" />
+                  </div>
+
+                  <div class="landlord-form-actions">
+                    <button type="button" class="landlord-btn landlord-btn-outline" id="cancel-btn">
+                      Cancel
+                    </button>
+                    <button type="submit" class="landlord-btn landlord-btn-primary">
+                      Publish Announcement
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Announcements List -->
+          <div class="landlord-announcements-list" id="announcements-list">
+            <!-- Announcement Item 1 -->
+            <div class="landlord-announcement-card">
+              <div class="landlord-announcement-card-header">
+                <div class="landlord-announcement-card-info">
+                  <div class="landlord-announcement-badges">
+                    <span class="landlord-badge landlord-badge-maintenance">Maintenance</span>
+                    <span class="landlord-badge landlord-badge-medium">Medium</span>
+                  </div>
+                  <h3 class="landlord-announcement-card-title">Water Maintenance Scheduled</h3>
+                </div>
+                <div class="landlord-announcement-card-actions">
+                  <button class="landlord-icon-btn" title="Edit">
+                    <span
+                      data-icon="edit"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                  </button>
+                  <button class="landlord-icon-btn" title="Delete">
+                    <span
+                      data-icon="trash"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+              <div class="landlord-announcement-card-body">
+                <p class="landlord-announcement-card-text">
+                  Water interruption on Wednesday, 9 AM - 12 PM for pipe repairs. Please store
+                  enough water for your needs during this time.
+                </p>
+              </div>
+              <div class="landlord-announcement-card-footer">
+                <div class="landlord-announcement-card-meta">
+                  <span class="landlord-announcement-date">
+                    <span
+                      data-icon="calendarDays"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    Jan 18, 2025
+                  </span>
+                  <span class="landlord-announcement-target">
+                    <span
+                      data-icon="building"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    All Properties
+                  </span>
+                </div>
+                <div class="landlord-announcement-stats">
+                  <span class="landlord-announcement-views">
+                    <span
+                      data-icon="eye"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    45 views
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcement Item 2 -->
+            <div class="landlord-announcement-card">
+              <div class="landlord-announcement-card-header">
+                <div class="landlord-announcement-card-info">
+                  <div class="landlord-announcement-badges">
+                    <span class="landlord-badge landlord-badge-general">General</span>
+                    <span class="landlord-badge landlord-badge-low">Low</span>
+                  </div>
+                  <h3 class="landlord-announcement-card-title">WiFi Password Updated</h3>
+                </div>
+                <div class="landlord-announcement-card-actions">
+                  <button class="landlord-icon-btn" title="Edit">
+                    <span
+                      data-icon="edit"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                  </button>
+                  <button class="landlord-icon-btn" title="Delete">
+                    <span
+                      data-icon="trash"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+              <div class="landlord-announcement-card-body">
+                <p class="landlord-announcement-card-text">
+                  New WiFi password has been posted on the notice board. Please check the common
+                  area for the updated credentials.
+                </p>
+              </div>
+              <div class="landlord-announcement-card-footer">
+                <div class="landlord-announcement-card-meta">
+                  <span class="landlord-announcement-date">
+                    <span
+                      data-icon="calendarDays"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    Jan 15, 2025
+                  </span>
+                  <span class="landlord-announcement-target">
+                    <span
+                      data-icon="building"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    Sunrise Dormitory
+                  </span>
+                </div>
+                <div class="landlord-announcement-stats">
+                  <span class="landlord-announcement-views">
+                    <span
+                      data-icon="eye"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    38 views
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcement Item 3 -->
+            <div class="landlord-announcement-card">
+              <div class="landlord-announcement-card-header">
+                <div class="landlord-announcement-card-info">
+                  <div class="landlord-announcement-badges">
+                    <span class="landlord-badge landlord-badge-urgent">Urgent</span>
+                    <span class="landlord-badge landlord-badge-high">High</span>
+                  </div>
+                  <h3 class="landlord-announcement-card-title">Monthly Fire Drill</h3>
+                </div>
+                <div class="landlord-announcement-card-actions">
+                  <button class="landlord-icon-btn" title="Edit">
+                    <span
+                      data-icon="edit"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                  </button>
+                  <button class="landlord-icon-btn" title="Delete">
+                    <span
+                      data-icon="trash"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+              <div class="landlord-announcement-card-body">
+                <p class="landlord-announcement-card-text">
+                  Mandatory fire drill this Friday at 3 PM. All residents must participate. Please
+                  gather at the designated assembly point.
+                </p>
+              </div>
+              <div class="landlord-announcement-card-footer">
+                <div class="landlord-announcement-card-meta">
+                  <span class="landlord-announcement-date">
+                    <span
+                      data-icon="calendarDays"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    Jan 12, 2025
+                  </span>
+                  <span class="landlord-announcement-target">
+                    <span
+                      data-icon="building"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    All Properties
+                  </span>
+                </div>
+                <div class="landlord-announcement-stats">
+                  <span class="landlord-announcement-views">
+                    <span
+                      data-icon="eye"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    67 views
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/announcements.js"></script>
+  </body>
+</html>

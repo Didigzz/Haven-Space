@@ -42,42 +42,6 @@
   pointer-events: none;
 }
 
-/* Toggle Button */
-.sidebar-toggle {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  background: var(--white);
-  color: var(--text-gray);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.sidebar-toggle:hover {
-  background: var(--bg-green);
-  border-color: var(--primary-green);
-  color: var(--primary-green);
-}
-
-.sidebar-toggle svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar.collapsed .sidebar-toggle svg {
-  transform: rotate(180deg);
-}
-
 /* Navigation */
 .sidebar-nav {
   flex: 1;
@@ -375,44 +339,6 @@
   font-size: 0.75rem;
   color: var(--text-gray);
   margin-top: 0.125rem;
-}
-
-.sidebar-logout {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  color: var(--text-gray);
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.15s ease;
-  justify-content: flex-start;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.sidebar-logout-text {
-  transition: opacity 0.2s ease, width 0.2s ease;
-}
-
-.sidebar.collapsed .sidebar-logout-text {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.sidebar-logout:hover {
-  background: #fef2f2;
-  color: #dc2626;
-}
-
-.sidebar-logout svg {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
 }
 
 /* Responsive */

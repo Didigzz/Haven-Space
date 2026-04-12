@@ -3,6 +3,7 @@
  * Handles viewing, editing, and deleting landlord properties
  */
 
+import { getIcon } from '../../shared/icons.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 
@@ -114,7 +115,9 @@ export function initMyProperties() {
   const filterStatus = document.getElementById('filter-status');
   const sortBy = document.getElementById('sort-by');
 
-  if (!searchInput) return;
+  if (!searchInput) {
+    return;
+  }
 
   // Initialize sidebar and navbar
   initSidebar({
@@ -155,19 +158,29 @@ function loadProperties() {
   const emptyState = document.getElementById('empty-state');
   const loadingState = document.getElementById('loading-state');
 
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   // Show loading state
-  if (loadingState) loadingState.style.display = 'block';
-  if (emptyState) emptyState.style.display = 'none';
+  if (loadingState) {
+    loadingState.style.display = 'block';
+  }
+  if (emptyState) {
+    emptyState.style.display = 'none';
+  }
   grid.style.display = 'none';
 
   // Simulate API delay
   setTimeout(() => {
-    if (loadingState) loadingState.style.display = 'none';
+    if (loadingState) {
+      loadingState.style.display = 'none';
+    }
 
     if (propertiesData.length === 0) {
-      if (emptyState) emptyState.style.display = 'block';
+      if (emptyState) {
+        emptyState.style.display = 'block';
+      }
     } else {
       grid.style.display = 'grid';
       renderProperties(propertiesData);
@@ -180,7 +193,9 @@ function loadProperties() {
  */
 function renderProperties(properties) {
   const grid = document.getElementById('properties-grid');
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   grid.innerHTML = '';
 
@@ -211,19 +226,14 @@ function createPropertyCard(property) {
       <img src="${property.photos[0] || '/placeholder.jpg'}" alt="${property.name}" />
       <span class="property-card-status status-${property.status}">${statusLabel}</span>
       <div class="property-card-photo-count">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+        ${getIcon('photo')}
         ${property.photos.length}
       </div>
     </div>
     <div class="property-card-body">
       <h3 class="property-card-name">${property.name}</h3>
       <div class="property-card-location">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
+        ${getIcon('location')}
         ${property.location}
       </div>
       <div class="property-card-stats">
@@ -243,22 +253,15 @@ function createPropertyCard(property) {
     </div>
     <div class="property-card-actions">
       <button class="btn-view" data-action="view" data-id="${property.id}">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
+        ${getIcon('eye')}
         View
       </button>
       <button class="btn-edit" data-action="edit" data-id="${property.id}">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
+        ${getIcon('edit')}
         Edit
       </button>
       <button class="btn-delete" data-action="delete" data-id="${property.id}">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
+        ${getIcon('trash')}
         Delete
       </button>
     </div>
@@ -282,7 +285,9 @@ function createPropertyCard(property) {
  */
 function handlePropertyAction(action, id) {
   const property = propertiesData.find(p => p.id === id);
-  if (!property) return;
+  if (!property) {
+    return;
+  }
 
   currentProperty = property;
 
@@ -304,7 +309,9 @@ function handlePropertyAction(action, id) {
  */
 function openPropertyModal(property) {
   const modal = document.getElementById('property-modal');
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
 
   // Populate modal data
   document.getElementById('modal-property-name').textContent = property.name;
@@ -388,7 +395,9 @@ function editProperty(property) {
  */
 function confirmDelete(property) {
   const modal = document.getElementById('delete-modal');
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
 
   document.getElementById('delete-property-name').textContent = property.name;
   modal.classList.add('active');
@@ -408,7 +417,7 @@ function setupModalHandlers() {
 
     [closeBtn, cancelBtn, overlay].forEach(el => {
       if (el) {
-        el.addEventListener('click', () => closeModal(modal));
+        el.addEventListener('click', () => closeModal(propertyModal));
       }
     });
   }
@@ -449,7 +458,9 @@ function setupModalHandlers() {
  * Close modal
  */
 function closeModal(modal) {
-  if (!modal) return;
+  if (!modal) {
+    return;
+  }
   modal.classList.remove('active');
   document.body.style.overflow = '';
   currentProperty = null;
@@ -499,14 +510,16 @@ function filterAndSortProperties(searchQuery = '') {
   const filterStatus = document.getElementById('filter-status');
   const sortBy = document.getElementById('sort-by');
 
-  if (!searchInput || !filterStatus || !sortBy) return;
+  if (!searchInput || !filterStatus || !sortBy) {
+    return;
+  }
 
   const query = searchQuery || searchInput.value.toLowerCase().trim();
   const statusFilter = filterStatus.value;
   const sortOption = sortBy.value;
 
   // Filter
-  let filtered = propertiesData.filter(property => {
+  const filtered = propertiesData.filter(property => {
     // Search filter
     const matchesSearch =
       !query ||

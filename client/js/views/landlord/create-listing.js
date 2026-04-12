@@ -3,13 +3,34 @@
  * Handles property form submission and photo upload functionality
  */
 
+import { getIcon } from '../../shared/icons.js';
+
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
+
 // Maximum number of photos allowed
 const MAX_PHOTOS = 10;
 // Maximum file size in MB
 const MAX_FILE_SIZE_MB = 5;
 
 // Store uploaded photos
-let uploadedPhotos = [];
+const uploadedPhotos = [];
 
 /**
  * Initialize the create listing form
@@ -25,7 +46,12 @@ export function initCreateListing() {
   const addCustomAmenityBtn = document.getElementById('add-custom-amenity-btn');
   const customAmenityInput = document.getElementById('custom-amenity-input');
 
-  if (!form || !uploadArea || !fileInput) return;
+  if (!form || !uploadArea || !fileInput) {
+    return;
+  }
+
+  // Inject icons from centralized library
+  injectIcons();
 
   // Initialize photo upload handlers
   initPhotoUpload(uploadArea, fileInput);
@@ -61,7 +87,9 @@ export function initCreateListing() {
   if (addCustomAmenityBtn && customAmenityInput) {
     addCustomAmenityBtn.addEventListener('click', handleAddCustomAmenity);
     customAmenityInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') handleAddCustomAmenity();
+      if (e.key === 'Enter') {
+        handleAddCustomAmenity();
+      }
     });
   }
 }
@@ -141,7 +169,9 @@ function handleFiles(files) {
  */
 function renderPhotoGrid() {
   const grid = document.getElementById('photo-preview-grid');
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   grid.innerHTML = '';
 
@@ -153,14 +183,12 @@ function renderPhotoGrid() {
       <div class="photo-overlay">
         ${index === 0 ? '<span class="photo-badge">Cover</span>' : '<span></span>'}
         <button 
-          type="button" 
-          class="photo-remove-btn" 
+          type="button"
+          class="photo-remove-btn"
           data-photo-id="${photo.id}"
           title="Remove photo"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          ${getIcon('xMark')}
         </button>
       </div>
       ${index === 0 ? '<div class="cover-indicator">Cover Photo</div>' : ''}
@@ -184,7 +212,9 @@ function renderPhotoGrid() {
  */
 function removePhoto(photoId) {
   const photoIndex = uploadedPhotos.findIndex(p => p.id === photoId);
-  if (photoIndex === -1) return;
+  if (photoIndex === -1) {
+    return;
+  }
 
   // Revoke object URL to free memory
   URL.revokeObjectURL(uploadedPhotos[photoIndex].preview);
@@ -290,14 +320,20 @@ function handlePropertyTypeChange() {
   const otherGroup = document.getElementById('property-type-other-group');
   const otherInput = document.getElementById('property-type-other');
 
-  if (!select || !otherGroup) return;
+  if (!select || !otherGroup) {
+    return;
+  }
 
   if (select.value === 'others') {
     otherGroup.style.display = 'block';
-    if (otherInput) otherInput.required = true;
+    if (otherInput) {
+      otherInput.required = true;
+    }
   } else {
     otherGroup.style.display = 'none';
-    if (otherInput) otherInput.required = false;
+    if (otherInput) {
+      otherInput.required = false;
+    }
   }
 }
 
@@ -309,14 +345,20 @@ function handleCapacityChange() {
   const customGroup = document.getElementById('property-capacity-custom-group');
   const customInput = document.getElementById('property-capacity-custom');
 
-  if (!select || !customGroup) return;
+  if (!select || !customGroup) {
+    return;
+  }
 
   if (select.value === 'custom') {
     customGroup.style.display = 'block';
-    if (customInput) customInput.required = true;
+    if (customInput) {
+      customInput.required = true;
+    }
   } else {
     customGroup.style.display = 'none';
-    if (customInput) customInput.required = false;
+    if (customInput) {
+      customInput.required = false;
+    }
   }
 }
 
@@ -332,10 +374,14 @@ function handleAddCustomAmenity() {
   const input = document.getElementById('custom-amenity-input');
   const listContainer = document.getElementById('custom-amenities-list');
 
-  if (!input || !listContainer) return;
+  if (!input || !listContainer) {
+    return;
+  }
 
   const value = input.value.trim();
-  if (!value) return;
+  if (!value) {
+    return;
+  }
 
   // Add to array
   customAmenitiesList.push(value);
@@ -351,9 +397,7 @@ function handleAddCustomAmenity() {
       /'/g,
       "\\'"
     )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
+      ${getIcon('xMark', { width: 16, height: 16 })}
     </button>
   `;
 
@@ -385,9 +429,7 @@ function removeCustomAmenity(value) {
           /'/g,
           "\\'"
         )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          ${getIcon('xMark', { width: 16, height: 16 })}
         </button>
       `;
       listContainer.appendChild(tag);

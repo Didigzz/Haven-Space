@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Make Payment - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-payment-process.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="payment-process-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="payment-process-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="payment-process-content">
+          <!-- Payment Progress Steps -->
+          <div class="payment-progress-bar">
+            <div class="payment-progress-step completed">
+              <div class="payment-progress-indicator">
+                <span class="icon-placeholder" data-icon="check"></span>
+              </div>
+              <span class="payment-progress-label">Select Method</span>
+            </div>
+            <div class="payment-progress-line completed"></div>
+            <div class="payment-progress-step active">
+              <div class="payment-progress-indicator">2</div>
+              <span class="payment-progress-label">Payment</span>
+            </div>
+            <div class="payment-progress-line"></div>
+            <div class="payment-progress-step">
+              <div class="payment-progress-indicator">3</div>
+              <span class="payment-progress-label">Confirmation</span>
+            </div>
+          </div>
+
+          <!-- Payment Form Section -->
+          <div class="payment-form-section">
+            <div class="payment-form-header">
+              <h1 class="payment-form-title">Complete Your Payment</h1>
+              <p class="payment-form-subtitle">
+                Securely pay your rent using GCash or other payment methods
+              </p>
+            </div>
+
+            <!-- Payment Summary Card -->
+            <div class="payment-summary-card">
+              <div class="payment-summary-header">
+                <h3 class="payment-summary-title">Payment Summary</h3>
+                <span class="payment-summary-period">January 2025</span>
+              </div>
+              <div class="payment-summary-breakdown">
+                <div class="payment-summary-row">
+                  <span class="payment-summary-label">Base Rent</span>
+                  <span class="payment-summary-value">₱5,000</span>
+                </div>
+                <div class="payment-summary-row">
+                  <span class="payment-summary-label">Utilities</span>
+                  <span class="payment-summary-value">₱350</span>
+                </div>
+                <div class="payment-summary-row">
+                  <span class="payment-summary-label">WiFi</span>
+                  <span class="payment-summary-value">₱150</span>
+                </div>
+                <div class="payment-summary-divider"></div>
+                <div class="payment-summary-row payment-summary-total">
+                  <span class="payment-summary-label">Total Amount</span>
+                  <span class="payment-summary-value">₱5,500</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Method Selection -->
+            <div class="payment-method-section">
+              <h2 class="payment-section-title">
+                <span class="icon-placeholder" data-icon="creditCard"></span>
+                Select Payment Method
+              </h2>
+
+              <div class="payment-method-grid">
+                <!-- GCash Option (Default) -->
+                <div class="payment-method-option selected" data-method="gcash">
+                  <div class="payment-method-option-icon gcash">
+                    <span class="icon-placeholder" data-icon="phone"></span>
+                  </div>
+                  <div class="payment-method-option-info">
+                    <h4 class="payment-method-option-name">GCash</h4>
+                    <p class="payment-method-option-desc">Pay via QR code or GCash wallet</p>
+                  </div>
+                  <div class="payment-method-option-check">
+                    <span class="icon-placeholder" data-icon="check"></span>
+                  </div>
+                </div>
+
+                <!-- Bank Transfer Option -->
+                <div class="payment-method-option" data-method="bank">
+                  <div class="payment-method-option-icon bank">
+                    <span class="icon-placeholder" data-icon="building"></span>
+                  </div>
+                  <div class="payment-method-option-info">
+                    <h4 class="payment-method-option-name">Bank Transfer</h4>
+                    <p class="payment-method-option-desc">BDO, BPI, Metrobank</p>
+                  </div>
+                  <div class="payment-method-option-check">
+                    <span class="icon-placeholder" data-icon="check"></span>
+                  </div>
+                </div>
+
+                <!-- Credit Card Option -->
+                <div class="payment-method-option" data-method="card">
+                  <div class="payment-method-option-icon card">
+                    <span class="icon-placeholder" data-icon="creditCard"></span>
+                  </div>
+                  <div class="payment-method-option-info">
+                    <h4 class="payment-method-option-name">Credit/Debit Card</h4>
+                    <p class="payment-method-option-desc">Visa, Mastercard</p>
+                  </div>
+                  <div class="payment-method-option-check">
+                    <span class="icon-placeholder" data-icon="check"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- GCash Payment Form -->
+            <div class="payment-form-card" id="gcashPaymentForm">
+              <div class="payment-form-card-header">
+                <div class="payment-form-card-title">
+                  <div class="payment-method-icon-small gcash">
+                    <span class="icon-placeholder" data-icon="phone"></span>
+                  </div>
+                  <h3 class="payment-form-card-name">GCash Payment</h3>
+                </div>
+                <span class="payment-form-card-badge">Recommended</span>
+              </div>
+
+              <!-- GCash QR Code Section -->
+              <div class="gcash-qr-section">
+                <div class="gcash-qr-header">
+                  <h4 class="gcash-qr-title">Scan to Pay</h4>
+                  <p class="gcash-qr-desc">Open your GCash app and scan the QR code below</p>
+                </div>
+
+                <div class="gcash-qr-container">
+                  <div class="gcash-qr-code">
+                    <!-- QR Code Placeholder -->
+                    <div class="qr-code-placeholder">
+                      <span class="icon-placeholder" data-icon="photo"></span>
+                      <span>QR Code</span>
+                    </div>
+                    <!-- Actual QR code will be generated here -->
+                    <canvas id="gcashQRCode" style="display: none"></canvas>
+                  </div>
+
+                  <div class="gcash-qr-timer">
+                    <div class="timer-icon">
+                      <span class="icon-placeholder" data-icon="history"></span>
+                    </div>
+                    <div class="timer-info">
+                      <span class="timer-label">QR Code expires in</span>
+                      <span class="timer-value" id="qrTimer">14:59</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="gcash-qr-actions">
+                  <button class="payments-btn payments-btn-outline" id="refreshQRBtn">
+                    <span class="icon-placeholder" data-icon="history"></span>
+                    Refresh QR Code
+                  </button>
+                  <button class="payments-btn payments-btn-primary" id="downloadQRBtn">
+                    <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                    Download QR
+                  </button>
+                </div>
+              </div>
+
+              <!-- Manual Payment Option -->
+              <div class="gcash-manual-section">
+                <div class="gcash-manual-divider">
+                  <span class="gcash-manual-divider-text">OR PAY MANUALLY</span>
+                </div>
+
+                <div class="gcash-manual-details">
+                  <div class="gcash-manual-step">
+                    <div class="gcash-manual-step-number">1</div>
+                    <div class="gcash-manual-step-content">
+                      <h5 class="gcash-manual-step-title">Send money to this GCash number</h5>
+                      <div class="gcash-manual-value">
+                        <span class="gcash-phone-number">0917-123-4567</span>
+                        <button class="gcash-copy-btn" id="copyPhoneBtn" title="Copy phone number">
+                          <span class="icon-placeholder" data-icon="document"></span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="gcash-manual-step">
+                    <div class="gcash-manual-step-number">2</div>
+                    <div class="gcash-manual-step-content">
+                      <h5 class="gcash-manual-step-title">Enter amount</h5>
+                      <div class="gcash-manual-value">
+                        <span class="gcash-amount">₱5,500.00</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="gcash-manual-step">
+                    <div class="gcash-manual-step-number">3</div>
+                    <div class="gcash-manual-step-content">
+                      <h5 class="gcash-manual-step-title">Enter reference number</h5>
+                      <div class="gcash-manual-value">
+                        <span class="gcash-reference-hint">Use your name as reference</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Confirmation Form -->
+              <div class="payment-confirm-section">
+                <h4 class="payment-confirm-title">Confirm Your Payment</h4>
+
+                <div class="payment-form-group">
+                  <label class="payment-form-label" for="referenceNumber">
+                    GCash Reference Number
+                    <span class="payment-form-required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="referenceNumber"
+                    class="payment-form-input"
+                    placeholder="e.g., 1234567890"
+                    maxlength="20"
+                  />
+                  <p class="payment-form-hint">
+                    Found in your GCash transaction history after payment
+                  </p>
+                </div>
+
+                <div class="payment-form-group">
+                  <label class="payment-form-label" for="paymentAmount">
+                    Amount Paid
+                    <span class="payment-form-required">*</span>
+                  </label>
+                  <div class="payment-input-with-prefix">
+                    <span class="payment-input-prefix">₱</span>
+                    <input
+                      type="number"
+                      id="paymentAmount"
+                      class="payment-form-input"
+                      placeholder="5500.00"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div class="payment-form-group">
+                  <label class="payment-form-label" for="paymentDate">
+                    Payment Date
+                    <span class="payment-form-required">*</span>
+                  </label>
+                  <input type="date" id="paymentDate" class="payment-form-input" />
+                </div>
+
+                <div class="payment-form-group">
+                  <label class="payment-form-label" for="proofUpload">
+                    Upload Proof of Payment (Optional)
+                  </label>
+                  <div class="payment-file-upload">
+                    <input
+                      type="file"
+                      id="proofUpload"
+                      class="payment-file-input"
+                      accept="image/*,.pdf"
+                    />
+                    <label for="proofUpload" class="payment-file-label">
+                      <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                      <span>Click to upload or drag and drop</span>
+                      <span class="payment-file-hint">PNG, JPG, or PDF (max 5MB)</span>
+                    </label>
+                    <div class="payment-file-preview" id="filePreview"></div>
+                  </div>
+                </div>
+
+                <div class="payment-form-group payment-form-checkbox-group">
+                  <label class="payment-checkbox" for="termsAccept">
+                    <input type="checkbox" id="termsAccept" />
+                    <span class="payment-checkbox-mark"></span>
+                    <span class="payment-checkbox-label">
+                      I confirm that the payment information is correct and I authorize this
+                      transaction
+                    </span>
+                  </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="payment-form-actions">
+                  <button type="button" class="payments-btn payments-btn-outline" id="cancelBtn">
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="payments-btn payments-btn-primary"
+                    id="submitPaymentBtn"
+                  >
+                    <span class="icon-placeholder" data-icon="check"></span>
+                    Submit Payment
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bank Transfer Form (Hidden by default) -->
+            <div class="payment-form-card" id="bankPaymentForm" style="display: none">
+              <div class="payment-form-card-header">
+                <div class="payment-form-card-title">
+                  <div class="payment-method-icon-small bank">
+                    <span class="icon-placeholder" data-icon="building"></span>
+                  </div>
+                  <h3 class="payment-form-card-name">Bank Transfer</h3>
+                </div>
+              </div>
+
+              <div class="bank-transfer-details">
+                <div class="bank-detail-row">
+                  <span class="bank-detail-label">Bank Name:</span>
+                  <span class="bank-detail-value">BDO Unibank</span>
+                </div>
+                <div class="bank-detail-row">
+                  <span class="bank-detail-label">Account Name:</span>
+                  <span class="bank-detail-value">Haven Space Properties</span>
+                </div>
+                <div class="bank-detail-row">
+                  <span class="bank-detail-label">Account Number:</span>
+                  <span class="bank-detail-value">001234567890</span>
+                  <button class="bank-copy-btn" title="Copy account number">
+                    <span class="icon-placeholder" data-icon="document"></span>
+                  </button>
+                </div>
+                <div class="bank-detail-row">
+                  <span class="bank-detail-label">Branch:</span>
+                  <span class="bank-detail-value">Ayala Avenue, Makati</span>
+                </div>
+              </div>
+
+              <!-- Similar confirmation form as GCash -->
+              <div class="payment-confirm-section">
+                <h4 class="payment-confirm-title">Confirm Your Payment</h4>
+                <!-- TODO: Add similar form fields as GCash -->
+              </div>
+            </div>
+
+            <!-- Credit Card Form (Hidden by default) -->
+            <div class="payment-form-card" id="cardPaymentForm" style="display: none">
+              <div class="payment-form-card-header">
+                <div class="payment-form-card-title">
+                  <div class="payment-method-icon-small card">
+                    <span class="icon-placeholder" data-icon="creditCard"></span>
+                  </div>
+                  <h3 class="payment-form-card-name">Credit/Debit Card</h3>
+                </div>
+              </div>
+
+              <!-- TODO: Add card payment form -->
+              <p class="payment-card-placeholder-text">Card payment integration coming soon</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div class="payment-modal" id="successModal" style="display: none">
+      <div class="payment-modal-overlay"></div>
+      <div class="payment-modal-content payment-modal-success">
+        <div class="payment-modal-icon success">
+          <span class="icon-placeholder" data-icon="check"></span>
+        </div>
+        <h2 class="payment-modal-title">Payment Submitted Successfully!</h2>
+        <p class="payment-modal-message">
+          Your payment is being verified. You will receive a confirmation email shortly.
+        </p>
+        <div class="payment-modal-details">
+          <div class="payment-modal-row">
+            <span class="payment-modal-label">Reference Number:</span>
+            <span class="payment-modal-value" id="modalRefNumber">1234567890</span>
+          </div>
+          <div class="payment-modal-row">
+            <span class="payment-modal-label">Amount:</span>
+            <span class="payment-modal-value" id="modalAmount">₱5,500.00</span>
+          </div>
+          <div class="payment-modal-row">
+            <span class="payment-modal-label">Payment Method:</span>
+            <span class="payment-modal-value" id="modalMethod">GCash</span>
+          </div>
+          <div class="payment-modal-row">
+            <span class="payment-modal-label">Date:</span>
+            <span class="payment-modal-value" id="modalDate">Jan 20, 2025</span>
+          </div>
+        </div>
+        <div class="payment-modal-actions">
+          <button class="payments-btn payments-btn-outline" id="downloadReceiptBtn">
+            <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+            Download Receipt
+          </button>
+          <button class="payments-btn payments-btn-primary" id="doneBtn">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Error Modal -->
+    <div class="payment-modal" id="errorModal" style="display: none">
+      <div class="payment-modal-overlay"></div>
+      <div class="payment-modal-content payment-modal-error">
+        <div class="payment-modal-icon error">
+          <span class="icon-placeholder" data-icon="xMark"></span>
+        </div>
+        <h2 class="payment-modal-title">Payment Submission Failed</h2>
+        <p class="payment-modal-message" id="errorMessage">
+          There was an error processing your payment. Please try again.
+        </p>
+        <div class="payment-modal-actions">
+          <button class="payments-btn payments-btn-outline" id="cancelErrorBtn">Cancel</button>
+          <button class="payments-btn payments-btn-primary" id="retryBtn">Try Again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="payment-toast" id="toast" style="display: none">
+      <div class="payment-toast-icon"></div>
+      <span class="payment-toast-message" id="toastMessage"></span>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module">
+      document.addEventListener('DOMContentLoaded', async () => {
+        const { getIcon } = await import('../../../js/shared/icons.js');
+
+        document.querySelectorAll('.icon-placeholder').forEach(el => {
+          const iconName = el.dataset.icon;
+          const iconHtml = getIcon(iconName, {
+            className: el.className.replace('icon-placeholder', '').trim(),
+          });
+          el.outerHTML = iconHtml;
+        });
+      });
+    </script>
+  </body>
+</html>

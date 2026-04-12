@@ -1,0 +1,1323 @@
+/* Boarder Payments Page Styles - Unique Design */
+
+/* ===== CSS Variables for Payments Page ===== */
+:root {
+  --payments-bg: var(--bg-cream);
+  --payments-surface: var(--white);
+  --payments-border: var(--border-color);
+  --payments-text-primary: var(--text-dark);
+  --payments-text-secondary: var(--text-gray);
+  --payments-accent: var(--primary-green);
+  --payments-accent-hover: var(--dark-green);
+  --payments-blue: #3b82f6;
+  --payments-cyan: #06b6d4;
+  --payments-green: #22c55e;
+  --payments-orange: #f59e0b;
+  --payments-purple: #8b5cf6;
+  --payments-pink: #ec4899;
+  --payments-red: #ef4444;
+  --payments-gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --payments-gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --payments-gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --payments-gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* ===== Dashboard Layout ===== */
+.payments-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--payments-bg);
+}
+
+/* Main content area */
+.payments-main {
+  flex: 1;
+  margin-left: 280px;
+  padding: 0;
+  min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Adjust main content when sidebar is collapsed */
+.payments-dashboard.sidebar-collapsed .payments-main {
+  margin-left: 80px;
+}
+
+/* Content wrapper */
+.payments-content {
+  padding: 24px 32px;
+}
+
+/* ===== Header Section ===== */
+.payments-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.payments-header-content {
+  flex: 1;
+}
+
+.payments-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--payments-text-primary);
+  margin-bottom: 8px;
+}
+
+.payments-subtitle {
+  font-size: 15px;
+  color: var(--payments-text-secondary);
+}
+
+.payments-header-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ===== Buttons ===== */
+.payments-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: var(--font-main);
+  text-decoration: none;
+}
+
+.payments-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.payments-btn-primary {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+.payments-btn-primary:hover {
+  background-color: var(--dark-green);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.2);
+}
+
+.payments-btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--payments-border);
+  color: var(--payments-text-primary);
+}
+
+.payments-btn-outline:hover {
+  background-color: var(--bg-green);
+  border-color: var(--primary-green);
+  color: var(--primary-green);
+}
+
+.payments-btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.payments-btn-lg {
+  padding: 16px 32px;
+  font-size: 15px;
+}
+
+.payments-btn-full {
+  width: 100%;
+}
+
+/* ===== Financial Overview Grid ===== */
+.financial-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+/* Financial Cards */
+.financial-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 24px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 160px;
+}
+
+.financial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.financial-card-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  z-index: 1;
+}
+
+.financial-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.financial-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.financial-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.financial-card-label {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.financial-card-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.financial-card-trend {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Gradient Card Styles */
+.financial-card-gradient-1 {
+  background: var(--payments-gradient-1);
+  color: var(--white);
+}
+
+.financial-card-gradient-1 .financial-card-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.financial-card-gradient-1 .financial-card-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 40px;
+  margin-top: 16px;
+}
+
+.financial-card-gradient-1 .financial-card-chart-bar {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  min-width: 8px;
+}
+
+.financial-card-gradient-2 {
+  background: var(--payments-gradient-2);
+  color: var(--white);
+}
+
+.financial-card-gradient-2 .financial-card-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.financial-card-gradient-2 .financial-card-progress {
+  margin-top: 16px;
+}
+
+.financial-card-gradient-2 .financial-card-progress-bar {
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.financial-card-gradient-2 .financial-card-progress-fill {
+  height: 100%;
+  background-color: var(--white);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.financial-card-gradient-2 .financial-card-progress-label {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.financial-card-gradient-3 {
+  background: var(--payments-gradient-3);
+  color: var(--white);
+}
+
+.financial-card-gradient-3 .financial-card-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.financial-card-gradient-3 .financial-card-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.financial-card-gradient-3 .financial-card-alert-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Solid Card Style */
+.financial-card-solid {
+  background-color: var(--payments-surface);
+  border: 1px solid var(--payments-border);
+  color: var(--payments-text-primary);
+}
+
+.financial-card-solid .financial-card-icon {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payments-green);
+}
+
+.financial-card-solid .financial-card-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--payments-text-secondary);
+}
+
+.financial-card-solid .financial-card-status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--payments-green);
+  border-radius: 50%;
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ===== Main Payment Grid ===== */
+.payments-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+}
+
+/* Payment Columns */
+.payments-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ===== Sections ===== */
+.payments-section {
+  background-color: var(--payments-surface);
+  border: 1px solid var(--payments-border);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+
+.payments-section:hover {
+  border-color: var(--payments-accent);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.08);
+}
+
+.payments-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.payments-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--payments-text-primary);
+}
+
+.payments-section-title svg {
+  width: 22px;
+  height: 22px;
+  color: var(--payments-accent);
+}
+
+/* ===== Payment Methods ===== */
+.payment-methods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-method-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background-color: var(--bg-cream);
+  border: 1px solid var(--payments-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.payment-method-card:hover {
+  border-color: var(--payments-accent);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.08);
+}
+
+.payment-method-card.payment-method-primary {
+  border-color: var(--payments-accent);
+  background: linear-gradient(135deg, rgba(74, 124, 35, 0.05) 0%, rgba(74, 124, 35, 0.02) 100%);
+}
+
+.payment-method-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-method-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-method-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.payment-method-icon.gcash {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--payments-blue);
+}
+
+.payment-method-icon.bank {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--payments-purple);
+}
+
+.payment-method-icon.card {
+  background-color: rgba(236, 72, 153, 0.1);
+  color: var(--payments-pink);
+}
+
+.payment-method-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--payments-accent);
+  background-color: rgba(74, 124, 35, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payment-method-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-method-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payments-text-primary);
+}
+
+.payment-method-number {
+  font-size: 13px;
+  color: var(--payments-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.payment-method-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.payment-method-action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--payments-border);
+  background-color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.payment-method-action-btn svg {
+  width: 18px;
+  height: 18px;
+  color: var(--payments-text-secondary);
+}
+
+.payment-method-action-btn:hover {
+  border-color: var(--payments-red);
+  color: var(--payments-red);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.payment-method-action-btn:first-child:hover {
+  border-color: var(--payments-accent);
+  color: var(--payments-accent);
+  background-color: rgba(74, 124, 35, 0.05);
+}
+
+/* ===== Auto-Pay Settings ===== */
+.auto-pay-config {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auto-pay-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.auto-pay-toggle-info {
+  flex: 1;
+}
+
+.auto-pay-toggle-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payments-text-primary);
+  margin-bottom: 4px;
+}
+
+.auto-pay-toggle-desc {
+  font-size: 13px;
+  color: var(--payments-text-secondary);
+  line-height: 1.5;
+}
+
+/* Toggle Switch */
+.auto-pay-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.auto-pay-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.auto-pay-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--border-color);
+  border-radius: 28px;
+  transition: all 0.3s ease;
+}
+
+.auto-pay-slider::before {
+  position: absolute;
+  content: '';
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--white);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auto-pay-switch input:checked + .auto-pay-slider {
+  background-color: var(--payments-accent);
+}
+
+.auto-pay-switch input:checked + .auto-pay-slider::before {
+  transform: translateX(24px);
+}
+
+/* Auto-Pay Details */
+.auto-pay-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--bg-cream);
+  border-radius: 10px;
+  border: 1px solid var(--payments-border);
+}
+
+.auto-pay-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.auto-pay-label {
+  font-size: 13px;
+  color: var(--payments-text-secondary);
+}
+
+.auto-pay-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--payments-text-primary);
+}
+
+/* ===== Quick Pay Card ===== */
+.payments-quick-pay-card {
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+  border: none;
+  color: var(--white);
+}
+
+.payments-quick-pay-card:hover {
+  border: none;
+  box-shadow: 0 8px 24px rgba(74, 124, 35, 0.2);
+}
+
+.quick-pay-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.quick-pay-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quick-pay-icon-wrapper svg {
+  width: 28px;
+  height: 28px;
+  color: var(--white);
+}
+
+.quick-pay-info {
+  flex: 1;
+}
+
+.quick-pay-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.quick-pay-desc {
+  font-size: 13px;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.quick-pay-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-pay-actions .payments-btn {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--white);
+  background-color: transparent;
+}
+
+.quick-pay-actions .payments-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--white);
+}
+
+.quick-pay-actions .payments-btn-primary {
+  background-color: var(--white);
+  color: var(--primary-green);
+  border: none;
+}
+
+.quick-pay-actions .payments-btn-primary:hover {
+  background-color: var(--bg-cream);
+}
+
+/* ===== Current Bill Card ===== */
+.payments-current-bill-card {
+  background-color: var(--payments-surface);
+  border: 1px solid var(--payments-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.current-bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.current-bill-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.current-bill-period {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--payments-text-secondary);
+  background-color: var(--bg-cream);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.current-bill-status {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.current-bill-status.unpaid {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--payments-orange);
+}
+
+.current-bill-status.paid {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payments-green);
+}
+
+.current-bill-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.current-bill-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.current-bill-label {
+  font-size: 14px;
+  color: var(--payments-text-secondary);
+}
+
+.current-bill-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payments-text-primary);
+}
+
+.current-bill-row.current-bill-total {
+  padding-top: 12px;
+}
+
+.current-bill-row.current-bill-total .current-bill-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--payments-text-primary);
+}
+
+.current-bill-row.current-bill-total .current-bill-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--payments-accent);
+}
+
+.current-bill-divider {
+  height: 1px;
+  background-color: var(--payments-border);
+  margin: 8px 0;
+}
+
+.current-bill-dates {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.current-bill-date-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background-color: var(--bg-cream);
+  border-radius: 10px;
+  flex: 1;
+}
+
+.current-bill-date-item.warning {
+  background-color: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.current-bill-date-label {
+  font-size: 12px;
+  color: var(--payments-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.current-bill-date-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--payments-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.current-bill-date-value svg {
+  width: 16px;
+  height: 16px;
+  color: var(--payments-orange);
+}
+
+.current-bill-date-item.warning .current-bill-date-value {
+  color: var(--payments-orange);
+}
+
+/* ===== Payment History Timeline ===== */
+.payments-history-card {
+  background-color: var(--payments-surface);
+  border: 1px solid var(--payments-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.payments-history-filter {
+  flex-shrink: 0;
+}
+
+.payments-filter-select {
+  padding: 8px 16px;
+  border: 1px solid var(--payments-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font-main);
+  background-color: var(--bg-cream);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.payments-filter-select:focus {
+  outline: none;
+  border-color: var(--payments-accent);
+}
+
+/* Timeline Styles */
+.payment-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.payment-timeline::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 20px;
+  bottom: 20px;
+  width: 2px;
+  background-color: var(--payments-border);
+}
+
+.timeline-item {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-item:last-child .timeline-content {
+  border: none;
+}
+
+.timeline-marker {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--payments-surface);
+  border: 3px solid var(--payments-border);
+  flex-shrink: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.timeline-marker svg {
+  width: 20px;
+  height: 20px;
+  color: var(--payments-border);
+}
+
+.timeline-marker.completed {
+  border-color: var(--payments-green);
+  background-color: var(--payments-green);
+}
+
+.timeline-marker.completed svg {
+  color: var(--white);
+}
+
+.timeline-marker:hover {
+  transform: scale(1.1);
+}
+
+.timeline-content {
+  flex: 1;
+  padding: 16px;
+  background-color: var(--bg-cream);
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.timeline-content:hover {
+  border-color: var(--payments-accent);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.08);
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.timeline-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payments-text-primary);
+}
+
+.timeline-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--payments-accent);
+}
+
+.timeline-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.timeline-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--payments-text-secondary);
+}
+
+.timeline-detail svg {
+  width: 16px;
+  height: 16px;
+  color: var(--payments-text-secondary);
+}
+
+.timeline-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+  margin-top: 8px;
+}
+
+.timeline-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.timeline-status.paid {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payments-green);
+}
+
+.timeline-details-note {
+  margin-bottom: 12px;
+}
+
+.timeline-note {
+  font-size: 13px;
+  color: var(--payments-text-secondary);
+  font-style: italic;
+}
+
+.timeline-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.timeline-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background-color: var(--white);
+  border: 1px solid var(--payments-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--payments-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+}
+
+.timeline-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.timeline-action-btn:hover {
+  border-color: var(--payments-accent);
+  color: var(--payments-accent);
+  background-color: rgba(74, 124, 35, 0.05);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 1200px) {
+  .financial-overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .payments-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .payments-content {
+    padding: 16px 20px;
+  }
+
+  .payments-header-section {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .payments-header-actions {
+    width: 100%;
+  }
+
+  .payments-header-actions .payments-btn {
+    flex: 1;
+  }
+
+  .financial-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payments-main-grid {
+    gap: 16px;
+  }
+
+  .payments-column {
+    gap: 16px;
+  }
+
+  .payments-section {
+    padding: 20px;
+  }
+
+  .payments-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .current-bill-dates {
+    flex-direction: column;
+  }
+
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .timeline-actions {
+    flex-wrap: wrap;
+  }
+
+  .quick-pay-actions {
+    flex-direction: column;
+  }
+
+  .quick-pay-actions .payments-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .payments-title {
+    font-size: 22px;
+  }
+
+  .financial-card {
+    min-height: 140px;
+    padding: 20px;
+  }
+
+  .financial-card-value {
+    font-size: 20px;
+  }
+
+  .payment-method-card {
+    padding: 16px;
+  }
+
+  .current-bill-row.current-bill-total .current-bill-value {
+    font-size: 20px;
+  }
+}
+
+/* ===== Payment Status Color Classes ===== */
+.status-red {
+  --status-color: var(--payments-red);
+  --status-bg: rgba(239, 68, 68, 0.1);
+  --status-border: rgba(239, 68, 68, 0.3);
+}
+
+.status-orange {
+  --status-color: var(--payments-orange);
+  --status-bg: rgba(245, 158, 11, 0.1);
+  --status-border: rgba(245, 158, 11, 0.3);
+}
+
+.status-green {
+  --status-color: var(--payments-green);
+  --status-bg: rgba(34, 197, 94, 0.1);
+  --status-border: rgba(34, 197, 94, 0.3);
+}
+
+/* Specific status classes */
+.status-paid {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  color: var(--payments-green) !important;
+  border-color: var(--payments-green) !important;
+}
+
+.status-overdue {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: var(--payments-red) !important;
+  border-color: var(--payments-red) !important;
+}
+
+.status-due-today {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: var(--payments-orange) !important;
+  border-color: var(--payments-orange) !important;
+  font-weight: 700 !important;
+}
+
+.status-upcoming {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: var(--payments-orange) !important;
+  border-color: var(--payments-orange) !important;
+}
+
+.status-current {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  color: var(--payments-green) !important;
+  border-color: var(--payments-green) !important;
+}
+
+/* Status badge component */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.status-red {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--payments-red);
+}
+
+.status-badge.status-orange {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--payments-orange);
+}
+
+.status-badge.status-green {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payments-green);
+}
+
+.status-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Timeline marker status colors */
+.timeline-marker.overdue {
+  border-color: var(--payments-red);
+  background-color: var(--payments-red);
+}
+
+.timeline-marker.overdue svg {
+  color: var(--white);
+}
+
+.timeline-marker.upcoming {
+  border-color: var(--payments-orange);
+  background-color: var(--payments-orange);
+}
+
+.timeline-marker.upcoming svg {
+  color: var(--white);
+}
+
+.timeline-marker.current {
+  border-color: var(--payments-green);
+  background-color: var(--payments-green);
+}
+
+.timeline-marker.current svg {
+  color: var(--white);
+}
+
+/* Financial card status borders */
+.financial-card.status-red {
+  border: 2px solid var(--payments-red);
+}
+
+.financial-card.status-orange {
+  border: 2px solid var(--payments-orange);
+}
+
+.financial-card.status-green {
+  border: 2px solid var(--payments-green);
+}
+
+/* Current bill card status variations */
+.payments-current-bill-card.status-red {
+  border-color: var(--payments-red);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.payments-current-bill-card.status-orange {
+  border-color: var(--payments-orange);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.payments-current-bill-card.status-green {
+  border-color: var(--payments-green);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+/* Print Styles ===== */
+@media print {
+  #sidebar-container,
+  #navbar-container,
+  .payments-header-actions,
+  .payment-method-actions,
+  .timeline-actions,
+  .quick-pay-actions,
+  .auto-pay-toggle,
+  .payments-btn {
+    display: none !important;
+  }
+
+  .payments-main {
+    margin-left: 0 !important;
+  }
+
+  .payments-content {
+    padding: 0 !important;
+  }
+
+  .payments-section {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+
+  .financial-card {
+    break-inside: avoid;
+  }
+
+  .timeline-item {
+    break-inside: avoid;
+  }
+}

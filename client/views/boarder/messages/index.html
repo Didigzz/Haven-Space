@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Messages - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-messages.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Content Wrapper -->
+        <div class="boarder-content">
+          <!-- Messages Page Layout -->
+          <div class="messages-container">
+            <!-- Messages Sidebar - Conversation List -->
+            <div class="messages-sidebar">
+              <div class="messages-sidebar-header">
+                <h1>Messages</h1>
+                <button class="messages-new-btn" id="messages-new-btn" aria-label="New message">
+                  <span class="icon-placeholder" data-icon="plus"></span>
+                  New Message
+                </button>
+              </div>
+
+              <!-- Search Messages -->
+              <div class="messages-search">
+                <div class="messages-search-input-wrapper">
+                  <span class="icon-placeholder messages-search-icon" data-icon="search"></span>
+                  <input
+                    type="text"
+                    class="messages-search-input"
+                    placeholder="Search messages..."
+                    id="messages-search-input"
+                  />
+                </div>
+              </div>
+
+              <!-- Conversation List -->
+              <div class="conversations-list" id="conversations-list">
+                <!-- Conversation Item 1 - Unread -->
+                <div class="conversation-item active" data-conversation-id="1">
+                  <div class="conversation-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Maria+Santos&background=4a7c23&color=fff"
+                      alt="Maria Santos"
+                    />
+                  </div>
+                  <div class="conversation-content">
+                    <div class="conversation-header">
+                      <h3 class="conversation-name">Maria Santos</h3>
+                      <span class="conversation-time">10:30 AM</span>
+                    </div>
+                    <div class="conversation-preview">
+                      <p class="conversation-last-message">
+                        Hi! Your rent payment has been received. Thank you!
+                      </p>
+                      <span class="conversation-badge">2</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Conversation Item 2 -->
+                <div class="conversation-item" data-conversation-id="2">
+                  <div class="conversation-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=John+Doe&background=2d4a14&color=fff"
+                      alt="John Doe"
+                    />
+                  </div>
+                  <div class="conversation-content">
+                    <div class="conversation-header">
+                      <h3 class="conversation-name">John Doe</h3>
+                      <span class="conversation-time">Yesterday</span>
+                    </div>
+                    <div class="conversation-preview">
+                      <p class="conversation-last-message">
+                        The maintenance request has been scheduled for tomorrow.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Conversation Item 3 -->
+                <div class="conversation-item" data-conversation-id="3">
+                  <div class="conversation-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Sunrise+Dorm&background=7cb342&color=fff"
+                      alt="Sunrise Dorm Admin"
+                    />
+                  </div>
+                  <div class="conversation-content">
+                    <div class="conversation-header">
+                      <h3 class="conversation-name">Sunrise Dorm Admin</h3>
+                      <span class="conversation-time">Jan 20</span>
+                    </div>
+                    <div class="conversation-preview">
+                      <p class="conversation-last-message">
+                        Water interruption scheduled for Wednesday 9 AM - 12 PM
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Conversation Item 4 -->
+                <div class="conversation-item" data-conversation-id="4">
+                  <div class="conversation-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Anna+Reyes&background=8b5cf6&color=fff"
+                      alt="Anna Reyes"
+                    />
+                  </div>
+                  <div class="conversation-content">
+                    <div class="conversation-header">
+                      <h3 class="conversation-name">Anna Reyes</h3>
+                      <span class="conversation-time">Jan 18</span>
+                    </div>
+                    <div class="conversation-preview">
+                      <p class="conversation-last-message">
+                        Thanks for the reference! Good luck with your application.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Conversation Item 5 -->
+                <div class="conversation-item" data-conversation-id="5">
+                  <div class="conversation-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Haven+Support&background=06b6d4&color=fff"
+                      alt="Haven Support"
+                    />
+                  </div>
+                  <div class="conversation-content">
+                    <div class="conversation-header">
+                      <h3 class="conversation-name">Haven Support</h3>
+                      <span class="conversation-time">Jan 15</span>
+                    </div>
+                    <div class="conversation-preview">
+                      <p class="conversation-last-message">
+                        Your ticket #12345 has been resolved. Please let us know if you need further
+                        assistance.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages Main - Chat Area -->
+            <div class="messages-main">
+              <!-- Chat Header -->
+              <div class="chat-header">
+                <div class="chat-header-info">
+                  <div class="chat-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Maria+Santos&background=4a7c23&color=fff"
+                      alt="Maria Santos"
+                    />
+                  </div>
+                  <div class="chat-header-text">
+                    <h2 class="chat-name">Maria Santos</h2>
+                    <span class="chat-status">
+                      <span class="status-dot status-dot-success"></span>
+                      Online
+                    </span>
+                  </div>
+                </div>
+                <div class="chat-header-actions">
+                  <button class="chat-action-btn" aria-label="Phone call">
+                    <span class="icon-placeholder" data-icon="phone"></span>
+                  </button>
+                  <button class="chat-action-btn" aria-label="Video call">
+                    <span class="icon-placeholder" data-icon="videoCamera"></span>
+                  </button>
+                  <button class="chat-action-btn" aria-label="More options">
+                    <span class="icon-placeholder" data-icon="ellipsisVertical"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Chat Messages -->
+              <div class="chat-messages" id="chat-messages">
+                <!-- Date Separator -->
+                <div class="message-date-separator">
+                  <span>Today</span>
+                </div>
+
+                <!-- Received Message -->
+                <div class="message-item message-received">
+                  <div class="message-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Maria+Santos&background=4a7c23&color=fff"
+                      alt="Maria Santos"
+                    />
+                  </div>
+                  <div class="message-content">
+                    <div class="message-bubble">
+                      <p>
+                        Hi! Just wanted to let you know that your rent payment has been received.
+                        Thank you for paying on time!
+                      </p>
+                    </div>
+                    <span class="message-time">10:30 AM</span>
+                  </div>
+                </div>
+
+                <!-- Sent Message -->
+                <div class="message-item message-sent">
+                  <div class="message-content message-content-sent">
+                    <div class="message-bubble message-bubble-sent">
+                      <p>
+                        Great! I just paid it this morning. Is the WiFi password still the same?
+                      </p>
+                    </div>
+                    <span class="message-time message-time-sent">
+                      10:32 AM
+                      <span
+                        class="icon-placeholder message-read-icon"
+                        data-icon="checkSimple"
+                      ></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Received Message -->
+                <div class="message-item message-received">
+                  <div class="message-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Maria+Santos&background=4a7c23&color=fff"
+                      alt="Maria Santos"
+                    />
+                  </div>
+                  <div class="message-content">
+                    <div class="message-bubble">
+                      <p>
+                        Yes, the WiFi password is still: SunriseDorm2025. You can find it posted on
+                        the notice board as well.
+                      </p>
+                    </div>
+                    <span class="message-time">10:35 AM</span>
+                  </div>
+                </div>
+
+                <!-- Received Message with Attachment -->
+                <div class="message-item message-received">
+                  <div class="message-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Maria+Santos&background=4a7c23&color=fff"
+                      alt="Maria Santos"
+                    />
+                  </div>
+                  <div class="message-content">
+                    <div class="message-bubble">
+                      <p>Also, here's the updated house rules document.</p>
+                      <div class="message-attachment">
+                        <span class="icon-placeholder" data-icon="documentText"></span>
+                        <div class="message-attachment-info">
+                          <span class="message-attachment-name">house-rules-2025.pdf</span>
+                          <span class="message-attachment-size">245 KB</span>
+                        </div>
+                        <button class="message-attachment-download" aria-label="Download">
+                          <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                        </button>
+                      </div>
+                    </div>
+                    <span class="message-time">10:36 AM</span>
+                  </div>
+                </div>
+
+                <!-- Date Separator -->
+                <div class="message-date-separator">
+                  <span>Yesterday</span>
+                </div>
+
+                <!-- Sent Message -->
+                <div class="message-item message-sent">
+                  <div class="message-content message-content-sent">
+                    <div class="message-bubble message-bubble-sent">
+                      <p>Hi! I wanted to ask about the utility credit. How much do I have left?</p>
+                    </div>
+                    <span class="message-time message-time-sent">
+                      2:15 PM
+                      <span
+                        class="icon-placeholder message-read-icon"
+                        data-icon="checkSimple"
+                      ></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Received Message -->
+                <div class="message-item message-received">
+                  <div class="message-avatar">
+                    <img
+                      src="https://ui-avatars.com/api/?name=Maria+Santos&background=4a7c23&color=fff"
+                      alt="Maria Santos"
+                    />
+                  </div>
+                  <div class="message-content">
+                    <div class="message-bubble">
+                      <p>
+                        You currently have ₱142.50 credit. Based on your usage, that's approximately
+                        3 days remaining.
+                      </p>
+                    </div>
+                    <span class="message-time">2:20 PM</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chat Input -->
+              <div class="chat-input-container">
+                <button class="chat-input-btn chat-attach-btn" aria-label="Attach file">
+                  <span class="icon-placeholder" data-icon="paperClip"></span>
+                </button>
+                <div class="chat-input-wrapper">
+                  <input
+                    type="text"
+                    class="chat-input"
+                    placeholder="Type a message..."
+                    id="chat-input"
+                    autocomplete="off"
+                  />
+                  <button class="chat-input-btn chat-emoji-btn" aria-label="Emoji">
+                    <span class="icon-placeholder" data-icon="magnifyingGlassPlus"></span>
+                  </button>
+                </div>
+                <button
+                  class="chat-input-btn chat-send-btn"
+                  id="chat-send-btn"
+                  aria-label="Send message"
+                >
+                  <span class="icon-placeholder" data-icon="arrowRightSimple"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- New Message Modal -->
+    <div class="modal-overlay" id="new-message-modal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>New Message</h2>
+          <button class="modal-close" id="modal-close-btn" aria-label="Close">
+            <span class="icon-placeholder" data-icon="close"></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="new-message-form">
+            <div class="form-group">
+              <label for="message-recipient">To</label>
+              <input type="text" id="message-recipient" placeholder="Search users..." required />
+            </div>
+            <div class="form-group">
+              <label for="message-subject">Subject</label>
+              <input type="text" id="message-subject" placeholder="Message subject" />
+            </div>
+            <div class="form-group">
+              <label for="message-body">Message</label>
+              <textarea
+                id="message-body"
+                rows="6"
+                placeholder="Type your message..."
+                required
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label for="message-attachment">Attachment (optional)</label>
+              <input type="file" id="message-attachment" />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="boarder-btn boarder-btn-outline" id="modal-cancel-btn">
+            Cancel
+          </button>
+          <button type="submit" form="new-message-form" class="boarder-btn boarder-btn-primary">
+            Send Message
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/boarder/messages.js"></script>
+    <script type="module">
+      import { getIcon } from '../../../js/shared/icons.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.icon-placeholder').forEach(el => {
+          const iconName = el.dataset.icon;
+          const className = el.className.replace('icon-placeholder', '').trim();
+          const iconHtml = getIcon(iconName, { className });
+          el.outerHTML = iconHtml;
+        });
+      });
+    </script>
+  </body>
+</html>

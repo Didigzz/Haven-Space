@@ -4,6 +4,8 @@
  * Handles interactive features for the problem-solving focused boarder dashboard
  */
 
+import { getIcon } from '../../shared/icons.js';
+
 // Dashboard state management
 const dashboardState = {
   user: {
@@ -14,6 +16,8 @@ const dashboardState = {
   payments: [],
   savedSearches: [],
   documents: [],
+  // Track user's contract status
+  contractStatus: 'application', // 'application' | 'contract' | 'active-lease'
 };
 
 /**
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeSavedSearches();
   initializeDocumentVault();
   initializeApplicationTracker();
+  initializeDynamicCards();
 });
 
 /**
@@ -246,9 +251,7 @@ function showNotification(message, type = 'info') {
   notification.className = `boarder-notification boarder-notification-${type}`;
   notification.innerHTML = `
     <div class="boarder-notification-content">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+      ${getIcon('infoCircle', { width: 20, height: 20 })}
       <span>${message}</span>
     </div>
   `;
@@ -351,6 +354,192 @@ function updateDashboardUI() {
   console.log(`${upcomingPayments} upcoming payments`);
 }
 
+/**
+ * Initialize dynamic cards that change based on user's contract status
+ */
+function initializeDynamicCards() {
+  updateDynamicCards();
+}
+
+/**
+ * Update card to show Utilities Load status (post-contract)
+ * High utility feature for Philippine boarders - prevents running out of electricity at 2 AM
+ */
+function updateUtilitiesCard(card) {
+  const label = card.querySelector('.boarder-stat-label');
+  const value = card.querySelector('.boarder-stat-value');
+  const description = card.querySelector('.boarder-stat-description');
+  const icon = card.querySelector('.boarder-stat-icon');
+
+  if (label) {
+    label.textContent = 'Utilities Load';
+  }
+  if (icon) {
+    icon.className = 'boarder-stat-icon orange';
+    icon.innerHTML = getIcon('lightning');
+  }
+  if (value) {
+    value.textContent = '₱450';
+  }
+  if (description) {
+    description.innerHTML = `
+      <span class="status-dot status-dot-warning"></span>
+      5 kWh remaining • ₱1.00/kWh
+    `;
+  }
+}
+
+/**
+ * Update dynamic cards based on user's contract/application phase
+ * Cards switch content automatically when user signs contract
+ */
+function updateDynamicCards() {
+  const utilitiesCard = document.querySelector('[data-dynamic-card="utilities"]');
+  const maintenanceCard = document.querySelector('[data-dynamic-card="maintenance"]');
+  const leaseCard = document.querySelector('[data-dynamic-card="lease"]');
+
+  const isPostContract =
+    dashboardState.contractStatus === 'contract' ||
+    dashboardState.contractStatus === 'active-lease';
+
+  // Update utilities card (only shown post-contract)
+  if (utilitiesCard) {
+    if (isPostContract) {
+      updateUtilitiesCard(utilitiesCard);
+    } else {
+      // Hide utilities card for applicants (not relevant yet)
+      utilitiesCard.style.display = 'none';
+    }
+  }
+
+  if (!maintenanceCard || !leaseCard) {
+    return;
+  }
+
+  if (isPostContract) {
+    // Switch to Maintenance Status and Lease Timeline
+    updateMaintenanceCard(maintenanceCard);
+    updateLeaseCard(leaseCard);
+  } else {
+    // Show Application Progress and Lease Start info
+    updateApplicationProgressCard(maintenanceCard);
+    updateLeaseTimelineCard(leaseCard);
+  }
+}
+
+/**
+ * Update card to show Maintenance Status (post-contract)
+ */
+function updateMaintenanceCard(card) {
+  const label = card.querySelector('.boarder-stat-label');
+  const value = card.querySelector('.boarder-stat-value');
+  const description = card.querySelector('.boarder-stat-description');
+  const icon = card.querySelector('.boarder-stat-icon');
+
+  if (label) {
+    label.textContent = 'Maintenance Status';
+  }
+  if (icon) {
+    icon.innerHTML = getIcon('wrenchScrewdriver');
+  }
+  if (value) {
+    value.textContent = 'No Issues';
+  }
+  if (description) {
+    description.innerHTML = `
+      <span class="status-dot status-dot-success"></span>
+      All systems functional
+    `;
+  }
+}
+
+/**
+ * Update card to show Lease Timeline (post-contract)
+ */
+function updateLeaseCard(card) {
+  const label = card.querySelector('.boarder-stat-label');
+  const value = card.querySelector('.boarder-stat-value');
+  const description = card.querySelector('.boarder-stat-description');
+  const icon = card.querySelector('.boarder-stat-icon');
+
+  if (label) {
+    label.textContent = 'Lease Timeline';
+  }
+  if (icon) {
+    icon.innerHTML = getIcon('calendarDays');
+  }
+  if (value) {
+    value.textContent = '11 months';
+  }
+  if (description) {
+    description.innerHTML = `
+      <span class="status-dot status-dot-info"></span>
+      Ends: Jan 15, 2026
+    `;
+  }
+}
+
+/**
+ * Update card to show Application Progress (pre-contract)
+ */
+function updateApplicationProgressCard(card) {
+  const label = card.querySelector('.boarder-stat-label');
+  const value = card.querySelector('.boarder-stat-value');
+  const description = card.querySelector('.boarder-stat-description');
+  const icon = card.querySelector('.boarder-stat-icon');
+
+  if (label) {
+    label.textContent = 'Application Progress';
+  }
+  if (icon) {
+    icon.innerHTML = getIcon('shieldCheck');
+  }
+  if (value) {
+    value.textContent = '2/4 Steps';
+  }
+  if (description) {
+    description.innerHTML = `
+      <span class="status-dot status-dot-success"></span>
+      1 approved, 1 pending review
+    `;
+  }
+}
+
+/**
+ * Update card to show Lease Start Timeline (pre-contract)
+ */
+function updateLeaseTimelineCard(card) {
+  const label = card.querySelector('.boarder-stat-label');
+  const value = card.querySelector('.boarder-stat-value');
+  const description = card.querySelector('.boarder-stat-description');
+  const icon = card.querySelector('.boarder-stat-icon');
+
+  if (label) {
+    label.textContent = 'Lease Timeline';
+  }
+  if (icon) {
+    icon.innerHTML = getIcon('calendarDays');
+  }
+  if (value) {
+    value.textContent = 'Starting Soon';
+  }
+  if (description) {
+    description.innerHTML = `
+      <span class="status-dot status-dot-info"></span>
+      Expected: Feb 1, 2025
+    `;
+  }
+}
+
+/**
+ * Set user's contract status and update cards
+ * @param {string} status - 'application' | 'contract' | 'active-lease'
+ */
+function setContractStatus(status) {
+  dashboardState.contractStatus = status;
+  updateDynamicCards();
+}
+
 // Add animation keyframes for notifications
 const style = document.createElement('style');
 style.textContent = `
@@ -364,7 +553,7 @@ style.textContent = `
       opacity: 1;
     }
   }
-  
+
   @keyframes slideOut {
     from {
       transform: translateX(0);
@@ -375,13 +564,13 @@ style.textContent = `
       opacity: 0;
     }
   }
-  
+
   .boarder-notification-content {
     display: flex;
     align-items: center;
     gap: 12px;
   }
-  
+
   .boarder-notification-content svg {
     width: 20px;
     height: 20px;
@@ -390,4 +579,13 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Export functions for external use
-export { dashboardState, loadDashboardData, showNotification, getUserLocation, handleSearch };
+export {
+  dashboardState,
+  loadDashboardData,
+  showNotification,
+  getUserLocation,
+  handleSearch,
+  initializeDynamicCards,
+  updateDynamicCards,
+  setContractStatus,
+};

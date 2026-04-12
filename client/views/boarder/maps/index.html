@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
     <title>Map View - Haven Space</title>
     <!-- Leaflet CSS -->
     <link
@@ -40,55 +41,28 @@
             <!-- Map Controls -->
             <div class="map-controls">
               <button class="map-control-btn" id="locate-me" title="Use my location">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                <span
+                  data-icon="target"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
               </button>
               <button class="map-control-btn" id="zoom-in" title="Zoom in">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
+                <span
+                  data-icon="plusLarge"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
               </button>
               <button class="map-control-btn" id="zoom-out" title="Zoom out">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M20 12H4"
-                  />
-                </svg>
+                <span
+                  data-icon="minusLarge"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
               </button>
             </div>
 
@@ -117,20 +91,13 @@
 
               <!-- Search Input -->
               <div class="search-input-wrapper">
-                <svg
+                <span
                   class="search-icon"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                  data-icon="search"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
                 <input
                   type="text"
                   class="search-panel-input"
@@ -149,91 +116,39 @@
               <!-- Quick Filters -->
               <div class="quick-filters">
                 <button class="quick-filter-btn active" data-distance="500">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <span
+                    data-icon="target"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
                   500m
                 </button>
                 <button class="quick-filter-btn" data-distance="1000">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <span
+                    data-icon="target"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
                   1km
                 </button>
                 <button class="quick-filter-btn" data-distance="2000">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <span
+                    data-icon="target"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
                   2km
                 </button>
                 <button class="quick-filter-btn" data-distance="5000">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <span
+                    data-icon="target"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
                   5km
                 </button>
               </div>
@@ -562,10 +477,7 @@
               ${statusBadge[markerType] || ''}
               <h3 class="property-popup-title">${property.title}</h3>
               <div class="property-popup-location">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
+                <span data-icon="location" data-icon-width="12" data-icon-height="12" data-icon-stroke-width="1.5"></span>
                 ${property.location}
               </div>
               <div class="property-popup-meta">
@@ -583,9 +495,7 @@
                 <button class="popup-btn popup-btn-outline" onclick="window.saveProperty(${
                   property.id
                 })">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"/>
-                  </svg>
+                  <span data-icon="bookmark" data-icon-width="16" data-icon-height="16" data-icon-stroke-width="1.5"></span>
                   Save
                 </button>
                 ${actionButton}
@@ -727,9 +637,7 @@
             tag => `
           <div class="filter-tag active" data-type="${tag.type}" data-value="${tag.value}">
             ${tag.label}
-            <svg class="remove-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+            <span class="remove-icon" data-icon="close" data-icon-width="16" data-icon-height="16" data-icon-stroke-width="1.5"></span>
           </div>
         `
           )
@@ -766,9 +674,7 @@
         if (properties.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
-              <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-              </svg>
+              <span class="empty-state-icon" data-icon="grid2x2" data-icon-width="48" data-icon-height="48" data-icon-stroke-width="1.5"></span>
               <h3 class="empty-state-title">No properties found</h3>
               <p class="empty-state-description">Try adjusting your filters or search area</p>
             </div>
@@ -795,17 +701,12 @@
               <div class="property-card-header">
                 <h3 class="property-card-title">${property.title}</h3>
                 <div class="property-card-rating">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
+                  <span data-icon="starSolid" data-icon-width="14" data-icon-height="14" style="color: #f59e0b;"></span>
                   ${property.rating}
                 </div>
               </div>
               <div class="property-card-location">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
+                <span data-icon="location" data-icon-width="12" data-icon-height="12" data-icon-stroke-width="1.5"></span>
                 ${property.location}
               </div>
               <div class="property-card-meta">

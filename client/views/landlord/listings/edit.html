@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
     <title>Edit Property - Haven Space</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -30,19 +31,12 @@
         <div class="edit-property-content">
           <div class="edit-property-header">
             <a href="../myproperties/index.html" class="back-btn">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
+              <span
+                data-icon="arrowLeft"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
               Back to Properties
             </a>
             <h1>Edit Property</h1>
@@ -126,17 +120,6 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="property-rooms">Number of Rooms Available *</label>
-                  <input
-                    type="number"
-                    id="property-rooms"
-                    name="propertyRooms"
-                    placeholder="5"
-                    min="1"
-                    required
-                  />
-                </div>
-                <div class="form-group">
                   <label for="property-capacity">Capacity per Room *</label>
                   <select id="property-capacity" name="propertyCapacity" required>
                     <option value="">Select capacity</option>
@@ -145,6 +128,14 @@
                     <option value="3">3 persons</option>
                     <option value="4">4+ persons</option>
                     <option value="custom">Custom</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="property-status">Property Status *</label>
+                  <select id="property-status" name="propertyStatus" required>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="full">Fully Occupied</option>
                   </select>
                 </div>
               </div>
@@ -158,15 +149,6 @@
                   placeholder="e.g. 5, 6, 8"
                   min="1"
                 />
-              </div>
-
-              <div class="form-group">
-                <label for="property-status">Property Status *</label>
-                <select id="property-status" name="propertyStatus" required>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="full">Fully Occupied</option>
-                </select>
               </div>
             </section>
 
@@ -210,25 +192,12 @@
 
               <div class="form-group">
                 <button type="button" id="set-location-btn" class="btn-set-location">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <span
+                    data-icon="target"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
                   Set Location on Map
                 </button>
                 <input type="hidden" id="property-latitude" name="propertyLatitude" />
@@ -245,152 +214,96 @@
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="wifi" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
-                      />
-                    </svg>
+                    <span
+                      data-icon="sparkles"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     WiFi
                   </span>
                 </label>
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="aircon" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <span
+                      data-icon="computerDesktop"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     Air Conditioning
                   </span>
                 </label>
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="furnished" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <span
+                      data-icon="videoCamera"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     Fully Furnished
                   </span>
                 </label>
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="parking" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                      />
-                    </svg>
+                    <span
+                      data-icon="home"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     Parking
                   </span>
                 </label>
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="laundry" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
+                    <span
+                      data-icon="history"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     Laundry
                   </span>
                 </label>
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="kitchen" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-                      />
-                    </svg>
+                    <span
+                      data-icon="moon"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     Kitchen Access
                   </span>
                 </label>
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="cr" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                      />
-                    </svg>
+                    <span
+                      data-icon="clipboard"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     CR Inside Room
                   </span>
                 </label>
                 <label class="amenity-checkbox">
                   <input type="checkbox" name="amenities" value="cctv" />
                   <span class="amenity-label">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <span
+                      data-icon="camera"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     CCTV Security
                   </span>
                 </label>
@@ -473,19 +386,12 @@
                     hidden
                   />
                   <div class="upload-placeholder">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <span
+                      data-icon="photo"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
                     <p><strong>Click to upload</strong> or drag and drop</p>
                     <p class="upload-hint">PNG, JPG, JPEG up to 5MB each (Max 10 photos)</p>
                   </div>
@@ -495,30 +401,104 @@
               <div id="photo-error" class="photo-error"></div>
             </section>
 
+            <!-- Room Availability Management Section -->
+            <section class="form-section">
+              <h2 class="section-title">Room Availability Management</h2>
+              <p class="section-description">
+                Manage room capacity, availability status, and upload photos for available rooms.
+              </p>
+
+              <!-- Room Capacity -->
+              <div class="room-capacity-section">
+                <div class="form-group">
+                  <label for="room-capacity-input">Total Number of Rooms *</label>
+                  <div class="capacity-input-wrapper">
+                    <input
+                      type="number"
+                      id="room-capacity-input"
+                      name="roomCapacity"
+                      min="1"
+                      max="100"
+                      value="10"
+                      required
+                    />
+                    <button type="button" class="btn-primary" id="update-capacity-btn">
+                      <span
+                        data-icon="check"
+                        data-icon-width="24"
+                        data-icon-height="24"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      Update
+                    </button>
+                  </div>
+                  <p class="capacity-help-text">
+                    Adjust the total number of rooms. Reducing capacity will remove available rooms
+                    first (occupied rooms are preserved).
+                  </p>
+                </div>
+              </div>
+
+              <!-- Rooms List -->
+              <div class="rooms-list-section">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem">Individual Rooms</h3>
+                <div id="rooms-list" class="rooms-list"></div>
+              </div>
+
+              <!-- Hidden file input for room image upload -->
+              <input
+                type="file"
+                id="room-image-upload"
+                accept="image/*"
+                multiple
+                style="display: none"
+              />
+            </section>
+
             <!-- Form Actions -->
             <div class="form-actions">
               <button type="button" id="cancel-btn" class="btn-cancel">Cancel</button>
               <button type="button" id="save-draft-btn" class="btn-save-draft">Save Draft</button>
               <button type="submit" class="btn-submit">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+                <span
+                  data-icon="check"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
                 Save Changes
               </button>
             </div>
           </form>
         </div>
       </main>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal" class="image-preview-modal">
+      <div class="modal-overlay"></div>
+      <div class="image-preview-content">
+        <button class="image-modal-close" id="image-modal-close">
+          <span
+            data-icon="xMark"
+            data-icon-width="24"
+            data-icon-height="24"
+            data-icon-stroke-width="2"
+          ></span>
+        </button>
+        <img id="image-preview-source" src="" alt="Room preview" />
+        <div class="image-preview-actions">
+          <button class="btn-danger" id="delete-room-image">
+            <span
+              data-icon="trash"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+            Delete Image
+          </button>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="../../../js/views/landlord/edit-property.js"></script>

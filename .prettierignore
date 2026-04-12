@@ -1,6 +1,10 @@
 node_modules
+vendor/
 dist/
 build/
 *.log
 *.tmp
 .DS_Store
+.playwright-mcp
+.hadolint.yaml
+.github/workflows/docker-ci.yml

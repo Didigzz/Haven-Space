@@ -2,18 +2,126 @@
 
 /**
  * Build script for production deployment
- * Copies public-facing files to dist folder with flat structure
- * and fixes relative paths for root deployment
+ * Automatically scans all files under client/ and copies them to dist/
+ * with a flat structure suitable for GitHub Pages root deployment.
  */
 
-import { copyFileSync, mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import {
+  copyFileSync,
+  mkdirSync,
+  rmSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  statSync,
+} from 'fs';
+import { dirname, join, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const SRC = join(ROOT, 'client');
 const DIST = join(ROOT, 'dist');
+
+// --- Helpers ---
+
+/**
+ * Recursively scan a directory and return all files matching the given extensions.
+ * Returns array of paths relative to the base directory.
+ */
+function scanDirectory(baseDir, extensions) {
+  const results = [];
+
+  function walk(dir) {
+    if (!existsSync(dir)) return;
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      } else if (entry.isFile()) {
+        const ext = '.' + entry.name.split('.').pop().toLowerCase();
+        if (extensions.includes(ext)) {
+          results.push(relative(baseDir, fullPath));
+        }
+      }
+    }
+  }
+
+  walk(baseDir);
+  // Normalize all paths to forward slashes for consistent processing
+  return results.map(p => p.replace(/\\/g, '/')).sort();
+}
+
+/**
+ * Copy a file from src relative path to dest relative path.
+ */
+function copyFile(srcRelative, destRelative, srcBase, distBase) {
+  const srcPath = join(srcBase, srcRelative);
+  const destPath = join(distBase, destRelative);
+
+  if (!existsSync(srcPath)) {
+    console.warn(`⚠️  Warning: ${srcPath} not found, skipping...`);
+    return;
+  }
+
+  mkdirSync(dirname(destPath), { recursive: true });
+  copyFileSync(srcPath, destPath);
+}
+
+/**
+ * Fix relative paths in HTML content for deployment.
+ * `depth` = how many levels up from the file to the root (for ../ prefix).
+ */
+function fixPaths(htmlContent, depth) {
+  const prefix = '../'.repeat(depth);
+
+  // Fix CSS paths (../../css/ -> ../css/ or css/)
+  let fixed = htmlContent.replace(/(href=["'])(\.\.\/)*(css\/[^"']+\.css["'])/g, `$1${prefix}$3`);
+
+  // Fix JS paths (../../js/ -> ../js/ or js/)
+  fixed = fixed.replace(/(src=["'])(\.\.\/)*(js\/[^"']+\.js["'])/g, `$1${prefix}$3`);
+
+  // Fix image paths (../../assets/ -> ../assets/ or assets/)
+  fixed = fixed.replace(
+    /(src=["'])(\.\.\/)*(assets\/[^"']+\.(png|jpg|svg|webp|jpeg|gif|ico|webm)["'])/g,
+    `$1${prefix}$3`
+  );
+
+  // Fix auth page links
+  fixed = fixed.replace(/(href=["'])(\.\.\/)*auth\//g, `$1${prefix}auth/`);
+
+  // Fix maps.html link
+  fixed = fixed.replace(/(href=["'])maps\.html(["'])/g, `$1${prefix}maps.html$2`);
+
+  // Fix role dashboard links (boarder/, landlord/, admin/)
+  fixed = fixed.replace(/(href=["'])(\.\.\/)*(boarder\/)/g, `$1${prefix}boarder/`);
+  fixed = fixed.replace(/(href=["'])(\.\.\/)*(landlord\/)/g, `$1${prefix}landlord/`);
+  fixed = fixed.replace(/(href=["'])(\.\.\/)*(admin\/)/g, `$1${prefix}admin/`);
+
+  // Fix index.html root links
+  fixed = fixed.replace(/(href=["'])(\.\.\/)+(index\.html)/g, `$1${prefix}$3`);
+
+  return fixed;
+}
+
+/**
+ * Calculate the depth (number of ../ needed) from a file's position to the dist root.
+ */
+function depthToRoot(filePath) {
+  // Count directory separators to determine depth
+  // e.g., 'boarder/applications/index.html' → depth 2
+  // e.g., 'index.html' → depth 0
+  // Normalize to forward slashes for cross-platform compatibility
+  const normalizedPath = filePath.replace(/\\/g, '/');
+  const parts = normalizedPath.split('/');
+  return parts.length - 1; // subtract 1 because the last part is the filename
+}
+
+// --- Main Build ---
+
+console.log('Building for production...\n');
 
 // Clean dist folder
 if (existsSync(DIST)) {
@@ -27,272 +135,162 @@ if (existsSync(DIST)) {
 }
 mkdirSync(DIST, { recursive: true });
 
-// Copy public views to root of dist
-const publicFiles = [
-  // Public pages
-  'views/public/index.html',
-  'views/public/maps.html',
-  'views/public/auth/login.html',
-  'views/public/auth/signup.html',
-  'views/public/auth/forgot-password.html',
-  // Admin pages
-  'views/admin/index.html',
-  // Boarder pages
-  'views/boarder/index.html',
-  'views/boarder/maps/index.html',
-  'views/boarder/applications/index.html',
-  'views/boarder/applications/detail.html',
-  'views/boarder/maintenance/index.html',
-  'views/boarder/maintenance/create.html',
-  'views/boarder/messages/index.html',
-  'views/boarder/notices/index.html',
-  'views/boarder/payments/index.html',
-  'views/boarder/payments/pay.html',
-  'views/boarder/profile/index.html',
-  'views/boarder/rooms/index.html',
-  'views/boarder/rooms/detail.html',
-  // Landlord pages
-  'views/landlord/index.html',
-  'views/landlord/maps/index.html',
-  'views/landlord/applications/index.html',
-  'views/landlord/applications/detail.html',
-  'views/landlord/boarders/index.html',
-  'views/landlord/boarders/detail.html',
-  'views/landlord/listings/index.html',
-  'views/landlord/listings/create.html',
-  'views/landlord/listings/edit.html',
-  'views/landlord/maintenance/index.html',
-  'views/landlord/maintenance/detail.html',
-  'views/landlord/messages/index.html',
-  'views/landlord/myproperties/index.html',
-  'views/landlord/payments/index.html',
-  'views/landlord/payments/record.html',
-  'views/landlord/profile/index.html',
-  'views/landlord/reports/index.html',
-];
+// ===== 1. Scan all files =====
 
-// Copy CSS files
-const cssFiles = [
-  'css/global.css',
-  // Public CSS
-  'css/views/public/public.css',
-  'css/views/public/auth.css',
-  'css/views/public/maps.css',
-  // Admin CSS
-  'css/views/admin/admin.css',
-  // Boarder CSS
-  'css/views/boarder/boarder.css',
-  'css/views/boarder/maps.css',
-  'css/views/boarder/boarder-applications.css',
-  'css/views/boarder/boarder-maintenance.css',
-  'css/views/boarder/boarder-payments.css',
-  'css/views/boarder/boarder-rooms.css',
-  // Landlord CSS
-  'css/views/landlord/landlord.css',
-  'css/views/landlord/maps.css',
-  'css/views/landlord/landlord-applications.css',
-  'css/views/landlord/landlord-listings.css',
-  'css/views/landlord/landlord-maintenance.css',
-  'css/views/landlord/landlord-payments.css',
-  'css/views/landlord/create-listing.css',
-  'css/views/landlord/edit-property.css',
-  'css/views/landlord/your-properties.css',
-  // Components
-  'css/components/logo-cloud.css',
-  'css/components/sidebar.css',
-  'css/components/navbar.css',
-];
+const htmlFiles = scanDirectory(join(SRC, 'views'), ['.html']);
+const cssFiles = scanDirectory(join(SRC, 'css'), ['.css']);
+const jsFiles = scanDirectory(join(SRC, 'js'), ['.js']);
+const imageFiles = scanDirectory(join(SRC, 'assets'), [
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.svg',
+  '.webp',
+  '.gif',
+  '.ico',
+  '.webm',
+]);
+const componentFiles = scanDirectory(join(SRC, 'components'), ['.html']);
 
-// Copy JS files
-const jsFiles = [
-  'js/main.js',
-  'js/components/logo-cloud.js',
-  'js/components/navbar.js',
-  'js/components/sidebar.js',
-  'js/shared/state.js',
-  // Landing
-  'js/views/landing/landing.js',
-  // Admin
-  'js/views/admin/admin.js',
-  // Boarder
-  'js/views/boarder/dashboard.js',
-  'js/views/boarder/boarder.js',
-  'js/views/boarder/boarder-applications.js',
-  'js/views/boarder/boarder-maintenance.js',
-  'js/views/boarder/boarder-payments.js',
-  'js/views/boarder/boarder-rooms.js',
-  // Landlord
-  'js/views/landlord/landlord.js',
-  'js/views/landlord/maps.js',
-  'js/views/landlord/landlord-applications.js',
-  'js/views/landlord/landlord-listings.js',
-  'js/views/landlord/landlord-maintenance.js',
-  'js/views/landlord/landlord-payments.js',
-  'js/views/landlord/create-listing.js',
-  'js/views/landlord/edit-property.js',
-  'js/views/landlord/my-properties.js',
-  'js/views/landlord/your-properties.js',
-  // Auth
-  'js/auth/login.js',
-  'js/auth/signup.js',
-  'js/auth/forgot-password.js',
-];
+console.log(`Found ${htmlFiles.length} HTML files`);
+console.log(`Found ${cssFiles.length} CSS files`);
+console.log(`Found ${jsFiles.length} JS files`);
+console.log(`Found ${imageFiles.length} image files`);
+console.log(`Found ${componentFiles.length} component HTML files`);
+console.log('');
 
-// Copy images
-const imageFiles = [
-  'assets/images/public/login.png',
-  'assets/images/public/PrimeRealEstate.png',
-  'assets/images/Haven_Space_Logo.png',
-  'assets/images/nvidia.svg',
-  'assets/svg/google-icon-logo.svg',
-  'assets/svg/apple-dark-logo.svg',
-];
+// ===== 2. Process HTML files with path fixing =====
 
-console.log('Building for production...');
+const roleFolders = ['admin', 'boarder', 'landlord', 'public'];
 
-// Helper to copy file and create directories
-function copyFile(src, dest) {
-  const srcPath = join(SRC, src);
-  const destPath = join(DIST, dest);
+htmlFiles.forEach(file => {
+  // file is relative to views/, e.g., 'boarder/applications/index.html'
+  // Already normalized to forward slashes by scanDirectory
+  const parts = file.split('/');
+  const fileName = parts[parts.length - 1];
+  const lastFolder = parts.length > 1 ? parts[parts.length - 2] : '';
 
+  const srcPath = join(SRC, 'views', file);
   if (!existsSync(srcPath)) {
     console.warn(`⚠️  Warning: ${srcPath} not found, skipping...`);
     return;
   }
 
-  mkdirSync(dirname(destPath), { recursive: true });
-  copyFileSync(srcPath, destPath);
-  console.log(`✓ Copied ${src} → ${dest}`);
-}
-
-// Helper to fix relative paths in HTML files
-function fixPaths(htmlContent, depth) {
-  // Calculate how many levels up we need to go
-  const prefix = '../'.repeat(depth);
-
-  // Fix CSS paths (../../css/ -> /css/ or css/)
-  let fixed = htmlContent.replace(/(href=["'])(\.\.\/)*(css\/[^"']+\.css["'])/g, `$1${prefix}$3`);
-
-  // Fix JS paths (../../js/ -> /js/ or js/)
-  fixed = fixed.replace(/(src=["'])(\.\.\/)*(js\/[^"']+\.js["'])/g, `$1${prefix}$3`);
-
-  // Fix image paths (../../assets/ -> /assets/ or assets/)
-  fixed = fixed.replace(
-    /(src=["'])(\.\.\/)*(assets\/[^"']+\.(png|jpg|svg|webp)["'])/g,
-    `$1${prefix}$3`
-  );
-
-  // Fix auth page links (auth/login.html -> /auth/login.html or auth/login.html)
-  fixed = fixed.replace(/(href=["'])(\.\.\/)*auth\//g, `$1${prefix}auth/`);
-
-  // Fix maps.html link
-  fixed = fixed.replace(/(href=["'])maps\.html(["'])/g, `$1${prefix}maps.html$2`);
-
-  return fixed;
-}
-
-// Copy public HTML files to root with path fixes
-publicFiles.forEach(file => {
-  // Extract path parts to determine destination
-  const parts = file.split('/'); // e.g., ['views', 'boarder', 'applications', 'index.html']
-  const fileName = parts.pop(); // 'index.html'
-  const subfolder = parts.pop(); // e.g., 'applications', 'auth', 'maps'
-  const parentFolder = parts.pop(); // e.g., 'boarder', 'landlord', 'public'
-
-  const srcPath = join(SRC, file);
-
-  // Determine destination path based on folder structure
+  // Determine destination path
   let destPath;
   let depth = 0;
 
-  // Build the destination path based on parent and subfolder
-  if (parentFolder === 'public') {
-    if (subfolder === 'auth') {
-      // Keep auth files in auth/ subfolder
+  // parts[0] is the role folder
+  const role = parts[0];
+  const isRoleFolder = roleFolders.includes(role);
+
+  if (!isRoleFolder) {
+    console.warn(`⚠️  Warning: Unknown role folder "${role}" in ${file}, skipping...`);
+    return;
+  }
+
+  if (role === 'public') {
+    if (lastFolder === 'auth') {
+      // Auth files → dist/auth/
       destPath = join(DIST, 'auth', fileName);
       depth = 1;
     } else {
-      // Put other public files at root
+      // Other public files → dist root
       destPath = join(DIST, fileName);
       depth = 0;
     }
-  } else if (parentFolder === 'admin') {
-    // Keep admin files in admin/ subfolder
-    destPath = join(DIST, 'admin', fileName);
-    depth = 1;
-  } else if (parentFolder === 'boarder') {
-    if (subfolder === 'maps') {
-      // Keep boarder maps files in boarder/maps/ subfolder
-      destPath = join(DIST, 'boarder', 'maps', fileName);
-      depth = 2;
+  } else if (role === 'admin') {
+    // Admin files → dist/admin/...
+    if (parts.length === 2) {
+      // Direct admin file (e.g., admin/index.html)
+      destPath = join(DIST, 'admin', fileName);
+      depth = 1;
     } else {
-      // Keep other boarder files in boarder/ subfolder
-      destPath = join(DIST, 'boarder', subfolder, fileName);
-      depth = 2;
+      // Admin subfolder (e.g., admin/settings/index.html)
+      const subPath = parts.slice(1, -1).join('/');
+      destPath = join(DIST, 'admin', subPath, fileName);
+      depth = depthToRoot(join('admin', subPath, fileName));
     }
-  } else if (parentFolder === 'landlord') {
-    if (subfolder === 'maps') {
-      // Keep landlord maps files in landlord/maps/ subfolder
-      destPath = join(DIST, 'landlord', 'maps', fileName);
-      depth = 2;
+  } else if (role === 'boarder') {
+    if (parts.length === 2) {
+      // Direct boarder file (e.g., boarder/index.html)
+      destPath = join(DIST, 'boarder', fileName);
+      depth = 1;
     } else {
-      // Keep other landlord files in landlord/ subfolder
-      destPath = join(DIST, 'landlord', subfolder, fileName);
-      depth = 2;
+      // Boarder subfolder (e.g., boarder/applications/index.html)
+      const subPath = parts.slice(1, -1).join('/');
+      destPath = join(DIST, 'boarder', subPath, fileName);
+      depth = depthToRoot(join('boarder', subPath, fileName));
     }
-  } else {
-    // Fallback: put at root
-    destPath = join(DIST, fileName);
-    depth = 0;
-  }
-
-  if (!existsSync(srcPath)) {
-    console.warn(`⚠️  Warning: ${srcPath} not found, skipping...`);
-    return;
+  } else if (role === 'landlord') {
+    if (parts.length === 2) {
+      // Direct landlord file (e.g., landlord/index.html)
+      destPath = join(DIST, 'landlord', fileName);
+      depth = 1;
+    } else {
+      // Landlord subfolder
+      const subPath = parts.slice(1, -1).join('/');
+      destPath = join(DIST, 'landlord', subPath, fileName);
+      depth = depthToRoot(join('landlord', subPath, fileName));
+    }
   }
 
   // Read and fix paths
   let content = readFileSync(srcPath, 'utf8');
-
   content = fixPaths(content, depth);
 
   mkdirSync(dirname(destPath), { recursive: true });
   writeFileSync(destPath, content);
 
-  // Determine relative path for console output
-  const relativePath =
-    parentFolder === 'public' && subfolder === 'auth'
-      ? 'auth/'
-      : parentFolder === 'admin'
-      ? 'admin/'
-      : parentFolder === 'boarder' && subfolder === 'maps'
-      ? 'boarder/maps/'
-      : parentFolder === 'boarder'
-      ? `boarder/${subfolder}/`
-      : parentFolder === 'landlord' && subfolder === 'maps'
-      ? 'landlord/maps/'
-      : parentFolder === 'landlord'
-      ? `landlord/${subfolder}/`
-      : '';
-  console.log(`✓ Processed ${file} → ${relativePath}${fileName}`);
+  // Calculate display path
+  const displayDest = relative(DIST, destPath);
+  console.log(`✓ ${file} → ${displayDest}`);
 });
 
-// Copy CSS to css/ folder
+console.log('');
+
+// ===== 3. Copy CSS files → dist/css/ =====
+
 cssFiles.forEach(file => {
-  copyFile(file, file);
+  copyFile(file, `css/${file}`, join(SRC, 'css'), DIST);
+  console.log(`✓ css/${file}`);
 });
 
-// Copy JS to js/ folder
+console.log('');
+
+// ===== 4. Copy JS files → dist/js/ =====
+
 jsFiles.forEach(file => {
-  copyFile(file, file);
+  copyFile(file, `js/${file}`, join(SRC, 'js'), DIST);
+  console.log(`✓ js/${file}`);
 });
 
-// Copy images to assets/ folder
+console.log('');
+
+// ===== 5. Copy image files → dist/assets/ =====
+
 imageFiles.forEach(file => {
-  copyFile(file, file);
+  copyFile(file, `assets/${file}`, join(SRC, 'assets'), DIST);
+  console.log(`✓ assets/${file}`);
 });
+
+console.log('');
+
+// ===== 6. Copy component HTML files → dist/components/ =====
+
+componentFiles.forEach(file => {
+  copyFile(file, `components/${file}`, join(SRC, 'components'), DIST);
+  console.log(`✓ components/${file}`);
+});
+
+// ===== Done =====
 
 console.log('\n✅ Build complete! Production files are in ./dist');
+console.log(`\n   ${htmlFiles.length} HTML files processed`);
+console.log(`   ${cssFiles.length} CSS files copied`);
+console.log(`   ${jsFiles.length} JS files copied`);
+console.log(`   ${imageFiles.length} image files copied`);
+console.log(`   ${componentFiles.length} component files copied`);
 console.log('\nURLs will now be:');
 console.log('\n  Public:');
 console.log('    havenspace.com/ → Homepage');
@@ -312,6 +310,8 @@ console.log('    havenspace.com/boarder/notices/ → Notices');
 console.log('    havenspace.com/boarder/payments/ → Payments');
 console.log('    havenspace.com/boarder/profile/ → Profile');
 console.log('    havenspace.com/boarder/rooms/ → Rooms');
+console.log('    havenspace.com/boarder/find-a-room/ → Find a Room');
+console.log('    havenspace.com/boarder/lease/ → Lease');
 console.log('\n  Landlord:');
 console.log('    havenspace.com/landlord/ → Dashboard');
 console.log('    havenspace.com/landlord/maps/ → Map view');
