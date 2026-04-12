@@ -270,3 +270,32 @@ export function getIconWithAttrs(iconName, attributes = {}) {
 export function getAvailableIcons() {
   return Object.keys(ICON_PATHS);
 }
+
+/**
+ * Initialize all data-icon spans on the page
+ * Finds all <span data-icon="..."> elements and replaces them with SVG icons
+ * Call this on DOMContentLoaded for pages that use data-icon attributes
+ */
+export function initIconElements() {
+  const iconSpans = document.querySelectorAll('[data-icon]');
+
+  iconSpans.forEach(span => {
+    const iconName = span.getAttribute('data-icon');
+    const width = parseInt(span.getAttribute('data-icon-width')) || 24;
+    const height = parseInt(span.getAttribute('data-icon-height')) || 24;
+    const strokeWidth = span.getAttribute('data-icon-stroke-width') || '1.5';
+    const className = span.getAttribute('class') || '';
+
+    // Remove data attributes but keep other classes
+    span.removeAttribute('data-icon');
+    span.removeAttribute('data-icon-width');
+    span.removeAttribute('data-icon-height');
+    span.removeAttribute('data-icon-stroke-width');
+
+    // Generate SVG icon
+    const svgIcon = getIcon(iconName, { width, height, strokeWidth, className });
+
+    // Replace span content with SVG
+    span.innerHTML = svgIcon;
+  });
+}

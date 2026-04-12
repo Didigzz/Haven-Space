@@ -966,3 +966,7 @@ if (response.ok && selectedRole === 'boarder') {
 - **Roommate matching**: Suggest compatible roommates for shared accommodations
 
 ---
+
+-We need to add in the boarder dashboard about Ask of leave, where the boarder can send a leave with writing a note or letter if the leave is sudden or forgot to talk to the landlord
+
+-In the landlord dashbaord there are rooms and to check if the boarder is still onboard the name will be bold, but if the boarder Leave(Ask of Leave - feature in the boarder dashboard where they can leave the baorder), their name will be turn gray or transparent gray. After that the landlord then can update(share information and details of the boarding house) availability of the rooms so that another tenant can apply for it.
