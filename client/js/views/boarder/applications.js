@@ -3,26 +3,61 @@
  * Manages application tracking and status display
  */
 
+import CONFIG from '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { initBoarderStatus } from './status.js';
 import { getIcon } from '../../shared/icons.js';
 import { updateBoarderStatus } from '../../shared/routing.js';
 
+function loginPath() {
+  const pathname = window.location.pathname;
+  if (pathname.includes('github.io')) {
+    return '/Haven-Space/client/views/public/auth/login.html';
+  }
+  if (pathname.includes('/client/views/')) {
+    return '/client/views/public/auth/login.html';
+  }
+  return '/views/public/auth/login.html';
+}
+
+function initialsFrom(user) {
+  const a = (user.first_name || '').trim().charAt(0);
+  const b = (user.last_name || '').trim().charAt(0);
+  return (a + b || 'B').toUpperCase();
+}
+
 /**
  * Initialize Boarder Applications Page
  */
-export function initBoarderApplications() {
+export async function initBoarderApplications() {
+  let user;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, { credentials: 'include' });
+    if (!res.ok) {
+      window.location.href = loginPath();
+      return;
+    }
+    const data = await res.json();
+    user = data.user;
+  } catch {
+    window.location.href = loginPath();
+    return;
+  }
+
+  const name = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Boarder';
+  const initials = initialsFrom(user);
+
   // Initialize sidebar
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     initSidebar({
       role: 'boarder',
       user: {
-        name: 'Juan Dela Cruz',
-        initials: 'JD',
+        name,
+        initials,
         role: 'Boarder',
-        email: 'juan@example.com',
+        email: user.email || '',
       },
     });
   }
@@ -32,10 +67,10 @@ export function initBoarderApplications() {
   if (navbarContainer) {
     initNavbar({
       user: {
-        name: 'Juan Dela Cruz',
-        initials: 'JD',
-        avatarUrl: '',
-        email: 'juan@example.com',
+        name,
+        initials,
+        avatarUrl: user.avatar_url || '',
+        email: user.email || '',
       },
       notificationCount: 3,
     });

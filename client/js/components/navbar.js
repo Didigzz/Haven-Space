@@ -4,6 +4,7 @@
  */
 
 import { getIcon } from '../shared/icons.js';
+import { showToast } from '../shared/toast.js';
 
 /**
  * Initialize navbar component
@@ -440,15 +441,31 @@ function setupUserMenuHandlers(user) {
       // Clear authentication data
       localStorage.removeItem('user');
 
-      const basePath = resolveBasePath();
-      // Use correct path for production vs development mode
-      if (basePath === '') {
-        // Production mode (dist): auth folder is at root
-        window.location.href = '/auth/login.html';
-      } else {
-        // Development mode (client): auth folder is in views/public
-        window.location.href = `${basePath}/views/public/auth/login.html`;
-      }
+      // Show success toast before redirect
+      showToast('You have successfully logged out', 'success', 3000);
+
+      // Redirect to login page after short delay to show toast
+      setTimeout(() => {
+        const pathname = window.location.pathname;
+
+        // Determine correct login path based on current URL structure
+        if (pathname.includes('/dist/')) {
+          // Production mode (dist): auth folder is at root
+          window.location.href = '/auth/login.html';
+        } else if (pathname.includes('/client/views/')) {
+          // Development mode with /client path
+          window.location.href = '/client/views/public/auth/login.html';
+        } else if (pathname.includes('/frontend/views/')) {
+          // Development mode with /frontend path
+          window.location.href = '/frontend/views/public/auth/login.html';
+        } else if (pathname.includes('/views/')) {
+          // Direct /views access
+          window.location.href = '/views/public/auth/login.html';
+        } else {
+          // Fallback: try development path
+          window.location.href = '/client/views/public/auth/login.html';
+        }
+      }, 500);
     });
   }
 }
