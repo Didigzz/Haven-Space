@@ -1,80 +1,92 @@
 <?php
+
 /**
- * Admin — platform settings (key/value)
+ * Admin Settings API
+ * GET /api/admin/settings.php
+ * PATCH /api/admin/settings.php {settings: {...}}
  *
- * GET  — all settings
- * PATCH { settings: { key: value, ... } }
+ * Manages system-wide settings
  */
 
-require_once __DIR__ . '/../cors.php';
-require_once __DIR__ . '/../../src/Core/bootstrap.php';
-require_once __DIR__ . '/../middleware.php';
-
-header('Content-Type: application/json');
-
-use App\Api\Middleware;
-use App\Core\Database\Connection;
-
-Middleware::authorize(['admin']);
-
-$pdo = Connection::getInstance()->getPdo();
-
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    try {
-        $rows = $pdo->query('SELECT setting_key, setting_value, updated_at FROM platform_settings ORDER BY setting_key')
-            ->fetchAll();
-        $map = [];
-        foreach ($rows as $row) {
-            $map[$row['setting_key']] = $row['setting_value'];
-        }
-        echo json_encode(['success' => true, 'data' => $map, 'rows' => $rows]);
-    } catch (\PDOException $e) {
-        error_log('Admin settings get error: ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to load settings']);
-    }
-    exit;
+if (!function_exists('json_response')) {
+    require_once __DIR__ . '/../../src/Core/bootstrap.php';
+    require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
+    require_once __DIR__ . '/../cors.php';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $settings = $input['settings'] ?? null;
-    if (!is_array($settings) || empty($settings)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'settings object required']);
-        exit;
+use App\Core\Database\Connection;
+
+$method = $_SERVER['REQUEST_METHOD'];
+$pdo = Connection::getInstance()->getPdo();
+
+try {
+    switch ($method) {
+        case 'GET':
+            handleGet($pdo);
+            break;
+        case 'PATCH':
+            handlePatch($pdo);
+            break;
+        default:
+            json_response(405, ['error' => 'Method not allowed']);
+    }
+} catch (Exception $e) {
+    error_log('Admin settings error: ' . $e->getMessage());
+    json_response(500, ['error' => 'Failed to process request']);
+}
+
+function handleGet($pdo) {
+    // Fetch all settings
+    $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings");
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Convert to key-value array
+    $settings = [];
+    foreach ($rows as $row) {
+        $settings[$row['setting_key']] = $row['setting_value'];
     }
 
+    // Return settings with defaults if not found
+    $data = [
+        'maintenance_message' => $settings['maintenance_message'] ?? '',
+        'terms_version' => $settings['terms_version'] ?? '1.0',
+        'privacy_version' => $settings['privacy_version'] ?? '1.0',
+        'platform_fee_percent' => $settings['platform_fee_percent'] ?? '5.00',
+        'notify_admin_new_landlord' => $settings['notify_admin_new_landlord'] ?? '0',
+    ];
+
+    json_response(200, ['data' => $data]);
+}
+
+function handlePatch($pdo) {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!isset($input['settings']) || !is_array($input['settings'])) {
+        json_response(400, ['error' => 'Missing or invalid settings object']);
+    }
+
+    $settings = $input['settings'];
     $allowedKeys = [
         'maintenance_message',
         'terms_version',
         'privacy_version',
-        'notify_admin_new_landlord',
         'platform_fee_percent',
+        'notify_admin_new_landlord',
     ];
 
-    try {
-        $pdo->beginTransaction();
-        $stmt = $pdo->prepare(
-            'INSERT INTO platform_settings (setting_key, setting_value) VALUES (?, ?)
-             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)'
-        );
-        foreach ($settings as $key => $value) {
-            if (!in_array($key, $allowedKeys, true)) {
-                continue;
-            }
-            $stmt->execute([$key, (string) $value]);
+    foreach ($settings as $key => $value) {
+        if (!in_array($key, $allowedKeys)) {
+            continue; // Skip unknown keys
         }
-        $pdo->commit();
-        echo json_encode(['success' => true, 'message' => 'Settings saved']);
-    } catch (\PDOException $e) {
-        $pdo->rollBack();
-        error_log('Admin settings patch error: ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to save settings']);
-    }
-    exit;
-}
 
-http_response_code(405);
-echo json_encode(['error' => 'Method not allowed']);
+        // Upsert setting
+        $stmt = $pdo->prepare("
+            INSERT INTO settings (setting_key, setting_value, updated_at)
+            VALUES (?, ?, NOW())
+            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()
+        ");
+        $stmt->execute([$key, $value]);
+    }
+
+    json_response(200, ['message' => 'Settings updated successfully']);
+}

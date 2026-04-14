@@ -41,7 +41,7 @@ function initialsFrom(user) {
 export async function initBoarderDashboard() {
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
     if (!res.ok) {
       window.location.href = loginPath();
       return;
@@ -128,8 +128,6 @@ export async function initBoarderDashboard() {
   if (navbarContainer) {
     setupNavbarListeners();
   }
-
-  console.log('BoarderDashboard: Initialized');
 }
 
 /**
@@ -138,14 +136,12 @@ export async function initBoarderDashboard() {
 function setupNavbarListeners() {
   // Listen for settings click from navbar
   window.addEventListener('navbar:user:settings:click', () => {
-    console.log('Settings clicked from navbar');
     // Navigate to settings page
     window.location.href = '../settings/index.html';
   });
 
   // Listen for profile click from navbar
   window.addEventListener('navbar:user:profile:click', () => {
-    console.log('Profile clicked from navbar');
     // Navigate to profile tab in settings
     window.location.href = '../settings/index.html#profile';
   });

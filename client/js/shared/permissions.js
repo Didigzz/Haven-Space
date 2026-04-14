@@ -15,7 +15,7 @@ const API_BASE = window.location.origin;
  */
 export async function checkLandlordVerification() {
   try {
-    const res = await fetch(`${API_BASE}/api/auth/me.php`, {
+    const res = await fetch(`${API_BASE}/auth/me.php`, {
       credentials: 'include',
     });
 

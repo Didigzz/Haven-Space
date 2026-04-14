@@ -31,7 +31,7 @@
   </head>
   <body data-view="public-find-room">
     <!-- Floating Smart Header -->
-    <header class="find-room-floating-header hidden" id="find-room-floating-header">
+    <header class="find-room-floating-header" id="find-room-floating-header">
       <div class="find-room-floating-header-container">
         <!-- Left Side: Logo/Brand -->
         <div class="find-room-floating-header-left">
@@ -42,83 +42,108 @@
 
         <!-- Right Side: Controls -->
         <div class="find-room-floating-header-right">
-          <!-- Status Dropdown -->
-          <div class="find-room-header-dropdown" id="status-dropdown">
-            <button class="find-room-header-dropdown-btn" id="status-dropdown-btn">
-              <span data-icon="clipboard" data-icon-width="18" data-icon-height="18"></span>
-              <span>Status</span>
-              <span class="find-room-status-badge" id="status-badge" style="display: none">0</span>
-              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
-            </button>
-            <div class="find-room-header-dropdown-menu" id="status-dropdown-menu">
-              <div class="find-room-status-header">
-                <h4>My Applications</h4>
-                <button class="find-room-status-close" id="find-room-status-close">
-                  <span data-icon="close" data-icon-width="18" data-icon-height="18"></span>
-                </button>
+          <!-- Authenticated Controls -->
+          <div class="find-room-auth-controls" id="find-room-auth-controls" style="display: none">
+            <!-- Status Dropdown -->
+            <div class="find-room-header-dropdown" id="status-dropdown">
+              <button class="find-room-header-dropdown-btn" id="status-dropdown-btn">
+                <span data-icon="clipboard" data-icon-width="18" data-icon-height="18"></span>
+                <span>Status</span>
+                <span class="find-room-status-badge" id="status-badge" style="display: none"
+                  >0</span
+                >
+                <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+              </button>
+              <div class="find-room-header-dropdown-menu" id="status-dropdown-menu">
+                <div class="find-room-status-header">
+                  <h4>My Applications</h4>
+                  <button class="find-room-status-close" id="find-room-status-close">
+                    <span data-icon="close" data-icon-width="18" data-icon-height="18"></span>
+                  </button>
+                </div>
+                <div class="find-room-status-tabs">
+                  <button class="find-room-status-tab active" data-status="all">All</button>
+                  <button class="find-room-status-tab" data-status="pending">Pending</button>
+                  <button class="find-room-status-tab" data-status="accepted">Accepted</button>
+                </div>
+                <div class="find-room-applications-list" id="applications-list">
+                  <!-- Applications will be injected here -->
+                </div>
               </div>
-              <div class="find-room-status-tabs">
-                <button class="find-room-status-tab active" data-status="all">All</button>
-                <button class="find-room-status-tab" data-status="pending">Pending</button>
-                <button class="find-room-status-tab" data-status="accepted">Accepted</button>
-              </div>
-              <div class="find-room-applications-list" id="applications-list">
-                <!-- Applications will be injected here -->
+            </div>
+
+            <!-- Map View Button -->
+            <a
+              href="maps.html"
+              class="find-room-header-icon-btn"
+              id="map-view-btn"
+              title="View Map"
+            >
+              <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+              <span class="find-room-header-btn-label">Map</span>
+            </a>
+
+            <!-- Profile Dropdown -->
+            <div class="find-room-header-dropdown" id="profile-dropdown">
+              <button class="find-room-header-profile-btn" id="profile-dropdown-btn">
+                <img
+                  src="../../assets/images/sample.png"
+                  alt="User Avatar"
+                  class="find-room-header-profile-avatar"
+                />
+                <span class="find-room-header-profile-name">Juan Dela Cruz</span>
+                <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+              </button>
+              <div
+                class="find-room-header-dropdown-menu find-room-profile-menu"
+                id="profile-dropdown-menu"
+              >
+                <div class="find-room-profile-menu-header">
+                  <div class="find-room-profile-menu-avatar">JD</div>
+                  <div class="find-room-profile-menu-info">
+                    <div class="find-room-profile-menu-name">Juan Dela Cruz</div>
+                    <div class="find-room-profile-menu-email">juan@example.com</div>
+                  </div>
+                </div>
+                <div class="find-room-profile-menu-divider"></div>
+                <a
+                  href="../boarder/profile/index.html"
+                  class="find-room-profile-menu-item"
+                  id="profile-menu-profile"
+                >
+                  <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
+                  <span>Profile</span>
+                </a>
+                <a href="#" class="find-room-profile-menu-item" id="profile-menu-settings">
+                  <span data-icon="settings" data-icon-width="18" data-icon-height="18"></span>
+                  <span>Settings</span>
+                </a>
+                <div class="find-room-profile-menu-divider"></div>
+                <a
+                  href="#"
+                  class="find-room-profile-menu-item find-room-profile-menu-logout"
+                  id="profile-menu-logout"
+                >
+                  <span data-icon="logout" data-icon-width="18" data-icon-height="18"></span>
+                  <span>Log out</span>
+                </a>
               </div>
             </div>
           </div>
 
-          <!-- Map View Button -->
-          <a href="maps.html" class="find-room-header-icon-btn" id="map-view-btn" title="View Map">
-            <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
-            <span class="find-room-header-btn-label">Map</span>
-          </a>
+          <!-- Unauthenticated Controls -->
+          <div class="find-room-guest-controls" id="find-room-guest-controls" style="display: none">
+            <!-- Map View Button -->
+            <a href="maps.html" class="find-room-header-icon-btn" title="View Map">
+              <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+              <span class="find-room-header-btn-label">Map</span>
+            </a>
 
-          <!-- Profile Dropdown -->
-          <div class="find-room-header-dropdown" id="profile-dropdown">
-            <button class="find-room-header-profile-btn" id="profile-dropdown-btn">
-              <img
-                src="../../assets/images/sample.png"
-                alt="User Avatar"
-                class="find-room-header-profile-avatar"
-              />
-              <span class="find-room-header-profile-name">Juan Dela Cruz</span>
-              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
-            </button>
-            <div
-              class="find-room-header-dropdown-menu find-room-profile-menu"
-              id="profile-dropdown-menu"
-            >
-              <div class="find-room-profile-menu-header">
-                <div class="find-room-profile-menu-avatar">JD</div>
-                <div class="find-room-profile-menu-info">
-                  <div class="find-room-profile-menu-name">Juan Dela Cruz</div>
-                  <div class="find-room-profile-menu-email">juan@example.com</div>
-                </div>
-              </div>
-              <div class="find-room-profile-menu-divider"></div>
-              <a
-                href="../boarder/profile/index.html"
-                class="find-room-profile-menu-item"
-                id="profile-menu-profile"
-              >
-                <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
-                <span>Profile</span>
-              </a>
-              <a href="#" class="find-room-profile-menu-item" id="profile-menu-settings">
-                <span data-icon="settings" data-icon-width="18" data-icon-height="18"></span>
-                <span>Settings</span>
-              </a>
-              <div class="find-room-profile-menu-divider"></div>
-              <a
-                href="#"
-                class="find-room-profile-menu-item find-room-profile-menu-logout"
-                id="profile-menu-logout"
-              >
-                <span data-icon="logout" data-icon-width="18" data-icon-height="18"></span>
-                <span>Log out</span>
-              </a>
-            </div>
+            <!-- Login Button -->
+            <a href="auth/login.html" class="find-room-header-login-btn">
+              <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
+              <span>Log In</span>
+            </a>
           </div>
         </div>
       </div>
@@ -207,8 +232,89 @@
     <main class="find-room-main">
       <!-- Content Wrapper -->
       <div class="find-room-content">
-        <!-- Hero Search Section -->
-        <div class="find-room-hero">
+        <!-- Hero Search Section - Unauthenticated (Guest) -->
+        <div
+          class="find-room-hero find-room-hero-guest"
+          id="find-room-hero-guest"
+          style="display: none"
+        >
+          <div class="find-room-hero-content">
+            <h1 class="find-room-hero-title">Explore Rooms</h1>
+            <p class="find-room-hero-subtitle">
+              Discover verified boarding houses near your university with all the amenities you need
+            </p>
+
+            <!-- Main Search Bar -->
+            <div class="find-room-search-wrapper">
+              <div class="find-room-search-box">
+                <span data-icon="search" class="find-room-search-icon"></span>
+                <input
+                  type="text"
+                  class="find-room-search-input"
+                  placeholder="Search by location, university, or property name..."
+                  id="guest-search-input"
+                />
+                <button class="find-room-search-btn" id="guest-search-btn">
+                  Search
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
+                </button>
+                <!-- Map View Button -->
+                <a
+                  href="maps.html"
+                  class="find-room-map-toggle-btn"
+                  id="map-view-btn-hero-guest"
+                  title="View Map"
+                >
+                  <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+                  <span class="find-room-map-toggle-label">Map</span>
+                </a>
+              </div>
+
+              <!-- Quick Location Chips -->
+              <div class="find-room-location-chips">
+                <span class="find-room-chip-label">Popular:</span>
+                <button class="find-room-chip" data-location="University of the Philippines">
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                  UP Area
+                </button>
+                <button class="find-room-chip" data-location="Ateneo de Manila">
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                  Ateneo
+                </button>
+                <button class="find-room-chip" data-location="Miriam College">
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                  Miriam
+                </button>
+              </div>
+            </div>
+
+            <!-- CTA for guests -->
+            <div class="find-room-guest-cta">
+              <p class="find-room-guest-cta-text">
+                Want to apply for a room?
+                <a href="auth/login.html" class="find-room-guest-cta-link"> Log in or sign up </a>
+              </p>
+            </div>
+          </div>
+
+          <!-- Decorative Elements -->
+          <div class="find-room-hero-decoration">
+            <div class="find-room-hero-shape find-room-hero-shape-1"></div>
+            <div class="find-room-hero-shape find-room-hero-shape-2"></div>
+            <div class="find-room-hero-shape find-room-hero-shape-3"></div>
+          </div>
+        </div>
+
+        <!-- Hero Search Section - Authenticated (Boarder) -->
+        <div
+          class="find-room-hero find-room-hero-auth"
+          id="find-room-hero-auth"
+          style="display: none"
+        >
           <div class="find-room-hero-content">
             <h1 class="find-room-hero-title">Find Your Perfect Space</h1>
             <p class="find-room-hero-subtitle">

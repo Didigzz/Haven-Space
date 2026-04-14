@@ -1,69 +1,82 @@
 <?php
+
 /**
- * Admin — rental applications oversight
+ * Admin Applications API
+ * GET /api/admin/applications.php
+ *
+ * Returns application statistics and list for admin oversight
  */
 
-require_once __DIR__ . '/../cors.php';
-require_once __DIR__ . '/../../src/Core/bootstrap.php';
-require_once __DIR__ . '/../middleware.php';
-
-header('Content-Type: application/json');
-
-use App\Api\Middleware;
-use App\Core\Database\Connection;
-
-Middleware::authorize(['admin']);
-
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
-    exit;
+if (!function_exists('json_response')) {
+    require_once __DIR__ . '/../../src/Core/bootstrap.php';
+    require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
+    require_once __DIR__ . '/../cors.php';
 }
 
-$pdo = Connection::getInstance()->getPdo();
+use App\Core\Database\Connection;
+
+// Only allow GET requests
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    json_response(405, ['error' => 'Method not allowed']);
+}
 
 try {
-    $stmt = $pdo->query(
-        "SELECT a.*, r.title AS room_title, r.price AS room_price,
-                ub.first_name AS boarder_first, ub.last_name AS boarder_last, ub.email AS boarder_email,
-                ul.first_name AS landlord_first, ul.last_name AS landlord_last, ul.email AS landlord_email,
-                p.title AS property_title
-         FROM applications a
-         JOIN rooms r ON a.room_id = r.id
-         JOIN users ub ON a.boarder_id = ub.id
-         JOIN users ul ON a.landlord_id = ul.id
-         LEFT JOIN properties p ON p.id = COALESCE(a.property_id, r.property_id)
-         ORDER BY a.created_at DESC
-         LIMIT 500"
-    );
-    $applications = $stmt->fetchAll();
+    $pdo = Connection::getInstance()->getPdo();
 
-    $statusStmt = $pdo->query(
-        'SELECT status, COUNT(*) AS c FROM applications GROUP BY status'
-    );
-    $byStatus = [];
-    while ($row = $statusStmt->fetch()) {
-        $byStatus[$row['status']] = (int) $row['c'];
-    }
+    // Get application statistics
+    $stmt = $pdo->query("
+        SELECT
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) as pending,
+            COALESCE(SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END), 0) as approved,
+            COALESCE(SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END), 0) as rejected
+        FROM applications
+        WHERE deleted_at IS NULL
+    ");
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $total = (int) $pdo->query('SELECT COUNT(*) FROM applications')->fetchColumn();
-    $pending = (int) $pdo->query("SELECT COUNT(*) FROM applications WHERE status = 'pending'")->fetchColumn();
-    $conversion = $total > 0 ? round((($total - $pending) / $total) * 100, 1) : 0;
+    // Calculate processed rate
+    $total = intval($stats['total']);
+    $processed = intval($stats['approved']) + intval($stats['rejected']);
+    $processedRate = $total > 0 ? round(($processed / $total) * 100, 1) : 0;
+    $stats['processed_rate_percent'] = $processedRate;
 
-    echo json_encode([
-        'success' => true,
+    // Get application status breakdown for analytics
+    $stmt = $pdo->query("
+        SELECT status, COUNT(*) as count
+        FROM applications
+        WHERE deleted_at IS NULL
+        GROUP BY status
+    ");
+    $byStatus = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    $stats['by_status'] = $byStatus;
+
+    // Get recent applications
+    $stmt = $pdo->query("
+        SELECT 
+            a.id, a.status, a.created_at,
+            bf.first_name as boarder_first, bf.last_name as boarder_last, bf.email as boarder_email,
+            lf.first_name as landlord_first, lf.last_name as landlord_last,
+            r.title as room_title
+        FROM applications a
+        JOIN users bf ON a.boarder_id = bf.id
+        JOIN rooms r ON a.room_id = r.id
+        JOIN properties p ON r.property_id = p.id
+        JOIN users lf ON p.landlord_id = lf.id
+        WHERE a.deleted_at IS NULL
+        ORDER BY a.created_at DESC
+        LIMIT 100
+    ");
+    $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    json_response(200, [
         'data' => [
+            'stats' => $stats,
             'applications' => $applications,
-            'stats' => [
-                'total' => $total,
-                'pending' => $pending,
-                'by_status' => $byStatus,
-                'processed_rate_percent' => $conversion,
-            ],
         ],
     ]);
-} catch (\PDOException $e) {
+
+} catch (Exception $e) {
     error_log('Admin applications error: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to load applications', 'detail' => $e->getMessage()]);
+    json_response(500, ['error' => 'Failed to load applications']);
 }

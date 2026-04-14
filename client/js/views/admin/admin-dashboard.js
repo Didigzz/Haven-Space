@@ -117,7 +117,7 @@ async function loadOverview() {
         <div class="admin-stat-card"><div class="label">Landlords</div><div class="value">${
           c.users_landlord
         }</div></div>
-        <div class="admin-stat-card accent-amber"><div class="label">Pending landlord KYC</div><div class="value">${
+        <div class="admin-stat-card accent-light-green"><div class="label">Pending landlord KYC</div><div class="value">${
           c.landlords_pending_verification
         }</div></div>
         <div class="admin-stat-card"><div class="label">Properties</div><div class="value">${
@@ -135,9 +135,9 @@ async function loadOverview() {
       </div>
       <div class="admin-card">
         <h2>Revenue & fees</h2>
-        <p style="color:#94a3b8;font-size:0.9rem;margin:0;">${
+        <p style="color:var(--admin-text-secondary);font-size:0.9rem;margin:0;">${
           data.revenue.note
-        } Platform fee: <strong style="color:#e2e8f0">${
+        } Platform fee: <strong style="color:var(--admin-text-primary)">${
       data.revenue.platform_fee_percent
     }%</strong> (${data.revenue.currency}).</p>
       </div>`;
@@ -149,11 +149,12 @@ async function loadOverview() {
 async function loadVerification() {
   const list = document.getElementById('admin-verification-list');
   if (!list) return;
-  list.innerHTML = '<p style="color:#64748b">Loading…</p>';
+  list.innerHTML = '<p style="color:var(--admin-text-muted)">Loading…</p>';
   try {
     const { data } = await adminApi('landlords.php?status=pending');
     if (!data.length) {
-      list.innerHTML = '<p style="color:#64748b">No pending landlord verifications.</p>';
+      list.innerHTML =
+        '<p style="color:var(--admin-text-muted)">No pending landlord verifications.</p>';
       return;
     }
     list.innerHTML = `
@@ -165,7 +166,9 @@ async function loadVerification() {
               .map(
                 row => `
               <tr>
-                <td><strong style="color:#f1f5f9">${row.first_name} ${row.last_name}</strong></td>
+                <td><strong style="color:var(--admin-text-primary)">${row.first_name} ${
+                  row.last_name
+                }</strong></td>
                 <td>${row.email}</td>
                 <td>${row.boarding_house_name || '—'}</td>
                 <td>${row.created_at?.slice(0, 10) || '—'}</td>
@@ -208,19 +211,19 @@ async function openLandlordDetail(id) {
     const locs = (data.property_locations || [])
       .map(
         l => `
-      <li style="margin-bottom:8px;color:#cbd5e1">
+      <li style="margin-bottom:8px;color:var(--admin-text-secondary)">
         ${l.address_line_1 || ''} ${l.city || ''} ${l.province || ''}
-        <span style="color:#64748b"> (${l.latitude}, ${l.longitude})</span>
+        <span style="color:var(--admin-text-muted)"> (${l.latitude}, ${l.longitude})</span>
       </li>`
       )
       .join('');
     const hist = history
       .slice(0, 8)
       .map(
-        h => `<li style="margin-bottom:6px;color:#94a3b8;font-size:0.85rem">
-        ${h.created_at?.slice(0, 19)} — <strong style="color:#e2e8f0">${h.action}</strong> by ${
-          h.admin_first
-        } ${h.admin_last}
+        h => `<li style="margin-bottom:6px;color:var(--admin-text-secondary);font-size:0.85rem">
+        ${h.created_at?.slice(0, 19)} — <strong style="color:var(--admin-text-primary)">${
+          h.action
+        }</strong> by ${h.admin_first} ${h.admin_last}
         ${h.comment ? ` — ${h.comment}` : ''}
       </li>`
       )
@@ -234,13 +237,13 @@ async function openLandlordDetail(id) {
         <div>Verified</div><div><strong>${data.is_verified ? 'Yes' : 'No'}</strong></div>
         <div>House</div><div><strong>${data.boarding_house_name || '—'}</strong></div>
       </div>
-      <h4 style="margin:20px 0 8px;color:#94a3b8;font-size:0.8rem;text-transform:uppercase;">Locations</h4>
+      <h4 style="margin:20px 0 8px;color:var(--admin-text-secondary);font-size:0.8rem;text-transform:uppercase;">Locations</h4>
       <ul style="margin:0;padding-left:18px;">${
-        locs || '<li style="color:#64748b">No locations on file</li>'
+        locs || '<li style="color:var(--admin-text-muted)">No locations on file</li>'
       }</ul>
-      <h4 style="margin:20px 0 8px;color:#94a3b8;font-size:0.8rem;text-transform:uppercase;">Verification history</h4>
+      <h4 style="margin:20px 0 8px;color:var(--admin-text-secondary);font-size:0.8rem;text-transform:uppercase;">Verification history</h4>
       <ul style="margin:0;padding-left:18px;max-height:160px;overflow:auto;">${
-        hist || '<li style="color:#64748b">No history</li>'
+        hist || '<li style="color:var(--admin-text-muted)">No history</li>'
       }</ul>
       <div class="admin-modal-actions"><button type="button" class="admin-btn admin-btn-ghost" data-close-modal>Close</button></div>
     `);
@@ -252,7 +255,7 @@ async function openLandlordDetail(id) {
 function openVerifyModal(landlordId, action) {
   const { close } = openModal(`
     <h3>${action === 'approve' ? 'Approve' : 'Reject'} landlord</h3>
-    <p style="color:#94a3b8;font-size:0.9rem;margin:0;">Optional note stored in the verification audit log.</p>
+    <p style="color:var(--admin-text-secondary);font-size:0.9rem;margin:0;">Optional note stored in the verification audit log.</p>
     <textarea id="admin-v-comment" placeholder="Comment for internal records…"></textarea>
     <div class="admin-modal-actions">
       <button type="button" class="admin-btn admin-btn-ghost" data-close-modal>Cancel</button>
@@ -284,14 +287,15 @@ async function loadUsers() {
   const q = document.getElementById('admin-users-search')?.value.trim() || '';
   const role = document.getElementById('admin-users-role')?.value || '';
   if (!body) return;
-  body.innerHTML = '<tr><td colspan="6" style="color:#64748b">Loading…</td></tr>';
+  body.innerHTML = '<tr><td colspan="6" style="color:var(--admin-text-muted)">Loading…</td></tr>';
   try {
     const params = new URLSearchParams({ limit: '40', offset: String(usersOffset) });
     if (q) params.set('q', q);
     if (role) params.set('role', role);
     const { data, meta } = await adminApi(`users.php?${params}`);
     if (!data.length) {
-      body.innerHTML = '<tr><td colspan="6" style="color:#64748b">No users found.</td></tr>';
+      body.innerHTML =
+        '<tr><td colspan="6" style="color:var(--admin-text-muted)">No users found.</td></tr>';
       return;
     }
     body.innerHTML = data
@@ -303,7 +307,9 @@ async function loadUsers() {
             ? 'pending'
             : 'bad';
         return `<tr data-uid="${row.id}">
-        <td><strong style="color:#f1f5f9">${row.first_name} ${row.last_name}</strong></td>
+        <td><strong style="color:var(--admin-text-primary)">${row.first_name} ${
+          row.last_name
+        }</strong></td>
         <td>${row.email}</td>
         <td><span class="admin-pill neutral">${row.role}</span></td>
         <td>${
@@ -363,12 +369,12 @@ async function loadProperties() {
   const mod = document.getElementById('admin-prop-filter')?.value || 'pending_review';
   const body = document.getElementById('admin-properties-tbody');
   if (!body) return;
-  body.innerHTML = '<tr><td colspan="6" style="color:#64748b">Loading…</td></tr>';
+  body.innerHTML = '<tr><td colspan="6" style="color:var(--admin-text-muted)">Loading…</td></tr>';
   try {
     const { data } = await adminApi(`properties.php?moderation=${encodeURIComponent(mod)}`);
     if (!data.length) {
       body.innerHTML =
-        '<tr><td colspan="6" style="color:#64748b">No properties in this queue.</td></tr>';
+        '<tr><td colspan="6" style="color:var(--admin-text-muted)">No properties in this queue.</td></tr>';
       return;
     }
     body.innerHTML = data
@@ -376,7 +382,7 @@ async function loadProperties() {
         const ms = p.listing_moderation_status || 'published';
         const pc = ms === 'published' ? 'ok' : ms === 'pending_review' ? 'pending' : 'bad';
         return `<tr data-pid="${p.id}">
-        <td><strong style="color:#f1f5f9">${p.title}</strong></td>
+        <td><strong style="color:var(--admin-text-primary)">${p.title}</strong></td>
         <td>${p.landlord_first} ${p.landlord_last}</td>
         <td>${p.landlord_email}</td>
         <td>₱${Number(p.price).toLocaleString()}</td>
@@ -422,7 +428,7 @@ async function loadProperties() {
 async function loadApplications() {
   const root = document.getElementById('admin-applications-root');
   if (!root) return;
-  root.innerHTML = '<p style="color:#64748b">Loading…</p>';
+  root.innerHTML = '<p style="color:var(--admin-text-muted)">Loading…</p>';
   try {
     const { data } = await adminApi('applications.php');
     const stats = data.stats;
@@ -430,9 +436,9 @@ async function loadApplications() {
       .map(
         a => `<tr>
         <td>#${a.id}</td>
-        <td>${a.boarder_first} ${a.boarder_last}<div style="font-size:0.75rem;color:#64748b">${
-          a.boarder_email
-        }</div></td>
+        <td>${a.boarder_first} ${
+          a.boarder_last
+        }<div style="font-size:0.75rem;color:var(--admin-text-muted)">${a.boarder_email}</div></td>
         <td>${a.landlord_first} ${a.landlord_last}</td>
         <td>${a.room_title || '—'}</td>
         <td><span class="admin-pill ${a.status === 'pending' ? 'pending' : 'neutral'}">${
@@ -447,7 +453,7 @@ async function loadApplications() {
         <div class="admin-stat-card"><div class="label">Total applications</div><div class="value">${
           stats.total
         }</div></div>
-        <div class="admin-stat-card accent-amber"><div class="label">Pending</div><div class="value">${
+        <div class="admin-stat-card accent-light-green"><div class="label">Pending</div><div class="value">${
           stats.pending
         }</div></div>
         <div class="admin-stat-card"><div class="label">Processed rate</div><div class="value">${
@@ -458,7 +464,8 @@ async function loadApplications() {
         <table class="admin-table">
           <thead><tr><th>ID</th><th>Boarder</th><th>Landlord</th><th>Room</th><th>Status</th><th>Created</th></tr></thead>
           <tbody>${
-            rows || '<tr><td colspan="6" style="color:#64748b">No applications yet.</td></tr>'
+            rows ||
+            '<tr><td colspan="6" style="color:var(--admin-text-muted)">No applications yet.</td></tr>'
           }</tbody>
         </table>
       </div>`;
@@ -470,7 +477,7 @@ async function loadApplications() {
 async function loadAnalytics() {
   const root = document.getElementById('admin-analytics-root');
   if (!root) return;
-  root.innerHTML = '<p style="color:#64748b">Loading…</p>';
+  root.innerHTML = '<p style="color:var(--admin-text-muted)">Loading…</p>';
   try {
     const [{ data: sum }, { data: apps }] = await Promise.all([
       adminApi('summary.php'),
@@ -488,7 +495,7 @@ async function loadAnalytics() {
       <div class="admin-card">
         <h2>Application funnel (status mix)</h2>
         <div class="admin-chart-bars">${
-          bars || '<p style="color:#64748b">No application data.</p>'
+          bars || '<p style="color:var(--admin-text-muted)">No application data.</p>'
         }</div>
       </div>
       <div class="admin-card">
@@ -505,7 +512,7 @@ async function loadAnalytics() {
             sum.counts.property_reports_open + sum.counts.disputes_open
           }</strong></div>
         </div>
-        <p style="color:#64748b;font-size:0.85rem;margin-top:16px;margin-bottom:0;">User growth charts can be layered on once historical snapshots are stored.</p>
+        <p style="color:var(--admin-text-muted);font-size:0.85rem;margin-top:16px;margin-bottom:0;">User growth charts can be layered on once historical snapshots are stored.</p>
       </div>`;
   } catch (e) {
     root.innerHTML = `<p class="admin-pill bad">${e.message}</p>`;
@@ -516,8 +523,8 @@ async function loadReports() {
   const rep = document.getElementById('admin-reports-prop');
   const dis = document.getElementById('admin-reports-disputes');
   if (!rep || !dis) return;
-  rep.innerHTML = '<p style="color:#64748b">Loading…</p>';
-  dis.innerHTML = '<p style="color:#64748b">Loading…</p>';
+  rep.innerHTML = '<p style="color:var(--admin-text-muted)">Loading…</p>';
+  dis.innerHTML = '<p style="color:var(--admin-text-muted)">Loading…</p>';
   try {
     const { data } = await adminApi('reports.php');
     rep.innerHTML = data.property_reports.length
@@ -542,14 +549,14 @@ async function loadReports() {
           )
           .join('')}
       </tbody></table></div>`
-      : '<p style="color:#64748b">No property reports.</p>';
+      : '<p style="color:var(--admin-text-muted)">No property reports.</p>';
 
     dis.innerHTML = data.disputes.length
       ? `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Title</th><th>Type</th><th>Opened by</th><th>Status</th><th>Action</th></tr></thead><tbody>
         ${data.disputes
           .map(
             d => `<tr>
-          <td><strong style="color:#f1f5f9">${d.title}</strong></td>
+          <td><strong style="color:var(--admin-text-primary)">${d.title}</strong></td>
           <td>${d.type}</td>
           <td>${d.opened_by_email}</td>
           <td><span class="admin-pill neutral">${d.status}</span></td>
@@ -566,7 +573,7 @@ async function loadReports() {
           )
           .join('')}
       </tbody></table></div>`
-      : '<p style="color:#64748b">No disputes logged.</p>';
+      : '<p style="color:var(--admin-text-muted)">No disputes logged.</p>';
 
     rep.querySelectorAll('.admin-report-status').forEach(sel => {
       sel.addEventListener('change', async () => {
@@ -618,19 +625,19 @@ async function loadSettings() {
     const { data } = await adminApi('settings.php');
     root.innerHTML = `
       <div style="display:grid;gap:16px;max-width:520px">
-        <label style="color:#94a3b8;font-size:0.8rem;">Maintenance banner message (shown when non-empty)</label>
+        <label style="color:var(--admin-text-secondary);font-size:0.8rem;">Maintenance banner message (shown when non-empty)</label>
         <textarea class="admin-input" style="min-height:72px;width:100%" id="set-maint">${
           data.maintenance_message || ''
         }</textarea>
-        <label style="color:#94a3b8;font-size:0.8rem;">Terms version</label>
+        <label style="color:var(--admin-text-secondary);font-size:0.8rem;">Terms version</label>
         <input class="admin-input" id="set-terms" value="${data.terms_version || ''}" />
-        <label style="color:#94a3b8;font-size:0.8rem;">Privacy policy version</label>
+        <label style="color:var(--admin-text-secondary);font-size:0.8rem;">Privacy policy version</label>
         <input class="admin-input" id="set-privacy" value="${data.privacy_version || ''}" />
-        <label style="color:#94a3b8;font-size:0.8rem;">Platform fee (%)</label>
+        <label style="color:var(--admin-text-secondary);font-size:0.8rem;">Platform fee (%)</label>
         <input class="admin-input" id="set-fee" type="number" step="0.01" value="${
           data.platform_fee_percent ?? '0'
         }" />
-        <label style="display:flex;align-items:center;gap:10px;color:#cbd5e1;font-size:0.9rem;">
+        <label style="display:flex;align-items:center;gap:10px;color:var(--admin-text-secondary);font-size:0.9rem;">
           <input type="checkbox" id="set-notify" ${
             data.notify_admin_new_landlord === '1' ? 'checked' : ''
           } />
@@ -638,7 +645,7 @@ async function loadSettings() {
         </label>
         <div><button type="button" class="admin-btn admin-btn-primary" id="admin-save-settings">Save settings</button></div>
       </div>
-      <p style="color:#64748b;font-size:0.8rem;margin-top:20px;max-width:520px;">Policy text lives in your legal pages; versions here are labels for change control.</p>
+      <p style="color:var(--admin-text-muted);font-size:0.8rem;margin-top:20px;max-width:520px;">Policy text lives in your legal pages; versions here are labels for change control.</p>
     `;
     document.getElementById('admin-save-settings').addEventListener('click', async () => {
       try {
@@ -675,6 +682,10 @@ function bindChrome() {
     usersOffset = 0;
     loadUsers();
   });
+  document.getElementById('admin-users-search-btn')?.addEventListener('click', () => {
+    usersOffset = 0;
+    loadUsers();
+  });
   document.getElementById('admin-users-prev')?.addEventListener('click', () => {
     usersOffset = Math.max(0, usersOffset - 40);
     loadUsers();
@@ -684,6 +695,7 @@ function bindChrome() {
     loadUsers();
   });
   document.getElementById('admin-prop-filter')?.addEventListener('change', loadProperties);
+  document.getElementById('admin-prop-filter-btn')?.addEventListener('click', loadProperties);
 }
 
 /**

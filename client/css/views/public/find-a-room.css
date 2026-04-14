@@ -1040,29 +1040,18 @@
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-100%);
+  transform: translateY(-120%);
   opacity: 0;
-  visibility: hidden;
   pointer-events: none;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .find-room-floating-header.show {
   transform: translateY(0);
   opacity: 1;
-  visibility: visible;
   pointer-events: auto;
-}
-
-.find-room-floating-header.hidden {
-  transform: translateY(-100%);
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  backdrop-filter: none;
-  box-shadow: none;
-  background: transparent;
 }
 
 .find-room-floating-header-container {
@@ -2473,11 +2462,6 @@
   margin: 0;
 }
 
-/* Main content offset when header is visible */
-.find-room-main {
-  padding-top: 80px;
-}
-
 /* ==========================================================================
    Responsive Design
    ========================================================================== */
@@ -2864,4 +2848,98 @@
 .find-room-detail-amenity-item span[data-icon] {
   flex-shrink: 0;
   color: var(--primary-green);
+}
+
+/* ==========================================================================
+   Guest/Unauthenticated State Styles
+   ========================================================================== */
+
+/* Guest Controls Layout */
+.find-room-guest-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Login Button in Header */
+.find-room-header-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-green);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.find-room-header-login-btn:hover {
+  background: var(--dark-green);
+  transform: translateY(-1px);
+}
+
+.find-room-header-login-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Guest CTA Section */
+.find-room-guest-cta {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.find-room-guest-cta-text {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--white);
+  opacity: 0.95;
+}
+
+.find-room-guest-cta-link {
+  color: var(--white);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.find-room-guest-cta-link:hover {
+  opacity: 0.8;
+}
+
+/* Hero State-Specific Styles */
+.find-room-hero-guest,
+.find-room-hero-auth {
+  /* Inherit base hero styles */
+}
+
+/* Responsive adjustments for guest state */
+@media (max-width: 768px) {
+  .find-room-guest-cta {
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .find-room-guest-cta-text {
+    font-size: 0.875rem;
+  }
+
+  .find-room-header-login-btn span:last-child {
+    display: none;
+  }
+
+  .find-room-header-login-btn {
+    padding: 0.625rem;
+  }
 }

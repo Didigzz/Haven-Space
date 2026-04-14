@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
-    <title>Super Admin — Haven Space</title>
+    <title>Admin Command Center - Haven Space</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,67 +14,85 @@
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/components/sidebar.css" />
     <link rel="stylesheet" href="../../css/components/navbar.css" />
-    <link rel="stylesheet" href="../../css/views/admin/admin-shell.css" />
+    <link rel="stylesheet" href="../../css/views/admin/admin.css" />
   </head>
   <body data-view="admin" data-dashboard-type="admin">
     <div class="admin-dashboard">
+      <!-- Sidebar Container -->
       <div id="sidebar-container"></div>
 
+      <!-- Main Content -->
       <main class="admin-main">
+        <!-- Navbar Container -->
         <div id="navbar-container"></div>
 
-        <div class="admin-shell-content">
-          <header class="admin-shell-header">
-            <span class="admin-badge">Super Admin</span>
-            <h1>Haven Space Control</h1>
-            <p id="admin-shell-greet">
-              Centralized oversight for verification, compliance, and platform health.
-            </p>
-            <p
-              id="admin-section-subtitle"
-              style="margin-top: 12px; color: #64748b; font-size: 0.9rem"
-            ></p>
-          </header>
-
+        <!-- Content Wrapper -->
+        <div class="admin-content">
+          <!-- ==========================================
+               SECTION 1: OVERVIEW / COMMAND CENTER
+               ========================================== -->
           <section id="panel-overview" class="admin-panel">
-            <div id="admin-overview-root"></div>
-          </section>
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">Command Center</h1>
+              <p class="admin-section-subtitle" id="admin-section-subtitle">Platform Overview</p>
+            </div>
 
-          <section id="panel-verification" class="admin-panel hidden">
-            <div class="admin-card">
-              <h2>Landlord verification queue</h2>
-              <p style="color: #94a3b8; font-size: 0.9rem; margin: -8px 0 16px">
-                Review boarding house details and map pins. Approve to grant write access; reject
-                keeps the account unverified.
-              </p>
-              <div id="admin-verification-list"></div>
+            <div id="admin-overview-root">
+              <!-- Stats and overview injected by JS -->
             </div>
           </section>
 
-          <section id="panel-users" class="admin-panel hidden">
+          <!-- ==========================================
+               SECTION 2: LANDLORD VERIFICATION
+               ========================================== -->
+          <section id="panel-verification" class="admin-panel hidden">
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">Landlord Verification</h1>
+              <p class="admin-section-subtitle">Review and approve landlord applications</p>
+            </div>
+
             <div class="admin-card">
-              <h2>Users</h2>
-              <div class="admin-toolbar">
+              <h2>Pending Verification Queue</h2>
+              <div id="admin-verification-list">
+                <!-- Verification table injected by JS -->
+              </div>
+            </div>
+          </section>
+
+          <!-- ==========================================
+               SECTION 3: USER MANAGEMENT
+               ========================================== -->
+          <section id="panel-users" class="admin-panel hidden">
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">User Management</h1>
+              <p class="admin-section-subtitle">Manage boarder and landlord accounts</p>
+            </div>
+
+            <div class="admin-card">
+              <!-- Search & Filters -->
+              <div class="admin-filters">
                 <input
-                  type="search"
+                  type="text"
                   class="admin-input"
                   id="admin-users-search"
-                  placeholder="Search name or email…"
+                  placeholder="Search by name or email..."
                 />
                 <select class="admin-select" id="admin-users-role">
-                  <option value="">All roles</option>
-                  <option value="boarder">Boarder</option>
-                  <option value="landlord">Landlord</option>
-                  <option value="admin">Admin</option>
+                  <option value="">All Roles</option>
+                  <option value="boarder">Boarders</option>
+                  <option value="landlord">Landlords</option>
                 </select>
-                <button type="button" class="admin-btn admin-btn-ghost" id="admin-users-prev">
-                  Previous
+                <button
+                  type="button"
+                  class="admin-btn admin-btn-primary"
+                  id="admin-users-search-btn"
+                >
+                  <span data-icon="search" data-icon-width="18" data-icon-height="18"></span>
+                  Search
                 </button>
-                <button type="button" class="admin-btn admin-btn-ghost" id="admin-users-next">
-                  Next
-                </button>
-                <span id="admin-users-pager" style="color: #64748b; font-size: 0.85rem"></span>
               </div>
+
+              <!-- Users Table -->
               <div class="admin-table-wrap">
                 <table class="admin-table">
                   <thead>
@@ -82,80 +100,140 @@
                       <th>Name</th>
                       <th>Email</th>
                       <th>Role</th>
-                      <th>Landlord KYC</th>
-                      <th>Account</th>
+                      <th>Verification</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody id="admin-users-tbody"></tbody>
+                  <tbody id="admin-users-tbody">
+                    <!-- User rows injected by JS -->
+                  </tbody>
                 </table>
               </div>
+
+              <!-- Pagination -->
+              <div
+                id="admin-users-pager"
+                style="margin-top: 16px; color: var(--admin-text-secondary); font-size: 0.85rem"
+              ></div>
             </div>
           </section>
 
+          <!-- ==========================================
+               SECTION 4: PROPERTY MODERATION
+               ========================================== -->
           <section id="panel-properties" class="admin-panel hidden">
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">Property Moderation</h1>
+              <p class="admin-section-subtitle">Review and moderate property listings</p>
+            </div>
+
             <div class="admin-card">
-              <h2>Property moderation</h2>
-              <div class="admin-toolbar">
-                <label style="color: #94a3b8; font-size: 0.8rem">Queue</label>
+              <!-- Moderation Filter -->
+              <div class="admin-filters">
                 <select class="admin-select" id="admin-prop-filter">
-                  <option value="pending_review">Pending review</option>
+                  <option value="pending_review">Pending Review</option>
                   <option value="published">Published</option>
                   <option value="rejected">Rejected</option>
-                  <option value="all">All</option>
+                  <option value="flagged">Flagged</option>
                 </select>
+                <button
+                  type="button"
+                  class="admin-btn admin-btn-primary"
+                  id="admin-prop-filter-btn"
+                >
+                  <span data-icon="filter" data-icon-width="18" data-icon-height="18"></span>
+                  Apply Filter
+                </button>
               </div>
+
+              <!-- Properties Table -->
               <div class="admin-table-wrap">
                 <table class="admin-table">
                   <thead>
                     <tr>
-                      <th>Listing</th>
+                      <th>Property Title</th>
                       <th>Landlord</th>
-                      <th>Email</th>
+                      <th>Landlord Email</th>
                       <th>Price</th>
-                      <th>Moderation</th>
+                      <th>Moderation Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody id="admin-properties-tbody"></tbody>
+                  <tbody id="admin-properties-tbody">
+                    <!-- Property rows injected by JS -->
+                  </tbody>
                 </table>
               </div>
             </div>
           </section>
 
+          <!-- ==========================================
+               SECTION 5: APPLICATION OVERSIGHT
+               ========================================== -->
           <section id="panel-applications" class="admin-panel hidden">
-            <div class="admin-card">
-              <h2>Application oversight</h2>
-              <p style="color: #94a3b8; font-size: 0.9rem; margin: -8px 0 16px">
-                Cross-tenant view of rental applications and conversion signals.
-              </p>
-              <div id="admin-applications-root"></div>
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">Application Oversight</h1>
+              <p class="admin-section-subtitle">Monitor rental applications across the platform</p>
+            </div>
+
+            <div id="admin-applications-root">
+              <!-- Application stats and table injected by JS -->
             </div>
           </section>
 
+          <!-- ==========================================
+               SECTION 6: ANALYTICS
+               ========================================== -->
           <section id="panel-analytics" class="admin-panel hidden">
-            <div id="admin-analytics-root"></div>
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">Analytics & Reporting</h1>
+              <p class="admin-section-subtitle">Platform-wide statistics and performance metrics</p>
+            </div>
+
+            <div id="admin-analytics-root">
+              <!-- Analytics charts and metrics injected by JS -->
+            </div>
           </section>
 
+          <!-- ==========================================
+               SECTION 7: REPORTS & DISPUTES
+               ========================================== -->
           <section id="panel-reports" class="admin-panel hidden">
-            <div class="admin-card">
-              <h2>Property reports</h2>
-              <div id="admin-reports-prop"></div>
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">Reports & Disputes</h1>
+              <p class="admin-section-subtitle">Handle user reports and dispute resolution</p>
             </div>
+
+            <div class="admin-card">
+              <h2>Property Reports</h2>
+              <div id="admin-reports-prop">
+                <!-- Property reports table injected by JS -->
+              </div>
+            </div>
+
             <div class="admin-card">
               <h2>Disputes</h2>
-              <div id="admin-reports-disputes"></div>
+              <div id="admin-reports-disputes">
+                <!-- Disputes table injected by JS -->
+              </div>
             </div>
           </section>
 
+          <!-- ==========================================
+               SECTION 8: SYSTEM SETTINGS
+               ========================================== -->
           <section id="panel-settings" class="admin-panel hidden">
+            <div class="admin-section-header">
+              <h1 class="admin-section-title">System Settings</h1>
+              <p class="admin-section-subtitle">Configure platform-wide settings</p>
+            </div>
+
             <div class="admin-card">
-              <h2>System settings</h2>
-              <p style="color: #94a3b8; font-size: 0.9rem; margin: -8px 0 16px">
-                Operational toggles and policy version labels. Legal copy remains in your public
-                pages.
-              </p>
-              <div id="admin-settings-form"></div>
+              <h2>Platform Configuration</h2>
+              <div id="admin-settings-form">
+                <!-- Settings form injected by JS -->
+              </div>
             </div>
           </section>
         </div>

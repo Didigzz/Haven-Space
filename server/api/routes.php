@@ -5,8 +5,11 @@
  * Defines all API endpoints for the application
  */
 
-require_once __DIR__ . '/../../src/Core/bootstrap.php';
-require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
+require_once __DIR__ . '/../src/Core/bootstrap.php';
+require_once __DIR__ . '/../src/Shared/Helpers/ResponseHelper.php';
+
+// Load CORS configuration
+require_once __DIR__ . '/cors.php';
 
 use App\Api\Middleware;
 use App\Modules\Message\Controllers\MessageController;

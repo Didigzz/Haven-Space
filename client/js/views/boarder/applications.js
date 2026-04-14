@@ -33,7 +33,7 @@ function initialsFrom(user) {
 export async function initBoarderApplications() {
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
     if (!res.ok) {
       window.location.href = loginPath();
       return;

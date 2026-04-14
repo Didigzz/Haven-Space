@@ -1,111 +1,86 @@
 <?php
+
 /**
- * Admin — property listing moderation
+ * Admin Properties API
+ * GET /api/admin/properties.php?moderation=pending_review
+ * POST /api/admin/properties.php {propertyId, action}
  *
- * GET  ?moderation=pending_review|published|rejected|all
- * POST { propertyId, action: "publish"|"reject"|"flag", adminNotes? }
+ * Manages property moderation (publish, reject, flag)
  */
 
-require_once __DIR__ . '/../cors.php';
-require_once __DIR__ . '/../../src/Core/bootstrap.php';
-require_once __DIR__ . '/../middleware.php';
+if (!function_exists('json_response')) {
+    require_once __DIR__ . '/../../src/Core/bootstrap.php';
+    require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
+    require_once __DIR__ . '/../cors.php';
+}
 
-header('Content-Type: application/json');
-
-use App\Api\Middleware;
 use App\Core\Database\Connection;
 
-Middleware::authorize(['admin']);
-
+$method = $_SERVER['REQUEST_METHOD'];
 $pdo = Connection::getInstance()->getPdo();
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $mod = $_GET['moderation'] ?? 'pending_review';
-
-    $allowed = ['pending_review', 'published', 'rejected', 'all'];
-    if (!in_array($mod, $allowed, true)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid moderation filter']);
-        exit;
+try {
+    switch ($method) {
+        case 'GET':
+            handleGet($pdo);
+            break;
+        case 'POST':
+            handlePost($pdo);
+            break;
+        default:
+            json_response(405, ['error' => 'Method not allowed']);
     }
-
-    try {
-        if ($mod === 'all') {
-            $stmt = $pdo->query(
-                "SELECT p.*, u.first_name AS landlord_first, u.last_name AS landlord_last, u.email AS landlord_email
-                 FROM properties p
-                 JOIN users u ON u.id = p.landlord_id
-                 ORDER BY p.updated_at DESC"
-            );
-        } else {
-            $stmt = $pdo->prepare(
-                "SELECT p.*, u.first_name AS landlord_first, u.last_name AS landlord_last, u.email AS landlord_email
-                 FROM properties p
-                 JOIN users u ON u.id = p.landlord_id
-                 WHERE p.listing_moderation_status = ?
-                 ORDER BY p.updated_at DESC"
-            );
-            $stmt->execute([$mod]);
-        }
-
-        echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
-    } catch (\PDOException $e) {
-        error_log('Admin properties list error: ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to list properties']);
-    }
-    exit;
+} catch (Exception $e) {
+    error_log('Admin properties error: ' . $e->getMessage());
+    json_response(500, ['error' => 'Failed to process request']);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+function handleGet($pdo) {
+    $moderationStatus = $_GET['moderation'] ?? 'pending_review';
+
+    $stmt = $pdo->prepare("
+        SELECT 
+            p.id, p.title, p.price, p.moderation_status as listing_moderation_status,
+            u.first_name as landlord_first, u.last_name as landlord_last, u.email as landlord_email
+        FROM properties p
+        JOIN users u ON p.landlord_id = u.id
+        WHERE p.moderation_status = ? AND p.deleted_at IS NULL
+        ORDER BY p.created_at DESC
+        LIMIT 100
+    ");
+    $stmt->execute([$moderationStatus]);
+    $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    json_response(200, ['data' => $properties]);
+}
+
+function handlePost($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
-    $propertyId = isset($input['propertyId']) ? (int) $input['propertyId'] : 0;
-    $action = $input['action'] ?? '';
-
-    if ($propertyId < 1 || !in_array($action, ['publish', 'reject', 'flag'], true)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid propertyId or action']);
-        exit;
+    
+    if (!isset($input['propertyId']) || !isset($input['action'])) {
+        json_response(400, ['error' => 'Missing required fields: propertyId, action']);
     }
 
-    if ($action === 'publish') {
-        $newStatus = 'published';
-    } elseif ($action === 'reject') {
-        $newStatus = 'rejected';
-    } else {
-        $newStatus = 'pending_review';
+    $propertyId = intval($input['propertyId']);
+    $action = $input['action']; // 'publish', 'reject', 'flag'
+
+    $newStatus = match($action) {
+        'publish' => 'published',
+        'reject' => 'rejected',
+        'flag' => 'flagged',
+        default => null
+    };
+
+    if (!$newStatus) {
+        json_response(400, ['error' => 'Invalid action. Use publish, reject, or flag']);
     }
 
-    try {
-        $stmt = $pdo->prepare('SELECT id, title FROM properties WHERE id = ?');
-        $stmt->execute([$propertyId]);
-        $prop = $stmt->fetch();
-        if (!$prop) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Property not found']);
-            exit;
-        }
+    $stmt = $pdo->prepare("UPDATE properties SET moderation_status = ? WHERE id = ? AND deleted_at IS NULL");
+    $stmt->execute([$newStatus, $propertyId]);
 
-        $stmt = $pdo->prepare('UPDATE properties SET listing_moderation_status = ? WHERE id = ?');
-        $stmt->execute([$newStatus, $propertyId]);
-
-        $messages = [
-            'publish' => 'Listing published',
-            'reject' => 'Listing rejected',
-            'flag' => 'Listing flagged for review',
-        ];
-        echo json_encode([
-            'success' => true,
-            'message' => $messages[$action],
-            'property' => ['id' => $propertyId, 'listing_moderation_status' => $newStatus],
-        ]);
-    } catch (\PDOException $e) {
-        error_log('Admin properties post error: ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to update property']);
+    if ($stmt->rowCount() === 0) {
+        json_response(404, ['error' => 'Property not found']);
     }
-    exit;
+
+    json_response(200, ['message' => 'Property moderation status updated successfully']);
 }
-
-http_response_code(405);
-echo json_encode(['error' => 'Method not allowed']);

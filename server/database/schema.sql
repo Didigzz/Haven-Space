@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_verified BOOLEAN DEFAULT FALSE,
     account_status ENUM('active', 'suspended', 'banned') NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL
 );
 
 -- Properties Table
@@ -31,8 +32,10 @@ CREATE TABLE IF NOT EXISTS properties (
     price DECIMAL(10, 2) NOT NULL,
     status ENUM('available', 'occupied', 'hidden') DEFAULT 'available',
     listing_moderation_status ENUM('pending_review', 'published', 'rejected') NOT NULL DEFAULT 'published',
+    moderation_status ENUM('pending_review', 'published', 'rejected', 'flagged') NOT NULL DEFAULT 'published',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -117,6 +120,7 @@ CREATE TABLE IF NOT EXISTS applications (
     status VARCHAR(32) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (boarder_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
@@ -137,15 +141,16 @@ CREATE TABLE IF NOT EXISTS landlord_verification_log (
 CREATE TABLE IF NOT EXISTS property_reports (
     id INT AUTO_INCREMENT PRIMARY KEY,
     property_id INT NOT NULL,
-    reporter_user_id INT NOT NULL,
+    reporter_id INT NOT NULL,
     reason VARCHAR(64) NOT NULL,
     details TEXT,
     status ENUM('open', 'reviewing', 'resolved', 'dismissed') NOT NULL DEFAULT 'open',
     admin_notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
-    FOREIGN KEY (reporter_user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS disputes (
@@ -153,14 +158,15 @@ CREATE TABLE IF NOT EXISTS disputes (
     type ENUM('payment', 'tenancy', 'property', 'other') NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    opened_by_user_id INT NOT NULL,
+    opened_by INT NOT NULL,
     related_user_id INT NULL,
     related_property_id INT NULL,
     status ENUM('open', 'in_review', 'resolved', 'escalated') NOT NULL DEFAULT 'open',
     resolution_notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (opened_by_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (opened_by) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (related_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (related_property_id) REFERENCES properties(id) ON DELETE SET NULL
 );
@@ -178,4 +184,9 @@ INSERT IGNORE INTO platform_settings (setting_key, setting_value) VALUES
     ('notify_admin_new_landlord', '1'),
     ('platform_fee_percent', '0');
 
--- More tables will be added as needed based on FEATURES_MODULES_AUTH.md
+-- Default Super Admin User
+-- Email: admin@mail.com
+-- Password: Superadmin123
+INSERT IGNORE INTO users (first_name, last_name, email, password_hash, role, is_verified, account_status) VALUES
+    ('Super', 'Admin', 'admin@mail.com', '$2y$12$T7quqln.QaMfVHroclj7B.QBk.lNVWIuY65qB5KerTPJG65piAGFy', 'admin', TRUE, 'active');
+

@@ -38,7 +38,7 @@ function initialsFrom(user) {
 export async function initLandlordDashboardEntry() {
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
     if (!res.ok) {
       window.location.href = loginPath();
       return;
@@ -143,8 +143,6 @@ export async function initLandlordDashboardEntry() {
 
   // Setup navbar event listeners
   setupNavbarListeners();
-
-  console.log('LandlordDashboard: Initialized');
 }
 
 /**

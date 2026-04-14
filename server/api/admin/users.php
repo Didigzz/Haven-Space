@@ -1,125 +1,113 @@
 <?php
+
 /**
- * Admin — user directory and account status
+ * Admin Users API
+ * GET /api/admin/users.php?limit=40&offset=0&q=&role=
+ * PATCH /api/admin/users.php {userId, account_status}
  *
- * GET  ?q=&role=&limit=&offset=
- * PATCH { userId, account_status }
+ * Manages user accounts (search, list, update status)
  */
 
-require_once __DIR__ . '/../cors.php';
-require_once __DIR__ . '/../../src/Core/bootstrap.php';
-require_once __DIR__ . '/../middleware.php';
+if (!function_exists('json_response')) {
+    require_once __DIR__ . '/../../src/Core/bootstrap.php';
+    require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
+    require_once __DIR__ . '/../cors.php';
+}
 
-header('Content-Type: application/json');
-
-use App\Api\Middleware;
 use App\Core\Database\Connection;
 
-$admin = Middleware::authorize(['admin']);
-$adminUserId = (int) ($admin['user_id'] ?? 0);
-
+$method = $_SERVER['REQUEST_METHOD'];
 $pdo = Connection::getInstance()->getPdo();
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $q = trim($_GET['q'] ?? '');
-    $role = $_GET['role'] ?? '';
-    $limit = min(100, max(1, (int) ($_GET['limit'] ?? 50)));
-    $offset = max(0, (int) ($_GET['offset'] ?? 0));
-
-    $where = ['1=1'];
-    $params = [];
-
-    if ($q !== '') {
-        $where[] = '(u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR CONCAT(u.first_name, " ", u.last_name) LIKE ?)';
-        $like = '%' . $q . '%';
-        array_push($params, $like, $like, $like, $like);
+try {
+    switch ($method) {
+        case 'GET':
+            handleGet($pdo);
+            break;
+        case 'PATCH':
+            handlePatch($pdo);
+            break;
+        default:
+            json_response(405, ['error' => 'Method not allowed']);
     }
-
-    if (in_array($role, ['boarder', 'landlord', 'admin'], true)) {
-        $where[] = 'u.role = ?';
-        $params[] = $role;
-    }
-
-    $whereSql = implode(' AND ', $where);
-
-    $sql = "SELECT u.id, u.first_name, u.last_name, u.email, u.role, u.is_verified,
-                   u.account_status, u.created_at, u.avatar_url
-            FROM users u
-            WHERE {$whereSql}
-            ORDER BY u.created_at DESC
-            LIMIT {$limit} OFFSET {$offset}";
-
-    $countSql = "SELECT COUNT(*) FROM users u WHERE {$whereSql}";
-
-    try {
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll();
-        $cstmt = $pdo->prepare($countSql);
-        $cstmt->execute($params);
-        $total = (int) $cstmt->fetchColumn();
-
-        echo json_encode([
-            'success' => true,
-            'data' => $rows,
-            'meta' => ['total' => $total, 'limit' => $limit, 'offset' => $offset],
-        ]);
-    } catch (\PDOException $e) {
-        error_log('Admin users list error: ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to list users']);
-    }
-    exit;
+} catch (Exception $e) {
+    error_log('Admin users error: ' . $e->getMessage());
+    json_response(500, ['error' => 'Failed to process request']);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
+function handleGet($pdo) {
+    $params = $_GET;
+    $limit = intval($params['limit'] ?? 40);
+    $offset = intval($params['offset'] ?? 0);
+    $q = $params['q'] ?? '';
+    $role = $params['role'] ?? '';
+
+    $where = "u.deleted_at IS NULL";
+    $params_arr = [];
+
+    if ($q) {
+        $where .= " AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ?)";
+        $searchTerm = "%$q%";
+        $params_arr = array_merge($params_arr, [$searchTerm, $searchTerm, $searchTerm]);
+    }
+
+    if ($role) {
+        $where .= " AND u.role = ?";
+        $params_arr[] = $role;
+    }
+
+    // Get total count
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM users u WHERE $where");
+    $stmt->execute($params_arr);
+    $total = intval($stmt->fetch(PDO::FETCH_ASSOC)['total']);
+
+    // Get users
+    $limit = intval($limit);
+    $offset = intval($offset);
+    $stmt = $pdo->prepare("
+        SELECT
+            u.id, u.first_name, u.last_name, u.email, u.role,
+            u.is_verified, u.account_status, u.created_at
+        FROM users u
+        WHERE $where
+        ORDER BY u.created_at DESC
+        LIMIT $limit OFFSET $offset
+    ");
+    $stmt->execute($params_arr);
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    json_response(200, [
+        'data' => $users,
+        'meta' => [
+            'total' => $total,
+            'limit' => $limit,
+            'offset' => $offset,
+        ],
+    ]);
+}
+
+function handlePatch($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
-    $userId = isset($input['userId']) ? (int) $input['userId'] : 0;
-    $accountStatus = $input['account_status'] ?? '';
-
-    if ($userId < 1 || !in_array($accountStatus, ['active', 'suspended', 'banned'], true)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid userId or account_status']);
-        exit;
+    
+    if (!isset($input['userId']) || !isset($input['account_status'])) {
+        json_response(400, ['error' => 'Missing required fields: userId, account_status']);
     }
 
-    if ($userId === $adminUserId) {
-        http_response_code(400);
-        echo json_encode(['error' => 'You cannot change your own account status']);
-        exit;
+    $userId = intval($input['userId']);
+    $accountStatus = $input['account_status'];
+
+    // Validate status
+    $allowedStatuses = ['active', 'suspended', 'banned'];
+    if (!in_array($accountStatus, $allowedStatuses)) {
+        json_response(400, ['error' => 'Invalid account status. Allowed: active, suspended, banned']);
     }
 
-    try {
-        $stmt = $pdo->prepare('SELECT id, role FROM users WHERE id = ?');
-        $stmt->execute([$userId]);
-        $target = $stmt->fetch();
-        if (!$target) {
-            http_response_code(404);
-            echo json_encode(['error' => 'User not found']);
-            exit;
-        }
+    $stmt = $pdo->prepare("UPDATE users SET account_status = ? WHERE id = ? AND deleted_at IS NULL");
+    $stmt->execute([$accountStatus, $userId]);
 
-        if ($target['role'] === 'admin' && $accountStatus !== 'active') {
-            http_response_code(400);
-            echo json_encode(['error' => 'Cannot suspend or ban admin accounts']);
-            exit;
-        }
-
-        $stmt = $pdo->prepare('UPDATE users SET account_status = ? WHERE id = ?');
-        $stmt->execute([$accountStatus, $userId]);
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'User updated',
-            'user' => ['id' => $userId, 'account_status' => $accountStatus],
-        ]);
-    } catch (\PDOException $e) {
-        error_log('Admin users patch error: ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to update user']);
+    if ($stmt->rowCount() === 0) {
+        json_response(404, ['error' => 'User not found']);
     }
-    exit;
+
+    json_response(200, ['message' => 'User status updated successfully']);
 }
-
-http_response_code(405);
-echo json_encode(['error' => 'Method not allowed']);

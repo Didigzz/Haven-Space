@@ -4,6 +4,7 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
+import { loadState, getState } from '../../shared/state.js';
 
 // State management for enhanced features
 const enhancedState = {
@@ -319,6 +320,12 @@ export function initFindARoomEnhanced() {
  * Setup all enhanced feature event listeners
  */
 function setupEnhancedFeatures() {
+  // Load auth state
+  const authState = loadState();
+
+  // Render UI based on auth state
+  renderAuthState(authState);
+
   // Load applications from localStorage or use sample data
   const storedApplications = localStorage.getItem('applications');
   if (storedApplications) {
@@ -332,21 +339,20 @@ function setupEnhancedFeatures() {
     // Initialize with sample data and persist to localStorage
     enhancedState.applications = sampleApplications;
     localStorage.setItem('applications', JSON.stringify(sampleApplications));
-    console.log(
-      'Applications initialized and saved to localStorage:',
-      sampleApplications.length,
-      'items'
-    );
   }
 
   // Initialize floating header
   initFloatingHeader();
 
-  // Initialize status dropdown
-  initStatusDropdown();
+  // Initialize status dropdown (only for authenticated users)
+  if (authState.isAuthenticated) {
+    initStatusDropdown();
+  }
 
-  // Initialize profile dropdown
-  initProfileDropdown();
+  // Initialize profile dropdown (only for authenticated users)
+  if (authState.isAuthenticated) {
+    initProfileDropdown();
+  }
 
   // Initialize map view
   initMapView();
@@ -354,11 +360,124 @@ function setupEnhancedFeatures() {
   // Initialize modals
   initModals();
 
-  // Update status badge
-  updateStatusBadge();
+  // Update status badge (only for authenticated users)
+  if (authState.isAuthenticated) {
+    updateStatusBadge();
+    renderApplications();
+  }
 
-  // Render applications
-  renderApplications();
+  // Initialize guest search (only for unauthenticated users)
+  if (!authState.isAuthenticated) {
+    initGuestSearch();
+  }
+}
+
+/* ==========================================================================
+   Auth State Management
+   ========================================================================== */
+
+/**
+ * Render UI based on authentication state
+ */
+function renderAuthState(authState) {
+  const authControls = document.getElementById('find-room-auth-controls');
+  const guestControls = document.getElementById('find-room-guest-controls');
+  const heroAuth = document.getElementById('find-room-hero-auth');
+  const heroGuest = document.getElementById('find-room-hero-guest');
+
+  if (authState.isAuthenticated) {
+    // Show authenticated UI
+    if (authControls) authControls.style.display = 'flex';
+    if (guestControls) guestControls.style.display = 'none';
+    if (heroAuth) heroAuth.style.display = 'block';
+    if (heroGuest) heroGuest.style.display = 'none';
+
+    // Update profile info if available
+    updateUserProfile(authState.user);
+  } else {
+    // Show guest/unauthenticated UI
+    if (authControls) authControls.style.display = 'none';
+    if (guestControls) guestControls.style.display = 'flex';
+    if (heroAuth) heroAuth.style.display = 'none';
+    if (heroGuest) heroGuest.style.display = 'block';
+  }
+}
+
+/**
+ * Update user profile in header with current user data
+ */
+function updateUserProfile(user) {
+  if (!user) return;
+
+  // Update profile name
+  const profileNames = document.querySelectorAll('.find-room-header-profile-name');
+  profileNames.forEach(el => {
+    el.textContent = user.name || 'User';
+  });
+
+  // Update profile avatar initials in dropdown
+  const avatarEl = document.querySelector('.find-room-profile-menu-avatar');
+  if (avatarEl && user.initials) {
+    avatarEl.textContent = user.initials;
+  }
+
+  // Update profile menu name
+  const menuNames = document.querySelectorAll('.find-room-profile-menu-name');
+  menuNames.forEach(el => {
+    el.textContent = user.name || 'User';
+  });
+
+  // Update profile menu email
+  const menuEmails = document.querySelectorAll('.find-room-profile-menu-email');
+  menuEmails.forEach(el => {
+    el.textContent = user.email || '';
+  });
+
+  // Update avatar image if available
+  const avatarImg = document.querySelector('.find-room-header-profile-avatar');
+  if (avatarImg) {
+    if (user.avatarUrl) {
+      avatarImg.src = user.avatarUrl;
+    }
+  }
+}
+
+/**
+ * Initialize guest search functionality
+ */
+function initGuestSearch() {
+  const searchBtn = document.getElementById('guest-search-btn');
+  const searchInput = document.getElementById('guest-search-input');
+
+  if (searchBtn && searchInput) {
+    searchBtn.addEventListener('click', () => {
+      const query = searchInput.value.trim();
+      if (query) {
+        // Redirect to login with search query
+        window.location.href = `../auth/login.html?redirect=${encodeURIComponent(
+          window.location.pathname
+        )}&search=${encodeURIComponent(query)}`;
+      }
+    });
+
+    searchInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        searchBtn.click();
+      }
+    });
+  }
+
+  // Location chips redirect to login
+  document.querySelectorAll('.find-room-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const location = chip.dataset.location;
+      if (location) {
+        window.location.href = `../auth/login.html?redirect=${encodeURIComponent(
+          window.location.pathname
+        )}&search=${encodeURIComponent(location)}`;
+      }
+    });
+  });
 }
 
 /* ==========================================================================
@@ -369,11 +488,16 @@ function initFloatingHeader() {
   const header = document.getElementById('find-room-floating-header');
   if (!header) return;
 
-  // Show header initially when page loads
-  showHeader();
+  // Track mouse position for header visibility with throttling
+  let mouseMoveThrottle = null;
+  document.addEventListener('mousemove', event => {
+    if (mouseMoveThrottle !== null) return;
 
-  // Track mouse position for header visibility
-  document.addEventListener('mousemove', handleMouseMoveForHeader);
+    mouseMoveThrottle = setTimeout(() => {
+      mouseMoveThrottle = null;
+      handleMouseMoveForHeader(event);
+    }, 50); // Throttle to 20fps to prevent rapid toggling
+  });
 
   // Hide header after a delay when user scrolls down
   let scrollTimeout;
@@ -392,6 +516,7 @@ function handleMouseMoveForHeader(event) {
   if (!header) return;
 
   const threshold = 80; // pixels from top to show header
+  const hideThreshold = 120; // Higher threshold to hide (prevents edge flickering)
 
   // Check if any dropdown/menu is currently open
   const statusMenu = document.getElementById('status-dropdown-menu');
@@ -400,37 +525,43 @@ function handleMouseMoveForHeader(event) {
   const isMenuOpen =
     statusMenu?.classList.contains('show') || profileMenu?.classList.contains('show');
 
+  // If menu is open, always show header
+  if (isMenuOpen) {
+    showHeader();
+    return;
+  }
+
   // Get header bounding rectangle to check if cursor is inside header
   const headerRect = header.getBoundingClientRect();
   const isInsideHeader =
-    event.clientY >= headerRect.top &&
-    event.clientY <= headerRect.bottom &&
-    event.clientX >= headerRect.left &&
-    event.clientX <= headerRect.right;
+    event.clientY >= headerRect.top - 10 && // Add 10px buffer
+    event.clientY <= headerRect.bottom + 10 &&
+    event.clientX >= headerRect.left - 10 &&
+    event.clientX <= headerRect.right + 10;
 
-  // Keep header visible if cursor is near top OR if any menu is open OR if cursor is inside header
-  if (event.clientY <= threshold || isMenuOpen || isInsideHeader) {
-    // Cursor near top or menu is open or cursor is in header - show header
+  // Use hysteresis: different thresholds for showing vs hiding
+  // This prevents rapid toggling at the boundary
+  if (event.clientY <= threshold || isInsideHeader) {
+    // Cursor near top or inside header - show header
     showHeader();
-  } else {
-    // Cursor below threshold and no menus open and not in header - hide header
+  } else if (event.clientY > hideThreshold) {
+    // Cursor well below threshold - hide header
     hideHeader();
   }
+  // If between threshold and hideThreshold, maintain current state (do nothing)
 }
 
 function showHeader() {
   const header = document.getElementById('find-room-floating-header');
   if (!header || header.classList.contains('show')) return;
 
-  header.classList.remove('hidden');
   header.classList.add('show');
 }
 
 function hideHeader() {
   const header = document.getElementById('find-room-floating-header');
-  if (!header || header.classList.contains('hidden')) return;
+  if (!header || !header.classList.contains('show')) return;
 
-  header.classList.add('hidden');
   header.classList.remove('show');
 }
 
@@ -597,7 +728,6 @@ function initProfileDropdown() {
       e.preventDefault();
       dropdownMenu.classList.remove('show');
       // Show settings or navigate
-      console.log('Settings clicked');
     });
   }
 
@@ -639,7 +769,6 @@ function initProfileDropdown() {
 function initMapView() {
   // Map buttons now navigate to maps.html instead of toggling embedded map
   // The embedded map container and related functionality has been removed
-  console.log('Map view navigation: buttons now link to maps.html');
 }
 
 // Note: The following functions have been removed as map navigation now goes to maps.html:
@@ -653,7 +782,7 @@ function initMapView() {
  */
 function openDetailPanel(property) {
   const detailOverlay = document.getElementById('detail-overlay');
-  const detailPanel = document.getElementById('detail-panel');
+  const _detailPanel = document.getElementById('detail-panel');
 
   if (detailOverlay) {
     detailOverlay.style.display = 'flex';
@@ -782,7 +911,7 @@ function populateDetailPanel(property) {
     roomsSection.style.display = 'block';
     roomsGrid.innerHTML = property.rooms
       .map(
-        (room, index) => `
+        (room, _index) => `
       <div class="find-room-detail-room-card">
         <div class="find-room-room-image-wrapper">
           <img src="${room.image}" alt="${room.type}" class="find-room-room-image" />
@@ -952,7 +1081,7 @@ window.openDetailPanelById = function (propertyId) {
 /**
  * Close map view
  */
-function closeMapView() {
+function _closeMapView() {
   const mapContainer = document.getElementById('find-room-map-container');
   const mapBtnHeader = document.getElementById('map-view-btn');
   const mapBtnHero = document.getElementById('map-view-btn-hero');
@@ -1109,8 +1238,6 @@ function initModals() {
       const reason =
         selectedRadio.value === 'others' ? otherInput?.value.trim() : selectedRadio.value;
 
-      console.log('Property rejected:', enhancedState.selectedProperty, 'Reason:', reason);
-
       // Add to rejected set
       if (enhancedState.selectedProperty) {
         enhancedState.rejectedProperties.add(enhancedState.selectedProperty.id);
@@ -1234,8 +1361,6 @@ function showConfirmationModal() {
 function handlePropertySelection(propertyId) {
   const selectedApp = enhancedState.applications.find(app => app.propertyId === propertyId);
   if (!selectedApp) return;
-
-  console.log('Property selected:', selectedApp);
 
   // Store selection
   enhancedState.selectedProperty = selectedApp;

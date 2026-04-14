@@ -8,6 +8,11 @@
     # Handle CORS preflight requests
     RewriteCond %{REQUEST_METHOD} OPTIONS
     RewriteRule ^(.*)$ $1 [R=200,L]
+
+    # Route all requests to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
 
 # Set default charset
@@ -29,10 +34,18 @@ AddDefaultCharset UTF-8
     # Prevent MIME type sniffing
     Header always set X-Content-Type-Options "nosniff"
 
-    # CORS headers
-    Header set Access-Control-Allow-Origin "*"
-    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    # Remove any pre-existing CORS headers to avoid duplicates
+    # CORS is handled dynamically by PHP cors.php
+    Header onsuccess unset Access-Control-Allow-Origin
+    Header onsuccess unset Access-Control-Allow-Methods
+    Header onsuccess unset Access-Control-Allow-Headers
+    Header onsuccess unset Access-Control-Allow-Credentials
+    Header onsuccess unset Access-Control-Max-Age
+    Header always unset Access-Control-Allow-Origin
+    Header always unset Access-Control-Allow-Methods
+    Header always unset Access-Control-Allow-Headers
+    Header always unset Access-Control-Allow-Credentials
+    Header always unset Access-Control-Max-Age
 </IfModule>
 
 # PHP configuration
