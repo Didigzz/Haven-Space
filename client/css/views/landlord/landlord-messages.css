@@ -361,6 +361,14 @@
   align-items: flex-end;
 }
 
+.sender-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dashboard-text-secondary);
+  margin-bottom: 2px;
+  display: block;
+}
+
 .message-bubble {
   padding: 12px 16px;
   background-color: var(--dashboard-surface);

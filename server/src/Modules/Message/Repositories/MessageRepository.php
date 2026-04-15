@@ -72,6 +72,22 @@ class MessageRepository
     }
 
     /**
+     * Get participants for a conversation
+     */
+    public function getConversationParticipants(int $conversationId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT cp.*, u.first_name, u.last_name, u.email
+             FROM conversation_participants cp
+             JOIN users u ON cp.user_id = u.id
+             WHERE cp.conversation_id = :conversation_id'
+        );
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Get messages for a conversation
      */
     public function getConversationMessages(int $conversationId, int $limit = 50, int $offset = 0): array

@@ -8,6 +8,7 @@ import CONFIG from '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { loadDashboardData } from './dashboard.js';
+import { initMessages } from './messages.js';
 import { initFindARoom } from './boarder-find-a-room.js';
 import { initLeasePage } from './lease.js';
 import { initPaymentPage } from './boarder-payment-process.js';
@@ -104,6 +105,10 @@ export async function initBoarderDashboard() {
 
   if (currentPath.includes('find-a-room')) {
     initFindARoom();
+  }
+
+  if (currentPath.includes('messages')) {
+    initMessages();
   }
 
   if (currentPath.includes('lease')) {

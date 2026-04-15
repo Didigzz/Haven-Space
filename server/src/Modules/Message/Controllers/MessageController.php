@@ -52,7 +52,7 @@ class MessageController
         // Default simulation based on common usage in this project
         // Landlord simulation
         if (strpos($_SERVER['HTTP_REFERER'] ?? '', 'landlord') !== false) {
-            return ['user_id' => 4, 'role' => 'landlord'];
+            return ['user_id' => 2, 'role' => 'landlord'];
         }
         // Boarder simulation
         return ['user_id' => 3, 'role' => 'boarder'];

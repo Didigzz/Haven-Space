@@ -281,8 +281,8 @@ try {
         $redirectPath = '/views/landlord/index.html';
     } else {
         // Boarder - use routing logic based on status
-        // For now, redirect to find-a-room (default for new/boarders)
-        $redirectPath = '/views/public/find-a-room.html';
+        // Redirect to boarder dashboard home
+        $redirectPath = '/views/boarder/index.html';
     }
 
     // Ensure we're using the correct base URL

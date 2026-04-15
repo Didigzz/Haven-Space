@@ -15,8 +15,12 @@ if (!localStorage.getItem('user_id')) {
   localStorage.setItem('user_id', '3'); // Simulated Boarder ID
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadConversations();
+export function initMessages() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const convId = urlParams.get('id');
+  if (convId) currentConversationId = parseInt(convId);
+
+  loadConversations();
   initConversationSwitching();
   initSearchMessages();
   initSendMessage();
@@ -25,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Refresh conversations periodically
   setInterval(loadConversations, 10000);
-});
+}
 
 /**
  * Load conversations from API
@@ -50,6 +54,16 @@ async function loadConversations() {
 
     renderConversations(conversations);
     updateNotificationBadge();
+
+    // Auto-load conversation if ID is in URL or load first one if none selected
+    if (conversations.length > 0) {
+      if (currentConversationId) {
+        loadConversation(currentConversationId);
+      } else {
+        // Optional: Auto-load the first conversation
+        // loadConversation(conversations[0].id);
+      }
+    }
   } catch (error) {
     console.error('Error loading conversations:', error);
   }
@@ -97,9 +111,11 @@ function createConversationItem(conv) {
   const lastMessage = conv.last_message || 'No messages yet';
   const lastMessageAt = conv.last_message_at ? formatRelativeTime(conv.last_message_at) : '';
 
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(conv.title)}&background=random&color=fff`;
+
   item.innerHTML = `
     <div class="conversation-avatar">
-      <img src="../../../assets/images/default-avatar.png" alt="Avatar" />
+      <img src="${avatarUrl}" alt="Avatar" />
     </div>
     <div class="conversation-info">
       <div class="conversation-header-row">
@@ -113,7 +129,14 @@ function createConversationItem(conv) {
     </div>
   `;
 
-  item.addEventListener('click', () => loadConversation(conv.id));
+  item.addEventListener('click', () => {
+    // Update URL without reloading
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set('id', conv.id);
+    window.history.pushState({}, '', newUrl);
+    
+    loadConversation(conv.id);
+  });
   return item;
 }
 
@@ -176,9 +199,13 @@ async function loadConversation(conversationId) {
 function updateChatHeader(conv) {
   const chatName = document.querySelector('.chat-name');
   const chatStatus = document.querySelector('.chat-status');
+  const chatAvatar = document.querySelector('.chat-avatar img');
 
   if (chatName) chatName.textContent = conv.title;
   if (chatStatus) chatStatus.textContent = conv.is_system_thread ? 'System Thread' : 'Online';
+  if (chatAvatar) {
+    chatAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(conv.title)}&background=random&color=fff`;
+  }
 }
 
 /**
@@ -213,10 +240,14 @@ function createMessageElement(msg) {
   const attachmentsHtml =
     msg.attachments && msg.attachments.length > 0 ? renderAttachments(msg.attachments) : '';
 
+  const avatarUrl = msg.sender_name 
+    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender_name)}&background=random&color=fff`
+    : '../../../assets/images/default-avatar.png';
+
   messageItem.innerHTML = `
     ${
       !isSent
-        ? '<div class="message-avatar"><img src="../../../assets/images/default-avatar.png" alt="Avatar" /></div>'
+        ? `<div class="message-avatar"><img src="${avatarUrl}" alt="${escapeHtml(msg.sender_name || 'Avatar')}" /></div>`
         : ''
     }
     <div class="message-content ${isSent ? 'message-content-sent' : ''}">
@@ -606,7 +637,8 @@ function formatRelativeTime(dateString) {
  * Get current user ID from state
  */
 function getCurrentUserId() {
-  return parseInt(localStorage.getItem('user_id') || '0');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  return parseInt(user.id || user.user_id || localStorage.getItem('user_id') || '3');
 }
 
 /**

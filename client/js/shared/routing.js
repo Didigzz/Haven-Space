@@ -29,8 +29,8 @@ export function getBoarderRedirectPath(user) {
   switch (boarderStatus) {
     case 'new':
     case 'browsing':
-      // New user or actively browsing - send to find a room page
-      return `${basePath}public/find-a-room.html`;
+      // Show full dashboard home by default
+      return `${basePath}boarder/index.html`;
 
     case 'applied_pending':
       // Has pending applications - show applications page

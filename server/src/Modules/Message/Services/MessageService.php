@@ -26,10 +26,34 @@ class MessageService
     {
         $conversations = $this->repository->getUserConversations($userId);
 
-        return array_map(function ($conv) {
+        return array_map(function ($conv) use ($userId) {
+            // Get participants to determine the other person
+            $conv['participants'] = $this->repository->getConversationParticipants($conv['id']);
+            $conv['title'] = $this->formatConversationTitle($conv, $userId);
+            
             $entity = new Conversation($conv);
             return $entity->toPublicArray();
         }, $conversations);
+    }
+
+    /**
+     * Helper to format conversation title based on viewer
+     */
+    private function formatConversationTitle(array $conversation, int $userId): string
+    {
+        if ($conversation['type'] !== 'direct') {
+            return $conversation['title'];
+        }
+
+        // Find the other participant
+        foreach ($conversation['participants'] as $participant) {
+            if ($participant['user_id'] != $userId) {
+                $roleLabel = ucfirst($participant['role']);
+                return "$roleLabel - {$participant['first_name']} {$participant['last_name']}";
+            }
+        }
+
+        return $conversation['title'];
     }
 
     /**
@@ -110,6 +134,9 @@ class MessageService
         if (!$isParticipant) {
             throw new \RuntimeException('Unauthorized');
         }
+
+        // Format dynamic title
+        $conversation['title'] = $this->formatConversationTitle($conversation, $userId);
 
         // Get messages
         $messages = $this->repository->getConversationMessages($conversationId);
