@@ -204,11 +204,96 @@ Router::put('/api/landlord/listings/{id}', function($id) {
 });
 
 // ============================================
+// BOARDER ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+Router::post('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+Router::delete('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+// ============================================
+// ANNOUNCEMENT ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/announcements', function() {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+Router::post('/api/landlord/announcements', function() {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+Router::put('/api/landlord/announcements/{id}', function($id) {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+Router::delete('/api/landlord/announcements/{id}', function($id) {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+// ============================================
+// ANNOUNCEMENT ROUTES - BOARDER
+// ============================================
+Router::get('/api/boarder/announcements', function() {
+    require_once __DIR__ . '/boarder/announcements.php';
+});
+
+Router::post('/api/boarder/announcements/{id}/view', function($id) {
+    require_once __DIR__ . '/boarder/announcements.php';
+});
+
+// ============================================
+// PAYMENT ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/payments', function() {
+    require_once __DIR__ . '/landlord/payments.php';
+});
+
+Router::post('/api/landlord/payments', function() {
+    require_once __DIR__ . '/landlord/payments.php';
+});
+
+Router::get('/api/landlord/payment-summary', function() {
+    require_once __DIR__ . '/landlord/payment-summary.php';
+});
+
+Router::get('/api/landlord/reports', function() {
+    require_once __DIR__ . '/landlord/reports.php';
+});
+
+// ============================================
+// CALENDAR ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/calendar', function() {
+    require_once __DIR__ . '/landlord/calendar.php';
+});
+
+// Welcome settings
+Router::get('/api/landlord/welcome-settings', function() {
+    require_once __DIR__ . '/landlord/welcome-settings.php';
+});
+
+Router::post('/api/landlord/welcome-settings', function() {
+    require_once __DIR__ . '/landlord/welcome-settings.php';
+});
+
+// ============================================
 // PUBLIC ROOM LISTINGS ROUTES
 // ============================================
 // Get all published properties (no authentication required)
 Router::get('/api/rooms/public', function() {
     require_once __DIR__ . '/rooms/public.php';
+});
+
+// Get single property detail (no authentication required)
+Router::get('/api/rooms/detail', function() {
+    require_once __DIR__ . '/rooms/detail.php';
 });
 
 // ============================================
