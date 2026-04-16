@@ -37,7 +37,17 @@ if ($method === 'GET') {
         $propStmt->execute([$boarderId]);
         $propertyIds = $propStmt->fetchAll(PDO::FETCH_COLUMN);
 
-        if (empty($propertyIds)) {
+        // Get landlords who own the properties where boarder has accepted applications
+        $landlordStmt = $pdo->prepare("
+            SELECT DISTINCT p.landlord_id
+            FROM applications a
+            JOIN properties p ON a.property_id = p.id
+            WHERE a.boarder_id = ? AND a.status = 'accepted' AND a.deleted_at IS NULL
+        ");
+        $landlordStmt->execute([$boarderId]);
+        $landlordIds = $landlordStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($landlordIds)) {
             json_response(200, [
                 'success' => true,
                 'data' => [
@@ -48,9 +58,10 @@ if ($method === 'GET') {
             return;
         }
 
+        $landlordPlaceholders = implode(',', array_fill(0, count($landlordIds), '?'));
         $placeholders = implode(',', array_fill(0, count($propertyIds), '?'));
 
-        // Get announcements for these properties or all properties (property_id IS NULL)
+        // Get announcements for these properties or all properties from the boarder's landlords
         $stmt = $pdo->prepare("
             SELECT DISTINCT
                 a.id,
@@ -73,6 +84,7 @@ if ($method === 'GET') {
             LEFT JOIN users u ON a.landlord_id = u.id
             LEFT JOIN announcement_views av ON a.id = av.announcement_id AND av.user_id = ?
             WHERE a.deleted_at IS NULL
+            AND a.landlord_id IN ($landlordPlaceholders)
             AND (
                 a.property_id IS NULL
                 OR a.property_id IN ($placeholders)
@@ -86,7 +98,7 @@ if ($method === 'GET') {
             ORDER BY a.publish_date DESC, a.created_at DESC
         ");
         
-        $params = array_merge([$boarderId], $propertyIds, $propertyIds);
+        $params = array_merge([$boarderId], $landlordIds, $propertyIds, $propertyIds);
         $stmt->execute($params);
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

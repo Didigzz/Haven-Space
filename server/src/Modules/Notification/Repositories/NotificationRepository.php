@@ -29,7 +29,10 @@ class NotificationRepository
                 LIMIT ? OFFSET ?';
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$userId, $limit, $offset]);
+        $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit, PDO::PARAM_INT);
+        $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -134,13 +137,26 @@ class NotificationRepository
 
     /**
      * Check if boarder has any accepted applications
+     * Returns array with has_accepted boolean and property_ids array
      */
-    public function hasAcceptedApplications(int $boarderId): bool
+    public function hasAcceptedApplications(int $boarderId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT COUNT(*) FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL'
+            'SELECT COUNT(*) as count, GROUP_CONCAT(DISTINCT property_id) as property_ids
+             FROM applications 
+             WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL'
         );
         $stmt->execute([$boarderId, 'accepted']);
-        return (int) $stmt->fetchColumn() > 0;
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $hasAccepted = (int) $result['count'] > 0;
+        $propertyIds = $result['property_ids'] 
+            ? array_map('intval', explode(',', $result['property_ids'])) 
+            : [];
+        
+        return [
+            'has_accepted' => $hasAccepted,
+            'property_ids' => $propertyIds,
+        ];
     }
 }

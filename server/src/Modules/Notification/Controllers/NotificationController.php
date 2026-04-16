@@ -123,8 +123,11 @@ class NotificationController
         $user = Middleware::authorize(['boarder']);
         $userId = $user['user_id'];
 
-        $hasAccepted = $this->service->hasAcceptedApplications($userId);
+        $result = $this->service->hasAcceptedApplications($userId);
 
-        json_response(200, ['data' => ['has_accepted' => $hasAccepted]]);
+        json_response(200, [
+            'has_accepted' => $result['has_accepted'],
+            'property_ids' => $result['property_ids'],
+        ]);
     }
 }

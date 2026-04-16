@@ -127,9 +127,58 @@ class NotificationService
 
     /**
      * Check if boarder has any accepted applications
+     * Returns both boolean status and array of property IDs
      */
-    public function hasAcceptedApplications(int $boarderId): bool
+    public function hasAcceptedApplications(int $boarderId): array
     {
         return $this->repository->hasAcceptedApplications($boarderId);
+    }
+
+    /**
+     * Create maintenance request notification for landlord
+     */
+    public function notifyMaintenanceRequest(int $landlordId, int $boarderId, int $maintenanceId, string $title): int
+    {
+        $data = [
+            'user_id' => $landlordId,
+            'type' => 'maintenance_request',
+            'title' => 'New Maintenance Request',
+            'message' => "A new maintenance request has been submitted: {$title}",
+            'metadata' => [
+                'maintenance_id' => $maintenanceId,
+                'boarder_id' => $boarderId,
+            ],
+        ];
+
+        return $this->repository->create($data);
+    }
+
+    /**
+     * Create maintenance status change notification for boarder
+     */
+    public function notifyMaintenanceStatusChange(int $boarderId, int $landlordId, int $maintenanceId, string $status, string $title): int
+    {
+        $statusMessages = [
+            'pending' => 'Your maintenance request is pending',
+            'in_progress' => 'Your maintenance request is now in progress',
+            'completed' => 'Your maintenance request has been completed',
+            'cancelled' => 'Your maintenance request has been cancelled',
+        ];
+
+        $message = $statusMessages[$status] ?? 'Your maintenance request status has been updated';
+
+        $data = [
+            'user_id' => $boarderId,
+            'type' => 'maintenance_status_change',
+            'title' => 'Maintenance Request Update',
+            'message' => "{$message}: {$title}",
+            'metadata' => [
+                'maintenance_id' => $maintenanceId,
+                'landlord_id' => $landlordId,
+                'status' => $status,
+            ],
+        ];
+
+        return $this->repository->create($data);
     }
 }

@@ -249,6 +249,13 @@ Router::post('/api/boarder/announcements/{id}/view', function($id) {
 });
 
 // ============================================
+// LEASE ROUTES - BOARDER
+// ============================================
+Router::get('/api/boarder/lease', function() {
+    require_once __DIR__ . '/boarder/lease.php';
+});
+
+// ============================================
 // PAYMENT ROUTES - LANDLORD
 // ============================================
 Router::get('/api/landlord/payments', function() {
@@ -265,6 +272,29 @@ Router::get('/api/landlord/payment-summary', function() {
 
 Router::get('/api/landlord/reports', function() {
     require_once __DIR__ . '/landlord/reports.php';
+});
+
+// ============================================
+// PAYMENT ROUTES - SHARED
+// ============================================
+Router::get('/api/payments/history', function() {
+    require_once __DIR__ . '/payments/history.php';
+});
+
+Router::get('/api/payments/overview', function() {
+    require_once __DIR__ . '/payments/overview.php';
+});
+
+Router::get('/api/payments/methods', function() {
+    require_once __DIR__ . '/payments/methods.php';
+});
+
+Router::post('/api/payments/methods', function() {
+    require_once __DIR__ . '/payments/methods.php';
+});
+
+Router::delete('/api/payments/methods/{id}', function($id) {
+    require_once __DIR__ . '/payments/methods.php';
 });
 
 // ============================================
