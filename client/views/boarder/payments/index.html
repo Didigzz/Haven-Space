@@ -56,8 +56,8 @@
                 </div>
                 <div class="financial-card-info">
                   <span class="financial-card-label">Total Paid</span>
-                  <span class="financial-card-value">₱22,000</span>
-                  <span class="financial-card-trend">4 months</span>
+                  <span class="financial-card-value">₱0.00</span>
+                  <span class="financial-card-trend">0 months</span>
                 </div>
               </div>
               <div class="financial-card-chart">
@@ -76,15 +76,15 @@
                 </div>
                 <div class="financial-card-info">
                   <span class="financial-card-label">Next Payment</span>
-                  <span class="financial-card-value">₱5,500</span>
-                  <span class="financial-card-trend">Due in 12 days</span>
+                  <span class="financial-card-value">₱0.00</span>
+                  <span class="financial-card-trend">Loading...</span>
                 </div>
               </div>
               <div class="financial-card-progress">
                 <div class="financial-card-progress-bar">
-                  <div class="financial-card-progress-fill" style="width: 65%"></div>
+                  <div class="financial-card-progress-fill" style="width: 0%"></div>
                 </div>
-                <span class="financial-card-progress-label">65% of month completed</span>
+                <span class="financial-card-progress-label">0% of month completed</span>
               </div>
             </div>
 
@@ -96,8 +96,8 @@
                 </div>
                 <div class="financial-card-info">
                   <span class="financial-card-label">Utility Balance</span>
-                  <span class="financial-card-value">₱142.50</span>
-                  <span class="financial-card-trend">~3 days remaining</span>
+                  <span class="financial-card-value">₱0.00</span>
+                  <span class="financial-card-trend">~0 days remaining</span>
                 </div>
               </div>
               <div class="financial-card-alert">
@@ -116,7 +116,7 @@
                 </div>
                 <div class="financial-card-info">
                   <span class="financial-card-label">Security Deposit</span>
-                  <span class="financial-card-value">₱11,000</span>
+                  <span class="financial-card-value">₱0.00</span>
                   <span class="financial-card-trend">Held in escrow</span>
                 </div>
               </div>
@@ -148,69 +148,9 @@
                 </div>
 
                 <div class="payment-methods-list">
-                  <!-- GCash Method -->
-                  <div class="payment-method-card payment-method-primary">
-                    <div class="payment-method-header">
-                      <div class="payment-method-icon gcash">
-                        <span class="icon-placeholder" data-icon="phone"></span>
-                      </div>
-                      <span class="payment-method-badge">Default</span>
-                    </div>
-                    <div class="payment-method-body">
-                      <h4 class="payment-method-name">GCash</h4>
-                      <p class="payment-method-number">•••• •••• 4582</p>
-                    </div>
-                    <div class="payment-method-actions">
-                      <button class="payment-method-action-btn" title="Edit">
-                        <span class="icon-placeholder" data-icon="edit"></span>
-                      </button>
-                      <button class="payment-method-action-btn" title="Remove">
-                        <span class="icon-placeholder" data-icon="trash"></span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Bank Transfer Method -->
-                  <div class="payment-method-card">
-                    <div class="payment-method-header">
-                      <div class="payment-method-icon bank">
-                        <span class="icon-placeholder" data-icon="building"></span>
-                      </div>
-                    </div>
-                    <div class="payment-method-body">
-                      <h4 class="payment-method-name">BDO Bank Transfer</h4>
-                      <p class="payment-method-number">•••• •••• 7891</p>
-                    </div>
-                    <div class="payment-method-actions">
-                      <button class="payment-method-action-btn" title="Edit">
-                        <span class="icon-placeholder" data-icon="edit"></span>
-                      </button>
-                      <button class="payment-method-action-btn" title="Remove">
-                        <span class="icon-placeholder" data-icon="trash"></span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Credit Card Method -->
-                  <div class="payment-method-card">
-                    <div class="payment-method-header">
-                      <div class="payment-method-icon card">
-                        <span class="icon-placeholder" data-icon="creditCard"></span>
-                      </div>
-                    </div>
-                    <div class="payment-method-body">
-                      <h4 class="payment-method-name">Visa Credit Card</h4>
-                      <p class="payment-method-number">•••• •••• 3254</p>
-                    </div>
-                    <div class="payment-method-actions">
-                      <button class="payment-method-action-btn" title="Edit">
-                        <span class="icon-placeholder" data-icon="edit"></span>
-                      </button>
-                      <button class="payment-method-action-btn" title="Remove">
-                        <span class="icon-placeholder" data-icon="trash"></span>
-                      </button>
-                    </div>
-                  </div>
+                  <p style="text-align: center; color: var(--text-gray); padding: 20px">
+                    Loading payment methods...
+                  </p>
                 </div>
               </div>
 
@@ -244,11 +184,11 @@
                     </div>
                     <div class="auto-pay-row">
                       <span class="auto-pay-label">Default Method</span>
-                      <span class="auto-pay-value">GCash •••• 4582</span>
+                      <span class="auto-pay-value" id="autoPayMethod">GCash •••• 4582</span>
                     </div>
                     <div class="auto-pay-row">
                       <span class="auto-pay-label">Amount</span>
-                      <span class="auto-pay-value">₱5,500</span>
+                      <span class="auto-pay-value" id="autoPayAmount">₱0.00</span>
                     </div>
                     <button class="payments-btn payments-btn-outline payments-btn-full">
                       Configure Auto-Pay
@@ -266,7 +206,7 @@
                   <div class="quick-pay-info">
                     <h3 class="quick-pay-title">Top Up Utility Credit</h3>
                     <p class="quick-pay-desc">
-                      Current balance: ₱142.50<br />
+                      Current balance: <span class="quick-pay-balance">₱0.00</span><br />
                       Recommended: ₱500 - ₱1,000
                     </p>
                   </div>
@@ -282,55 +222,52 @@
             <!-- Payment History & Current Bill Column -->
             <div class="payments-column">
               <!-- Current Month Bill -->
-              <div class="payments-section payments-current-bill-card" data-due-date="2025-02-01">
+              <div
+                class="payments-section payments-current-bill-card"
+                data-due-date=""
+                data-paid-date=""
+              >
                 <div class="current-bill-header">
                   <div class="current-bill-title-wrapper">
                     <h2 class="payments-section-title">
                       <span class="icon-placeholder" data-icon="document"></span>
                       Current Bill
                     </h2>
-                    <span class="current-bill-period">January 2025</span>
+                    <span class="current-bill-period">Loading...</span>
                   </div>
-                  <span
-                    class="current-bill-status unpaid"
-                    data-due-date="2025-02-01"
-                    data-paid-date=""
-                    >Unpaid</span
-                  >
+                  <span class="current-bill-status unpaid">Loading...</span>
                 </div>
 
                 <div class="current-bill-breakdown">
                   <div class="current-bill-row">
                     <span class="current-bill-label">Base Rent</span>
-                    <span class="current-bill-value">₱5,000</span>
+                    <span class="current-bill-value">₱0.00</span>
                   </div>
                   <div class="current-bill-row">
                     <span class="current-bill-label">Utilities</span>
-                    <span class="current-bill-value">₱350</span>
+                    <span class="current-bill-value">₱0.00</span>
                   </div>
                   <div class="current-bill-row">
                     <span class="current-bill-label">WiFi</span>
-                    <span class="current-bill-value">₱150</span>
+                    <span class="current-bill-value">₱0.00</span>
                   </div>
                   <div class="current-bill-divider"></div>
                   <div class="current-bill-row current-bill-total">
                     <span class="current-bill-label">Total Due</span>
-                    <span class="current-bill-value">₱5,500</span>
+                    <span class="current-bill-value">₱0.00</span>
                   </div>
                 </div>
 
                 <div class="current-bill-dates">
                   <div class="current-bill-date-item">
                     <span class="current-bill-date-label">Due Date</span>
-                    <span class="current-bill-date-value" data-due-date="2025-02-01"
-                      >February 1, 2025</span
-                    >
+                    <span class="current-bill-date-value" data-due-date="">Loading...</span>
                   </div>
                   <div class="current-bill-date-item warning">
                     <span class="current-bill-date-label">Time Remaining</span>
                     <span class="current-bill-date-value">
                       <span class="icon-placeholder" data-icon="history"></span>
-                      <span class="time-remaining-text">12 days</span>
+                      <span class="time-remaining-text">Loading...</span>
                     </span>
                   </div>
                 </div>
@@ -340,7 +277,7 @@
                   onclick="window.location.href='./pay.html'"
                 >
                   <span class="icon-placeholder" data-icon="creditCard"></span>
-                  Pay ₱5,500 Now
+                  Pay Now
                 </button>
               </div>
 
@@ -362,158 +299,9 @@
                 </div>
 
                 <div class="payment-timeline">
-                  <!-- January 2025 -->
-                  <div class="timeline-item" data-due-date="2025-01-01" data-paid-date="2025-01-03">
-                    <div class="timeline-marker completed">
-                      <span class="icon-placeholder" data-icon="check"></span>
-                    </div>
-                    <div class="timeline-content">
-                      <div class="timeline-header">
-                        <h4 class="timeline-title">January 2025 Rent</h4>
-                        <span class="timeline-amount">₱5,500</span>
-                      </div>
-                      <div class="timeline-details">
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="calendar"></span>
-                          Paid on Jan 3, 2025
-                        </span>
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="creditCard"></span>
-                          GCash
-                        </span>
-                        <span class="timeline-status paid">
-                          <span class="icon-placeholder" data-icon="checkCircle"></span>
-                          Paid
-                        </span>
-                      </div>
-                      <div class="timeline-actions">
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="arrowDownTray"></span>
-                          Receipt
-                        </button>
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="document"></span>
-                          Print
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- December 2024 -->
-                  <div class="timeline-item" data-due-date="2024-12-01" data-paid-date="2024-12-02">
-                    <div class="timeline-marker completed">
-                      <span class="icon-placeholder" data-icon="check"></span>
-                    </div>
-                    <div class="timeline-content">
-                      <div class="timeline-header">
-                        <h4 class="timeline-title">December 2024 Rent</h4>
-                        <span class="timeline-amount">₱5,500</span>
-                      </div>
-                      <div class="timeline-details">
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="calendar"></span>
-                          Paid on Dec 2, 2024
-                        </span>
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="creditCard"></span>
-                          Bank Transfer
-                        </span>
-                        <span class="timeline-status paid">
-                          <span class="icon-placeholder" data-icon="checkCircle"></span>
-                          Paid
-                        </span>
-                      </div>
-                      <div class="timeline-actions">
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="arrowDownTray"></span>
-                          Receipt
-                        </button>
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="document"></span>
-                          Print
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- November 2024 -->
-                  <div class="timeline-item" data-due-date="2024-11-01" data-paid-date="2024-11-01">
-                    <div class="timeline-marker completed">
-                      <span class="icon-placeholder" data-icon="check"></span>
-                    </div>
-                    <div class="timeline-content">
-                      <div class="timeline-header">
-                        <h4 class="timeline-title">November 2024 Rent</h4>
-                        <span class="timeline-amount">₱5,500</span>
-                      </div>
-                      <div class="timeline-details">
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="calendar"></span>
-                          Paid on Nov 1, 2024
-                        </span>
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="creditCard"></span>
-                          GCash
-                        </span>
-                        <span class="timeline-status paid">
-                          <span class="icon-placeholder" data-icon="checkCircle"></span>
-                          Paid
-                        </span>
-                      </div>
-                      <div class="timeline-actions">
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="arrowDownTray"></span>
-                          Receipt
-                        </button>
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="document"></span>
-                          Print
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- October 2024 -->
-                  <div class="timeline-item" data-due-date="2024-10-01" data-paid-date="2024-10-01">
-                    <div class="timeline-marker completed">
-                      <span class="icon-placeholder" data-icon="check"></span>
-                    </div>
-                    <div class="timeline-content">
-                      <div class="timeline-header">
-                        <h4 class="timeline-title">October 2024 Rent (Move-in)</h4>
-                        <span class="timeline-amount">₱16,500</span>
-                      </div>
-                      <div class="timeline-details">
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="calendar"></span>
-                          Paid on Oct 1, 2024
-                        </span>
-                        <span class="timeline-detail">
-                          <span class="icon-placeholder" data-icon="creditCard"></span>
-                          Bank Transfer
-                        </span>
-                        <span class="timeline-status paid">
-                          <span class="icon-placeholder" data-icon="checkCircle"></span>
-                          Paid
-                        </span>
-                      </div>
-                      <div class="timeline-details-note">
-                        <span class="timeline-note"
-                          >Includes first month rent + 2 months deposit</span
-                        >
-                      </div>
-                      <div class="timeline-actions">
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="arrowDownTray"></span>
-                          Receipt
-                        </button>
-                        <button class="timeline-action-btn">
-                          <span class="icon-placeholder" data-icon="document"></span>
-                          Print
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <p style="text-align: center; color: var(--text-gray); padding: 20px">
+                    Loading payment history...
+                  </p>
                 </div>
               </div>
             </div>
@@ -527,15 +315,27 @@
       import { initSidebar } from '../../../js/components/sidebar.js';
       import { initNavbar } from '../../../js/components/navbar.js';
       import { initPaymentStatus } from '../../../js/views/boarder/boarder-payments.js';
+      import { initPaymentsPage } from '../../../js/views/boarder/payments-page.js';
+      import { getState } from '../../../js/shared/state.js';
 
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('DOMContentLoaded', async () => {
+        // Get current user from state
+        const state = getState();
+        const user = state.user || JSON.parse(localStorage.getItem('user') || '{}');
+        const userName = user
+          ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
+          : 'User';
+        const userInitials = user
+          ? `${(user.first_name || '').charAt(0)}${(user.last_name || '').charAt(0)}`.toUpperCase()
+          : 'U';
+
         // Initialize sidebar
         if (document.getElementById('sidebar-container')) {
           initSidebar({
             role: 'boarder',
             user: {
-              name: 'Juan Dela Cruz',
-              initials: 'JD',
+              name: userName,
+              initials: userInitials,
               role: 'Boarder',
             },
           });
@@ -545,13 +345,16 @@
         if (document.getElementById('navbar-container')) {
           initNavbar({
             user: {
-              name: 'Juan Dela Cruz',
-              initials: 'JD',
-              avatarUrl: '',
+              name: userName,
+              initials: userInitials,
+              avatarUrl: user?.profile_picture || '',
             },
             notificationCount: 3,
           });
         }
+
+        // Initialize payments page with real data
+        await initPaymentsPage();
 
         // Initialize payment status color coding
         initPaymentStatus();
