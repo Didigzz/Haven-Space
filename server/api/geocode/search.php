@@ -38,16 +38,23 @@ if (isset($_GET['lat']) && isset($_GET['lng'])) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Accept-Language: en'
     ]);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification for development
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10); // 10 second timeout
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    $curlError = curl_error($ch);
 
-    if ($httpCode !== 200 || !$response) {
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+
+    if ($httpCode !== 200 || !$response || $curlError) {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => 'Failed to geocode location. Please try again.'
+            'error' => 'Failed to geocode location. Please try again.',
+            'debug' => isDebugMode() ? ['curl_error' => $curlError, 'http_code' => $httpCode] : null
         ]);
         exit;
     }
@@ -96,16 +103,19 @@ if (isset($_GET['q'])) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Accept-Language: en'
     ]);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification for development
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10); // 10 second timeout
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    $curlError = curl_error($ch);
 
-    if ($httpCode !== 200 || !$response) {
+    if ($httpCode !== 200 || !$response || $curlError) {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => 'Failed to search address. Please try again.'
+            'error' => 'Failed to search address. Please try again.',
+            'debug' => isDebugMode() ? ['curl_error' => $curlError, 'http_code' => $httpCode] : null
         ]);
         exit;
     }

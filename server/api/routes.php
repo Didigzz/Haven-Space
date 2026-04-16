@@ -18,6 +18,7 @@ require_once __DIR__ . '/middleware.php';
 require_once __DIR__ . '/middleware.php';
 
 use App\Api\Middleware;
+use App\Modules\Notification\Controllers\NotificationController;
 use App\Modules\Message\Controllers\MessageController;
 use App\Modules\Maintenance\Controllers\MaintenanceController;
 use App\Modules\Onboarding\Controllers\OnboardingController;
@@ -209,6 +210,19 @@ Router::put('/api/landlord/listings/{id}', function($id) {
 Router::get('/api/rooms/public', function() {
     require_once __DIR__ . '/rooms/public.php';
 });
+
+// ============================================
+// NOTIFICATION ROUTES
+// ============================================
+Router::get('/api/notifications', [NotificationController::class, 'index']);
+Router::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+Router::patch('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+Router::patch('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+Router::delete('/api/notifications/{id}', [NotificationController::class, 'destroy']);
+
+// Boarder accepted applications (for overlay)
+Router::get('/api/boarder/accepted-applications', [NotificationController::class, 'getAcceptedApplications']);
+Router::get('/api/boarder/has-accepted-applications', [NotificationController::class, 'hasAcceptedApplications']);
 
 // ============================================
 // DISPATCH THE REQUEST

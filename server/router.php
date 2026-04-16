@@ -8,8 +8,9 @@
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
 // API routes - forward to api directory
-if (strpos($uri, '/auth/') === 0 || strpos($uri, '/api/') === 0) {
+if (strpos($uri, '/auth/') === 0 || strpos($uri, '/api/') === 0 || strpos($uri, '/geocode/') === 0) {
     // /auth/* lives under server/api/auth/*; /api/* is served from server/api/* (strip /api prefix)
+    // /geocode/* lives under server/api/geocode/*
     if (strpos($uri, '/api/') === 0) {
         $apiFile = __DIR__ . '/api/' . substr($uri, 5);
     } else {

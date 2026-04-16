@@ -3,6 +3,7 @@
 namespace App\Modules\Application\Services;
 
 use App\Modules\Application\Repositories\ApplicationRepository;
+use App\Modules\Notification\Services\NotificationService;
 use App\Modules\Onboarding\Helpers\OnboardingTrigger;
 
 /**
@@ -12,10 +13,12 @@ use App\Modules\Onboarding\Helpers\OnboardingTrigger;
 class ApplicationService
 {
     private ApplicationRepository $repository;
+    private NotificationService $notificationService;
 
     public function __construct()
     {
         $this->repository = new ApplicationRepository();
+        $this->notificationService = new NotificationService();
     }
 
     /**
@@ -123,6 +126,18 @@ class ApplicationService
             }
 
             $houseName = $propertyDetails['house_name'] ?? 'our boarding house';
+
+            // Create notification for the boarder
+            $this->notificationService->notifyApplicationAccepted(
+                $application['boarder_id'],
+                $application['landlord_id'],
+                $application['id'],
+                $application['property_id'] ?? 0,
+                $application['room_id'],
+                $houseName,
+                $application['room_title'] ?? 'a room',
+                $application['room_price'] ?? 0
+            );
 
             // Trigger the welcome flow
             OnboardingTrigger::onApplicationAccepted(
