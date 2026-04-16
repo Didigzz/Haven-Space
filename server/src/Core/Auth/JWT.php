@@ -49,4 +49,82 @@ class JWT
 
         return $payloadData;
     }
+
+    /**
+     * Set authentication cookies with environment-aware settings
+     * 
+     * @param string $accessToken The JWT access token
+     * @param string $refreshToken The JWT refresh token
+     * @param array $config Application configuration
+     */
+    public static function setAuthCookies(string $accessToken, string $refreshToken, array $config): void
+    {
+        // Determine cookie settings based on environment
+        $isProduction = function_exists('isProduction') ? isProduction() : false;
+        
+        if ($isProduction) {
+            $secure = true;
+            $sameSite = 'Lax';
+        } else {
+            // Development: Use None to allow cross-origin (different ports)
+            $secure = false;
+            $sameSite = 'None';
+        }
+        
+        // Set access token cookie
+        setcookie('access_token', $accessToken, [
+            'expires' => time() + $config['jwt_expiration'],
+            'path' => '/',
+            'domain' => '',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => $sameSite
+        ]);
+
+        // Set refresh token cookie
+        setcookie('refresh_token', $refreshToken, [
+            'expires' => time() + $config['refresh_token_expiration'],
+            'path' => '/',
+            'domain' => '',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => $sameSite
+        ]);
+    }
+
+    /**
+     * Clear authentication cookies
+     */
+    public static function clearAuthCookies(): void
+    {
+        $isProduction = function_exists('isProduction') ? isProduction() : false;
+        
+        if ($isProduction) {
+            $secure = true;
+            $sameSite = 'Lax';
+        } else {
+            $secure = false;
+            $sameSite = 'None';
+        }
+        
+        // Clear access token
+        setcookie('access_token', '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => $sameSite
+        ]);
+
+        // Clear refresh token
+        setcookie('refresh_token', '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => $sameSite
+        ]);
+    }
 }

@@ -240,24 +240,8 @@ try {
     $jwtAccessToken = JWT::generate($payload, $config['jwt_expiration']);
     $jwtRefreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
 
-    // Set cookies
-    setcookie('access_token', $jwtAccessToken, [
-        'expires' => time() + $config['jwt_expiration'],
-        'path' => '/',
-        'domain' => '',
-        'secure' => false, // Set to true in production with HTTPS
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-
-    setcookie('refresh_token', $jwtRefreshToken, [
-        'expires' => time() + $config['refresh_token_expiration'],
-        'path' => '/',
-        'domain' => '',
-        'secure' => false, // Set to true in production with HTTPS
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
+    // Set authentication cookies
+    JWT::setAuthCookies($jwtAccessToken, $jwtRefreshToken, $config);
 
     // Store user info in session for immediate access
     $_SESSION['user'] = [
