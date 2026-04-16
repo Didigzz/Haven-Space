@@ -66,9 +66,10 @@ class JWT
             $secure = true;
             $sameSite = 'Lax';
         } else {
-            // Development: Use None to allow cross-origin (different ports)
+            // Development: SameSite=None requires Secure=true (browsers reject None without Secure).
+            // Use Lax instead — works for same-host cross-port (localhost:80 ↔ localhost:8000).
             $secure = false;
-            $sameSite = 'None';
+            $sameSite = 'Lax';
         }
         
         // Set access token cookie
@@ -104,7 +105,7 @@ class JWT
             $sameSite = 'Lax';
         } else {
             $secure = false;
-            $sameSite = 'None';
+            $sameSite = 'Lax';
         }
         
         // Clear access token
