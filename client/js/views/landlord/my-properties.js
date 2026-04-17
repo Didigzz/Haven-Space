@@ -6,91 +6,7 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 import { initSidebar } from '../../components/sidebar.js';
-import { initNavbar } from '../../components/navbar.js';
-
-// Sample properties data (replace with API call)
-const sampleProperties = [
-  {
-    id: 1,
-    name: 'Sunrise Boarding House',
-    type: 'boarding-house',
-    location: 'Sampaloc, Manila',
-    city: 'Manila',
-    province: 'Metro Manila',
-    price: 5000,
-    rooms: 10,
-    occupied: 8,
-    status: 'active',
-    description:
-      'A cozy boarding house near universities with all essential amenities for comfortable living.',
-    amenities: ['wifi', 'aircon', 'parking', 'laundry', 'cctv'],
-    photos: [
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800',
-    ],
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 2,
-    name: 'Green Valley Dormitory',
-    type: 'dormitory',
-    location: 'España Blvd, Manila',
-    city: 'Manila',
-    province: 'Metro Manila',
-    price: 4500,
-    rooms: 15,
-    occupied: 15,
-    status: 'full',
-    description:
-      'Modern dormitory with affordable rates, perfect for students. Walking distance to universities.',
-    amenities: ['wifi', 'furnished', 'laundry', 'kitchen', 'cctv'],
-    photos: [
-      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800',
-      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800',
-    ],
-    createdAt: '2024-02-20',
-  },
-  {
-    id: 3,
-    name: 'Palm Springs Apartments',
-    type: 'apartment',
-    location: 'Quezon City',
-    city: 'Quezon City',
-    province: 'Metro Manila',
-    price: 8000,
-    rooms: 6,
-    occupied: 3,
-    status: 'active',
-    description:
-      'Upscale apartments with modern furnishings and premium amenities. Ideal for young professionals.',
-    amenities: ['wifi', 'aircon', 'furnished', 'parking', 'laundry', 'kitchen', 'cr'],
-    photos: [
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800',
-      'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
-      'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800',
-    ],
-    createdAt: '2024-03-10',
-  },
-  {
-    id: 4,
-    name: 'Budget Stay Boarding House',
-    type: 'boarding-house',
-    location: 'Caloocan City',
-    city: 'Caloocan',
-    province: 'Metro Manila',
-    price: 3500,
-    rooms: 8,
-    occupied: 2,
-    status: 'inactive',
-    description:
-      'Affordable boarding house with basic amenities. Currently under renovation for improvements.',
-    amenities: ['wifi', 'parking', 'cctv'],
-    photos: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800'],
-    createdAt: '2023-11-05',
-  },
-];
+import { initNavbar, updateNavbarNotifications } from '../../components/navbar.js';
 
 // Amenity display names
 const amenityLabels = {
@@ -106,15 +22,17 @@ const amenityLabels = {
 
 // Current property being viewed/deleted
 let currentProperty = null;
-let propertiesData = [...sampleProperties];
+let propertiesData = [];
+let isVerified = false;
+let currentUser = null;
 
 function loginPath() {
   const pathname = window.location.pathname;
   if (pathname.includes('github.io')) {
     return '/Haven-Space/client/views/public/auth/login.html';
   }
-  if (pathname.includes('/client/views/')) {
-    return '/client/views/public/auth/login.html';
+  if (pathname.includes('/views/')) {
+    return '/views/public/auth/login.html';
   }
   return '/views/public/auth/login.html';
 }
@@ -123,6 +41,96 @@ function initialsFrom(user) {
   const a = (user.first_name || '').trim().charAt(0);
   const b = (user.last_name || '').trim().charAt(0);
   return (a + b || 'L').toUpperCase();
+}
+
+/**
+ * Fetch landlord property data from API
+ */
+async function fetchPropertyData(userId) {
+  try {
+    const profileRes = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/profile.php?userId=${userId}`,
+      { credentials: 'include' }
+    );
+    const profileData = await profileRes.json();
+
+    console.log('Profile API response:', profileData);
+
+    if (!profileData.success) {
+      console.error('Profile API failed:', profileData.error);
+      // Check if profile doesn't exist (404)
+      if (profileRes.status === 404) {
+        return { profileNotFound: true };
+      }
+      return null;
+    }
+
+    let locationData = { success: false, data: { address: '', city: '', province: '' } };
+
+    try {
+      const locationRes = await fetch(
+        `${CONFIG.API_BASE_URL}/api/landlord/property-location.php?userId=${userId}`,
+        { credentials: 'include' }
+      );
+      locationData = await locationRes.json();
+      console.log('Location API response:', locationData);
+    } catch (locationError) {
+      console.warn('Failed to fetch location data:', locationError);
+    }
+
+    // Combine profile and location data into property structure
+    const property = {
+      id: profileData.data.profileId,
+      name: profileData.data.boardingHouseName,
+      type: mapPropertyType(profileData.data.propertyType),
+      location: locationData.success ? locationData.data.address : 'Location not set',
+      city: locationData.success ? locationData.data.city : '',
+      province: locationData.success ? locationData.data.province : '',
+      price: 0, // Price not set during signup, will be set by landlord later
+      rooms: profileData.data.totalRooms,
+      occupied: profileData.data.totalRooms - profileData.data.availableRooms,
+      status: 'inactive', // Default status for new properties
+      description: profileData.data.description || 'No description provided',
+      amenities: [], // Amenities not set during signup
+      photos: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'], // Default placeholder
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+
+    console.log('Combined property data:', property);
+    return property;
+  } catch (error) {
+    console.error('Error fetching property data:', error);
+    return null;
+  }
+}
+
+/**
+ * Map database property type to frontend type
+ */
+function mapPropertyType(dbType) {
+  const typeMap = {
+    'Single unit': 'boarding-house',
+    'Multi-unit': 'boarding-house',
+    Apartment: 'apartment',
+    Dormitory: 'dormitory',
+  };
+  return typeMap[dbType] || 'boarding-house';
+}
+
+/**
+ * Fetch verification status
+ */
+async function fetchVerificationStatus() {
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/verification-status.php`, {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    return data.success ? data.data.is_verified : false;
+  } catch (error) {
+    console.error('Error fetching verification status:', error);
+    return false;
+  }
 }
 
 /**
@@ -147,6 +155,7 @@ export async function initMyProperties() {
     }
     const data = await res.json();
     user = data.user;
+    currentUser = user;
   } catch {
     window.location.href = loginPath();
     return;
@@ -173,11 +182,14 @@ export async function initMyProperties() {
       avatarUrl: user.avatar_url || '',
       email: user.email || '',
     },
-    notificationCount: 5,
   });
+  setTimeout(() => updateNavbarNotifications(), 100);
 
-  // Load properties
-  loadProperties();
+  // Fetch verification status
+  isVerified = await fetchVerificationStatus();
+
+  // Load properties from API
+  await loadProperties(user.id);
 
   // Event listeners
   searchInput.addEventListener('input', handleSearch);
@@ -191,7 +203,7 @@ export async function initMyProperties() {
 /**
  * Load and render properties
  */
-function loadProperties() {
+async function loadProperties(userId) {
   const grid = document.getElementById('properties-grid');
   const emptyState = document.getElementById('empty-state');
   const loadingState = document.getElementById('loading-state');
@@ -209,21 +221,91 @@ function loadProperties() {
   }
   grid.style.display = 'none';
 
-  // Simulate API delay
-  setTimeout(() => {
+  try {
+    // First, try to fetch from properties table (full listings)
+    const propertiesRes = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+      credentials: 'include',
+    });
+
+    let hasFullProperties = false;
+    if (propertiesRes.ok) {
+      const propertiesData = await propertiesRes.json();
+      if (propertiesData.success && propertiesData.data.properties.length > 0) {
+        hasFullProperties = true;
+        const mappedProperties = propertiesData.data.properties.map(prop => ({
+          id: prop.id,
+          name: prop.name,
+          type: prop.type,
+          location: prop.address,
+          city: prop.city,
+          province: prop.province,
+          price: prop.price,
+          rooms: prop.total_rooms,
+          occupied: prop.occupied_rooms,
+          status: prop.status,
+          description: prop.description,
+          amenities: prop.amenities || [],
+          photos: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'],
+          createdAt: prop.created_at,
+          isFullListing: true,
+        }));
+
+        if (loadingState) {
+          loadingState.style.display = 'none';
+        }
+        grid.style.display = 'grid';
+        renderProperties(mappedProperties);
+        return;
+      }
+    }
+
+    // If no full properties, check for profile data from signup
+    const property = await fetchPropertyData(userId);
+
     if (loadingState) {
       loadingState.style.display = 'none';
     }
 
-    if (propertiesData.length === 0) {
+    if (!property) {
+      // No property found
       if (emptyState) {
         emptyState.style.display = 'block';
+        // Reset to default empty state message
+        const emptyTitle = emptyState.querySelector('h2');
+        const emptyText = emptyState.querySelector('p');
+        if (emptyTitle) emptyTitle.textContent = 'No Properties Yet';
+        if (emptyText)
+          emptyText.textContent = 'Start by adding your first boarding house or property.';
+      }
+    } else if (property.profileNotFound) {
+      // Profile doesn't exist - landlord needs to create their first property
+      if (emptyState) {
+        emptyState.style.display = 'block';
+        // Update empty state to show profile not found message
+        const emptyTitle = emptyState.querySelector('h2');
+        const emptyText = emptyState.querySelector('p');
+        if (emptyTitle) emptyTitle.textContent = 'Complete Your Profile';
+        if (emptyText)
+          emptyText.textContent =
+            'Start by adding your first boarding house or property to get started.';
       }
     } else {
+      // Mark as draft property from signup
+      property.isDraft = true;
+      property.isFullListing = false;
+      propertiesData = [property];
       grid.style.display = 'grid';
       renderProperties(propertiesData);
     }
-  }, 500);
+  } catch (error) {
+    console.error('Error loading properties:', error);
+    if (loadingState) {
+      loadingState.style.display = 'none';
+    }
+    if (emptyState) {
+      emptyState.style.display = 'block';
+    }
+  }
 }
 
 /**
@@ -251,18 +333,31 @@ function createPropertyCard(property) {
   card.className = 'property-card';
   card.dataset.propertyId = property.id;
 
-  const occupancyRate = Math.round((property.occupied / property.rooms) * 100);
-  const statusLabel =
-    property.status === 'active'
-      ? 'Active'
-      : property.status === 'full'
-      ? 'Fully Occupied'
-      : 'Inactive';
+  const occupancyRate =
+    property.rooms > 0 ? Math.round((property.occupied / property.rooms) * 100) : 0;
+
+  // Determine status label
+  let statusLabel = 'Draft';
+  let statusClass = 'draft';
+
+  if (property.isDraft) {
+    statusLabel = 'Draft - Complete Setup';
+    statusClass = 'draft';
+  } else if (property.status === 'active') {
+    statusLabel = 'Active';
+    statusClass = 'active';
+  } else if (property.status === 'full') {
+    statusLabel = 'Fully Occupied';
+    statusClass = 'full';
+  } else {
+    statusLabel = 'Inactive';
+    statusClass = 'inactive';
+  }
 
   card.innerHTML = `
     <div class="property-card-image">
       <img src="${property.photos[0] || '/placeholder.jpg'}" alt="${property.name}" />
-      <span class="property-card-status status-${property.status}">${statusLabel}</span>
+      <span class="property-card-status status-${statusClass}">${statusLabel}</span>
       <div class="property-card-photo-count">
         ${getIcon('photo')}
         ${property.photos.length}
@@ -274,9 +369,23 @@ function createPropertyCard(property) {
         ${getIcon('location')}
         ${property.location}
       </div>
+      ${
+        property.isDraft
+          ? `
+        <div class="property-card-draft-notice">
+          <p style="color: var(--warning-color); font-size: 14px; margin: 8px 0;">
+            ${getIcon('exclamationTriangle', { width: 16, height: 16 })}
+            Complete your property details to publish
+          </p>
+        </div>
+      `
+          : ''
+      }
       <div class="property-card-stats">
         <div class="property-card-stat">
-          <div class="property-card-stat-value">₱${property.price.toLocaleString()}</div>
+          <div class="property-card-stat-value">${
+            property.price > 0 ? '₱' + property.price.toLocaleString() : 'Not set'
+          }</div>
           <div class="property-card-stat-label">/month</div>
         </div>
         <div class="property-card-stat">
@@ -290,18 +399,35 @@ function createPropertyCard(property) {
       </div>
     </div>
     <div class="property-card-actions">
-      <button class="btn-view" data-action="view" data-id="${property.id}">
-        ${getIcon('eye')}
-        View
-      </button>
-      <button class="btn-edit" data-action="edit" data-id="${property.id}">
-        ${getIcon('edit')}
-        Edit
-      </button>
-      <button class="btn-delete" data-action="delete" data-id="${property.id}">
-        ${getIcon('trash')}
-        Delete
-      </button>
+      ${
+        property.isDraft
+          ? `
+        <button class="btn-edit btn-primary" data-action="edit" data-id="${
+          property.id
+        }" style="flex: 1;">
+          ${getIcon('edit')}
+          Complete Setup
+        </button>
+      `
+          : `
+        <button class="btn-view" data-action="view" data-id="${property.id}">
+          ${getIcon('eye')}
+          View
+        </button>
+        <button class="btn-edit" data-action="edit" data-id="${property.id}" ${
+              !isVerified ? 'disabled' : ''
+            } title="${!isVerified ? 'Account pending verification' : 'Edit Property'}">
+          ${getIcon('edit')}
+          Edit
+        </button>
+        <button class="btn-delete" data-action="delete" data-id="${property.id}" ${
+              !isVerified ? 'disabled' : ''
+            } title="${!isVerified ? 'Account pending verification' : 'Delete Property'}">
+          ${getIcon('trash')}
+          Delete
+        </button>
+      `
+      }
     </div>
   `;
 
@@ -337,6 +463,12 @@ function handlePropertyAction(action, id) {
       editProperty(property);
       break;
     case 'delete':
+      if (!isVerified) {
+        alert(
+          'Your account is pending verification by a superadmin. You can delete your property after your account has been approved.'
+        );
+        return;
+      }
       confirmDelete(property);
       break;
   }
@@ -409,6 +541,8 @@ function openPropertyModal(property) {
   // Set edit button handler
   const editBtn = document.getElementById('modal-edit');
   if (editBtn) {
+    editBtn.disabled = !isVerified;
+    editBtn.title = !isVerified ? 'Account pending verification' : 'Edit Property';
     editBtn.onclick = () => {
       closeModal(modal);
       editProperty(property);
@@ -421,11 +555,25 @@ function openPropertyModal(property) {
 }
 
 /**
- * Edit property - navigate to edit page
+ * Edit property - navigate to edit page (only if verified)
  */
 function editProperty(property) {
+  // For draft properties from signup, allow editing even if not verified
+  // since they need to complete their property setup
+  if (!property.isDraft && !isVerified) {
+    alert(
+      'Your account is pending verification by a superadmin. You can edit your property details after your account has been approved.'
+    );
+    return;
+  }
+
   // Navigate to edit page with property ID
-  window.location.href = `../listings/edit.html?id=${property.id}`;
+  // For draft properties, pass a flag to indicate it's from profile
+  const editUrl = property.isDraft
+    ? `../listings/edit.html?profileId=${property.id}&draft=true`
+    : `../listings/edit.html?id=${property.id}`;
+
+  window.location.href = editUrl;
 }
 
 /**
@@ -508,11 +656,19 @@ function closeModal(modal) {
  * Delete property
  */
 function deleteProperty(property) {
+  // Check if landlord is verified
+  if (!isVerified) {
+    alert(
+      'Your account is pending verification by a superadmin. You can delete your property after your account has been approved.'
+    );
+    return;
+  }
+
   // Remove from data
   propertiesData = propertiesData.filter(p => p.id !== property.id);
 
   // Re-render
-  loadProperties();
+  loadProperties(currentUser.id);
 
   // Show success message (in real app, use toast notification)
   alert(`Property "${property.name}" has been deleted successfully.`);

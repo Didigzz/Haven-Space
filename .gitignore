@@ -6,7 +6,6 @@ build/
 .DS_Store
 
 # Environment files (NEVER commit these!)
-.env
 .env.local
 .env.production
 !.env.example
@@ -14,4 +13,10 @@ build/
 
 .idea/
 .vscode/.worktrees/
-.worktrees/  
+.worktrees/
+
+# Qwen temp files
+.qwen/tmp/
+
+# Qoder config
+qoder.json

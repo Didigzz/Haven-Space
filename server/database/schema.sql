@@ -57,6 +57,10 @@ CREATE TABLE IF NOT EXISTS landlord_profiles (
     property_type ENUM('Single unit', 'Multi-unit', 'Apartment', 'Dormitory') DEFAULT 'Multi-unit',
     total_rooms INT NOT NULL DEFAULT 1,
     available_rooms INT NOT NULL DEFAULT 1,
+    welcome_message TEXT NULL,
+    house_rules_file_url VARCHAR(255) NULL,
+    house_rules_file_name VARCHAR(255) NULL,
+    house_rules_file_size INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -93,6 +97,16 @@ CREATE TABLE IF NOT EXISTS payment_methods (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (landlord_id) REFERENCES landlord_profiles(id) ON DELETE CASCADE
+);
+
+-- Property Amenities Table
+CREATE TABLE IF NOT EXISTS property_amenities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id INT NOT NULL,
+    amenity_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_property_amenity (property_id, amenity_name),
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
 );
 
 -- Rooms (listings under a property)
@@ -190,3 +204,76 @@ INSERT IGNORE INTO platform_settings (setting_key, setting_value) VALUES
 INSERT IGNORE INTO users (first_name, last_name, email, password_hash, role, is_verified, account_status) VALUES
     ('Super', 'Admin', 'admin@mail.com', '$2y$12$T7quqln.QaMfVHroclj7B.QBk.lNVWIuY65qB5KerTPJG65piAGFy', 'admin', TRUE, 'active');
 
+-- Create conversations table
+CREATE TABLE IF NOT EXISTS conversations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    type ENUM('direct', 'group', 'welcome') DEFAULT 'direct',
+    property_id INT NULL,
+    created_by INT NOT NULL,
+    is_system_thread BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create conversation_participants table
+CREATE TABLE IF NOT EXISTS conversation_participants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    conversation_id INT NOT NULL,
+    user_id INT NOT NULL,
+    role VARCHAR(50) NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    last_read_at TIMESTAMP NULL,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_conv_user (conversation_id, user_id),
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create messages table
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    conversation_id INT NOT NULL,
+    sender_id INT NOT NULL,
+    message_text TEXT NULL,
+    has_attachment BOOLEAN DEFAULT FALSE,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create message_attachments table
+CREATE TABLE IF NOT EXISTS message_attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id INT NOT NULL,
+    conversation_id INT NOT NULL,
+    file_url VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
+    file_size INT NOT NULL,
+    uploaded_by INT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Notifications Table
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type VARCHAR(64) NOT NULL COMMENT 'application_accepted, application_rejected, maintenance_update, message, system, etc.',
+    title VARCHAR(255) NOT NULL,
+    message TEXT,
+    metadata JSON NULL COMMENT 'Additional context like application_id, property_id, room_id, etc.',
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_unread (user_id, is_read),
+    INDEX idx_created_at (created_at)
+);

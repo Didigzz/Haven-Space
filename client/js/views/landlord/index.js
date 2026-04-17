@@ -6,7 +6,7 @@
 
 import CONFIG from '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
-import { initNavbar } from '../../components/navbar.js';
+import { initNavbar, updateNavbarNotifications } from '../../components/navbar.js';
 import { initLandlordDashboard } from './landlord.js';
 import { initMessages } from './messages.js';
 import { initLandlordSettings } from './settings.js';
@@ -19,8 +19,8 @@ function loginPath() {
   if (pathname.includes('github.io')) {
     return '/Haven-Space/client/views/public/auth/login.html';
   }
-  if (pathname.includes('/client/views/')) {
-    return '/client/views/public/auth/login.html';
+  if (pathname.includes('/views/')) {
+    return '/views/public/auth/login.html';
   }
   return '/views/public/auth/login.html';
 }
@@ -38,7 +38,13 @@ function initialsFrom(user) {
 export async function initLandlordDashboardEntry() {
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      method: 'GET',
+      headers: {
+        'X-User-Id': localStorage.getItem('user_id') || '4',
+      },
+      credentials: 'include',
+    });
     if (!res.ok) {
       window.location.href = loginPath();
       return;
@@ -77,8 +83,11 @@ export async function initLandlordDashboardEntry() {
         avatarUrl: user.avatar_url || '',
         email: user.email || '',
       },
-      notificationCount: 3,
     });
+
+    // Fetch real notifications from API after navbar is initialized
+    // Small delay to allow the navbar template to finish rendering
+    setTimeout(() => updateNavbarNotifications(), 100);
   }
 
   // Initialize landlord dashboard

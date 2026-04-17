@@ -85,11 +85,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const step2 = document.getElementById('step2');
   const continueBtn = document.getElementById('continueBtn');
   const headerLinkContainer = document.getElementById('headerLinkContainer');
-  const headerLinkText = document.getElementById('headerLinkText');
-  const headerRoleLink = document.getElementById('headerRoleLink');
-  const roleTitleText = document.getElementById('roleTitleText');
-  const step2Title = document.getElementById('step2Title');
-  const emailLabel = document.getElementById('emailLabel');
   const roleCards = document.querySelectorAll('.role-card');
   const passwordToggle = document.getElementById('passwordToggle');
   const passwordInput = document.getElementById('password');
@@ -99,11 +94,49 @@ document.addEventListener('DOMContentLoaded', function () {
   const confirmPasswordInput = document.getElementById('confirmPassword');
   const confirmEyeOpen = confirmPasswordToggle.querySelector('.eye-open');
   const confirmEyeClosed = confirmPasswordToggle.querySelector('.eye-closed');
+  const termsOverlay = document.getElementById('termsOverlay');
+  const termsOverlayClose = termsOverlay?.querySelector('.terms-overlay-close');
+  const termsOverlayOk = document.getElementById('termsOverlayOk');
 
   let selectedRole = null;
 
   // Inject icons from centralized library
   injectIcons();
+
+  // Terms overlay handlers
+  function showTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.add('active');
+    }
+  }
+
+  function hideTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.remove('active');
+      // Focus the terms checkbox after closing
+      const termsCheckbox = document.querySelector('#signupForm input[name="terms"]');
+      if (termsCheckbox) {
+        termsCheckbox.focus();
+      }
+    }
+  }
+
+  if (termsOverlayClose) {
+    termsOverlayClose.addEventListener('click', hideTermsOverlay);
+  }
+
+  if (termsOverlayOk) {
+    termsOverlayOk.addEventListener('click', hideTermsOverlay);
+  }
+
+  // Close overlay on backdrop click
+  if (termsOverlay) {
+    termsOverlay.addEventListener('click', function (e) {
+      if (e.target === termsOverlay) {
+        hideTermsOverlay();
+      }
+    });
+  }
 
   // Check for pending Google OAuth signup
   const urlParams = new URLSearchParams(window.location.search);
@@ -203,39 +236,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      // Boarders continue to step 2 (original flow)
+      // Boarders continue to step 2
       step1.classList.add('hidden');
       step2.classList.remove('hidden');
       headerLinkContainer.classList.remove('hidden');
 
-      // Check if this is an OAuth user to pre-fill form
-      const isOAuthUser = oauthPending || oauthNew;
-
-      // Update title and header link based on role
-      if (selectedRole === 'landlord') {
-        roleTitleText.textContent = 'great boarders';
-        step2Title.innerHTML = 'Sign up to find <span id="roleTitleText">great boarders</span>';
-        headerLinkText.textContent = 'Here to find a room? ';
-        headerRoleLink.textContent = 'Join as a Boarder';
-        emailLabel.textContent = 'Work email';
-        headerRoleLink.onclick = function (e) {
-          e.preventDefault();
-          switchRole('boarder');
-        };
-      } else {
-        roleTitleText.textContent = 'your perfect room';
-        step2Title.innerHTML = 'Sign up to find <span id="roleTitleText">your perfect room</span>';
-        headerLinkText.textContent = 'Here to list your property? ';
-        headerRoleLink.textContent = 'Apply as a Landlord';
-        emailLabel.textContent = 'Email';
-        headerRoleLink.onclick = function (e) {
-          e.preventDefault();
-          switchRole('landlord');
-        };
-      }
-
       // If OAuth user, fetch and pre-fill data after showing step 2
-      if (isOAuthUser) {
+      if (oauthPending || oauthNew) {
         fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
           credentials: 'include',
         })
@@ -262,44 +269,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Function to switch role and reload form
-  function switchRole(newRole) {
-    selectedRole = newRole;
-
-    // Update role cards visual state
-    roleCards.forEach(card => {
-      card.classList.remove('selected');
-      const input = card.querySelector('input[type="radio"]');
-      if (input.value === newRole) {
-        card.classList.add('selected');
-        input.checked = true;
-      }
+  // "Apply as a Landlord" header link navigates to landlord signup
+  const headerRoleLink = document.getElementById('headerRoleLink');
+  if (headerRoleLink) {
+    headerRoleLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.href = 'signup-landlord.html';
     });
-
-    // Update header link and title
-    if (selectedRole === 'landlord') {
-      roleTitleText.textContent = 'great boarders';
-      step2Title.innerHTML = 'Sign up to find <span id="roleTitleText">great boarders</span>';
-      headerLinkText.textContent = 'Here to find a room? ';
-      headerRoleLink.textContent = 'Join as a Boarder';
-      emailLabel.textContent = 'Work email';
-      headerRoleLink.onclick = function (e) {
-        e.preventDefault();
-        switchRole('boarder');
-      };
-      continueBtn.textContent = 'Join as a Landlord';
-    } else {
-      roleTitleText.textContent = 'your perfect room';
-      step2Title.innerHTML = 'Sign up to find <span id="roleTitleText">your perfect room</span>';
-      headerLinkText.textContent = 'Here to list your property? ';
-      headerRoleLink.textContent = 'Apply as a Landlord';
-      emailLabel.textContent = 'Email';
-      headerRoleLink.onclick = function (e) {
-        e.preventDefault();
-        switchRole('landlord');
-      };
-      continueBtn.textContent = 'Apply as a Boarder';
-    }
   }
 
   // Password visibility toggle
@@ -349,10 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Validate terms checkbox
     const termsCheckbox = e.target.terms;
     if (!termsCheckbox.checked) {
-      showToast(
-        'Please agree to the Terms of Service, including the User Agreement and Privacy Policy to continue.',
-        'warning'
-      );
+      showTermsOverlay();
       return;
     }
 
@@ -394,8 +367,8 @@ document.addEventListener('DOMContentLoaded', function () {
           if (result.user.role === 'landlord') {
             window.location.href = `${basePath}landlord/index.html`;
           } else {
-            // New boarder - redirect to find a room page
-            window.location.href = `${basePath}public/find-a-room.html`;
+            // New boarder - redirect to boarder find-a-room page (authenticated)
+            window.location.href = `${basePath}boarder/find-a-room/index.html`;
           }
         } else {
           alert(result.error || 'Signup failed');
@@ -445,9 +418,35 @@ document.addEventListener('DOMContentLoaded', function () {
           const redirectPath = getBoarderRedirectPath(userInfo);
           window.location.href = redirectPath;
         } else {
-          // Landlord: redirect to login page to verify email
-          alert('Registration successful! Please check your email for verification, then login.');
-          window.location.href = 'login.html';
+          // Landlord: auto-login and redirect to dashboard
+          const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              email: data.email,
+              password: data.password,
+            }),
+          });
+
+          if (loginResponse.ok) {
+            const loginResult = await loginResponse.json();
+            localStorage.setItem('user', JSON.stringify(loginResult.user));
+
+            // Mark as new landlord for welcome message display
+            localStorage.setItem('landlordStatus', 'new');
+
+            // Redirect to landlord dashboard
+            const basePath = getBasePath();
+            window.location.href = `${basePath}landlord/index.html`;
+          } else {
+            // Fallback: redirect to login if auto-login fails
+            const basePath = getBasePath();
+            alert('Registration successful! Please login to continue.');
+            window.location.href = `${basePath}public/auth/login.html`;
+          }
         }
       } else {
         alert(result.error || 'Registration failed');

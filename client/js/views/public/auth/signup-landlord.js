@@ -280,6 +280,11 @@ const signupState = {
     description: '',
     propertyType: '',
     totalRooms: 0,
+    streetAddress: '',
+    barangay: '',
+    city: '',
+    province: '',
+    postalCode: '',
   },
   step4: {
     paymentMethod: null,
@@ -665,6 +670,124 @@ function setupAddressSearch() {
 }
 
 /**
+ * Setup address search functionality for Step 3
+ */
+function setupStep3AddressSearch() {
+  const searchInput = document.getElementById('step3AddressSearch');
+  const resultsContainer = document.getElementById('step3AddressResults');
+
+  if (!searchInput || !resultsContainer) return;
+
+  const debouncedSearch = debounce(async query => {
+    if (query.length < 3) {
+      resultsContainer.classList.add('hidden');
+      return;
+    }
+
+    try {
+      const results = await searchAddress(query);
+
+      if (results.length === 0) {
+        resultsContainer.innerHTML = '<div class="address-search-result">No results found</div>';
+        resultsContainer.classList.remove('hidden');
+        return;
+      }
+
+      resultsContainer.innerHTML = results
+        .map(
+          (result, index) => `
+        <div class="address-search-result" data-index="${index}">
+          <div class="address-search-result-name">${result.display_name.split(',')[0]}</div>
+          <div class="address-search-result-detail">${result.display_name}</div>
+        </div>
+      `
+        )
+        .join('');
+
+      // Store results for click handling
+      window._step3SearchResults = results;
+
+      // Add click handlers
+      resultsContainer.querySelectorAll('.address-search-result').forEach(el => {
+        el.addEventListener('click', async () => {
+          const index = parseInt(el.dataset.index);
+          const result = window._step3SearchResults[index];
+
+          // Parse address components from the result
+          parseAndFillAddress(result);
+
+          // Hide results
+          resultsContainer.classList.add('hidden');
+          searchInput.value = result.display_name.split(',')[0];
+        });
+      });
+
+      resultsContainer.classList.remove('hidden');
+    } catch (error) {
+      console.error('Error searching address:', error);
+    }
+  }, 500);
+
+  searchInput.addEventListener('input', e => {
+    debouncedSearch(e.target.value);
+  });
+
+  // Hide results when clicking outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#step3AddressSearch') && !e.target.closest('#step3AddressResults')) {
+      resultsContainer.classList.add('hidden');
+    }
+  });
+}
+
+/**
+ * Parse address from search result and fill form fields
+ * @param {Object} result - Search result from Nominatim API
+ */
+function parseAndFillAddress(result) {
+  const address = result.address || {};
+
+  // Extract street address
+  const streetParts = [];
+  if (address.house_number) streetParts.push(address.house_number);
+  if (address.road) streetParts.push(address.road);
+  if (address.neighbourhood) streetParts.push(address.neighbourhood);
+  const streetAddress = streetParts.join(' ') || address.suburb || '';
+
+  // Extract barangay (can be suburb, village, or neighbourhood)
+  const barangay =
+    address.village || address.suburb || address.neighbourhood || address.hamlet || '';
+
+  // Extract city (can be city, town, or municipality)
+  const city =
+    address.city ||
+    address.town ||
+    address.municipality ||
+    address.city_district ||
+    address.county ||
+    '';
+
+  // Extract province (state or region)
+  const province = address.state || address.region || address.province || '';
+
+  // Extract postal code
+  const postalCode = address.postcode || '';
+
+  // Fill form fields
+  document.getElementById('streetAddress').value = streetAddress;
+  document.getElementById('barangay').value = barangay;
+  document.getElementById('city').value = city;
+  document.getElementById('province').value = province;
+  document.getElementById('postalCode').value = postalCode;
+
+  // Clear any existing errors
+  clearInlineError(document.getElementById('streetAddress'));
+  clearInlineError(document.getElementById('barangay'));
+  clearInlineError(document.getElementById('city'));
+  clearInlineError(document.getElementById('province'));
+}
+
+/**
  * Populate review step with current state
  */
 function populateReview() {
@@ -681,6 +804,18 @@ function populateReview() {
   document.getElementById('reviewPropertyName').textContent = signupState.step3.boardingHouseName;
   document.getElementById('reviewPropertyType').textContent = signupState.step3.propertyType;
   document.getElementById('reviewRooms').textContent = `${signupState.step3.totalRooms} room(s)`;
+
+  // Full address
+  const fullAddress = [
+    signupState.step3.streetAddress,
+    signupState.step3.barangay,
+    signupState.step3.city,
+    signupState.step3.province,
+    signupState.step3.postalCode,
+  ]
+    .filter(Boolean)
+    .join(', ');
+  document.getElementById('reviewFullAddress').textContent = fullAddress || 'Not set';
 
   // Payment method
   if (signupState.step4.skipped) {
@@ -784,6 +919,41 @@ function setupEventListeners() {
       isValid = false;
     }
 
+    // Street address validation
+    const streetAddress = form.streetAddress;
+    if (!streetAddress.value.trim()) {
+      showInlineError(streetAddress, 'Street address is required');
+      isValid = false;
+    }
+
+    // Barangay validation
+    const barangay = form.barangay;
+    if (!barangay.value.trim()) {
+      showInlineError(barangay, 'Barangay is required');
+      isValid = false;
+    }
+
+    // City validation
+    const city = form.city;
+    if (!city.value.trim()) {
+      showInlineError(city, 'City/Municipality is required');
+      isValid = false;
+    }
+
+    // Province validation
+    const province = form.province;
+    if (!province.value.trim()) {
+      showInlineError(province, 'Province is required');
+      isValid = false;
+    }
+
+    // Postal code validation (optional but validate format if provided)
+    const postalCode = form.postalCode;
+    if (postalCode.value.trim() && !/^\d{4}$/.test(postalCode.value.trim())) {
+      showInlineError(postalCode, 'Postal code must be 4 digits');
+      isValid = false;
+    }
+
     if (!isValid) {
       showToast('Please fix the errors in the form', 'error');
       return;
@@ -795,6 +965,11 @@ function setupEventListeners() {
       description: formData.get('propertyDescription'),
       propertyType: formData.get('propertyType'),
       totalRooms: parseInt(formData.get('totalRooms')),
+      streetAddress: formData.get('streetAddress'),
+      barangay: formData.get('barangay'),
+      city: formData.get('city'),
+      province: formData.get('province'),
+      postalCode: formData.get('postalCode'),
     };
     saveState();
 
@@ -995,13 +1170,52 @@ function setupEventListeners() {
     goToStep(5);
   });
 
+  // Setup terms overlay (define before use)
+  const termsOverlay = document.getElementById('termsOverlay');
+  const termsOverlayClose = termsOverlay?.querySelector('.terms-overlay-close');
+  const termsOverlayOk = document.getElementById('termsOverlayOk');
+
+  function showTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.add('active');
+    }
+  }
+
+  function hideTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.remove('active');
+      // Focus the terms checkbox after closing
+      const termsCheckbox = document.querySelector('#step5Form input[name="terms"]');
+      if (termsCheckbox) {
+        termsCheckbox.focus();
+      }
+    }
+  }
+
+  if (termsOverlayClose) {
+    termsOverlayClose.addEventListener('click', hideTermsOverlay);
+  }
+
+  if (termsOverlayOk) {
+    termsOverlayOk.addEventListener('click', hideTermsOverlay);
+  }
+
+  // Close overlay on backdrop click
+  if (termsOverlay) {
+    termsOverlay.addEventListener('click', function (e) {
+      if (e.target === termsOverlay) {
+        hideTermsOverlay();
+      }
+    });
+  }
+
   // Step 5: Final submission
   document.getElementById('step5Form').addEventListener('submit', async e => {
     e.preventDefault();
 
     const termsChecked = e.target.terms.checked;
     if (!termsChecked) {
-      showToast('Please agree to the Terms of Service to continue', 'warning');
+      showTermsOverlay();
       return;
     }
 
@@ -1155,26 +1369,56 @@ async function submitSignup() {
 
     const userId = userResult.user.id;
 
-    // Step 2: Save boarding house details (Profile must be created first before location & payment!)
+    // Step 2: Login immediately to get auth token for subsequent API calls
+    const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: signupState.step1.email,
+        password: signupState.step1.password,
+      }),
+    });
+
+    if (!loginResponse.ok) {
+      const loginError = await loginResponse.json();
+      throw new Error(loginError.error || 'Login failed after registration');
+    }
+
+    const loginResult = await loginResponse.json();
+    // Store user info in localStorage
+    localStorage.setItem('user', JSON.stringify(loginResult.user));
+
+    // Step 3: Save boarding house details with auth token
     const propertyResponse = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/profile.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         userId,
         boardingHouseName: signupState.step3.boardingHouseName,
         description: signupState.step3.description,
         propertyType: signupState.step3.propertyType,
         totalRooms: signupState.step3.totalRooms,
+        streetAddress: signupState.step3.streetAddress,
+        barangay: signupState.step3.barangay,
+        city: signupState.step3.city,
+        province: signupState.step3.province,
+        postalCode: signupState.step3.postalCode,
       }),
     });
 
     if (!propertyResponse.ok) {
-      console.error('Failed to save property details');
+      const propertyError = await propertyResponse.json();
+      console.error('Failed to save property details:', propertyError);
+      showToast('Property details could not be saved. Please add them later.', 'warning');
     }
 
-    // Step 3: Save property location
+    // Step 4: Save property location with auth token
     const locationResponse = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/property-location.php`,
       {
@@ -1182,6 +1426,7 @@ async function submitSignup() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           userId,
           latitude: signupState.step2.latitude,
@@ -1192,10 +1437,12 @@ async function submitSignup() {
     );
 
     if (!locationResponse.ok) {
-      console.error('Failed to save property location');
+      const locationError = await locationResponse.json();
+      console.error('Failed to save property location:', locationError);
+      showToast('Property location could not be saved. Please add it later.', 'warning');
     }
 
-    // Step 4: Save payment method (if not skipped)
+    // Step 5: Save payment method with auth token (if not skipped)
     if (!signupState.step4.skipped && signupState.step4.paymentMethod) {
       const paymentResponse = await fetch(
         `${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php`,
@@ -1204,6 +1451,7 @@ async function submitSignup() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             userId,
             methodType: signupState.step4.paymentMethod,
@@ -1216,25 +1464,17 @@ async function submitSignup() {
       );
 
       if (!paymentResponse.ok) {
-        console.error('Failed to save payment method');
+        const paymentError = await paymentResponse.json();
+        console.error('Failed to save payment method:', paymentError);
+        showToast('Payment method could not be saved. Please add it later.', 'warning');
       }
     }
 
-    // Success - auto-login landlord and show welcome modal
+    // Success - redirect to dashboard
     clearState();
 
-    // Store user info in localStorage for auto-login
-    const userData = {
-      id: userId,
-      firstName: signupState.step1.firstName,
-      lastName: signupState.step1.lastName,
-      email: signupState.step1.email,
-      role: 'landlord',
-    };
-    localStorage.setItem('user', JSON.stringify(userData));
-
-    // Show welcome modal
-    showWelcomeModal(userData);
+    const basePath = getBasePath();
+    window.location.href = `${basePath}landlord/index.html`;
   } catch (error) {
     console.error('Error during signup:', error);
     showToast(error.message || 'An error occurred. Please try again.', 'error');
@@ -1257,12 +1497,14 @@ function showWelcomeModal(_userData) {
       </div>
       <h2 class="welcome-modal-title">Welcome to Haven Space!</h2>
       <p class="welcome-modal-message">
-        Thank you for applying, Landlord! We are now verifying your application. 
-        You can browse your dashboard while you wait.
+        Thank you for signing up, Landlord! Your account has been created successfully.
+      </p>
+      <p class="welcome-modal-message" style="font-size: 14px; color: var(--text-gray); margin-top: 8px;">
+        Your account is currently under verification. You have read-only access until a superadmin approves your account.
       </p>
       <div class="welcome-modal-actions">
         <button class="welcome-modal-btn welcome-modal-btn-primary" id="goToDashboardBtn">
-          ${getIcon('dashboard', { width: 20, height: 20, strokeWidth: '2' })}
+          ${getIcon('arrowRightOnRectangle', { width: 20, height: 20, strokeWidth: '2' })}
           Go to Dashboard
         </button>
       </div>
@@ -1294,7 +1536,6 @@ function showWelcomeModal(_userData) {
 document.addEventListener('DOMContentLoaded', () => {
   // Inject icons
   injectIcons();
-
   // Load saved state
   loadState();
 
@@ -1303,6 +1544,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Setup address search
   setupAddressSearch();
+
+  // Setup step 3 address search
+  setupStep3AddressSearch();
 
   // Restore to last step if state exists
   if (signupState.currentStep > 1) {
@@ -1329,6 +1573,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('propertyDescription').value = signupState.step3.description || '';
       document.getElementById('propertyType').value = signupState.step3.propertyType;
       document.getElementById('totalRooms').value = signupState.step3.totalRooms;
+      document.getElementById('streetAddress').value = signupState.step3.streetAddress || '';
+      document.getElementById('barangay').value = signupState.step3.barangay || '';
+      document.getElementById('city').value = signupState.step3.city || '';
+      document.getElementById('province').value = signupState.step3.province || '';
+      document.getElementById('postalCode').value = signupState.step3.postalCode || '';
     }
   } else {
     // Start at step 1

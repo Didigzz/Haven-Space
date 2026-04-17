@@ -1857,3 +1857,42 @@
     justify-content: center;
   }
 }
+
+/* ===== Loading and Empty States ===== */
+.boarder-loading-state,
+.boarder-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary, #6b7280);
+}
+
+.boarder-loading-state p,
+.boarder-empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.boarder-loading-state::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--primary-green, #22c55e);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.boarder-empty-state::before {
+  content: '📭';
+  display: block;
+  font-size: 32px;
+  margin-bottom: 12px;
+}

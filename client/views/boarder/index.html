@@ -48,11 +48,10 @@
           <!-- Top Bar with Greeting -->
           <div class="boarder-topbar">
             <div class="boarder-greeting">
-              <h1>Welcome home to Sunrise Dormitory, Room 402</h1>
+              <h1 data-greeting>Welcome home</h1>
               <p>Manage your lease, utilities, and maintenance requests</p>
             </div>
             <div class="boarder-topbar-actions">
-              <!-- TODO: Integrate with backend API for payment processing -->
               <a href="./payments/pay.html" class="boarder-btn boarder-btn-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +74,7 @@
           <!-- Resident Mode Stats Grid -->
           <div class="boarder-stats-grid">
             <!-- Total Outstanding Balance Card -->
-            <div class="boarder-stat-card">
+            <div class="boarder-stat-card" data-stat="balance">
               <div class="boarder-stat-header">
                 <span class="boarder-stat-label">Total Outstanding Balance</span>
                 <div class="boarder-stat-icon orange">
@@ -94,12 +93,12 @@
                   </svg>
                 </div>
               </div>
-              <div class="boarder-stat-value">₱6,200</div>
+              <div class="boarder-stat-value" data-balance-value>Loading...</div>
               <div class="boarder-stat-description">Includes rent and current utility charges</div>
             </div>
 
             <!-- Utility Consumption Card -->
-            <div class="boarder-stat-card">
+            <div class="boarder-stat-card" data-stat="utilities">
               <div class="boarder-stat-header">
                 <span class="boarder-stat-label">Current Utilities</span>
                 <div class="boarder-stat-icon blue">
@@ -118,12 +117,12 @@
                   </svg>
                 </div>
               </div>
-              <div class="boarder-stat-value">₱750</div>
-              <div class="boarder-stat-description">Electricity: ₱500 | Water: ₱250</div>
+              <div class="boarder-stat-value" data-utilities-value>Loading...</div>
+              <div class="boarder-stat-description" data-utilities-breakdown>Loading...</div>
             </div>
 
             <!-- Lease Period Card -->
-            <div class="boarder-stat-card">
+            <div class="boarder-stat-card" data-stat="lease">
               <div class="boarder-stat-header">
                 <span class="boarder-stat-label">Lease Period</span>
                 <div class="boarder-stat-icon purple">
@@ -142,12 +141,12 @@
                   </svg>
                 </div>
               </div>
-              <div class="boarder-stat-value">Month 4 / 12</div>
-              <div class="boarder-stat-description">Next Renewal: Sept 2025</div>
+              <div class="boarder-stat-value" data-lease-period>Loading...</div>
+              <div class="boarder-stat-description" data-lease-renewal>Loading...</div>
             </div>
 
             <!-- Next Payment Card -->
-            <div class="boarder-stat-card">
+            <div class="boarder-stat-card" data-stat="payment">
               <div class="boarder-stat-header">
                 <span class="boarder-stat-label">Next Payment</span>
                 <div class="boarder-stat-icon pink">
@@ -166,8 +165,8 @@
                   </svg>
                 </div>
               </div>
-              <div class="boarder-stat-value">12 Days Left</div>
-              <div class="boarder-stat-description">₱5,500 due on Feb 1</div>
+              <div class="boarder-stat-value" data-payment-days>Loading...</div>
+              <div class="boarder-stat-description" data-payment-details>Loading...</div>
             </div>
           </div>
 
@@ -212,82 +211,9 @@
 
               <!-- Announcements List -->
               <div class="boarder-announcements-list">
-                <!-- Announcement Item 1 -->
-                <div class="boarder-announcement-item">
-                  <div class="boarder-announcement-icon blue">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div class="boarder-announcement-content">
-                    <h4 class="boarder-announcement-title">Water Maintenance Scheduled</h4>
-                    <p class="boarder-announcement-text">
-                      Water interruption on Wednesday, 9 AM - 12 PM for pipe repairs.
-                    </p>
-                    <span class="boarder-announcement-date">Jan 18, 2025</span>
-                  </div>
-                </div>
-
-                <!-- Announcement Item 2 -->
-                <div class="boarder-announcement-item">
-                  <div class="boarder-announcement-icon green">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div class="boarder-announcement-content">
-                    <h4 class="boarder-announcement-title">WiFi Password Updated</h4>
-                    <p class="boarder-announcement-text">
-                      New WiFi password has been posted on the notice board.
-                    </p>
-                    <span class="boarder-announcement-date">Jan 15, 2025</span>
-                  </div>
-                </div>
-
-                <!-- Announcement Item 3 -->
-                <div class="boarder-announcement-item">
-                  <div class="boarder-announcement-icon orange">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                  </div>
-                  <div class="boarder-announcement-content">
-                    <h4 class="boarder-announcement-title">Monthly Fire Drill</h4>
-                    <p class="boarder-announcement-text">
-                      Mandatory fire drill this Friday at 3 PM. All residents must participate.
-                    </p>
-                    <span class="boarder-announcement-date">Jan 12, 2025</span>
-                  </div>
+                <!-- Announcements will be loaded dynamically from API -->
+                <div class="boarder-loading-state">
+                  <p>Loading announcements...</p>
                 </div>
               </div>
 
@@ -421,76 +347,9 @@
                 </a>
               </div>
               <div class="boarder-payment-simple-list">
-                <!-- Current Month -->
-                <div class="boarder-payment-simple-card current">
-                  <div class="boarder-payment-simple-header">
-                    <span class="boarder-payment-period">Current Month</span>
-                    <span class="boarder-payment-status-badge unpaid">Unpaid</span>
-                  </div>
-                  <div class="boarder-payment-simple-body">
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Amount</span>
-                      <span class="boarder-payment-value">₱5,500</span>
-                    </div>
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Due Date</span>
-                      <span class="boarder-payment-value">Feb 1, 2025</span>
-                    </div>
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Days Left</span>
-                      <span class="boarder-payment-value highlight">12 days</span>
-                    </div>
-                  </div>
-                  <!-- TODO: Integrate with backend API for payment processing -->
-                  <a
-                    href="./payments/pay.html"
-                    class="boarder-btn boarder-btn-primary boarder-btn-full"
-                    >Pay Now</a
-                  >
-                </div>
-
-                <!-- Previous Month - Paid -->
-                <div class="boarder-payment-simple-card history">
-                  <div class="boarder-payment-simple-header">
-                    <span class="boarder-payment-period">Previous Month</span>
-                    <span class="boarder-payment-status-badge paid">Paid</span>
-                  </div>
-                  <div class="boarder-payment-simple-body">
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Amount</span>
-                      <span class="boarder-payment-value">₱5,500</span>
-                    </div>
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Paid On</span>
-                      <span class="boarder-payment-value">Jan 3, 2025</span>
-                    </div>
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Payment Method</span>
-                      <span class="boarder-payment-value">GCash</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Two Months Ago - Paid -->
-                <div class="boarder-payment-simple-card history">
-                  <div class="boarder-payment-simple-header">
-                    <span class="boarder-payment-period">December 2024</span>
-                    <span class="boarder-payment-status-badge paid">Paid</span>
-                  </div>
-                  <div class="boarder-payment-simple-body">
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Amount</span>
-                      <span class="boarder-payment-value">₱5,500</span>
-                    </div>
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Paid On</span>
-                      <span class="boarder-payment-value">Dec 2, 2024</span>
-                    </div>
-                    <div class="boarder-payment-row">
-                      <span class="boarder-payment-label">Payment Method</span>
-                      <span class="boarder-payment-value">Bank Transfer</span>
-                    </div>
-                  </div>
+                <!-- Payment cards will be loaded dynamically from API -->
+                <div class="boarder-loading-state">
+                  <p>Loading payment information...</p>
                 </div>
               </div>
             </div>

@@ -29,8 +29,8 @@ export function getBoarderRedirectPath(user) {
   switch (boarderStatus) {
     case 'new':
     case 'browsing':
-      // New user or actively browsing - send to find a room page
-      return `${basePath}public/find-a-room.html`;
+      // New boarders need to apply first - redirect to boarder find-a-room page (authenticated)
+      return `${basePath}boarder/find-a-room/index.html`;
 
     case 'applied_pending':
       // Has pending applications - show applications page
@@ -45,12 +45,12 @@ export function getBoarderRedirectPath(user) {
       return `${basePath}boarder/index.html`;
 
     case 'rejected':
-      // Application rejected - show dashboard with rejection banner
-      return `${basePath}boarder/index.html?status=rejected`;
+      // Application rejected - redirect to boarder find-a-room to apply elsewhere (authenticated)
+      return `${basePath}boarder/find-a-room/index.html`;
 
     default:
-      // Fallback to find a room for unknown status
-      return `${basePath}public/find-a-room.html`;
+      // Fallback to boarder find-a-room for unknown status (authenticated)
+      return `${basePath}boarder/find-a-room/index.html`;
   }
 }
 

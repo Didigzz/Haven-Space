@@ -11,7 +11,14 @@ require_once __DIR__ . '/../src/Shared/Helpers/ResponseHelper.php';
 // Load CORS configuration
 require_once __DIR__ . '/cors.php';
 
+// Load Middleware for route authentication
+require_once __DIR__ . '/middleware.php';
+
+// Load Middleware for route authentication
+require_once __DIR__ . '/middleware.php';
+
 use App\Api\Middleware;
+use App\Modules\Notification\Controllers\NotificationController;
 use App\Modules\Message\Controllers\MessageController;
 use App\Modules\Maintenance\Controllers\MaintenanceController;
 use App\Modules\Onboarding\Controllers\OnboardingController;
@@ -25,27 +32,27 @@ class Router
 {
     private static array $routes = [];
 
-    public static function get(string $path, array $handler): void
+    public static function get(string $path, array|callable $handler): void
     {
         self::$routes['GET'][$path] = $handler;
     }
 
-    public static function post(string $path, array $handler): void
+    public static function post(string $path, array|callable $handler): void
     {
         self::$routes['POST'][$path] = $handler;
     }
 
-    public static function put(string $path, array $handler): void
+    public static function put(string $path, array|callable $handler): void
     {
         self::$routes['PUT'][$path] = $handler;
     }
 
-    public static function patch(string $path, array $handler): void
+    public static function patch(string $path, array|callable $handler): void
     {
         self::$routes['PATCH'][$path] = $handler;
     }
 
-    public static function delete(string $path, array $handler): void
+    public static function delete(string $path, array|callable $handler): void
     {
         self::$routes['DELETE'][$path] = $handler;
     }
@@ -59,6 +66,10 @@ class Router
         $routeKey = $uri;
         if (isset(self::$routes[$method][$routeKey])) {
             $handler = self::$routes[$method][$routeKey];
+            if (is_callable($handler)) {
+                $handler();
+                return;
+            }
             $controller = new $handler[0]();
             $controller->{$handler[1]}([], null);
             return;
@@ -72,6 +83,11 @@ class Router
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches); // Remove full match
                 $id = $matches[0] ?? null;
+                
+                if (is_callable($handler)) {
+                    $handler($id);
+                    return;
+                }
                 
                 $controller = new $handler[0]();
                 $controller->{$handler[1]}([], $id);
@@ -92,15 +108,21 @@ Router::delete('/api/upload/{fileUrl}', [UploadController::class, 'delete']);
 
 // ============================================
 // MESSAGE ROUTES
-// TODO: Implement MessageController methods for full messaging functionality
-// Currently routes are defined but controllers need implementation
 // ============================================
-Router::get('/api/messages/conversations', [MessageController::class, 'index']); // TODO: Implement - Fetch user conversations
-Router::get('/api/messages/conversations/{id}', [MessageController::class, 'show']); // TODO: Implement - Get conversation with messages
-Router::post('/api/messages', [MessageController::class, 'store']); // TODO: Implement - Send a message
-Router::put('/api/messages/conversations/{id}/read', [MessageController::class, 'markAsRead']); // TODO: Implement - Mark conversation as read
-Router::get('/api/messages/search', [MessageController::class, 'search']); // TODO: Implement - Search messages
-Router::get('/api/messages/unread-count', [MessageController::class, 'unreadCount']); // TODO: Implement - Get unread message count
+Router::get('/api/messages/conversations', [MessageController::class, 'index']);
+Router::get('/api/messages/conversations/{id}', [MessageController::class, 'show']);
+Router::post('/api/messages', [MessageController::class, 'store']);
+Router::post('/api/messages/new', [MessageController::class, 'startNew']); // New endpoint for modal
+Router::put('/api/messages/conversations/{id}/read', [MessageController::class, 'markAsRead']);
+Router::get('/api/messages/search', [MessageController::class, 'search']);
+Router::get('/api/messages/unread-count', [MessageController::class, 'unreadCount']);
+
+// ============================================
+// USER ROUTES
+// ============================================
+Router::get('/api/users/search', function() {
+    require_once __DIR__ . '/users/search.php';
+});
 
 // ============================================
 // MAINTENANCE ROUTES - LANDLORD
@@ -163,6 +185,159 @@ Router::post('/api/boarder/documents/acknowledge', [OnboardingController::class,
 // ONBOARDING ROUTES - SHARED
 // ============================================
 Router::post('/api/onboarding/welcome', [OnboardingController::class, 'triggerWelcome']);
+
+// ============================================
+// LANDLORD DASHBOARD ROUTES
+// ============================================
+// Dashboard stats endpoint (handled directly by file)
+// GET /api/landlord/dashboard/stats -> /server/api/landlord/dashboard-stats.php
+Router::get('/api/landlord/properties', function() {
+    require_once __DIR__ . '/landlord/properties.php';
+});
+
+Router::post('/api/landlord/listings', function() {
+    require_once __DIR__ . '/landlord/create-listing.php';
+});
+
+Router::put('/api/landlord/listings/{id}', function($id) {
+    require_once __DIR__ . '/landlord/update-listing.php';
+});
+
+// ============================================
+// BOARDER ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+Router::post('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+Router::delete('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+// ============================================
+// ANNOUNCEMENT ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/announcements', function() {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+Router::post('/api/landlord/announcements', function() {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+Router::put('/api/landlord/announcements/{id}', function($id) {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+Router::delete('/api/landlord/announcements/{id}', function($id) {
+    require_once __DIR__ . '/landlord/announcements.php';
+});
+
+// ============================================
+// ANNOUNCEMENT ROUTES - BOARDER
+// ============================================
+Router::get('/api/boarder/announcements', function() {
+    require_once __DIR__ . '/boarder/announcements.php';
+});
+
+Router::post('/api/boarder/announcements/{id}/view', function($id) {
+    require_once __DIR__ . '/boarder/announcements.php';
+});
+
+// ============================================
+// LEASE ROUTES - BOARDER
+// ============================================
+Router::get('/api/boarder/lease', function() {
+    require_once __DIR__ . '/boarder/lease.php';
+});
+
+// ============================================
+// PAYMENT ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/payments', function() {
+    require_once __DIR__ . '/landlord/payments.php';
+});
+
+Router::post('/api/landlord/payments', function() {
+    require_once __DIR__ . '/landlord/payments.php';
+});
+
+Router::get('/api/landlord/payment-summary', function() {
+    require_once __DIR__ . '/landlord/payment-summary.php';
+});
+
+Router::get('/api/landlord/reports', function() {
+    require_once __DIR__ . '/landlord/reports.php';
+});
+
+// ============================================
+// PAYMENT ROUTES - SHARED
+// ============================================
+Router::get('/api/payments/history', function() {
+    require_once __DIR__ . '/payments/history.php';
+});
+
+Router::get('/api/payments/overview', function() {
+    require_once __DIR__ . '/payments/overview.php';
+});
+
+Router::get('/api/payments/methods', function() {
+    require_once __DIR__ . '/payments/methods.php';
+});
+
+Router::post('/api/payments/methods', function() {
+    require_once __DIR__ . '/payments/methods.php';
+});
+
+Router::delete('/api/payments/methods/{id}', function($id) {
+    require_once __DIR__ . '/payments/methods.php';
+});
+
+// ============================================
+// CALENDAR ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/calendar', function() {
+    require_once __DIR__ . '/landlord/calendar.php';
+});
+
+// Welcome settings
+Router::get('/api/landlord/welcome-settings', function() {
+    require_once __DIR__ . '/landlord/welcome-settings.php';
+});
+
+Router::post('/api/landlord/welcome-settings', function() {
+    require_once __DIR__ . '/landlord/welcome-settings.php';
+});
+
+// ============================================
+// PUBLIC ROOM LISTINGS ROUTES
+// ============================================
+// Get all published properties (no authentication required)
+Router::get('/api/rooms/public', function() {
+    require_once __DIR__ . '/rooms/public.php';
+});
+
+// Get single property detail (no authentication required)
+Router::get('/api/rooms/detail', function() {
+    require_once __DIR__ . '/rooms/detail.php';
+});
+
+// ============================================
+// NOTIFICATION ROUTES
+// ============================================
+Router::get('/api/notifications', [NotificationController::class, 'index']);
+Router::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+Router::patch('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+Router::patch('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+Router::delete('/api/notifications/{id}', [NotificationController::class, 'destroy']);
+
+// Boarder accepted applications (for overlay)
+Router::get('/api/boarder/accepted-applications', [NotificationController::class, 'getAcceptedApplications']);
+Router::get('/api/boarder/has-accepted-applications', [NotificationController::class, 'hasAcceptedApplications']);
 
 // ============================================
 // DISPATCH THE REQUEST

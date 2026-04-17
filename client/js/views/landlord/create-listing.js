@@ -1,8 +1,4 @@
-/**
- * Create Listing - Photo Upload Feature
- * Handles property form submission and photo upload functionality
- */
-
+import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 
 /**
@@ -298,14 +294,115 @@ async function handleFormSubmit(e) {
     propertyLatitude: formData.get('propertyLatitude'),
     propertyLongitude: formData.get('propertyLongitude'),
     amenities: [...formData.getAll('amenities'), ...customAmenities],
-    photos: uploadedPhotos.map(photo => photo.file),
   };
 
-  // Show success message
-  alert('Listing created successfully! (This is a demo - backend integration required)');
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
 
-  // Redirect to listings page
-  window.location.href = 'index.html';
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Creating...';
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('user_id') || '4',
+      },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || result.message || 'Failed to create listing');
+    }
+
+    const propertyId = result.data?.id;
+
+    if (uploadedPhotos.length > 0 && propertyId) {
+      await uploadPhotos(propertyId);
+    }
+
+    showSuccessModal(propertyId, data.propertyName, data.propertyPrice);
+  } catch (error) {
+    showError(error.message || 'Failed to create listing. Please try again.');
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
+  }
+}
+
+async function uploadPhotos(propertyId) {
+  const photoFormData = new FormData();
+  uploadedPhotos.forEach(photo => {
+    photoFormData.append('propertyPhotos[]', photo.file);
+  });
+
+  try {
+    await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}/photos`, {
+      method: 'POST',
+      body: photoFormData,
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Failed to upload photos:', error);
+  }
+}
+
+function showSuccessModal(propertyId, propertyName, propertyPrice) {
+  const modal = document.getElementById('listing-success-modal');
+  const detailsContainer = document.getElementById('listing-success-details');
+  const viewBtn = document.getElementById('listing-view-btn');
+  const dashboardBtn = document.getElementById('listing-dashboard-btn');
+
+  if (!modal) return;
+
+  if (detailsContainer) {
+    detailsContainer.innerHTML = `
+      <div class="listing-success-row">
+        <span class="listing-success-label">Property Name:</span>
+        <span class="listing-success-value">${escapeHtml(propertyName)}</span>
+      </div>
+      <div class="listing-success-row">
+        <span class="listing-success-label">Monthly Rent:</span>
+        <span class="listing-success-value">₱${parseFloat(propertyPrice).toLocaleString()}</span>
+      </div>
+      <div class="listing-success-row">
+        <span class="listing-success-label">Status:</span>
+        <span class="listing-success-value listing-success-status">Published</span>
+      </div>
+    `;
+  }
+
+  if (viewBtn && propertyId) {
+    viewBtn.onclick = () => {
+      window.location.href = `view.html?id=${propertyId}`;
+    };
+  } else if (viewBtn) {
+    viewBtn.style.display = 'none';
+  }
+
+  if (dashboardBtn) {
+    dashboardBtn.onclick = () => {
+      window.location.href = '../index.html';
+    };
+  }
+
+  modal.style.display = 'flex';
+  modal.classList.add('show');
+  injectIcons();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 /**

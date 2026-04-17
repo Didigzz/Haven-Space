@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>View Boarders - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-boarders.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-boarders-page">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-boarders-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content -->
+        <div class="landlord-boarders-content">
+          <!-- Header -->
+          <div class="boarders-header">
+            <div class="header-left">
+              <a href="../listings/index.html" class="back-link">
+                <span
+                  data-icon="arrowLeft"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+                Back to Properties
+              </a>
+              <h1 id="property-name">Property Name</h1>
+              <p id="property-location">Property Location</p>
+            </div>
+            <div class="header-actions">
+              <button type="button" class="btn-secondary" id="btn-filter">
+                <span
+                  data-icon="adjustments"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Filter
+              </button>
+              <button type="button" class="btn-primary" id="btn-add-boarder">
+                <span
+                  data-icon="plus"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+                Add Boarder
+              </button>
+            </div>
+          </div>
+
+          <!-- Property Stats -->
+          <div class="property-stats-bar">
+            <div class="stat-item">
+              <span class="stat-icon blue">
+                <span
+                  data-icon="home"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </span>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-total-rooms">--</span>
+                <span class="stat-label">Total Rooms</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon green">
+                <span
+                  data-icon="checkCircle"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </span>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-occupied">--</span>
+                <span class="stat-label">Occupied</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon orange">
+                <span
+                  data-icon="clock"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </span>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-available">--</span>
+                <span class="stat-label">Available</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon purple">
+                <span
+                  data-icon="currencyDollar"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </span>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-revenue">--</span>
+                <span class="stat-label">Monthly Revenue</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Bar (Initially Hidden) -->
+          <div class="filter-bar" id="filter-bar" style="display: none">
+            <div class="filter-row">
+              <div class="filter-group">
+                <label for="filter-status">Status</label>
+                <select id="filter-status">
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="filter-room">Room Number</label>
+                <select id="filter-room">
+                  <option value="all">All Rooms</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="filter-payment">Payment Status</label>
+                <select id="filter-payment">
+                  <option value="all">All Payments</option>
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="overdue">Overdue</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="search-boarders">Search</label>
+                <div class="search-input">
+                  <span
+                    data-icon="magnifier"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  <input type="text" id="search-boarders" placeholder="Search by name..." />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Boarders Grid -->
+          <div id="boarders-grid" class="boarders-grid">
+            <!-- Boarder cards will be dynamically loaded here -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="empty-state" class="empty-state" style="display: none">
+            <span
+              data-icon="userGroup"
+              data-icon-width="48"
+              data-icon-height="48"
+              data-icon-stroke-width="2"
+            ></span>
+            <h2>No Boarders Found</h2>
+            <p>This property has no boarders yet. Click "Add Boarder" to get started.</p>
+          </div>
+
+          <!-- Loading State -->
+          <div id="loading-state" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading boarders...</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Add Boarder Modal -->
+    <div id="add-boarder-modal" class="add-boarder-modal">
+      <div class="modal-overlay"></div>
+      <div class="add-modal-content">
+        <div class="modal-header">
+          <h2>Add New Boarder</h2>
+          <button type="button" class="modal-close" id="add-modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <form id="add-boarder-form" class="add-boarder-form">
+          <div class="modal-body">
+            <!-- Personal Information -->
+            <div class="form-section">
+              <h3 class="section-title">Personal Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="boarder-first-name">First Name *</label>
+                  <input
+                    type="text"
+                    id="boarder-first-name"
+                    name="firstName"
+                    placeholder="Juan"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="boarder-last-name">Last Name *</label>
+                  <input
+                    type="text"
+                    id="boarder-last-name"
+                    name="lastName"
+                    placeholder="Dela Cruz"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="boarder-email">Email Address *</label>
+                <input
+                  type="email"
+                  id="boarder-email"
+                  name="email"
+                  placeholder="juan@example.com"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="boarder-phone">Phone Number *</label>
+                <input
+                  type="tel"
+                  id="boarder-phone"
+                  name="phone"
+                  placeholder="+63 9XX XXX XXXX"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Room Assignment -->
+            <div class="form-section">
+              <h3 class="section-title">Room Assignment</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="boarder-room">Room Number *</label>
+                  <select id="boarder-room" name="roomId" required>
+                    <option value="">Select a room</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="boarder-start-date">Move-in Date *</label>
+                  <input type="date" id="boarder-start-date" name="startDate" required />
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="form-section">
+              <h3 class="section-title">Payment Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="boarder-rent">Monthly Rent (₱) *</label>
+                  <input
+                    type="number"
+                    id="boarder-rent"
+                    name="rent"
+                    placeholder="5000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="boarder-deposit">Security Deposit (₱)</label>
+                  <input
+                    type="number"
+                    id="boarder-deposit"
+                    name="deposit"
+                    placeholder="5000"
+                    min="0"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="boarder-payment-due">Payment Due Day</label>
+                <select id="boarder-payment-due" name="paymentDueDay">
+                  <option value="1">1st of the month</option>
+                  <option value="5">5th of the month</option>
+                  <option value="10">10th of the month</option>
+                  <option value="15" selected>15th of the month</option>
+                  <option value="20">20th of the month</option>
+                  <option value="25">25th of the month</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-outline" id="add-cancel">Cancel</button>
+            <button type="submit" class="btn-primary">
+              <span
+                data-icon="check"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              Add Boarder
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Boarder Detail Modal -->
+    <div id="boarder-detail-modal" class="boarder-detail-modal">
+      <div class="modal-overlay"></div>
+      <div class="detail-modal-content">
+        <div class="modal-header">
+          <h2>Boarder Details</h2>
+          <button type="button" class="modal-close" id="detail-modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="boarder-profile-header">
+            <div class="boarder-avatar" id="detail-avatar">
+              <span id="detail-initials">JD</span>
+            </div>
+            <div class="boarder-basic-info">
+              <h3 id="detail-name">Juan Dela Cruz</h3>
+              <p id="detail-email">juan@example.com</p>
+              <span class="status-badge" id="detail-status">Active</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Contact Information</h4>
+            <div class="detail-row">
+              <span class="detail-label">Phone:</span>
+              <span class="detail-value" id="detail-phone">+63 9XX XXX XXXX</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Email:</span>
+              <span class="detail-value" id="detail-email-full">juan@example.com</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Room Information</h4>
+            <div class="detail-row">
+              <span class="detail-label">Room:</span>
+              <span class="detail-value" id="detail-room">Room 101</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Move-in Date:</span>
+              <span class="detail-value" id="detail-move-in">January 15, 2026</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Duration:</span>
+              <span class="detail-value" id="detail-duration">3 months</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Payment Information</h4>
+            <div class="detail-row">
+              <span class="detail-label">Monthly Rent:</span>
+              <span class="detail-value" id="detail-rent">₱5,000</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Security Deposit:</span>
+              <span class="detail-value" id="detail-deposit">₱5,000</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Payment Due:</span>
+              <span class="detail-value" id="detail-payment-due">15th of the month</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Last Payment:</span>
+              <span class="detail-value" id="detail-last-payment">January 15, 2026</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" id="detail-cancel">Close</button>
+          <button type="button" class="btn-primary" id="detail-edit">
+            <span
+              data-icon="edit"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+            Edit Boarder
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remove Boarder Confirmation Modal -->
+    <div id="remove-boarder-modal" class="remove-boarder-modal">
+      <div class="modal-overlay"></div>
+      <div class="remove-modal-content">
+        <div class="remove-icon">
+          <span
+            data-icon="exclamation"
+            data-icon-width="48"
+            data-icon-height="48"
+            data-icon-stroke-width="2"
+          ></span>
+        </div>
+        <h3>Remove Boarder?</h3>
+        <p>
+          Are you sure you want to remove
+          <strong id="remove-boarder-name">Boarder Name</strong> from this property? This action
+          cannot be undone.
+        </p>
+        <div class="remove-actions">
+          <button type="button" class="btn-outline" id="remove-cancel">Cancel</button>
+          <button type="button" class="btn-danger" id="remove-confirm">Remove Boarder</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/landlord-boarders.js"></script>
+  </body>
+</html>

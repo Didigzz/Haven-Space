@@ -72,24 +72,8 @@ try {
         $accessToken = JWT::generate($payload, $config['jwt_expiration']);
         $refreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
 
-        // Set Cookies
-        setcookie('access_token', $accessToken, [
-            'expires' => time() + $config['jwt_expiration'],
-            'path' => '/',
-            'domain' => '',
-            'secure' => false, // Set to true if using HTTPS
-            'httponly' => true,
-            'samesite' => 'Lax'
-        ]);
-
-        setcookie('refresh_token', $refreshToken, [
-            'expires' => time() + $config['refresh_token_expiration'],
-            'path' => '/',
-            'domain' => '',
-            'secure' => false, // Set to true if using HTTPS
-            'httponly' => true,
-            'samesite' => 'Lax'
-        ]);
+        // Set authentication cookies
+        JWT::setAuthCookies($accessToken, $refreshToken, $config);
 
         echo json_encode([
             'success' => true,

@@ -82,10 +82,10 @@
                   ></span>
                 </div>
               </div>
-              <div class="report-stat-value">₱142,500</div>
-              <div class="report-stat-change positive">
-                <span class="change-arrow">↑</span>
-                <span class="change-value">12.5%</span>
+              <div class="report-stat-value" id="totalRevenueValue">—</div>
+              <div class="report-stat-change positive" id="totalRevenueChange">
+                <span class="change-arrow" id="totalRevenueArrow">↑</span>
+                <span class="change-value" id="totalRevenueChangeValue">—</span>
                 <span class="change-label">vs previous period</span>
               </div>
             </div>
@@ -102,10 +102,10 @@
                   ></span>
                 </div>
               </div>
-              <div class="report-stat-value">87.3%</div>
-              <div class="report-stat-change positive">
-                <span class="change-arrow">↑</span>
-                <span class="change-value">3.2%</span>
+              <div class="report-stat-value" id="avgOccupancyValue">—</div>
+              <div class="report-stat-change positive" id="avgOccupancyChange">
+                <span class="change-arrow" id="avgOccupancyArrow">↑</span>
+                <span class="change-value" id="avgOccupancyChangeValue">—</span>
                 <span class="change-label">vs previous period</span>
               </div>
             </div>
@@ -122,11 +122,11 @@
                   ></span>
                 </div>
               </div>
-              <div class="report-stat-value">34</div>
-              <div class="report-stat-change positive">
-                <span class="change-arrow">↑</span>
-                <span class="change-value">6 new</span>
-                <span class="change-label">vs previous period</span>
+              <div class="report-stat-value" id="totalBoardersValue">—</div>
+              <div class="report-stat-change positive" id="totalBoardersChange">
+                <span class="change-arrow" id="totalBoardersArrow">↑</span>
+                <span class="change-value" id="totalBoardersChangeValue">—</span>
+                <span class="change-label">this period</span>
               </div>
             </div>
 
@@ -142,10 +142,10 @@
                   ></span>
                 </div>
               </div>
-              <div class="report-stat-value">₱12,750</div>
-              <div class="report-stat-change negative">
-                <span class="change-arrow">↓</span>
-                <span class="change-value">8.3%</span>
+              <div class="report-stat-value" id="outstandingPaymentsValue">—</div>
+              <div class="report-stat-change negative" id="outstandingPaymentsChange">
+                <span class="change-arrow" id="outstandingPaymentsArrow">↓</span>
+                <span class="change-value" id="outstandingPaymentsChangeValue">—</span>
                 <span class="change-label">vs previous period</span>
               </div>
             </div>
@@ -284,109 +284,18 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Maria Santos</strong>
-                        <span class="boarder-email">maria@example.com</span>
-                      </div>
-                    </td>
-                    <td>Sunrise Dormitory - Room 201</td>
-                    <td class="amount">₱5,500</td>
-                    <td>Feb 15, 2025</td>
-                    <td><span class="status-badge status-paid">Paid</span></td>
-                    <td>
-                      <button class="table-btn table-btn-outline">View Receipt</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Jose Reyes</strong>
-                        <span class="boarder-email">jose@example.com</span>
-                      </div>
-                    </td>
-                    <td>Green Valley - Room 105</td>
-                    <td class="amount">₱4,500</td>
-                    <td>Jan 31, 2025</td>
-                    <td><span class="status-badge status-pending">Pending</span></td>
-                    <td>
-                      <button class="table-btn table-btn-primary">Send Reminder</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Pedro Cruz</strong>
-                        <span class="boarder-email">pedro@example.com</span>
-                      </div>
-                    </td>
-                    <td>Metro Boarding - Room 302</td>
-                    <td class="amount">₱5,250</td>
-                    <td>Jan 20, 2025</td>
-                    <td><span class="status-badge status-overdue">Overdue</span></td>
-                    <td>
-                      <button class="table-btn table-btn-danger">Send Notice</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Ana Garcia</strong>
-                        <span class="boarder-email">ana@example.com</span>
-                      </div>
-                    </td>
-                    <td>Sunrise Dormitory - Room 305</td>
-                    <td class="amount">₱5,000</td>
-                    <td>Feb 28, 2025</td>
-                    <td><span class="status-badge status-paid">Paid</span></td>
-                    <td>
-                      <button class="table-btn table-btn-outline">View Receipt</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Luis Torres</strong>
-                        <span class="boarder-email">luis@example.com</span>
-                      </div>
-                    </td>
-                    <td>Green Valley - Room 210</td>
-                    <td class="amount">₱4,800</td>
-                    <td>Feb 20, 2025</td>
-                    <td><span class="status-badge status-paid">Paid</span></td>
-                    <td>
-                      <button class="table-btn table-btn-outline">View Receipt</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Sofia Mendoza</strong>
-                        <span class="boarder-email">sofia@example.com</span>
-                      </div>
-                    </td>
-                    <td>Metro Boarding - Room 108</td>
-                    <td class="amount">₱4,200</td>
-                    <td>Feb 10, 2025</td>
-                    <td><span class="status-badge status-pending">Pending</span></td>
-                    <td>
-                      <button class="table-btn table-btn-primary">Send Reminder</button>
+                <tbody id="paymentTableBody">
+                  <tr class="loading-row">
+                    <td colspan="6" style="text-align: center; padding: 2rem">
+                      Loading payment data...
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <div class="report-table-footer">
-              <span class="table-info">Showing 6 of 34 entries</span>
-              <div class="table-pagination">
-                <button class="pagination-btn" disabled>Previous</button>
-                <button class="pagination-btn active">1</button>
-                <button class="pagination-btn">2</button>
-                <button class="pagination-btn">3</button>
-                <button class="pagination-btn">Next</button>
-              </div>
+              <span class="table-info">Loading...</span>
+              <div class="table-pagination"></div>
             </div>
           </div>
         </div>

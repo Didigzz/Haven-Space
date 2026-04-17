@@ -4,15 +4,12 @@
  */
 
 import { getIcon } from '../shared/icons.js';
-import { showToast } from '../shared/toast.js';
 
 /**
  * Initialize navbar component
  * @param {Object} options - Configuration options
  * @param {string} options.containerId - ID of container element (default: 'navbar-container')
  * @param {Object} options.user - User info object with name, initials, avatarUrl, email
- * @param {number} options.notificationCount - Number of unread notifications
- * @param {Array} options.notifications - Array of notification objects
  */
 export function initNavbar(options = {}) {
   const {
@@ -23,8 +20,6 @@ export function initNavbar(options = {}) {
       avatarUrl: '',
       email: 'juan@example.com',
     },
-    notificationCount = 3,
-    notifications = getDefaultNotifications(),
   } = options;
 
   const container = document.getElementById(containerId);
@@ -47,12 +42,6 @@ export function initNavbar(options = {}) {
       // Update user info
       updateUserInfo(user, basePath);
 
-      // Update notification count
-      updateNotificationCount(notificationCount);
-
-      // Render notification list
-      renderNotifications(notifications);
-
       // Setup event handlers
       setupThemeToggle();
       setupNotificationHandler();
@@ -68,49 +57,13 @@ export function initNavbar(options = {}) {
 }
 
 /**
- * Get default notifications for demo
- * @returns {Array} Array of notification objects
- */
-function getDefaultNotifications() {
-  return [
-    {
-      id: 1,
-      type: 'success',
-      icon: 'checkCircle',
-      title: 'Payment Received',
-      description: 'Your payment of ₱5,000 has been successfully processed.',
-      time: '2 minutes ago',
-      unread: true,
-    },
-    {
-      id: 2,
-      type: 'info',
-      icon: 'informationCircle',
-      title: 'New Message',
-      description: 'You have a new message from your landlord regarding Room 204.',
-      time: '1 hour ago',
-      unread: true,
-    },
-    {
-      id: 3,
-      type: 'warning',
-      icon: 'exclamationTriangle',
-      title: 'Maintenance Scheduled',
-      description: 'Water system maintenance scheduled for tomorrow, 9:00 AM - 12:00 PM.',
-      time: '3 hours ago',
-      unread: true,
-    },
-  ];
-}
-
-/**
  * Resolve base path based on current URL structure
  * @returns {string} Base path for asset resolution
  */
 function resolveBasePath() {
   const path = window.location.pathname;
-  if (path.includes('/client/views/')) {
-    return '/client';
+  if (path.includes('/views/')) {
+    return '';
   }
   if (path.includes('/frontend/views/')) {
     return '/frontend';
@@ -297,10 +250,19 @@ function renderNotifications(notifications) {
         })
       );
 
-      // Mark as read
+      // Optimistically mark as read in UI
       if (item.classList.contains('unread')) {
         item.classList.remove('unread');
         updateUnreadCount(-1);
+
+        // Call API to persist
+        import('../shared/notifications.js')
+          .then(({ markNotificationAsRead }) => markNotificationAsRead(notificationId))
+          .catch(() => {
+            // Revert UI on failure
+            item.classList.add('unread');
+            updateUnreadCount(1);
+          });
       }
     });
   });
@@ -316,11 +278,22 @@ function markAllAsRead() {
   const unreadItems = list.querySelectorAll('.navbar-notification-item.unread');
   const count = unreadItems.length;
 
+  if (count === 0) return;
+
+  // Optimistically update UI
   unreadItems.forEach(item => {
     item.classList.remove('unread');
   });
-
   updateUnreadCount(-count);
+
+  // Call API
+  import('../shared/notifications.js')
+    .then(({ markAllNotificationsAsRead }) => markAllNotificationsAsRead())
+    .catch(() => {
+      // Revert UI on failure
+      unreadItems.forEach(item => item.classList.add('unread'));
+      updateUnreadCount(count);
+    });
 
   window.dispatchEvent(new CustomEvent('navbar:notification:markAllRead'));
 }
@@ -441,31 +414,24 @@ function setupUserMenuHandlers(user) {
       // Clear authentication data
       localStorage.removeItem('user');
 
-      // Show success toast before redirect
-      showToast('You have successfully logged out', 'success', 3000);
+      // Store logout message in sessionStorage to display after redirect
+      sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+      sessionStorage.setItem('logoutToastType', 'success');
 
-      // Redirect to login page after short delay to show toast
-      setTimeout(() => {
-        const pathname = window.location.pathname;
+      // Redirect to login page
+      const pathname = window.location.pathname;
 
-        // Determine correct login path based on current URL structure
-        if (pathname.includes('/dist/')) {
-          // Production mode (dist): auth folder is at root
-          window.location.href = '/auth/login.html';
-        } else if (pathname.includes('/client/views/')) {
-          // Development mode with /client path
-          window.location.href = '/client/views/public/auth/login.html';
-        } else if (pathname.includes('/frontend/views/')) {
-          // Development mode with /frontend path
-          window.location.href = '/frontend/views/public/auth/login.html';
-        } else if (pathname.includes('/views/')) {
-          // Direct /views access
-          window.location.href = '/views/public/auth/login.html';
-        } else {
-          // Fallback: try development path
-          window.location.href = '/client/views/public/auth/login.html';
-        }
-      }, 500);
+      // Determine correct login path based on current URL structure
+      if (pathname.includes('/dist/')) {
+        // Production mode (dist): auth folder is at root
+        window.location.href = '/auth/login.html';
+      } else if (pathname.includes('/views/')) {
+        // Direct /views access
+        window.location.href = '/views/public/auth/login.html';
+      } else {
+        // Fallback: try development path
+        window.location.href = '/views/public/auth/login.html';
+      }
     });
   }
 }
@@ -523,3 +489,81 @@ function setupSidebarToggle() {
 /**
  * Setup keyboard shortcuts
  */
+
+/**
+ * Update navbar notification count and list from API
+ * Call this after initNavbar to populate real notifications
+ */
+export async function updateNavbarNotifications() {
+  try {
+    const { fetchNotifications } = await import('../shared/notifications.js');
+
+    const result = await fetchNotifications(10);
+    const notifications = result.data || [];
+    const unreadCount = result.unread_count || 0;
+
+    // Update badge
+    updateNotificationCount(unreadCount);
+
+    // Transform API notifications for navbar display
+    const formattedNotifications = notifications.map(n => ({
+      id: n.id,
+      type: getNotificationType(n.type),
+      icon: getNotificationIcon(n.type),
+      title: n.title,
+      description: n.message || '',
+      time: timeAgo(n.created_at),
+      unread: !n.is_read,
+    }));
+
+    renderNotifications(formattedNotifications);
+  } catch {
+    // Failed to fetch notifications - leave defaults
+  }
+}
+
+/**
+ * Map notification type to display type
+ */
+function getNotificationType(type) {
+  const map = {
+    application_accepted: 'success',
+    application_rejected: 'warning',
+    maintenance_status_change: 'info',
+    maintenance_new_request: 'info',
+    maintenance_comment: 'info',
+    system: 'info',
+  };
+  return map[type] || 'info';
+}
+
+/**
+ * Map notification type to icon name
+ */
+function getNotificationIcon(type) {
+  const map = {
+    application_accepted: 'checkCircle',
+    application_rejected: 'xCircle',
+    maintenance_status_change: 'wrench',
+    maintenance_new_request: 'exclamationTriangle',
+    maintenance_comment: 'chatBubble',
+    system: 'informationCircle',
+  };
+  return map[type] || 'bell';
+}
+
+/**
+ * Format timestamp to human-readable time ago
+ */
+function timeAgo(timestamp) {
+  if (!timestamp) return '';
+  const now = new Date();
+  const date = new Date(timestamp);
+  const seconds = Math.floor((now - date) / 1000);
+
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+  return date.toLocaleDateString();
+}

@@ -70,9 +70,9 @@
                   ></span>
                 </div>
               </div>
-              <div class="landlord-stat-value">85%</div>
+              <div class="landlord-stat-value" data-stat="occupancy-rate">--%</div>
               <div class="landlord-stat-description">
-                <span class="trend-indicator trend-up">↑ 12%</span>
+                <span class="trend-indicator trend-up" data-stat="occupancy-trend">--</span>
                 vs. last month
               </div>
             </div>
@@ -89,9 +89,9 @@
                   ></span>
                 </div>
               </div>
-              <div class="landlord-stat-value">₱47,500</div>
+              <div class="landlord-stat-value" data-stat="monthly-revenue">--</div>
               <div class="landlord-stat-description">
-                <span class="trend-indicator trend-up">↑ 8%</span>
+                <span class="trend-indicator trend-up" data-stat="revenue-trend">--</span>
                 vs. last month
               </div>
             </div>
@@ -108,7 +108,7 @@
                   ></span>
                 </div>
               </div>
-              <div class="landlord-stat-value">4</div>
+              <div class="landlord-stat-value" data-stat="upcoming-renewals">--</div>
               <div class="landlord-stat-description">
                 <span class="trend-indicator trend-neutral">•</span>
                 This month
@@ -128,12 +128,12 @@
                 </div>
               </div>
               <div class="landlord-stat-value">
-                <span class="alert-count-yellow">2</span> /
-                <span class="alert-count-red">1</span>
+                <span class="alert-count-yellow" data-stat="due-soon-count">--</span> /
+                <span class="alert-count-red" data-stat="overdue-count">--</span>
               </div>
               <div class="landlord-stat-description">
                 <span class="trend-indicator trend-warning">⚠</span>
-                2 due soon, 1 overdue
+                <span data-stat="payment-alerts-text">-- due soon, -- overdue</span>
               </div>
             </div>
           </div>
@@ -162,101 +162,10 @@
                   ></span>
                 </a>
               </div>
-              <div class="landlord-payment-status-list">
-                <!-- Green Status - On Track -->
-                <div class="landlord-payment-status-card landlord-payment-green">
-                  <div class="landlord-payment-status-header">
-                    <div class="landlord-payment-status-indicator">
-                      <span class="landlord-traffic-light landlord-light-green"></span>
-                      <span class="landlord-payment-status-label">On Track</span>
-                    </div>
-                    <span class="landlord-payment-count">12 payments</span>
-                  </div>
-                  <div class="landlord-payment-status-body">
-                    <div class="landlord-payment-row">
-                      <div class="landlord-payment-info">
-                        <h4 class="landlord-payment-tenant-name">Maria Santos</h4>
-                        <p class="landlord-payment-property">Sunrise Dormitory - Room 201</p>
-                      </div>
-                      <div class="landlord-payment-meta">
-                        <span class="landlord-payment-amount">₱5,500</span>
-                        <span class="landlord-payment-due">Due: Feb 15, 2025</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Yellow Status - Due Soon (Warning) -->
-                <div class="landlord-payment-status-card landlord-payment-yellow">
-                  <div class="landlord-payment-status-header">
-                    <div class="landlord-payment-status-indicator">
-                      <span class="landlord-traffic-light landlord-light-yellow"></span>
-                      <span class="landlord-payment-status-label">Due Soon</span>
-                    </div>
-                    <span class="landlord-payment-count">7-14 days</span>
-                  </div>
-                  <div class="landlord-payment-status-body">
-                    <div class="landlord-payment-row">
-                      <div class="landlord-payment-info">
-                        <h4 class="landlord-payment-tenant-name">Jose Reyes</h4>
-                        <p class="landlord-payment-property">Green Valley - Room 105</p>
-                      </div>
-                      <div class="landlord-payment-meta">
-                        <span class="landlord-payment-amount">₱4,500</span>
-                        <span class="landlord-payment-due">Due: Jan 31, 2025</span>
-                      </div>
-                    </div>
-                    <div class="landlord-payment-actions">
-                      <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                        Send Reminder
-                      </button>
-                      <button class="landlord-btn landlord-btn-primary landlord-btn-sm">
-                        Record Payment
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Red Status - Overdue -->
-                <div class="landlord-payment-status-card landlord-payment-red">
-                  <div class="landlord-payment-status-header">
-                    <div class="landlord-payment-status-indicator">
-                      <span class="landlord-traffic-light landlord-light-red"></span>
-                      <span class="landlord-payment-status-label">Overdue</span>
-                    </div>
-                    <span class="landlord-payment-count">3 days late</span>
-                  </div>
-                  <div class="landlord-payment-status-body">
-                    <div class="landlord-payment-row">
-                      <div class="landlord-payment-info">
-                        <h4 class="landlord-payment-tenant-name">Pedro Cruz</h4>
-                        <p class="landlord-payment-property">Metro Boarding - Room 302</p>
-                      </div>
-                      <div class="landlord-payment-meta">
-                        <span class="landlord-payment-amount">₱5,000</span>
-                        <span class="landlord-payment-due">Was due: Jan 20, 2025</span>
-                      </div>
-                    </div>
-                    <div class="landlord-overdue-notice">
-                      <span
-                        data-icon="info"
-                        data-icon-width="24"
-                        data-icon-height="24"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <div>
-                        <strong>Late fee applied:</strong> ₱250 | <strong>Total due:</strong> ₱5,250
-                      </div>
-                    </div>
-                    <div class="landlord-payment-actions">
-                      <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                        Send Notice
-                      </button>
-                      <button class="landlord-btn landlord-btn-primary landlord-btn-sm">
-                        Record Payment
-                      </button>
-                    </div>
-                  </div>
+              <div id="payment-overview-container" class="landlord-payment-status-list">
+                <!-- Payment data will be dynamically loaded here from backend -->
+                <div class="landlord-loading-state" style="text-align: center; padding: 2rem">
+                  <p style="color: var(--text-gray)">Loading payment data...</p>
                 </div>
               </div>
             </div>
@@ -283,105 +192,7 @@
                   ></span>
                 </a>
               </div>
-              <div class="landlord-application-queue">
-                <!-- Application Item -->
-                <div class="landlord-application-card">
-                  <div class="landlord-application-header">
-                    <div class="landlord-application-info">
-                      <h3 class="landlord-application-name">Ana Garcia</h3>
-                      <p class="landlord-application-property">
-                        <span
-                          data-icon="building"
-                          data-icon-width="16"
-                          data-icon-height="16"
-                          data-icon-stroke-width="2"
-                          style="display: inline-block; vertical-align: middle"
-                        ></span>
-                        Sunrise Dormitory - Room 305
-                      </p>
-                    </div>
-                    <span class="landlord-status-badge landlord-status-new">New</span>
-                  </div>
-                  <div class="landlord-application-meta">
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="user"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>BS Computer Science</span>
-                    </div>
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="checkCircle"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>Documents uploaded</span>
-                    </div>
-                  </div>
-                  <div class="landlord-application-actions">
-                    <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                      View Details
-                    </button>
-                    <button class="landlord-btn landlord-btn-success landlord-btn-sm">
-                      Approve
-                    </button>
-                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">Reject</button>
-                  </div>
-                </div>
-
-                <!-- Second Application -->
-                <div class="landlord-application-card">
-                  <div class="landlord-application-header">
-                    <div class="landlord-application-info">
-                      <h3 class="landlord-application-name">Luis Torres</h3>
-                      <p class="landlord-application-property">
-                        <span
-                          data-icon="building"
-                          data-icon-width="16"
-                          data-icon-height="16"
-                          data-icon-stroke-width="2"
-                          style="display: inline-block; vertical-align: middle"
-                        ></span>
-                        Green Valley - Room 210
-                      </p>
-                    </div>
-                    <span class="landlord-status-badge landlord-status-review">Under Review</span>
-                  </div>
-                  <div class="landlord-application-meta">
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="user"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>BS Engineering</span>
-                    </div>
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="checkCircle"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>Documents uploaded</span>
-                    </div>
-                  </div>
-                  <div class="landlord-application-actions">
-                    <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                      View Details
-                    </button>
-                    <button class="landlord-btn landlord-btn-success landlord-btn-sm">
-                      Approve
-                    </button>
-                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">Reject</button>
-                  </div>
-                </div>
-              </div>
+              <div class="landlord-application-queue" id="applicationQueueContainer"></div>
             </div>
           </div>
 
@@ -444,7 +255,7 @@
             <div class="landlord-section">
               <div class="landlord-section-header">
                 <h2 class="landlord-section-title">Recent Activity</h2>
-                <a href="#" class="landlord-view-all">
+                <a href="activity/index.html" class="landlord-view-all">
                   View all
                   <span
                     data-icon="chevronRight"
@@ -454,91 +265,10 @@
                   ></span>
                 </a>
               </div>
-              <div class="landlord-activity-feed">
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon green">
-                    <span
-                      data-icon="currencyDollar"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Maria Santos</strong> paid rent for
-                      <strong>Sunrise Dormitory</strong>
-                    </p>
-                    <span class="landlord-activity-time">2 hours ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon blue">
-                    <span
-                      data-icon="user"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>New application</strong> from Ana Garcia
-                    </p>
-                    <span class="landlord-activity-time">5 hours ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon yellow">
-                    <span
-                      data-icon="exclamation"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Payment reminder</strong> sent to Jose Reyes
-                    </p>
-                    <span class="landlord-activity-time">1 day ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon orange">
-                    <span
-                      data-icon="wrenchScrewdriver"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Maintenance request</strong> from Room 205
-                    </p>
-                    <span class="landlord-activity-time">2 days ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon purple">
-                    <span
-                      data-icon="checkCircle"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Lease renewed</strong> for Green Valley - Room 108
-                    </p>
-                    <span class="landlord-activity-time">3 days ago</span>
-                  </div>
+              <div class="landlord-activity-feed" id="recent-activity-feed">
+                <!-- Activities will be loaded dynamically from backend -->
+                <div class="landlord-activity-loading">
+                  <p class="landlord-activity-text">Loading recent activity...</p>
                 </div>
               </div>
             </div>
@@ -557,7 +287,7 @@
                 Your Properties
               </h2>
               <a href="listings/index.html" class="landlord-view-all">
-                Manage all
+                Manage all properties
                 <span
                   data-icon="chevronRight"
                   data-icon-width="16"
@@ -566,115 +296,12 @@
                 ></span>
               </a>
             </div>
-            <div class="landlord-properties-grid">
-              <!-- Property Card 1 -->
-              <div class="landlord-property-card">
-                <div class="landlord-property-image">
-                  <span
-                    data-icon="home"
-                    data-icon-width="48"
-                    data-icon-height="48"
-                    data-icon-stroke-width="2"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      height: 100%;
-                    "
-                  ></span>
-                </div>
-                <div class="landlord-property-info">
-                  <h3 class="landlord-property-name">Sunrise Dormitory</h3>
-                  <p class="landlord-property-location">
-                    <span
-                      data-icon="target"
-                      data-icon-width="16"
-                      data-icon-height="16"
-                      data-icon-stroke-width="2"
-                      style="display: inline-block; vertical-align: middle"
-                    ></span>
-                    Sampaloc, Manila
-                  </p>
-                  <div class="landlord-property-stats">
-                    <div class="landlord-property-stat">
-                      <span class="landlord-stat-label">Occupancy</span>
-                      <span class="landlord-stat-value green">10/12 rooms</span>
-                    </div>
-                    <div class="landlord-property-stat">
-                      <span class="landlord-stat-label">Revenue</span>
-                      <span class="landlord-stat-value">₱27,500</span>
-                    </div>
-                  </div>
-                  <div class="landlord-property-actions">
-                    <a
-                      href="listings/edit.html"
-                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="boarders/index.html"
-                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
-                    >
-                      View Boarders
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Property Card 2 -->
-              <div class="landlord-property-card">
-                <div class="landlord-property-image">
-                  <span
-                    data-icon="building"
-                    data-icon-width="48"
-                    data-icon-height="48"
-                    data-icon-stroke-width="2"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      height: 100%;
-                    "
-                  ></span>
-                </div>
-                <div class="landlord-property-info">
-                  <h3 class="landlord-property-name">Green Valley Boarding House</h3>
-                  <p class="landlord-property-location">
-                    <span
-                      data-icon="target"
-                      data-icon-width="16"
-                      data-icon-height="16"
-                      data-icon-stroke-width="2"
-                      style="display: inline-block; vertical-align: middle"
-                    ></span>
-                    Diliman, Quezon City
-                  </p>
-                  <div class="landlord-property-stats">
-                    <div class="landlord-property-stat">
-                      <span class="landlord-stat-label">Occupancy</span>
-                      <span class="landlord-stat-value yellow">6/10 rooms</span>
-                    </div>
-                    <div class="landlord-property-stat">
-                      <span class="landlord-stat-label">Revenue</span>
-                      <span class="landlord-stat-value">₱20,000</span>
-                    </div>
-                  </div>
-                  <div class="landlord-property-actions">
-                    <a
-                      href="listings/edit.html"
-                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
-                    >
-                      Edit
-                    </a>
-                    <a
-                      href="boarders/index.html"
-                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
-                    >
-                      View Boarders
-                    </a>
-                  </div>
-                </div>
+            <div id="properties-grid" class="landlord-properties-grid">
+              <div
+                class="landlord-loading-state"
+                style="text-align: center; padding: 2rem; width: 100%"
+              >
+                <p style="color: var(--text-gray)">Loading properties...</p>
               </div>
             </div>
           </div>
@@ -684,5 +311,6 @@
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
+    <script type="module" src="../../js/views/landlord/landlord-applications.js"></script>
   </body>
 </html>

@@ -22,17 +22,93 @@ class MessageService
         $this->uploadHandler = new UploadHandler();
     }
 
-    /**
-     * Get user's conversation list
-     */
     public function getUserConversations(int $userId): array
     {
         $conversations = $this->repository->getUserConversations($userId);
 
-        return array_map(function ($conv) {
+        return array_map(function ($conv) use ($userId) {
+            // Get participants to determine the other person
+            $conv['participants'] = $this->repository->getConversationParticipants($conv['id']);
+            $conv['title'] = $this->formatConversationTitle($conv, $userId);
+            
             $entity = new Conversation($conv);
             return $entity->toPublicArray();
         }, $conversations);
+    }
+
+    /**
+     * Helper to format conversation title based on viewer
+     */
+    private function formatConversationTitle(array $conversation, int $userId): string
+    {
+        if ($conversation['type'] !== 'direct') {
+            return $conversation['title'];
+        }
+
+        // Find the other participant
+        foreach ($conversation['participants'] as $participant) {
+            if ($participant['user_id'] != $userId) {
+                $roleLabel = ucfirst($participant['role']);
+                return "$roleLabel - {$participant['first_name']} {$participant['last_name']}";
+            }
+        }
+
+        return $conversation['title'];
+    }
+
+    /**
+     * Get or create a direct conversation between two users
+     */
+    public function getOrCreateConversation(int $user1Id, int $user2Id): int
+    {
+        // Check for existing direct conversation
+        $conversationId = $this->repository->findDirectConversation($user1Id, $user2Id);
+        if ($conversationId) {
+            return $conversationId;
+        }
+
+        // Get details for title
+        $user1 = $this->repository->getUserDetails($user1Id);
+        $user2 = $this->repository->getUserDetails($user2Id);
+        
+        if (!$user1 || !$user2) {
+            throw new \RuntimeException('User not found');
+        }
+
+        // Create new direct conversation
+        $title = $user1['role'] === 'landlord' ? "Boarder - " . $user2['first_name'] . " " . $user2['last_name'] 
+                                              : "Landlord - " . $user2['first_name'] . " " . $user2['last_name'];
+                                              
+        $conversationId = $this->repository->createConversation([
+            'title' => $title,
+            'type' => 'direct',
+            'created_by' => $user1Id,
+            'is_system_thread' => false,
+        ]);
+
+        $this->repository->addParticipant($conversationId, $user1Id, $user1['role']);
+        $this->repository->addParticipant($conversationId, $user2Id, $user2['role']);
+
+        return $conversationId;
+    }
+
+    /**
+     * Start a new conversation with an initial message
+     */
+    public function startConversation(int $senderId, int $receiverId, string $messageText): array
+    {
+        if (empty(trim($messageText))) {
+            throw new \InvalidArgumentException("Message text is required");
+        }
+
+        $conversationId = $this->getOrCreateConversation($senderId, $receiverId);
+        
+        $this->sendMessage([
+            'conversation_id' => $conversationId,
+            'message_text' => $messageText
+        ], $senderId);
+
+        return $this->getConversation($conversationId, $senderId);
     }
 
     /**
@@ -58,6 +134,9 @@ class MessageService
         if (!$isParticipant) {
             throw new \RuntimeException('Unauthorized');
         }
+
+        // Format dynamic title
+        $conversation['title'] = $this->formatConversationTitle($conversation, $userId);
 
         // Get messages
         $messages = $this->repository->getConversationMessages($conversationId);

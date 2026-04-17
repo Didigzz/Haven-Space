@@ -8,7 +8,8 @@ import CONFIG from '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { loadDashboardData } from './dashboard.js';
-import { initFindARoom } from './boarder-find-a-room.js';
+import { initMessages } from './messages.js';
+import { initBoarderFindARoom } from './boarder-find-a-room-auth.js';
 import { initLeasePage } from './lease.js';
 import { initPaymentPage } from './boarder-payment-process.js';
 import { initSettingsPage } from './settings.js';
@@ -16,14 +17,17 @@ import { initAnnouncements } from './announcements.js';
 import { initDashboardMap } from './dashboard-map.js';
 import { initHouseRulesPage } from './house-rules.js';
 import { initBoarderStatus } from './status.js';
+import { openAcceptedApplicationsOverlay } from '../../components/accepted-applications-overlay.js';
+import { hasAcceptedApplications } from '../../shared/notifications.js';
+import { updateNavbarNotifications } from '../../components/navbar.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
   if (pathname.includes('github.io')) {
     return '/Haven-Space/client/views/public/auth/login.html';
   }
-  if (pathname.includes('/client/views/')) {
-    return '/client/views/public/auth/login.html';
+  if (pathname.includes('/views/')) {
+    return '/views/public/auth/login.html';
   }
   return '/views/public/auth/login.html';
 }
@@ -41,7 +45,13 @@ function initialsFrom(user) {
 export async function initBoarderDashboard() {
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      method: 'GET',
+      headers: {
+        'X-User-Id': localStorage.getItem('user_id') || '3',
+      },
+      credentials: 'include',
+    });
     if (!res.ok) {
       window.location.href = loginPath();
       return;
@@ -80,8 +90,21 @@ export async function initBoarderDashboard() {
         avatarUrl: user.avatar_url || '',
         email: user.email || '',
       },
-      notificationCount: 3,
+      notificationCount: 0,
     });
+
+    // Fetch real notifications from API
+    updateNavbarNotifications();
+  }
+
+  // Check for accepted applications and show overlay
+  try {
+    const hasAccepted = await hasAcceptedApplications();
+    if (hasAccepted) {
+      openAcceptedApplicationsOverlay();
+    }
+  } catch {
+    // Failed to check accepted applications
   }
 
   // Load dashboard data
@@ -97,7 +120,11 @@ export async function initBoarderDashboard() {
   const currentPath = window.location.pathname;
 
   if (currentPath.includes('find-a-room')) {
-    initFindARoom();
+    initBoarderFindARoom();
+  }
+
+  if (currentPath.includes('messages')) {
+    initMessages();
   }
 
   if (currentPath.includes('lease')) {

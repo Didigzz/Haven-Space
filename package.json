@@ -9,6 +9,8 @@
     "mysql": "php scripts/start-mysql.php",
     "db:setup": "php scripts/setup-database.php",
     "db:seed": "php scripts/setup-database.php --seed",
+    "db:reset": "php scripts/reset-database.php",
+    "db:reset:force": "php scripts/reset-database.php --force --no-backup",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint client/js/**/*.js --no-error-on-unmatched-pattern",
@@ -35,5 +37,8 @@
     "leaflet": "^1.9.4",
     "lint-staged": "^16.4.0",
     "prettier": "^2.8.8"
+  },
+  "dependencies": {
+    "oh-my-opencode-windows-x64": "^3.17.2"
   }
 }

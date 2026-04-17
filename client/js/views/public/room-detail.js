@@ -3,8 +3,10 @@
  * Handles room details display and gallery for public users
  */
 
-// Sample room data (replace with API calls in production)
-const roomData = {
+import CONFIG from '../../config.js';
+
+// Sample room data (fallback for development)
+const roomDataFallback = {
   1: {
     id: 1,
     title: 'Sunrise Dormitory',
@@ -222,6 +224,7 @@ const state = {
   currentImageIndex: 0,
   roomId: null,
   isFavorite: false,
+  roomData: null, // Store fetched room data
 };
 
 /**
@@ -247,23 +250,73 @@ export function initRoomDetail() {
 /**
  * Setup the page with room data
  */
-function setupPage() {
-  const room = roomData[state.roomId];
+async function setupPage() {
+  try {
+    // Show loading state
+    showLoadingState();
 
-  if (!room) {
-    showNotFound();
-    return;
+    // Fetch room data from API
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/detail?id=${state.roomId}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        showNotFound();
+        return;
+      }
+      throw new Error('Failed to fetch property details');
+    }
+
+    const result = await response.json();
+    state.roomData = result.data;
+
+    // Populate page with fetched data
+    populateRoomData(state.roomData);
+    setupGallery();
+    setupEventListeners(state.roomData);
+  } catch (error) {
+    console.error('Error loading room details:', error);
+    // Fallback to sample data if API fails
+    const room = roomDataFallback[state.roomId];
+    if (room) {
+      state.roomData = room;
+      populateRoomData(room);
+      setupGallery();
+      setupEventListeners(room);
+    } else {
+      showNotFound();
+    }
   }
+}
 
-  populateRoomData(room);
-  setupGallery();
-  setupEventListeners(room);
+/**
+ * Show loading state
+ */
+function showLoadingState() {
+  const content = document.querySelector('.room-detail-content');
+  if (content) {
+    content.style.opacity = '0.5';
+    content.style.pointerEvents = 'none';
+  }
+}
+
+/**
+ * Hide loading state
+ */
+function hideLoadingState() {
+  const content = document.querySelector('.room-detail-content');
+  if (content) {
+    content.style.opacity = '1';
+    content.style.pointerEvents = 'auto';
+  }
 }
 
 /**
  * Populate room data into the page
  */
 function populateRoomData(room) {
+  // Hide loading state
+  hideLoadingState();
+
   // Update page title
   document.title = `${room.title} - Haven Space`;
 
@@ -277,29 +330,91 @@ function populateRoomData(room) {
   const roomTitle = document.getElementById('room-title');
   if (roomTitle) roomTitle.textContent = room.title;
 
+  // Update badges
+  const badgesContainer = document.querySelector('.room-detail-badges');
+  if (badgesContainer && room.badges && room.badges.length > 0) {
+    badgesContainer.innerHTML = room.badges
+      .map(badge => {
+        const badgeClass =
+          badge === 'verified'
+            ? 'room-badge-verified'
+            : badge === 'new'
+            ? 'room-badge-new'
+            : badge === 'promo'
+            ? 'room-badge-promo'
+            : '';
+        const badgeText =
+          badge === 'verified'
+            ? 'Verified Property'
+            : badge === 'new'
+            ? 'New Listing'
+            : badge === 'promo'
+            ? 'Promo'
+            : badge;
+        const badgeIcon =
+          badge === 'verified'
+            ? '<span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>'
+            : '';
+
+        return `
+          <span class="room-badge ${badgeClass}">
+            ${badgeIcon}
+            ${badgeText}
+          </span>
+        `;
+      })
+      .join('');
+  } else if (badgesContainer) {
+    badgesContainer.innerHTML = '';
+  }
+
   const roomAddress = document.getElementById('room-address');
-  if (roomAddress) roomAddress.textContent = room.address;
+  if (roomAddress) {
+    const fullAddress = [room.address, room.city, room.province].filter(Boolean).join(', ');
+    roomAddress.textContent = fullAddress;
+  }
 
   const roomRating = document.getElementById('room-rating');
-  if (roomRating) roomRating.textContent = room.rating;
+  const roomRatingContainer = document.querySelector('.room-detail-rating');
+  if (roomRating && room.rating && room.reviews > 0) {
+    roomRating.textContent = room.rating;
+    if (roomRatingContainer) roomRatingContainer.style.display = 'flex';
+  } else {
+    if (roomRatingContainer) roomRatingContainer.style.display = 'none';
+  }
 
   const roomReviews = document.getElementById('room-reviews');
-  if (roomReviews) roomReviews.textContent = `(${room.reviews} reviews)`;
+  if (roomReviews && room.reviews > 0) {
+    roomReviews.textContent = `(${room.reviews} reviews)`;
+  } else if (roomReviews) {
+    roomReviews.textContent = '(No reviews yet)';
+  }
 
   const roomDistance = document.getElementById('room-distance');
-  if (roomDistance) roomDistance.textContent = room.distance;
+  if (roomDistance) {
+    // Hide distance element if not available
+    const distanceContainer = roomDistance.closest('.room-detail-distance');
+    if (room.distance) {
+      roomDistance.textContent = room.distance;
+      if (distanceContainer) distanceContainer.style.display = 'flex';
+    } else {
+      if (distanceContainer) distanceContainer.style.display = 'none';
+    }
+  }
 
   const roomTypes = document.getElementById('room-types');
-  if (roomTypes) roomTypes.textContent = room.types;
+  if (roomTypes) roomTypes.textContent = room.roomTypes || room.types || 'Available';
 
   const roomAvailability = document.getElementById('room-availability');
-  if (roomAvailability) roomAvailability.textContent = room.availability;
+  if (roomAvailability)
+    roomAvailability.textContent = room.availability || 'Contact for availability';
 
   const roomPrice = document.getElementById('room-price');
   if (roomPrice) roomPrice.textContent = `₱${room.price.toLocaleString()}`;
 
   const bookingAvailability = document.getElementById('booking-availability');
-  if (bookingAvailability) bookingAvailability.textContent = room.availability;
+  if (bookingAvailability)
+    bookingAvailability.textContent = room.availability || 'Contact for availability';
 
   const roomDescription = document.getElementById('room-description');
   if (roomDescription) {
@@ -311,22 +426,42 @@ function populateRoomData(room) {
 
   // Update amenities
   const roomAmenities = document.getElementById('room-amenities');
-  if (roomAmenities) {
+  if (roomAmenities && room.amenities && room.amenities.length > 0) {
     roomAmenities.innerHTML = room.amenities
-      .map(
-        amenity => `
-      <div class="amenity-item">
-        <span data-icon="${amenity.icon}" data-icon-width="20" data-icon-height="20"></span>
-        <span>${amenity.label}</span>
-      </div>
-    `
-      )
+      .map(amenity => {
+        const amenityName = typeof amenity === 'string' ? amenity : amenity.label;
+        const amenityIcon = typeof amenity === 'object' ? amenity.icon : 'check';
+        return `
+            <div class="amenity-item">
+              <span data-icon="${amenityIcon}" data-icon-width="20" data-icon-height="20"></span>
+              <span>${amenityName}</span>
+            </div>
+          `;
+      })
       .join('');
   }
 
   // Update house rules
   const rulesContainer = document.querySelector('.room-detail-rules');
-  if (rulesContainer) {
+  if (rulesContainer && room.houseRules && room.houseRules.length > 0) {
+    rulesContainer.innerHTML = room.houseRules
+      .map(rule => {
+        const ruleTitle = typeof rule === 'string' ? rule : rule.title;
+        const ruleDesc = typeof rule === 'object' ? rule.desc : '';
+        const ruleIcon = typeof rule === 'object' ? rule.icon : 'check';
+        return `
+            <div class="rule-item">
+              <span data-icon="${ruleIcon}" data-icon-width="20" data-icon-height="20"></span>
+              <div class="rule-content">
+                <h4>${ruleTitle}</h4>
+                ${ruleDesc ? `<p>${ruleDesc}</p>` : ''}
+              </div>
+            </div>
+          `;
+      })
+      .join('');
+  } else if (rulesContainer && room.rules && room.rules.length > 0) {
+    // Fallback to old format
     rulesContainer.innerHTML = room.rules
       .map(
         rule => `
@@ -344,46 +479,122 @@ function populateRoomData(room) {
 
   // Update landlord info
   const landlordName = document.getElementById('landlord-name');
-  if (landlordName) landlordName.textContent = room.landlord.name;
+  if (landlordName && room.landlord) {
+    landlordName.textContent = room.landlord.name || 'Property Owner';
+  }
+
+  // Update landlord stats
+  const landlordStats = document.querySelectorAll('.landlord-stat-value');
+  if (landlordStats.length >= 2 && room.landlord) {
+    landlordStats[0].textContent = room.landlord.properties || '0';
+    landlordStats[1].textContent = room.landlord.rating || '0';
+  }
 
   // Update gallery images
   const mainImage = document.getElementById('gallery-main-image');
-  if (mainImage) {
-    mainImage.src = room.images[0];
+  if (mainImage && room.images && room.images.length > 0) {
+    mainImage.src = room.images[0] || '../../../assets/images/placeholder-room.svg';
     mainImage.alt = `${room.title} - Main View`;
+    mainImage.onerror = function () {
+      this.src = '../../../assets/images/placeholder-room.svg';
+    };
+  } else if (mainImage) {
+    mainImage.src = '../../../assets/images/placeholder-room.svg';
+    mainImage.alt = 'No image available';
   }
 
-  const thumbnails = document.querySelectorAll('.gallery-thumb img');
-  room.images.forEach((img, index) => {
-    if (thumbnails[index]) {
-      thumbnails[index].src = img.replace('w=1200', 'w=300');
+  // Update thumbnails
+  const thumbnailsContainer = document.getElementById('gallery-thumbnails');
+  if (thumbnailsContainer && room.images && room.images.length > 0) {
+    thumbnailsContainer.innerHTML = room.images
+      .map(
+        (img, index) => `
+          <button class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}">
+            <img src="${img}" alt="Thumbnail ${index + 1}" />
+          </button>
+        `
+      )
+      .join('');
+  }
+
+  // Update booking section with room types
+  if (room.rooms && room.rooms.length > 0) {
+    const roomTypeOptions = document.querySelector('.booking-room-type-options');
+    if (roomTypeOptions) {
+      const availableRooms = room.rooms.filter(r => r.status === 'available');
+
+      if (availableRooms.length > 0) {
+        roomTypeOptions.innerHTML = availableRooms
+          .map(
+            (r, index) => `
+              <label class="booking-room-option">
+                <input type="radio" name="room-type" value="${r.roomType}" ${
+              index === 0 ? 'checked' : ''
+            } />
+                <div class="booking-room-type-content">
+                  <div class="booking-room-type-info">
+                    <span data-icon="${
+                      r.capacity > 1 ? 'userGroup' : 'user'
+                    }" data-icon-width="18" data-icon-height="18"></span>
+                    <span class="booking-room-type-label">${r.roomType}</span>
+                  </div>
+                  <span class="booking-room-type-price">₱${r.price.toLocaleString()}/mo</span>
+                </div>
+              </label>
+            `
+          )
+          .join('');
+      } else {
+        roomTypeOptions.innerHTML = `
+          <div style="padding: 1rem; text-align: center; color: #6b7280;">
+            No rooms currently available
+          </div>
+        `;
+      }
     }
-  });
+  } else {
+    // Fallback to old format with single/shared prices
+    const roomTypeOptions = document.querySelectorAll('.booking-room-option');
+    if (roomTypeOptions.length >= 2 && room.price && room.sharedPrice) {
+      const singlePrice = roomTypeOptions[0].querySelector('.booking-room-type-price');
+      if (singlePrice) singlePrice.textContent = `₱${room.price.toLocaleString()}/mo`;
 
-  // Update booking section
-  const roomTypeOptions = document.querySelectorAll('.booking-room-option');
-  if (roomTypeOptions.length >= 2) {
-    const singlePrice = roomTypeOptions[0].querySelector('.booking-room-type-price');
-    if (singlePrice) singlePrice.textContent = `₱${room.price.toLocaleString()}/mo`;
+      const sharedPrice = roomTypeOptions[1].querySelector('.booking-room-type-price');
+      if (sharedPrice) sharedPrice.textContent = `₱${room.sharedPrice.toLocaleString()}/mo`;
+    }
+  }
 
-    const sharedPrice = roomTypeOptions[1].querySelector('.booking-room-type-price');
-    if (sharedPrice) sharedPrice.textContent = `₱${room.sharedPrice.toLocaleString()}/mo`;
+  // Update min stay and deposit
+  const minStayElement = document.querySelector('.quick-info-card:nth-child(3) .quick-info-value');
+  if (minStayElement) {
+    minStayElement.textContent = room.minStay || 'Contact for details';
+  }
+
+  const depositElements = document.querySelectorAll('.booking-info-item strong');
+  if (depositElements.length >= 3) {
+    depositElements[2].textContent = room.deposit || 'Contact for details';
   }
 
   // Update reviews
   const reviewsAverage = document.getElementById('reviews-average');
-  if (reviewsAverage) reviewsAverage.textContent = room.rating;
+  if (reviewsAverage) reviewsAverage.textContent = room.rating || '0';
 
   const reviewsTotal = document.getElementById('reviews-total');
-  if (reviewsTotal) reviewsTotal.textContent = room.reviews;
+  if (reviewsTotal) reviewsTotal.textContent = room.reviews || '0';
+
+  // Update rating breakdown - hide if no reviews
+  const ratingBreakdown = document.querySelector('.rating-breakdown');
+  if (ratingBreakdown && (!room.reviews || room.reviews === 0)) {
+    ratingBreakdown.style.display = 'none';
+  }
 }
 
 /**
  * Setup gallery functionality
  */
 function setupGallery() {
-  const room = roomData[state.roomId];
-  if (!room) return;
+  const room = state.roomData;
+  if (!room || !room.images || room.images.length === 0) return;
 
   const totalImages = room.images.length;
 
@@ -438,12 +649,16 @@ function setupGallery() {
  * Update gallery main image
  */
 function updateGalleryImage() {
-  const room = roomData[state.roomId];
-  if (!room) return;
+  const room = state.roomData;
+  if (!room || !room.images || room.images.length === 0) return;
 
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
-    mainImage.src = room.images[state.currentImageIndex];
+    mainImage.src =
+      room.images[state.currentImageIndex] || '../../../assets/images/placeholder-room.svg';
+    mainImage.onerror = function () {
+      this.src = '../../../assets/images/placeholder-room.svg';
+    };
   }
 
   // Update thumbnail active state

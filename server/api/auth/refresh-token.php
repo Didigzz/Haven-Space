@@ -66,15 +66,11 @@ $config = require __DIR__ . '/../../config/app.php';
 // Generate new access token
 $newAccessToken = JWT::generate($payload, $config['jwt_expiration']);
 
-// Set new access token cookie
-setcookie('access_token', $newAccessToken, [
-    'expires' => time() + $config['jwt_expiration'],
-    'path' => '/',
-    'domain' => '',
-    'secure' => false,
-    'httponly' => true,
-    'samesite' => 'Lax'
-]);
+// Generate new refresh token as well (rotate refresh tokens for better security)
+$newRefreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
+
+// Set new authentication cookies
+JWT::setAuthCookies($newAccessToken, $newRefreshToken, $config);
 
 echo json_encode([
     'success' => true,

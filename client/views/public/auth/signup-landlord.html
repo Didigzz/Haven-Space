@@ -300,6 +300,88 @@
             />
           </div>
 
+          <!-- Address Section -->
+          <div class="form-section-divider">
+            <h3 class="form-section-title">Property Address</h3>
+          </div>
+
+          <div class="form-group">
+            <label for="step3AddressSearch" class="form-label">Search for address</label>
+            <div class="address-search-wrapper">
+              <input
+                type="text"
+                id="step3AddressSearch"
+                name="step3AddressSearch"
+                class="form-input"
+                placeholder="Type an address or place..."
+                autocomplete="off"
+              />
+              <div class="address-search-results hidden" id="step3AddressResults"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="streetAddress" class="form-label">Street address *</label>
+            <input
+              type="text"
+              id="streetAddress"
+              name="streetAddress"
+              class="form-input"
+              placeholder="e.g., 123 Main Street"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="barangay" class="form-label">Barangay *</label>
+              <input
+                type="text"
+                id="barangay"
+                name="barangay"
+                class="form-input"
+                placeholder="e.g., Poblacion"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="city" class="form-label">City/Municipality *</label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                class="form-input"
+                placeholder="e.g., Quezon City"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="province" class="form-label">Province *</label>
+              <input
+                type="text"
+                id="province"
+                name="province"
+                class="form-input"
+                placeholder="e.g., Metro Manila"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="postalCode" class="form-label">Postal code</label>
+              <input
+                type="text"
+                id="postalCode"
+                name="postalCode"
+                class="form-input"
+                placeholder="e.g., 1100"
+                maxlength="4"
+              />
+            </div>
+          </div>
+
           <button type="submit" class="auth-btn-primary auth-btn-full">
             Continue to Payment Setup
           </button>
@@ -515,6 +597,10 @@
               <span class="review-label">Rooms:</span>
               <span class="review-value" id="reviewRooms"></span>
             </div>
+            <div class="review-item">
+              <span class="review-label">Full Address:</span>
+              <span class="review-value" id="reviewFullAddress"></span>
+            </div>
           </div>
 
           <div class="review-section">
@@ -557,6 +643,39 @@
       </div>
       <div class="signup-decorative-right">
         <img src="../../../assets/images/public/signup_lower_left.png" alt="" />
+      </div>
+    </div>
+
+    <!-- Terms Required Overlay -->
+    <div class="terms-overlay" id="termsOverlay">
+      <div class="terms-overlay-content">
+        <button class="terms-overlay-close" aria-label="Close notification">
+          <span
+            data-icon="xMark"
+            data-icon-width="24"
+            data-icon-height="24"
+            data-icon-stroke-width="2"
+          ></span>
+        </button>
+        <div class="terms-overlay-icon">
+          <span
+            data-icon="exclamationCircle"
+            data-icon-width="56"
+            data-icon-height="56"
+            data-icon-stroke-width="2"
+          ></span>
+        </div>
+        <h2 class="terms-overlay-title">Agreement Required</h2>
+        <p class="terms-overlay-message">
+          To create your account and list your property, you must agree to our Terms of Service.
+        </p>
+        <p class="terms-overlay-links">
+          Please check the box confirming you understand and agree to the
+          <a href="../terms-of-service.html">Terms of Service</a>, including the
+          <a href="../user-agreement.html">User Agreement</a> and
+          <a href="../privacy-policy.html">Privacy Policy</a>.
+        </p>
+        <button class="terms-overlay-btn" id="termsOverlayOk">Got it, I'll check the box</button>
       </div>
     </div>
 

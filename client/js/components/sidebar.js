@@ -4,7 +4,6 @@
  */
 
 import { getIcon } from '../shared/icons.js';
-import { showToast } from '../shared/toast.js';
 
 // Navigation configurations per role
 const NAV_CONFIG = {
@@ -18,6 +17,7 @@ const NAV_CONFIG = {
           href: '../boarder/lease/index.html',
           icon: 'application',
         },
+        { label: 'Applications', href: '../boarder/applications/index.html', icon: 'clipboard' },
         { label: 'Messages', href: '../boarder/messages/index.html', icon: 'chat', badge: '3' },
         { label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' },
         {
@@ -58,7 +58,6 @@ const NAV_CONFIG = {
           dropdown: true,
           children: [
             { label: 'My Listings', href: '../landlord/listings/index.html', icon: 'list' },
-            { label: 'My Properties', href: '../landlord/myproperties/index.html', icon: 'list' },
             { label: 'Map View', href: '../landlord/maps/index.html', icon: 'map' },
             {
               label: 'Applications',
@@ -174,8 +173,8 @@ export function initSidebar(options = {}) {
  */
 function resolveBasePath() {
   const path = window.location.pathname;
-  if (path.includes('/client/views/')) {
-    return '/client';
+  if (path.includes('/views/')) {
+    return '';
   }
   if (path.includes('/frontend/views/')) {
     return '/frontend';
@@ -440,31 +439,24 @@ function setupLogoutHandler() {
       // Clear authentication data
       localStorage.removeItem('user');
 
-      // Show success toast before redirect
-      showToast('You have successfully logged out', 'success', 3000);
+      // Store logout message in sessionStorage to display after redirect
+      sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+      sessionStorage.setItem('logoutToastType', 'success');
 
-      // Redirect to login page after short delay to show toast
-      setTimeout(() => {
-        const pathname = window.location.pathname;
+      // Redirect to login page
+      const pathname = window.location.pathname;
 
-        // Determine correct login path based on current URL structure
-        if (pathname.includes('/dist/')) {
-          // Production mode (dist): auth folder is at root
-          window.location.href = '/auth/login.html';
-        } else if (pathname.includes('/client/views/')) {
-          // Development mode with /client path
-          window.location.href = '/client/views/public/auth/login.html';
-        } else if (pathname.includes('/frontend/views/')) {
-          // Development mode with /frontend path
-          window.location.href = '/frontend/views/public/auth/login.html';
-        } else if (pathname.includes('/views/')) {
-          // Direct /views access
-          window.location.href = '/views/public/auth/login.html';
-        } else {
-          // Fallback: try development path
-          window.location.href = '/client/views/public/auth/login.html';
-        }
-      }, 500);
+      // Determine correct login path based on current URL structure
+      if (pathname.includes('/dist/')) {
+        // Production mode (dist): auth folder is at root
+        window.location.href = '/auth/login.html';
+      } else if (pathname.includes('/views/')) {
+        // Direct /views access
+        window.location.href = '/views/public/auth/login.html';
+      } else {
+        // Fallback: try development path
+        window.location.href = '/views/public/auth/login.html';
+      }
     });
   }
 }

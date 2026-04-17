@@ -1,8 +1,4 @@
-/**
- * Edit Property - Photo Management & Property Updates
- * Handles editing property details and managing photos with drag-to-reorder
- */
-
+import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 
 // Maximum number of photos allowed
@@ -70,18 +66,24 @@ const sampleProperties = {
  * Initialize the edit property page
  */
 export function initEditProperty() {
-  // Get property ID from URL
+  // Get property ID or profile ID from URL
   const urlParams = new URLSearchParams(window.location.search);
   propertyId = urlParams.get('id');
+  const profileId = urlParams.get('profileId');
+  const isDraft = urlParams.get('draft') === 'true';
 
-  if (!propertyId) {
+  if (!propertyId && !profileId) {
     alert('No property specified. Redirecting to properties list.');
     window.location.href = '../myproperties/index.html';
     return;
   }
 
-  // Load property data
-  loadPropertyData(propertyId);
+  // Load property data (either from properties table or landlord profile)
+  if (isDraft && profileId) {
+    loadDraftPropertyData(profileId);
+  } else if (propertyId) {
+    loadPropertyData(propertyId);
+  }
 
   // Setup form handlers
   setupFormHandlers();
@@ -95,7 +97,7 @@ function loadPropertyData(id) {
 
   if (!property) {
     alert('Property not found. Redirecting to properties list.');
-    window.location.href = '../myproperties/index.html';
+    window.location.href = '../listings/index.html';
     return;
   }
 
@@ -138,6 +140,151 @@ function loadPropertyData(id) {
 }
 
 /**
+ * Load draft property data from landlord profile
+ */
+async function loadDraftPropertyData(profileId) {
+  try {
+    // Fetch user data to get userId
+    const userRes = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    if (!userRes.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+    const userData = await userRes.json();
+    const userId = userData.user.id;
+
+    // Fetch landlord profile data
+    const profileRes = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/profile.php?userId=${userId}`,
+      { credentials: 'include' }
+    );
+
+    if (!profileRes.ok) {
+      throw new Error('Failed to fetch profile data');
+    }
+
+    const profileData = await profileRes.json();
+
+    if (!profileData.success) {
+      throw new Error(profileData.error || 'Failed to load profile');
+    }
+
+    // Fetch property location data
+    let locationData = null;
+    try {
+      const locationRes = await fetch(
+        `${CONFIG.API_BASE_URL}/api/landlord/property-location.php?userId=${userId}`,
+        { credentials: 'include' }
+      );
+      if (locationRes.ok) {
+        const locData = await locationRes.json();
+        if (locData.success) {
+          locationData = locData.data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch location data:', err);
+    }
+
+    // Map profile data to property format
+    const property = {
+      id: profileData.data.profileId,
+      name: profileData.data.boardingHouseName,
+      type: mapPropertyTypeToForm(profileData.data.propertyType),
+      description: profileData.data.description || '',
+      price: 0, // Not set during signup
+      deposit: 0, // Not set during signup
+      rooms: profileData.data.totalRooms,
+      capacity: 2, // Default
+      status: 'inactive', // Draft status
+      address: locationData
+        ? [
+            locationData.address_line_1,
+            locationData.address_line_2,
+            locationData.city,
+            locationData.province,
+          ]
+            .filter(Boolean)
+            .join(', ')
+        : '',
+      city: locationData?.city || '',
+      province: locationData?.province || '',
+      latitude: locationData?.latitude || '',
+      longitude: locationData?.longitude || '',
+      amenities: [],
+      photos: [],
+      isDraft: true,
+    };
+
+    originalProperty = { ...property };
+    uploadedPhotos = [];
+
+    // Populate form fields
+    document.getElementById('property-name').value = property.name;
+    document.getElementById('property-type').value = property.type;
+    document.getElementById('property-description').value = property.description;
+    document.getElementById('property-price').value = property.price || '';
+    document.getElementById('property-deposit').value = property.deposit || '';
+    document.getElementById('property-capacity').value = property.capacity;
+    document.getElementById('property-status').value = property.status;
+    document.getElementById('property-address').value = property.address;
+    document.getElementById('property-city').value = property.city;
+    document.getElementById('property-province').value = property.province;
+    document.getElementById('property-latitude').value = property.latitude;
+    document.getElementById('property-longitude').value = property.longitude;
+
+    // Set room capacity
+    const roomCapacityInput = document.getElementById('room-capacity-input');
+    if (roomCapacityInput) {
+      roomCapacityInput.value = property.rooms;
+    }
+
+    // Update page title to indicate this is completing setup
+    const pageTitle = document.querySelector('.edit-property-header h1');
+    if (pageTitle) {
+      pageTitle.textContent = 'Complete Your Property Setup';
+    }
+
+    const pageDesc = document.querySelector('.edit-property-header p');
+    if (pageDesc) {
+      pageDesc.textContent = 'Add photos, pricing, and amenities to publish your property listing.';
+    }
+
+    // Update submit button text
+    const submitBtn = document.querySelector('.btn-submit');
+    if (submitBtn) {
+      submitBtn.innerHTML = `
+        ${getIcon('check', { width: 24, height: 24, strokeWidth: '2' })}
+        Publish Property
+      `;
+    }
+
+    // Render photo grid (empty for draft)
+    renderPhotoGrid();
+
+    // Initialize rooms data
+    initializeRoomsData();
+    renderRoomsList();
+  } catch (error) {
+    console.error('Error loading draft property:', error);
+    alert('Failed to load property data. Redirecting to properties list.');
+    window.location.href = '../myproperties/index.html';
+  }
+}
+
+/**
+ * Map database property type to form value
+ */
+function mapPropertyTypeToForm(dbType) {
+  const typeMap = {
+    'Single unit': 'boarding-house',
+    'Multi-unit': 'boarding-house',
+    Apartment: 'apartment',
+    Dormitory: 'dormitory',
+  };
+  return typeMap[dbType] || 'boarding-house';
+}
+
+/**
  * Setup form event handlers
  */
 function setupFormHandlers() {
@@ -175,10 +322,10 @@ function setupFormHandlers() {
     cancelBtn.addEventListener('click', () => {
       if (hasUnsavedChanges()) {
         if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-          window.location.href = '../myproperties/index.html';
+          window.location.href = '../listings/index.html';
         }
       } else {
-        window.location.href = '../myproperties/index.html';
+        window.location.href = '../listings/index.html';
       }
     });
   }
@@ -521,10 +668,9 @@ async function handleFormSubmit(e) {
 
   // Get room capacity from the room management section
   const roomCapacityInput = document.getElementById('room-capacity-input');
-  const propertyRooms = roomCapacityInput ? parseInt(roomCapacityInput.value) : 0;
+  const propertyRooms = roomCapacityInput ? parseInt(roomCapacityInput.value, 10) : 0;
 
   const data = {
-    id: propertyId,
     propertyName: formData.get('propertyName'),
     propertyType: propertyType,
     propertyDescription: formData.get('propertyDescription'),
@@ -539,14 +685,53 @@ async function handleFormSubmit(e) {
     propertyLatitude: formData.get('propertyLatitude'),
     propertyLongitude: formData.get('propertyLongitude'),
     amenities: [...formData.getAll('amenities'), ...customAmenities],
-    photos: uploadedPhotos.map(photo => photo.url || photo.preview),
   };
 
-  // Show success message
-  alert('Property updated successfully! (This is a demo - backend integration required)');
+  // Check if this is a draft property (from landlord profile)
+  const urlParams = new URLSearchParams(window.location.search);
+  const isDraft = urlParams.get('draft') === 'true';
 
-  // Redirect to properties page
-  window.location.href = '../myproperties/index.html';
+  try {
+    let response;
+
+    if (isDraft) {
+      // Create new property in properties table
+      response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+    } else {
+      // Update existing property
+      data.id = propertyId;
+      response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to save property');
+    }
+
+    // Show success message
+    alert(isDraft ? 'Property published successfully!' : 'Property updated successfully!');
+
+    // Redirect to my properties page
+    window.location.href = '../myproperties/index.html';
+  } catch (error) {
+    console.error('Failed to save property:', error);
+    alert('Failed to save property. Please try again.');
+  }
 }
 
 /**
@@ -566,7 +751,7 @@ function handleSaveDraft() {
     photos: uploadedPhotos.map(photo => photo.url || photo.preview),
   };
 
-  alert('Draft saved successfully! (This is a demo - backend integration required)');
+  window.location.href = 'index.html';
 }
 
 /**

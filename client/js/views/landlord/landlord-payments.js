@@ -7,149 +7,13 @@
  * - 🟢 Green: Paid or due date > 7 days away
  */
 
-// Sample payment data - In production, this would come from an API
-const paymentsData = [
-  {
-    id: 1,
-    boarderName: 'Maria Santos',
-    boarderEmail: 'maria.santos@email.com',
-    boarderInitials: 'MS',
-    property: 'Sunrise Dormitory',
-    room: 'Room 201',
-    amount: 5500,
-    dueDate: '2025-02-15',
-    paidDate: '2025-02-10',
-    status: 'paid',
-  },
-  {
-    id: 2,
-    boarderName: 'Jose Reyes',
-    boarderEmail: 'jose.reyes@email.com',
-    boarderInitials: 'JR',
-    property: 'Green Valley',
-    room: 'Room 105',
-    amount: 4500,
-    dueDate: '2025-02-05',
-    paidDate: null,
-    status: 'upcoming',
-  },
-  {
-    id: 3,
-    boarderName: 'Pedro Cruz',
-    boarderEmail: 'pedro.cruz@email.com',
-    boarderInitials: 'PC',
-    property: 'Metro Boarding',
-    room: 'Room 302',
-    amount: 5000,
-    dueDate: '2025-01-20',
-    paidDate: null,
-    status: 'overdue',
-  },
-  {
-    id: 4,
-    boarderName: 'Ana Garcia',
-    boarderEmail: 'ana.garcia@email.com',
-    boarderInitials: 'AG',
-    property: 'Sunrise Dormitory',
-    room: 'Room 305',
-    amount: 6000,
-    dueDate: '2025-02-28',
-    paidDate: null,
-    status: 'upcoming',
-  },
-  {
-    id: 5,
-    boarderName: 'Luis Torres',
-    boarderEmail: 'luis.torres@email.com',
-    boarderInitials: 'LT',
-    property: 'Green Valley',
-    room: 'Room 210',
-    amount: 4800,
-    dueDate: '2025-02-01',
-    paidDate: '2025-02-01',
-    status: 'paid',
-  },
-  {
-    id: 6,
-    boarderName: 'Carmen Lopez',
-    boarderEmail: 'carmen.lopez@email.com',
-    boarderInitials: 'CL',
-    property: 'Metro Boarding',
-    room: 'Room 108',
-    amount: 5200,
-    dueDate: '2025-01-25',
-    paidDate: null,
-    status: 'overdue',
-  },
-  {
-    id: 7,
-    boarderName: 'Ramon Diaz',
-    boarderEmail: 'ramon.diaz@email.com',
-    boarderInitials: 'RD',
-    property: 'Sunrise Dormitory',
-    room: 'Room 402',
-    amount: 5500,
-    dueDate: '2025-03-01',
-    paidDate: null,
-    status: 'upcoming',
-  },
-  {
-    id: 8,
-    boarderName: 'Elena Ramos',
-    boarderEmail: 'elena.ramos@email.com',
-    boarderInitials: 'ER',
-    property: 'Green Valley',
-    room: 'Room 315',
-    amount: 4700,
-    dueDate: '2025-02-10',
-    paidDate: '2025-02-08',
-    status: 'paid',
-  },
-];
+import CONFIG from '../../config.js';
 
-// Recent payment activity data
-const recentActivityData = [
-  {
-    id: 1,
-    boarderName: 'Maria Santos',
-    property: 'Sunrise Dormitory',
-    amount: 5500,
-    type: 'paid',
-    timestamp: '2 hours ago',
-  },
-  {
-    id: 2,
-    boarderName: 'Luis Torres',
-    property: 'Green Valley',
-    amount: 4800,
-    type: 'paid',
-    timestamp: '5 hours ago',
-  },
-  {
-    id: 3,
-    boarderName: 'Jose Reyes',
-    property: 'Green Valley',
-    amount: 4500,
-    type: 'reminder_sent',
-    timestamp: '1 day ago',
-  },
-  {
-    id: 4,
-    boarderName: 'Pedro Cruz',
-    property: 'Metro Boarding',
-    amount: 5000,
-    type: 'overdue_notice',
-    timestamp: '2 days ago',
-  },
-  {
-    id: 5,
-    boarderName: 'Elena Ramos',
-    property: 'Green Valley',
-    amount: 4700,
-    type: 'paid',
-    timestamp: '3 days ago',
-  },
-];
+// Payment data - loaded dynamically from API
+let paymentsData = [];
+
+// Payment activity data - loaded dynamically from API
+let paymentActivityData = [];
 
 /**
  * Calculate payment status based on due date
@@ -299,65 +163,62 @@ function createPaymentRow(payment) {
 }
 
 /**
- * Create activity item HTML
- * @param {Object} activity - Activity data object
- * @returns {string} HTML string for activity item
+ * Load payments from API
  */
-function createActivityItem(activity) {
-  let iconClass = 'icon-blue';
-  let iconSvg = '';
-  let activityText = '';
-
-  switch (activity.type) {
-    case 'paid':
-      iconClass = 'icon-green';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      `;
-      activityText = `<strong>${activity.boarderName}</strong> paid for ${activity.property}`;
-      break;
-    case 'reminder_sent':
-      iconClass = 'icon-orange';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      `;
-      activityText = `Reminder sent to <strong>${activity.boarderName}</strong>`;
-      break;
-    case 'overdue_notice':
-      iconClass = 'icon-red';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      `;
-      activityText = `Overdue notice for <strong>${activity.boarderName}</strong>`;
-      break;
-    default:
-      iconClass = 'icon-blue';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      `;
-      activityText = `Activity for <strong>${activity.boarderName}</strong>`;
+async function loadPayments() {
+  const tableBody = document.getElementById('paymentsTableBody');
+  if (!tableBody) {
+    return;
   }
 
-  return `
-    <div class="payment-activity-item">
-      <div class="payment-activity-icon ${iconClass}">
-        ${iconSvg}
-      </div>
-      <div class="payment-activity-content">
-        <div class="payment-activity-text">${activityText}</div>
-        <div class="payment-activity-meta">${activity.timestamp}</div>
-      </div>
-      <div class="payment-activity-amount">${formatCurrency(activity.amount)}</div>
-    </div>
-  `;
+  try {
+    tableBody.innerHTML = `
+      <tr class="loading-row">
+        <td colspan="6" style="text-align: center; padding: 2rem">Loading payments...</td>
+      </tr>
+    `;
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payments.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payments');
+    }
+
+    const result = await response.json();
+
+    if (result.data && Array.isArray(result.data)) {
+      // Transform API data to match frontend format
+      paymentsData = result.data.map(payment => ({
+        id: payment.id,
+        boarderName: `${payment.boarder_first_name} ${payment.boarder_last_name}`,
+        boarderEmail: payment.boarder_email,
+        boarderInitials: `${payment.boarder_first_name[0]}${payment.boarder_last_name[0]}`,
+        property: payment.property_title,
+        room: payment.room_title,
+        amount: parseFloat(payment.amount) + parseFloat(payment.late_fee || 0),
+        dueDate: payment.due_date,
+        paidDate: payment.paid_date,
+        status: payment.status,
+        paymentMethod: payment.payment_method,
+        referenceNumber: payment.reference_number,
+        notes: payment.notes,
+      }));
+
+      renderPayments();
+      populatePropertyFilter();
+    } else {
+      renderEmptyPaymentsState();
+    }
+  } catch (error) {
+    console.error('Failed to load payments:', error);
+    renderPaymentsError();
+  }
 }
 
 /**
@@ -369,21 +230,164 @@ function renderPayments() {
     return;
   }
 
+  if (paymentsData.length === 0) {
+    renderEmptyPaymentsState();
+    return;
+  }
+
   tableBody.innerHTML = paymentsData.map(payment => createPaymentRow(payment)).join('');
 }
 
 /**
- * Render recent payment activity
+ * Render empty state when no payments
  */
-function renderActivity() {
+function renderEmptyPaymentsState() {
+  const tableBody = document.getElementById('paymentsTableBody');
+  if (!tableBody) {
+    return;
+  }
+
+  tableBody.innerHTML = `
+    <tr class="empty-row">
+      <td colspan="6" style="text-align: center; padding: 2rem">
+        No payments found. Payments will appear here when boarders are accepted.
+      </td>
+    </tr>
+  `;
+}
+
+/**
+ * Render error state when API fails
+ */
+function renderPaymentsError() {
+  const tableBody = document.getElementById('paymentsTableBody');
+  if (!tableBody) {
+    return;
+  }
+
+  tableBody.innerHTML = `
+    <tr class="error-row">
+      <td colspan="6" style="text-align: center; padding: 2rem; color: var(--dashboard-error)">
+        Failed to load payments. Please try again later.
+      </td>
+    </tr>
+  `;
+}
+
+/**
+ * Load recent payment activity from API
+ */
+async function loadPaymentActivity() {
   const activityList = document.getElementById('paymentActivityList');
   if (!activityList) {
     return;
   }
 
-  activityList.innerHTML = recentActivityData
-    .map(activity => createActivityItem(activity))
+  try {
+    activityList.innerHTML = `
+      <div class="payment-activity-loading">
+        <p class="payment-activity-text">Loading payment activity...</p>
+      </div>
+    `;
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/activity.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment activity');
+    }
+
+    const result = await response.json();
+
+    if (result.data && result.data.activities) {
+      paymentActivityData = result.data.activities.filter(
+        activity => activity.type === 'payment_received' || activity.type === 'payment_reminder'
+      );
+      renderPaymentActivity(activityList);
+    } else {
+      renderEmptyActivityState(activityList);
+    }
+  } catch (error) {
+    console.error('Failed to load payment activity:', error);
+    renderActivityError(activityList);
+  }
+}
+
+/**
+ * Render payment activity list
+ */
+function renderPaymentActivity(container) {
+  if (!paymentActivityData || paymentActivityData.length === 0) {
+    renderEmptyActivityState(container);
+    return;
+  }
+
+  container.innerHTML = paymentActivityData
+    .map(activity => createPaymentActivityItem(activity))
     .join('');
+}
+
+/**
+ * Create payment activity item HTML
+ */
+function createPaymentActivityItem(activity) {
+  const isPayment = activity.type === 'payment_received';
+  const iconClass = isPayment ? 'icon-green' : 'icon-orange';
+  const iconSvg = isPayment
+    ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>`;
+
+  return `
+    <div class="payment-activity-item">
+      <div class="payment-activity-icon ${iconClass}">
+        ${iconSvg}
+      </div>
+      <div class="payment-activity-content">
+        <div class="payment-activity-text">${activity.description}</div>
+        <div class="payment-activity-meta">${activity.time_ago}</div>
+      </div>
+      ${
+        activity.amount
+          ? `<div class="payment-activity-amount">${formatCurrency(activity.amount)}</div>`
+          : ''
+      }
+    </div>
+  `;
+}
+
+/**
+ * Render empty state when no activities
+ */
+function renderEmptyActivityState(container) {
+  container.innerHTML = `
+    <div class="payment-activity-empty">
+      <p class="payment-activity-text">
+        No recent payment activity. Payment activities will appear here when boarders make payments or receive reminders.
+      </p>
+    </div>
+  `;
+}
+
+/**
+ * Render error state when API fails
+ */
+function renderActivityError(container) {
+  container.innerHTML = `
+    <div class="payment-activity-error">
+      <p class="payment-activity-text">
+        Unable to load payment activity. Please try again later.
+      </p>
+    </div>
+  `;
 }
 
 /**
@@ -405,11 +409,15 @@ function filterByStatus(status) {
 
     if (status === 'all') {
       row.style.display = '';
-    } else if (status === 'paid' && payment.paidDate) {
+    } else if (status === 'paid' && payment.status === 'paid') {
       row.style.display = '';
-    } else if (status === 'upcoming' && !payment.paidDate && statusInfo.color === 'orange') {
+    } else if (
+      status === 'upcoming' &&
+      payment.status === 'pending' &&
+      statusInfo.color === 'orange'
+    ) {
       row.style.display = '';
-    } else if (status === 'overdue' && !payment.paidDate && statusInfo.color === 'red') {
+    } else if (status === 'overdue' && payment.status === 'overdue') {
       row.style.display = '';
     } else {
       row.style.display = 'none';
@@ -419,9 +427,9 @@ function filterByStatus(status) {
 
 /**
  * Filter payments by property
- * @param {string} property - Property to filter by
+ * @param {string} propertyName - Property name to filter by
  */
-function filterByProperty(property) {
+function filterByProperty(propertyName) {
   const rows = document.querySelectorAll('#paymentsTableBody tr');
 
   rows.forEach(row => {
@@ -432,12 +440,44 @@ function filterByProperty(property) {
       return;
     }
 
-    if (property === 'all' || payment.property.toLowerCase().includes(property)) {
+    if (
+      propertyName === 'all' ||
+      payment.property.toLowerCase().includes(propertyName.toLowerCase())
+    ) {
       row.style.display = '';
     } else {
       row.style.display = 'none';
     }
   });
+}
+
+/**
+ * Populate property filter dropdown with unique properties
+ */
+function populatePropertyFilter() {
+  const propertyFilter = document.getElementById('propertyFilter');
+  if (!propertyFilter || paymentsData.length === 0) {
+    return;
+  }
+
+  // Get unique properties
+  const properties = [...new Set(paymentsData.map(p => p.property))];
+
+  // Keep "All Properties" option and add unique properties
+  const currentValue = propertyFilter.value;
+  propertyFilter.innerHTML = '<option value="all">All Properties</option>';
+
+  properties.forEach(property => {
+    const option = document.createElement('option');
+    option.value = property.toLowerCase().replace(/\s+/g, '-');
+    option.textContent = property;
+    propertyFilter.appendChild(option);
+  });
+
+  // Restore previous selection if it exists
+  if (currentValue) {
+    propertyFilter.value = currentValue;
+  }
 }
 
 /**
@@ -600,25 +640,90 @@ function initEventListeners() {
 }
 
 /**
+ * Reload payments after recording
+ */
+async function reloadPayments() {
+  await loadPayments();
+  await loadPaymentSummary();
+}
+
+/**
+ * Load payment summary statistics
+ */
+async function loadPaymentSummary() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payment-summary.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment summary');
+    }
+
+    const result = await response.json();
+
+    if (result.data) {
+      updateSummaryCards(result.data);
+    }
+  } catch (error) {
+    console.error('Failed to load payment summary:', error);
+  }
+}
+
+/**
+ * Update summary cards with real data
+ */
+function updateSummaryCards(summary) {
+  // Paid on time
+  const paidOnTimeValue = document.querySelector('.payment-summary-green .payment-summary-value');
+  if (paidOnTimeValue) {
+    paidOnTimeValue.textContent = summary.paid_on_time || 0;
+  }
+
+  // Due soon
+  const dueSoonValue = document.querySelector('.payment-summary-orange .payment-summary-value');
+  if (dueSoonValue) {
+    dueSoonValue.textContent = summary.due_soon || 0;
+  }
+
+  // Overdue
+  const overdueValue = document.querySelector('.payment-summary-red .payment-summary-value');
+  if (overdueValue) {
+    overdueValue.textContent = summary.overdue || 0;
+  }
+
+  // Total revenue
+  const revenueValue = document.querySelector('.payment-summary-blue .payment-summary-value');
+  if (revenueValue) {
+    revenueValue.textContent = formatCurrency(summary.total_revenue || 0);
+  }
+}
+
+/**
  * Initialize the payments page
  */
 function initPaymentsPage() {
-  // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      renderPayments();
-      renderActivity();
+      loadPayments();
+      loadPaymentSummary();
+      loadPaymentActivity();
       initEventListeners();
     });
   } else {
-    renderPayments();
-    renderActivity();
+    loadPayments();
+    loadPaymentSummary();
+    loadPaymentActivity();
     initEventListeners();
   }
 }
 
 // Export for use in main.js
-export { initPaymentsPage };
+export { initPaymentsPage, reloadPayments };
 
 // Auto-initialize if this script is loaded directly
 initPaymentsPage();
