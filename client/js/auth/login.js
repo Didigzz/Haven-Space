@@ -73,8 +73,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await response.json();
 
       if (response.ok) {
-        // Store user info (token is now in httpOnly cookie)
+        // Store user info and token
         localStorage.setItem('user', JSON.stringify(result.user));
+        if (result.access_token) {
+          localStorage.setItem('token', result.access_token);
+        }
 
         // Redirect based on role - detect Apache setup vs GitHub Pages
         const pathname = window.location.pathname;

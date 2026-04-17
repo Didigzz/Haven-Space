@@ -358,8 +358,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          // Store user info
+          // Store user info and token
           localStorage.setItem('user', JSON.stringify(result.user));
+          if (result.access_token) {
+            localStorage.setItem('token', result.access_token);
+          }
 
           // Redirect based on role
           const basePath = getBasePath();
@@ -434,6 +437,9 @@ document.addEventListener('DOMContentLoaded', function () {
           if (loginResponse.ok) {
             const loginResult = await loginResponse.json();
             localStorage.setItem('user', JSON.stringify(loginResult.user));
+            if (loginResult.access_token) {
+              localStorage.setItem('token', loginResult.access_token);
+            }
 
             // Mark as new landlord for welcome message display
             localStorage.setItem('landlordStatus', 'new');
