@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Account Verification - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-verification.css" />
+  </head>
+  <body data-view="landlord-verification">
+    <!-- Navigation -->
+    <nav id="navbar"></nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"></aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <div class="page-header-content">
+          <h1 class="page-title">Account Verification</h1>
+          <p class="page-subtitle">Complete your verification to start listing properties</p>
+        </div>
+      </div>
+
+      <div class="verification-container">
+        <!-- Verification Status Overview -->
+        <div class="verification-status-card" id="statusCard">
+          <div class="status-header">
+            <div class="status-icon" id="statusIcon">
+              <span data-icon="clock" data-icon-width="32" data-icon-height="32"></span>
+            </div>
+            <div class="status-content">
+              <h2 class="status-title" id="statusTitle">Verification in Progress</h2>
+              <p class="status-message" id="statusMessage">
+                Please complete all verification steps below.
+              </p>
+            </div>
+          </div>
+
+          <div class="status-progress" id="statusProgress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <span class="progress-text" id="progressText">0% Complete</span>
+          </div>
+        </div>
+
+        <!-- Verification Steps -->
+        <div class="verification-steps">
+          <!-- Step 1: Email Verification -->
+          <div class="verification-step" id="emailStep">
+            <div class="step-header">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h3 class="step-title">Email Verification</h3>
+                <p class="step-description">Verify your email address to secure your account</p>
+              </div>
+              <div class="step-status" id="emailStatus">
+                <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
+              </div>
+            </div>
+
+            <div class="step-body" id="emailBody">
+              <div class="step-actions">
+                <button class="btn btn-primary" id="resendEmailBtn">
+                  Resend Verification Email
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Document Upload -->
+          <div class="verification-step" id="documentStep">
+            <div class="step-header">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h3 class="step-title">Identity Verification</h3>
+                <p class="step-description">Upload required documents to verify your identity</p>
+              </div>
+              <div class="step-status" id="documentStatus">
+                <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
+              </div>
+            </div>
+
+            <div class="step-body" id="documentBody">
+              <div class="document-requirements">
+                <h4>Required Documents:</h4>
+                <ul class="requirements-list">
+                  <li>Government-issued ID (front side)</li>
+                  <li>Government-issued ID (back side)</li>
+                  <li>Selfie holding your ID</li>
+                </ul>
+
+                <h4>Optional Documents (recommended):</h4>
+                <ul class="requirements-list">
+                  <li>Business registration certificate</li>
+                  <li>Tax identification documents</li>
+                  <li>Property ownership documents</li>
+                  <li>Business permit</li>
+                </ul>
+              </div>
+
+              <div class="document-upload-section">
+                <div class="upload-grid" id="uploadGrid">
+                  <!-- Document upload items will be populated by JavaScript -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Admin Review -->
+          <div class="verification-step" id="reviewStep">
+            <div class="step-header">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <h3 class="step-title">Admin Review</h3>
+                <p class="step-description">
+                  Our team will review your documents (usually within 24-48 hours)
+                </p>
+              </div>
+              <div class="step-status" id="reviewStatus">
+                <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
+              </div>
+            </div>
+
+            <div class="step-body" id="reviewBody">
+              <div class="review-info">
+                <p>
+                  Once you've uploaded all required documents, our verification team will review
+                  your submission. You'll receive an email notification when the review is complete.
+                </p>
+
+                <div class="review-timeline">
+                  <div class="timeline-item">
+                    <span class="timeline-icon">📋</span>
+                    <span class="timeline-text">Documents submitted</span>
+                  </div>
+                  <div class="timeline-item">
+                    <span class="timeline-icon">👀</span>
+                    <span class="timeline-text">Under review</span>
+                  </div>
+                  <div class="timeline-item">
+                    <span class="timeline-icon">✅</span>
+                    <span class="timeline-text">Approved & activated</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verification Notes -->
+        <div class="verification-notes" id="verificationNotes" style="display: none">
+          <h3>Verification Notes</h3>
+          <div class="notes-content" id="notesContent"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Document Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="uploadModalTitle">Upload Document</h3>
+          <button class="modal-close" id="uploadModalClose">
+            <span data-icon="xMark" data-icon-width="24" data-icon-height="24"></span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form class="upload-form" id="uploadForm">
+            <input type="hidden" id="documentType" name="documentType" />
+
+            <div class="form-group">
+              <label class="form-label">Select file to upload</label>
+              <div class="file-upload-area" id="fileUploadArea">
+                <input
+                  type="file"
+                  id="documentFile"
+                  name="document"
+                  accept="image/*,.pdf"
+                  required
+                />
+                <div class="upload-placeholder">
+                  <span data-icon="cloudArrowUp" data-icon-width="48" data-icon-height="48"></span>
+                  <p>Click to select file or drag and drop</p>
+                  <p class="upload-hint">Supported formats: JPEG, PNG, WebP, PDF (max 10MB)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="uploadCancelBtn">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="uploadSubmitBtn">
+                Upload Document
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../../../js/views/landlord/verification.js"></script>
+  </body>
+</html>
