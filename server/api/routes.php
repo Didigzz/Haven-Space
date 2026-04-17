@@ -207,6 +207,10 @@ Router::post('/api/landlord/upload-photos', function() {
     require_once __DIR__ . '/landlord/upload-photos.php';
 });
 
+Router::post('/api/landlord/listings/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/listing-photos.php';
+});
+
 // ============================================
 // BOARDER ROUTES - LANDLORD
 // ============================================
