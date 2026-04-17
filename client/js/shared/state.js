@@ -79,5 +79,40 @@ export function clearState() {
   window.dispatchEvent(new CustomEvent('statechange', { detail: currentState }));
 }
 
+/**
+ * Create headers for authenticated API requests
+ * @param {Object} additionalHeaders - Additional headers to include
+ * @returns {Object} Headers object with Authorization token if available
+ */
+export function getAuthHeaders(additionalHeaders = {}) {
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...additionalHeaders,
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+/**
+ * Make an authenticated API request
+ * @param {string} url - API endpoint URL
+ * @param {Object} options - Fetch options (method, body, etc.)
+ * @returns {Promise<Response>} Fetch response
+ */
+export async function authenticatedFetch(url, options = {}) {
+  const headers = getAuthHeaders(options.headers);
+
+  return fetch(url, {
+    credentials: 'include',
+    ...options,
+    headers,
+  });
+}
+
 // Load state on module init
 loadState();
