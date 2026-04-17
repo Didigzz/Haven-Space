@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+    phone_number VARCHAR(20) NULL,
     google_id VARCHAR(255) UNIQUE,
     google_token TEXT,
     google_refresh_token TEXT,
@@ -14,7 +15,12 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('boarder', 'landlord', 'admin') NOT NULL,
     country VARCHAR(100),
     is_verified BOOLEAN DEFAULT FALSE,
-    account_status ENUM('active', 'suspended', 'banned') NOT NULL DEFAULT 'active',
+    email_verified BOOLEAN DEFAULT FALSE,
+    email_verification_token VARCHAR(255) NULL,
+    email_verification_expires TIMESTAMP NULL,
+    account_status ENUM('active', 'suspended', 'banned', 'pending_verification') NOT NULL DEFAULT 'active',
+    verification_status ENUM('pending', 'approved', 'rejected') NULL DEFAULT NULL,
+    verification_notes TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL
@@ -61,9 +67,15 @@ CREATE TABLE IF NOT EXISTS landlord_profiles (
     house_rules_file_url VARCHAR(255) NULL,
     house_rules_file_name VARCHAR(255) NULL,
     house_rules_file_size INT NULL,
+    verification_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    verification_submitted_at TIMESTAMP NULL,
+    verification_reviewed_at TIMESTAMP NULL,
+    verification_reviewed_by INT NULL,
+    verification_notes TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (verification_reviewed_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Property Locations Table
@@ -150,6 +162,44 @@ CREATE TABLE IF NOT EXISTS landlord_verification_log (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (landlord_user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Landlord Verification Documents Table
+CREATE TABLE IF NOT EXISTS landlord_verification_documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    document_type ENUM('government_id_front', 'government_id_back', 'selfie_with_id', 'business_registration', 'tax_id', 'property_title', 'tax_declaration', 'business_permit', 'property_photos') NOT NULL,
+    file_url VARCHAR(500) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_size INT NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    upload_status ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
+    rejection_reason TEXT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    verified_at TIMESTAMP NULL,
+    verified_by INT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_user_document_type (user_id, document_type)
+);
+
+-- Boarder Profile Enhancement Table
+CREATE TABLE IF NOT EXISTS boarder_profiles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    emergency_contact_name VARCHAR(255) NULL,
+    emergency_contact_phone VARCHAR(20) NULL,
+    emergency_contact_relationship VARCHAR(100) NULL,
+    budget_min DECIMAL(10, 2) NULL,
+    budget_max DECIMAL(10, 2) NULL,
+    preferred_location VARCHAR(255) NULL,
+    move_in_date DATE NULL,
+    occupation VARCHAR(255) NULL,
+    bio TEXT NULL,
+    profile_completed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS property_reports (
@@ -276,4 +326,20 @@ CREATE TABLE IF NOT EXISTS notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_user_unread (user_id, is_read),
     INDEX idx_created_at (created_at)
+);
+
+-- Saved Listings Table
+CREATE TABLE IF NOT EXISTS saved_listings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    boarder_id INT NOT NULL,
+    property_id INT NOT NULL,
+    room_id INT NULL,
+    saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    UNIQUE KEY unique_boarder_property (boarder_id, property_id),
+    FOREIGN KEY (boarder_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE SET NULL,
+    INDEX idx_boarder_saved (boarder_id, saved_at),
+    INDEX idx_property_saved (property_id)
 );
