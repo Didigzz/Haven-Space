@@ -584,6 +584,15 @@
 
     <!-- Map Initialization Script -->
     <script>
+      // Determine API base URL (mirrors config.js logic)
+      const FIND_ROOM_MAP_API_BASE = window.location.origin.includes('github.io')
+        ? 'https://havenspace.com/server/api'
+        : window.location.origin.includes('localhost') ||
+          window.location.origin.includes('127.0.0.1') ||
+          window.location.hostname === 'localhost'
+        ? 'http://localhost:8000'
+        : '/server/api';
+
       // Initialize the map when page loads
       document.addEventListener('DOMContentLoaded', () => {
         // Default location (Malaybalay City, Mindanao, Philippines)
@@ -595,44 +604,67 @@
         // Add OpenStreetMap tiles
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
 
-        // Sample property data (replace with API call)
-        const sampleProperties = [
-          {
-            id: 1,
-            title: 'Sunrise Dormitory',
-            location: 'Sampaloc, Manila',
-            price: 5500,
-            lat: 8.15,
-            lng: 125.126,
-          },
-          {
-            id: 2,
-            title: 'Green Valley Boarding House',
-            location: 'Diliman, Quezon City',
-            price: 4500,
-            lat: 8.148,
-            lng: 125.124,
-          },
-          {
-            id: 3,
-            title: 'Cozy Student Dorm',
-            location: 'Near University Ave',
-            price: 6000,
-            lat: 8.151,
-            lng: 125.127,
-          },
-        ];
-
-        // Add property markers
-        sampleProperties.forEach(property => {
-          L.marker([property.lat, property.lng]).addTo(map).bindPopup(`
-              <div style="padding: 8px;">
-                <h3 style="margin: 0 0 8px 0;">${property.title}</h3>
-                <p style="margin: 0; color: #666;">${property.location}</p>
-                <p style="margin: 8px 0 0 0; font-weight: bold; color: #4a7c23;">₱${property.price.toLocaleString()}/month</p>
-              </div>
-            `);
+        // Custom pin icon (matches maps.html)
+        const pinIcon = L.icon({
+          iconUrl: '../../assets/images/pin.png',
+          iconSize: [40, 50],
+          iconAnchor: [20, 50],
+          popupAnchor: [0, -50],
         });
+
+        /**
+         * Fetch published properties from the backend and place pins on the map.
+         * Only properties with valid latitude/longitude are shown.
+         */
+        async function loadPropertyPins() {
+          try {
+            const response = await fetch(`${FIND_ROOM_MAP_API_BASE}/api/rooms/public?limit=100`);
+
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            const properties = (result.data && result.data.properties) || [];
+
+            // Filter to only properties that have coordinates
+            const geoProperties = properties.filter(p => p.latitude && p.longitude);
+
+            geoProperties.forEach(property => {
+              const location = property.city || property.address || '';
+              const price = Number(property.price || 0);
+
+              const popupContent = `
+                <div style="padding: 8px; min-width: 180px;">
+                  <h3 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: #1a1a1a;">${
+                    property.title
+                  }</h3>
+                  <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">📍 ${location}</p>
+                  <p style="margin: 6px 0 8px 0; font-size: 15px; font-weight: 700; color: #4a7c23;">₱${price.toLocaleString()}/month</p>
+                  <a href="find-a-room.html" style="display: block; text-align: center; padding: 6px; background: #4a7c23; color: #fff; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none;">View Listings</a>
+                </div>
+              `;
+
+              L.marker([parseFloat(property.latitude), parseFloat(property.longitude)], {
+                icon: pinIcon,
+              })
+                .addTo(map)
+                .bindPopup(popupContent, { maxWidth: 240 });
+            });
+
+            // If we got properties with coordinates, fit the map to show them all
+            if (geoProperties.length > 0) {
+              const bounds = L.latLngBounds(
+                geoProperties.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)])
+              );
+              map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+            }
+          } catch (error) {
+            console.warn('Find-room map: failed to load property pins', error);
+          }
+        }
+
+        loadPropertyPins();
 
         // Zoom controls
         document.getElementById('zoom-in')?.addEventListener('click', () => map.zoomIn());
@@ -647,7 +679,7 @@
                 map.setView(userLocation, 16);
                 L.marker(userLocation).addTo(map).bindPopup('You are here').openPopup();
               },
-              error => {
+              () => {
                 alert('Unable to get your location. Please enable location permissions.');
               }
             );
