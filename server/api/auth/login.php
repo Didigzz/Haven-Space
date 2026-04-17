@@ -77,6 +77,7 @@ try {
 
         echo json_encode([
             'success' => true,
+            'access_token' => $accessToken,
             'user' => [
                 'id' => $user['id'],
                 'first_name' => $user['first_name'],
