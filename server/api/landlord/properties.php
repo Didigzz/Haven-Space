@@ -228,6 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             // Get amenities for all properties
             $propertyIds = array_column($properties, 'id');
             $amenitiesMap = [];
+            $photosMap = [];
             if (!empty($propertyIds)) {
                 $placeholders = implode(',', array_fill(0, count($propertyIds), '?'));
                 $amenitiesStmt = $pdo->prepare("
@@ -243,10 +244,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     }
                     $amenitiesMap[$row['property_id']][] = $row['amenity_name'];
                 }
+
+                // Get photos for all properties
+                try {
+                    $photosStmt = $pdo->prepare("
+                        SELECT property_id, photo_url, is_cover
+                        FROM property_photos
+                        WHERE property_id IN ($placeholders)
+                        ORDER BY property_id, display_order ASC
+                    ");
+                    $photosStmt->execute($propertyIds);
+                    $photosRows = $photosStmt->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($photosRows as $row) {
+                        $pid = $row['property_id'];
+                        if (!isset($photosMap[$pid])) {
+                            $photosMap[$pid] = [];
+                        }
+                        $photosMap[$pid][] = $row['photo_url'];
+                    }
+                } catch (PDOException $e) {
+                    // property_photos table may not exist yet
+                    error_log('Photos fetch error: ' . $e->getMessage());
+                }
             }
 
             // Transform data for frontend
-            $transformedProperties = array_map(function($property) use ($amenitiesMap) {
+            $transformedProperties = array_map(function($property) use ($amenitiesMap, $photosMap) {
                 // Use property_total_rooms from property_details if available, otherwise fall back to rooms_count
                 $totalRooms = $property['property_total_rooms'] ? intval($property['property_total_rooms']) : intval($property['rooms_count']);
                 $occupiedRooms = intval($property['occupied_rooms']);
@@ -288,6 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'monthly_revenue' => floatval($property['monthly_revenue']),
                     'created_at' => $property['created_at'],
                     'amenities' => $amenitiesMap[$property['id']] ?? [],
+                    'photos' => $photosMap[$property['id']] ?? [],
                 ];
             }, $properties);
 

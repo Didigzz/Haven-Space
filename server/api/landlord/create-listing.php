@@ -159,60 +159,8 @@ try {
         error_log('property_details insert failed: ' . $e->getMessage());
     }
 
-    // Handle photo uploads
-    $uploadedPhotos = [];
-    if (!empty($_FILES['propertyPhotos']) && !empty($_FILES['propertyPhotos']['name'][0])) {
-        $uploadDir = __DIR__ . '/../../storage/properties/' . $propertyId . '/';
-
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        $files = $_FILES['propertyPhotos'];
-        $fileCount = count($files['name']);
-
-        for ($i = 0; $i < $fileCount; $i++) {
-            if ($files['error'][$i] === UPLOAD_ERR_OK) {
-                $tmpName = $files['tmp_name'][$i];
-                $originalName = $files['name'][$i];
-                $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-                $newName = 'listing_' . ($i + 1) . '_' . time() . '.' . $ext;
-                $targetPath = $uploadDir . $newName;
-
-                if (move_uploaded_file($tmpName, $targetPath)) {
-                    $uploadedPhotos[] = '/storage/properties/' . $propertyId . '/' . $newName;
-                }
-            }
-        }
-    }
-
-    // Insert photos if any uploaded
-    if (!empty($uploadedPhotos)) {
-        $photoStmt = $pdo->prepare("
-            INSERT INTO property_photos (
-                property_id,
-                photo_url,
-                is_cover,
-                sort_order,
-                created_at
-            ) VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                NOW()
-            )
-        ");
-
-        foreach ($uploadedPhotos as $index => $photoUrl) {
-            $photoStmt->execute([
-                $propertyId,
-                $photoUrl,
-                $index === 0 ? 1 : 0,
-                $index,
-            ]);
-        }
-    }
+    // Photos are uploaded via a separate POST /api/landlord/listings/{id}/photos request
+    // after the property is created (see listing-photos.php)
 
     // Create rooms for the property
     $roomsCount = intval($input['propertyRooms']);
