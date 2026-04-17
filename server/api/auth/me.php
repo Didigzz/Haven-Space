@@ -8,6 +8,42 @@ header('Content-Type: application/json');
 use App\Core\Auth\JWT;
 use App\Core\Database\Connection;
 
+/**
+ * Determine boarder status based on applications
+ */
+function determineBoarderStatus($pdo, $boarderId) {
+    // Check for accepted applications
+    $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $acceptedStmt->execute([$boarderId, 'accepted']);
+    $acceptedCount = $acceptedStmt->fetchColumn();
+    
+    if ($acceptedCount > 0) {
+        return 'accepted';
+    }
+    
+    // Check for pending applications
+    $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $pendingStmt->execute([$boarderId, 'pending']);
+    $pendingCount = $pendingStmt->fetchColumn();
+    
+    if ($pendingCount > 0) {
+        return 'applied_pending';
+    }
+    
+    // Check for any applications (rejected/cancelled)
+    $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
+    $anyStmt->execute([$boarderId]);
+    $anyCount = $anyStmt->fetchColumn();
+    
+    if ($anyCount > 0) {
+        // Has applications but none are pending or accepted (likely rejected)
+        return 'rejected';
+    }
+    
+    // No applications at all
+    return 'new';
+}
+
 $token = $_COOKIE['access_token'] ?? '';
 $simulatedId = $_SERVER['HTTP_X_USER_ID'] ?? $_GET['user_id'] ?? null;
 
@@ -80,6 +116,11 @@ if ($userRow) {
         'account_status' => $userRow['account_status'] ?? 'active',
         'avatar_url' => $userRow['avatar_url'],
     ];
+    
+    // Add boarder status if user is a boarder
+    if ($userRow['role'] === 'boarder') {
+        $user['boarder_status'] = determineBoarderStatus($pdo, (int) $userRow['id']);
+    }
 } else {
     $user = array_merge(
         [
@@ -89,6 +130,11 @@ if ($userRow) {
         ],
         $payload
     );
+    
+    // Add boarder status if user is a boarder
+    if (($payload['role'] ?? '') === 'boarder') {
+        $user['boarder_status'] = determineBoarderStatus($pdo, $userId);
+    }
 }
 
 echo json_encode([
