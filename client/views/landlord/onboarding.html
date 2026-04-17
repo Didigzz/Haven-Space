@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+    <title>Welcome - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../css/views/landlord/onboarding.css" />
+  </head>
+  <body data-view="landlord-onboarding">
+    <!-- Navigation -->
+    <nav id="navbar-placeholder"></nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar-placeholder"></aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="onboarding-container">
+        <!-- Welcome Header -->
+        <div class="onboarding-header">
+          <div class="onboarding-icon">
+            <span
+              data-icon="home"
+              data-icon-width="48"
+              data-icon-height="48"
+              data-icon-stroke-width="1.5"
+            ></span>
+          </div>
+          <h1 class="onboarding-title">Welcome to Haven Space!</h1>
+          <p class="onboarding-subtitle">
+            Your landlord account has been created successfully. Let's get you set up to start
+            accepting boarders.
+          </p>
+        </div>
+
+        <!-- Account Status -->
+        <div class="account-status-card">
+          <div class="status-header">
+            <div class="status-icon pending">
+              <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
+            </div>
+            <div class="status-content">
+              <h3>Account Under Verification</h3>
+              <p>Our team is reviewing your account. This usually takes 24-48 hours.</p>
+            </div>
+          </div>
+          <div class="status-details">
+            <div class="status-item">
+              <span data-icon="checkCircle" data-icon-width="16" data-icon-height="16"></span>
+              <span>Account created</span>
+            </div>
+            <div class="status-item pending">
+              <span data-icon="clock" data-icon-width="16" data-icon-height="16"></span>
+              <span>Identity verification in progress</span>
+            </div>
+            <div class="status-item disabled">
+              <span data-icon="circle" data-icon-width="16" data-icon-height="16"></span>
+              <span>Full access granted</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Getting Started Checklist -->
+        <div class="checklist-card">
+          <h2 class="checklist-title">Getting Started Checklist</h2>
+          <p class="checklist-subtitle">
+            Complete these steps to start receiving boarder applications
+          </p>
+
+          <div class="checklist-items">
+            <div class="checklist-item" data-step="property">
+              <div class="checklist-icon">
+                <span data-icon="home" data-icon-width="24" data-icon-height="24"></span>
+              </div>
+              <div class="checklist-content">
+                <h3>Create Your First Property Listing</h3>
+                <p>Add your boarding house details, photos, and room information</p>
+                <button class="checklist-btn primary" id="createPropertyBtn">
+                  <span data-icon="plus" data-icon-width="20" data-icon-height="20"></span>
+                  Create Property
+                </button>
+              </div>
+            </div>
+
+            <div class="checklist-item" data-step="rooms">
+              <div class="checklist-icon">
+                <span data-icon="squares2x2" data-icon-width="24" data-icon-height="24"></span>
+              </div>
+              <div class="checklist-content">
+                <h3>Add Room Details</h3>
+                <p>Set up individual rooms with pricing, photos, and amenities</p>
+                <button class="checklist-btn secondary" disabled>
+                  <span data-icon="lock" data-icon-width="20" data-icon-height="20"></span>
+                  Create Property First
+                </button>
+              </div>
+            </div>
+
+            <div class="checklist-item" data-step="payment">
+              <div class="checklist-icon">
+                <span data-icon="creditCard" data-icon-width="24" data-icon-height="24"></span>
+              </div>
+              <div class="checklist-content">
+                <h3>Setup Payment Methods</h3>
+                <p>Add your preferred payment methods for receiving rent</p>
+                <button class="checklist-btn secondary" id="setupPaymentBtn">
+                  <span data-icon="plus" data-icon-width="20" data-icon-height="20"></span>
+                  Add Payment Method
+                </button>
+              </div>
+            </div>
+
+            <div class="checklist-item" data-step="profile">
+              <div class="checklist-icon">
+                <span data-icon="user" data-icon-width="24" data-icon-height="24"></span>
+              </div>
+              <div class="checklist-content">
+                <h3>Complete Your Profile</h3>
+                <p>Add a profile photo and additional business information</p>
+                <button class="checklist-btn secondary" id="completeProfileBtn">
+                  <span data-icon="pencil" data-icon-width="20" data-icon-height="20"></span>
+                  Edit Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-card">
+          <h2 class="quick-actions-title">Quick Actions</h2>
+          <div class="quick-actions-grid">
+            <a href="my-properties.html" class="quick-action-item">
+              <div class="quick-action-icon">
+                <span data-icon="buildingOffice" data-icon-width="24" data-icon-height="24"></span>
+              </div>
+              <h3>My Properties</h3>
+              <p>View and manage your property listings</p>
+            </a>
+
+            <a href="landlord-settings.html" class="quick-action-item">
+              <div class="quick-action-icon">
+                <span data-icon="cog6Tooth" data-icon-width="24" data-icon-height="24"></span>
+              </div>
+              <h3>Account Settings</h3>
+              <p>Update your account and notification preferences</p>
+            </a>
+
+            <a href="landlord-messages.html" class="quick-action-item">
+              <div class="quick-action-icon">
+                <span
+                  data-icon="chatBubbleLeftRight"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                ></span>
+              </div>
+              <h3>Messages</h3>
+              <p>Communicate with potential boarders</p>
+            </a>
+
+            <a href="#" class="quick-action-item" id="helpCenterBtn">
+              <div class="quick-action-icon">
+                <span
+                  data-icon="questionMarkCircle"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                ></span>
+              </div>
+              <h3>Help Center</h3>
+              <p>Get help and learn best practices</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips-card">
+          <h2 class="tips-title">
+            <span data-icon="lightBulb" data-icon-width="24" data-icon-height="24"></span>
+            Tips for Success
+          </h2>
+          <div class="tips-list">
+            <div class="tip-item">
+              <h4>High-Quality Photos</h4>
+              <p>
+                Properties with good photos get 3x more inquiries. Make sure to show all rooms and
+                common areas.
+              </p>
+            </div>
+            <div class="tip-item">
+              <h4>Competitive Pricing</h4>
+              <p>
+                Research similar properties in your area to set competitive rates that attract
+                quality boarders.
+              </p>
+            </div>
+            <div class="tip-item">
+              <h4>Quick Responses</h4>
+              <p>
+                Respond to inquiries within 24 hours to increase your chances of securing good
+                boarders.
+              </p>
+            </div>
+            <div class="tip-item">
+              <h4>Clear House Rules</h4>
+              <p>
+                Set clear expectations about house rules, payment terms, and property policies
+                upfront.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skip Onboarding -->
+        <div class="skip-onboarding">
+          <button class="skip-btn" id="skipOnboardingBtn">
+            Skip onboarding and go to dashboard
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="../../js/views/landlord/onboarding.js"></script>
+  </body>
+</html>
