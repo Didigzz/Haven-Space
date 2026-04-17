@@ -124,6 +124,23 @@ Router::get('/api/users/search', function() {
     require_once __DIR__ . '/users/search.php';
 });
 
+Router::get('/api/users/profile', function() {
+    require_once __DIR__ . '/users/profile.php';
+});
+
+Router::put('/api/users/profile', function() {
+    require_once __DIR__ . '/users/profile.php';
+});
+
+Router::patch('/api/users/profile', function() {
+    require_once __DIR__ . '/users/profile.php';
+});
+
+// Avatar upload endpoint
+Router::post('/api/users/avatar', function() {
+    require_once __DIR__ . '/users/avatar.php';
+});
+
 // ============================================
 // MAINTENANCE ROUTES - LANDLORD
 // ============================================
@@ -180,6 +197,21 @@ Router::delete('/api/landlord/documents/{id}', [OnboardingController::class, 'de
 // ============================================
 Router::get('/api/boarder/documents', [OnboardingController::class, 'getBoarderDocuments']);
 Router::post('/api/boarder/documents/acknowledge', [OnboardingController::class, 'acknowledgeDocument']);
+
+// ============================================
+// SAVED LISTINGS ROUTES - BOARDER
+// ============================================
+Router::get('/api/boarder/saved-listings', function() {
+    require_once __DIR__ . '/boarder/saved-listings.php';
+});
+
+Router::post('/api/boarder/saved-listings', function() {
+    require_once __DIR__ . '/boarder/saved-listings.php';
+});
+
+Router::delete('/api/boarder/saved-listings', function() {
+    require_once __DIR__ . '/boarder/saved-listings.php';
+});
 
 // ============================================
 // ONBOARDING ROUTES - SHARED
@@ -254,6 +286,13 @@ Router::get('/api/boarder/announcements', function() {
 
 Router::post('/api/boarder/announcements/{id}/view', function($id) {
     require_once __DIR__ . '/boarder/announcements.php';
+});
+
+// ============================================
+// BOARDER DASHBOARD ROUTES
+// ============================================
+Router::get('/api/boarder/dashboard/stats', function() {
+    require_once __DIR__ . '/boarder/dashboard-stats.php';
 });
 
 // ============================================

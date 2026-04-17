@@ -61,6 +61,10 @@ async function detectAndInitialize() {
       initLandlordDashboardEntry();
       break;
     }
+    case 'landlord-onboarding': {
+      // Onboarding page handles its own initialization
+      break;
+    }
     case 'admin': {
       const { initAdminDashboard } = await import('./views/admin/index.js');
       initAdminDashboard();

@@ -24,13 +24,13 @@ export function getBasePath() {
  */
 export function getBoarderRedirectPath(user) {
   const basePath = getBasePath();
-  const boarderStatus = user.boarderStatus || 'new';
+  const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
 
   switch (boarderStatus) {
     case 'new':
     case 'browsing':
-      // New boarders need to apply first - redirect to boarder find-a-room page (authenticated)
-      return `${basePath}boarder/find-a-room/index.html`;
+      // New boarders need to apply first - redirect to PUBLIC find-a-room page
+      return `${basePath}public/find-a-room/index.html`;
 
     case 'applied_pending': {
       // Has pending applications - show applications dashboard
@@ -62,7 +62,8 @@ export function getBoarderRedirectPath(user) {
 export function updateBoarderStatus(status) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (user.role === 'boarder') {
-    user.boarderStatus = status;
+    user.boarder_status = status;
+    user.boarderStatus = status; // Keep both for compatibility
     localStorage.setItem('user', JSON.stringify(user));
   }
 }
@@ -74,7 +75,7 @@ export function updateBoarderStatus(status) {
 export function getBoarderStatus() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (user.role === 'boarder') {
-    return user.boarderStatus || 'new';
+    return user.boarder_status || user.boarderStatus || 'new';
   }
   return null;
 }
