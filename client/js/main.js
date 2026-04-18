@@ -56,6 +56,11 @@ async function detectAndInitialize() {
       initApplicationsDashboard();
       break;
     }
+    case 'boarder-maps': {
+      const { initBoarderMaps } = await import('./views/boarder/boarder-maps-init.js');
+      initBoarderMaps();
+      break;
+    }
     case 'landlord': {
       const { initLandlordDashboardEntry } = await import('./views/landlord/index.js');
       initLandlordDashboardEntry();
