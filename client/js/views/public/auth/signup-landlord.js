@@ -5,6 +5,7 @@
 
 import CONFIG from '../../../config.js';
 import { getIcon } from '../../../shared/icons.js';
+import { getBasePath } from '../../../shared/routing.js';
 
 /**
  * Show toast notification
@@ -138,8 +139,8 @@ function isValidPhoneNumber(phone) {
   // 09XX XXX XXXX (11 digits starting with 0)
   // 9XX XXX XXXX (10 digits starting with 9)
 
-  if (cleaned.length === 13 && cleaned.startsWith('63') && cleaned.charAt(2) === '9') {
-    return true; // +63 9XX XXX XXXX format
+  if (cleaned.length === 12 && cleaned.startsWith('63') && cleaned.charAt(2) === '9') {
+    return true; // +63 9XX XXX XXXX format (63 + 10 digit mobile)
   }
 
   if (cleaned.length === 11 && cleaned.startsWith('09')) {
@@ -542,29 +543,70 @@ function setupEventListeners() {
         clearState();
 
         // Store user info and token for automatic login
-        localStorage.setItem('user', JSON.stringify(result.user));
-        if (result.access_token) {
-          localStorage.setItem('token', result.access_token);
-        }
+        // Use synchronous storage to ensure data is written before redirect
+        const userData = {
+          id: result.user.id || result.user.user_id,
+          user_id: result.user.id || result.user.user_id,
+          first_name: result.user.first_name,
+          last_name: result.user.last_name,
+          email: result.user.email,
+          role: result.user.role,
+          account_status: result.user.account_status,
+          email_verified: result.user.email_verified,
+          verification_status: result.user.verification_status,
+        };
 
-        // Mark as new landlord for welcome banner
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('user_id', String(userData.id));
+        localStorage.setItem('token', result.access_token);
         localStorage.setItem('landlordStatus', 'new');
+
+        // Force localStorage to flush (some browsers need this)
+        localStorage.getItem('token');
 
         // Show success message
         showToast('Account created successfully! Redirecting to your dashboard...', 'success');
 
-        // Redirect to landlord dashboard (not login)
-        setTimeout(() => {
-          // Detect base path (GitHub Pages vs local)
-          const pathname = window.location.pathname;
-          const basePath = pathname.includes('github.io')
-            ? '/Haven-Space/client/views/'
-            : '/views/';
+        // Debug: Log what we stored and routing info
+        console.log('=== LANDLORD SIGNUP DEBUG ===');
+        console.log('Current URL:', window.location.href);
+        console.log('Stored user:', localStorage.getItem('user'));
+        console.log('Stored user_id:', localStorage.getItem('user_id'));
+        console.log('Stored token:', localStorage.getItem('token'));
+        console.log('Token length:', localStorage.getItem('token')?.length);
+        console.log('Stored landlordStatus:', localStorage.getItem('landlordStatus'));
 
-          window.location.href = `${basePath}landlord/index.html`;
+        const basePath = getBasePath();
+        const redirectUrl = `${basePath}landlord/index.html`;
+        console.log('Calculated base path:', basePath);
+        console.log('Full redirect URL:', redirectUrl);
+        console.log('=== END DEBUG ===');
+
+        // Redirect to landlord dashboard with sufficient delay for localStorage sync
+        setTimeout(() => {
+          console.log('Executing redirect to:', redirectUrl);
+          // Use location.replace to avoid back button issues
+          window.location.replace(redirectUrl);
         }, 1500);
       } else {
-        throw new Error(result.message || 'Registration failed');
+        // Handle specific error cases
+        let errorMessage = result.message || result.error || 'Registration failed';
+
+        if (response.status === 409) {
+          if (errorMessage.includes('Email already exists') || errorMessage.includes('email')) {
+            errorMessage =
+              'This email address is already registered. Please use a different email or try logging in instead.';
+
+            // Highlight the email field
+            const emailField = document.getElementById('step1Form').email;
+            showInlineError(emailField, 'This email is already registered');
+
+            // Go back to step 1 to fix the email
+            goToStep(1);
+          }
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Registration error:', error);

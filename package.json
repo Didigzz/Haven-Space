@@ -13,8 +13,8 @@
     "fix:rooms": "cd server && php ../scripts/fix-room-data.php",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint client/js/**/*.js",
-    "lint:fix": "eslint --fix client/js/**/*.js",
+    "lint": "eslint client/js --ext .js",
+    "lint:fix": "eslint --fix client/js --ext .js",
     "build": "node scripts/build.js",
     "prepare": "husky install"
   },
@@ -30,6 +30,8 @@
     "@commitlint/cli": "^17.6.5",
     "@commitlint/config-conventional": "^17.6.5",
     "eslint": "^8.42.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.2",
     "prettier": "^2.8.8"

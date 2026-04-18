@@ -5,6 +5,7 @@
  */
 
 import CONFIG from '../../config.js';
+import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 /**
  * Fetch applications from API
@@ -13,12 +14,14 @@ import CONFIG from '../../config.js';
 async function fetchApplications() {
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/applications`, {
+      headers: getAuthHeaders('4'),
       credentials: 'include',
     });
 
     if (!res.ok) {
       if (res.status === 401) {
-        window.location.href = '../auth/login.html';
+        console.warn('Applications API returned 401 - user may not be authenticated yet');
+        // Don't redirect here - let the main dashboard handle authentication
         return [];
       }
       throw new Error('Failed to fetch applications');

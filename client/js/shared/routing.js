@@ -74,9 +74,23 @@ export function setupAuthenticatedNavigation() {
  */
 export function getBasePath() {
   const pathname = window.location.pathname;
+  const hostname = window.location.hostname;
 
   if (pathname.includes('github.io')) {
     return '/Haven-Space/client/views/';
+  }
+
+  // For localhost development (Apache serves from /views/)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Check if we're already in a views subdirectory
+    if (pathname.includes('/views/')) {
+      // Extract the base path up to /views/
+      const viewsIndex = pathname.indexOf('/views/');
+      return pathname.substring(0, viewsIndex + 7); // Include '/views/'
+    }
+
+    // Default for localhost Apache setup - views are served directly
+    return '/views/';
   }
 
   return '/views/';
