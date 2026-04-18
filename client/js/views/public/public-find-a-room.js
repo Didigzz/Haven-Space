@@ -1,11 +1,17 @@
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
 import { initFindARoomEnhanced } from './find-a-room.js';
+import { redirectAuthenticatedUsers } from '../../shared/routing.js';
 
 const state = {
   view: 'grid',
 };
 
 export function initPublicFindARoom() {
+  // Redirect authenticated boarders to the authenticated find-a-room page
+  if (redirectAuthenticatedUsers()) {
+    return; // Stop execution if redirect happened
+  }
+
   if (!document.querySelector('.find-room-main')) {
     return;
   }

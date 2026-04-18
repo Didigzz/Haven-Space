@@ -267,7 +267,7 @@ async function toggleFavorite(propertyId, button) {
   const isFavorite = button.dataset.favorite === 'true';
 
   // Check if user is logged in
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (!token) {
     // Redirect to login if not authenticated
     window.location.href =
@@ -674,22 +674,28 @@ function renderAuthState(authState) {
 function updateUserProfile(user) {
   if (!user) return;
 
+  // Create full name from first_name and last_name
+  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+
+  // Create initials from first and last name
+  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+
   // Update profile name
   const profileNames = document.querySelectorAll('.find-room-header-profile-name');
   profileNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile avatar initials in dropdown
   const avatarEl = document.querySelector('.find-room-profile-menu-avatar');
-  if (avatarEl && user.initials) {
-    avatarEl.textContent = user.initials;
+  if (avatarEl) {
+    avatarEl.textContent = initials;
   }
 
   // Update profile menu name
   const menuNames = document.querySelectorAll('.find-room-profile-menu-name');
   menuNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile menu email
@@ -1088,12 +1094,17 @@ function initProfileDropdown() {
 
       // Clear authentication data
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
 
       // Store logout message in sessionStorage to display after redirect
       sessionStorage.setItem('logoutToast', 'You have successfully logged out');
       sessionStorage.setItem('logoutToastType', 'success');
 
-      window.location.href = '../auth/login.html';
+      // Redirect to public homepage instead of login page
+      const basePath = window.location.pathname.includes('github.io')
+        ? '/Haven-Space/client/views/'
+        : '/views/';
+      window.location.href = `${basePath}public/index.html`;
     });
   }
 

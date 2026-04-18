@@ -9,6 +9,8 @@ import { initLogoCloud } from '../../components/logo-cloud.js';
 import { initPublicFindARoom } from './public-find-a-room.js';
 import { getState } from '../../shared/state.js';
 import { getIcon } from '../../shared/icons.js';
+import { setupAuthenticatedNavigation } from '../../shared/routing.js';
+import { showToast } from '../../shared/toast.js';
 
 /**
  * Floating Header - Scroll-triggered transition
@@ -247,8 +249,20 @@ function updateNavigationForAuthenticatedUser() {
  * Initialize public components after DOM is ready
  */
 function initPublicComponents() {
+  // Show logout toast if redirected from logout
+  const logoutToastMsg = sessionStorage.getItem('logoutToast');
+  if (logoutToastMsg) {
+    const toastType = sessionStorage.getItem('logoutToastType') || 'success';
+    sessionStorage.removeItem('logoutToast');
+    sessionStorage.removeItem('logoutToastType');
+    showToast(logoutToastMsg, toastType, 5000);
+  }
+
   // Check if user is authenticated and update navigation
   updateNavigationForAuthenticatedUser();
+
+  // Setup authentication-aware navigation for find-a-room links
+  setupAuthenticatedNavigation();
 
   // Initialize floating header (homepage only)
   initFloatingHeader();

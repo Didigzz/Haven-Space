@@ -23,6 +23,8 @@ export function initBoarderFindARoomAuth() {
     isAuthenticated: true,
     user: {
       id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
       name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User',
       email: user.email || '',
       initials: getInitials(user),
@@ -205,22 +207,28 @@ function showAuthenticatedUI(authState) {
 function updateUserProfile(user) {
   if (!user) return;
 
+  // Create full name from first_name and last_name
+  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+
+  // Create initials from first and last name
+  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+
   // Update profile name
   const profileNames = document.querySelectorAll('.find-room-header-profile-name');
   profileNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile avatar initials in dropdown
   const avatarEl = document.querySelector('.find-room-profile-menu-avatar');
   if (avatarEl) {
-    avatarEl.textContent = user.initials || 'U';
+    avatarEl.textContent = initials;
   }
 
   // Update profile menu name
   const menuNames = document.querySelectorAll('.find-room-profile-menu-name');
   menuNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile menu email
