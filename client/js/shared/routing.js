@@ -3,6 +3,71 @@
  * Handles conditional redirects based on boarder status
  */
 
+import { getState } from './state.js';
+
+/**
+ * Check if user is authenticated
+ * @returns {boolean} Whether user is authenticated
+ */
+export function isAuthenticated() {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  return !!(token && user);
+}
+
+/**
+ * Get current user from localStorage
+ * @returns {Object|null} User object or null if not authenticated
+ */
+export function getCurrentUser() {
+  try {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  } catch (e) {
+    console.warn('Failed to parse user from localStorage', e);
+    return null;
+  }
+}
+
+/**
+ * Redirect authenticated users from public find-a-room to boarder find-a-room
+ * Call this on public pages that have find-a-room functionality
+ */
+export function redirectAuthenticatedUsers() {
+  if (isAuthenticated()) {
+    const user = getCurrentUser();
+    if (user && user.role === 'boarder') {
+      const basePath = getBasePath();
+      window.location.href = `${basePath}boarder/find-a-room/index.html`;
+      return true; // Indicates redirect happened
+    }
+  }
+  return false; // No redirect
+}
+
+/**
+ * Setup authentication-aware navigation for find-a-room links
+ * Call this on public pages that have links to find-a-room
+ */
+export function setupAuthenticatedNavigation() {
+  // Find all links that point to find-a-room
+  const findRoomLinks = document.querySelectorAll('a[href*="find-a-room"]');
+
+  findRoomLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      if (isAuthenticated()) {
+        const user = getCurrentUser();
+        if (user && user.role === 'boarder') {
+          e.preventDefault();
+          const basePath = getBasePath();
+          window.location.href = `${basePath}boarder/find-a-room/index.html`;
+        }
+      }
+      // If not authenticated or not a boarder, let the default link behavior happen
+    });
+  });
+}
+
 /**
  * Get the base path for navigation (handles GitHub Pages vs local dev)
  * @returns {string} Base path for navigation
@@ -29,8 +94,8 @@ export function getBoarderRedirectPath(user) {
   switch (boarderStatus) {
     case 'new':
     case 'browsing':
-      // New boarders need to apply first - redirect to PUBLIC find-a-room page
-      return `${basePath}public/find-a-room/index.html`;
+      // New boarders with no application yet - redirect to authenticated find-a-room page
+      return `${basePath}boarder/find-a-room/index.html`;
 
     case 'applied_pending': {
       // Has pending applications - show applications dashboard
