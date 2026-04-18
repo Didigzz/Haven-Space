@@ -46,8 +46,15 @@ function setupEventListeners() {
     });
   }
 
-  document.querySelectorAll('.find-room-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
+  // Location chips — event delegation handles dynamically rendered chips
+  // (chips are populated by loadPopularLocations in find-a-room.js)
+  const guestChips = document.getElementById('guest-location-chips');
+  const authChips = document.getElementById('auth-location-chips');
+  [guestChips, authChips].forEach(container => {
+    if (!container) return;
+    container.addEventListener('click', e => {
+      const chip = e.target.closest('.find-room-chip');
+      if (!chip) return;
       const location = chip.dataset.location;
       if (location && searchInput) {
         searchInput.value = location;

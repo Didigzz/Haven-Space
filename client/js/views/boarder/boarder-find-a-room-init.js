@@ -60,6 +60,7 @@ export function initBoarderFindARoomAuth() {
         showAuthenticatedUI(authState);
         fixPropertyLinks();
         ensureDropdownsWork(); // Ensure dropdowns are working
+        initHeaderHoverBehavior(); // Initialize header hover behavior
         // Re-render icons after adding status
         if (window.initIconElements) {
           window.initIconElements();
@@ -72,6 +73,7 @@ export function initBoarderFindARoomAuth() {
       showAuthenticatedUI(authState);
       fixPropertyLinks();
       ensureDropdownsWork(); // Ensure dropdowns are working
+      initHeaderHoverBehavior(); // Initialize header hover behavior
       // Re-render icons after adding status
       if (window.initIconElements) {
         window.initIconElements();
@@ -94,10 +96,38 @@ export function initBoarderFindARoomAuth() {
 }
 
 /**
+ * Initialize header hover behavior for boarders
+ * Allow the header to hide/show on hover like the public version
+ */
+function initHeaderHoverBehavior() {
+  const header = document.getElementById('find-room-floating-header');
+  if (!header) return;
+
+  // Remove any forced visibility styles
+  header.style.display = '';
+  header.style.visibility = '';
+  header.style.opacity = '';
+  header.style.pointerEvents = '';
+  header.style.transform = '';
+
+  // Start with header hidden (let the existing hover system handle it)
+  header.classList.remove('show');
+
+  console.log('Header hover behavior initialized for boarder user');
+}
+
+/**
  * Ensure dropdown functionality is working
  * This is a fallback in case the main initialization doesn't attach event listeners
  */
 function ensureDropdownsWork() {
+  // First, ensure the header is visible and clickable
+  const header = document.getElementById('find-room-floating-header');
+  if (header) {
+    header.classList.add('show');
+    header.style.pointerEvents = 'auto';
+  }
+
   // Status Dropdown
   const statusDropdownBtn = document.getElementById('status-dropdown-btn');
   const statusDropdownMenu = document.getElementById('status-dropdown-menu');
@@ -108,16 +138,25 @@ function ensureDropdownsWork() {
     const newStatusBtn = statusDropdownBtn.cloneNode(true);
     statusDropdownBtn.parentNode.replaceChild(newStatusBtn, statusDropdownBtn);
 
+    // Ensure the button is clickable
+    newStatusBtn.style.pointerEvents = 'auto';
+    newStatusBtn.style.cursor = 'pointer';
+
     // Add click listener to toggle dropdown
     newStatusBtn.addEventListener('click', e => {
       e.stopPropagation();
+      e.preventDefault();
       statusDropdownMenu.classList.toggle('show');
       console.log('Status dropdown toggled:', statusDropdownMenu.classList.contains('show'));
     });
 
     // Close button
     if (statusCloseBtn) {
-      statusCloseBtn.addEventListener('click', () => {
+      const newCloseBtn = statusCloseBtn.cloneNode(true);
+      statusCloseBtn.parentNode.replaceChild(newCloseBtn, statusCloseBtn);
+
+      newCloseBtn.addEventListener('click', e => {
+        e.stopPropagation();
         statusDropdownMenu.classList.remove('show');
       });
     }
@@ -146,10 +185,16 @@ function ensureDropdownsWork() {
     const newProfileBtn = profileDropdownBtn.cloneNode(true);
     profileDropdownBtn.parentNode.replaceChild(newProfileBtn, profileDropdownBtn);
 
+    // Ensure the button is clickable
+    newProfileBtn.style.pointerEvents = 'auto';
+    newProfileBtn.style.cursor = 'pointer';
+
     // Add click listener to toggle dropdown
     newProfileBtn.addEventListener('click', e => {
       e.stopPropagation();
+      e.preventDefault();
       profileDropdownMenu.classList.toggle('show');
+      console.log('Profile dropdown toggled:', profileDropdownMenu.classList.contains('show'));
     });
 
     // Close when clicking outside
@@ -160,6 +205,11 @@ function ensureDropdownsWork() {
     });
 
     console.log('Profile dropdown initialized successfully');
+  } else {
+    console.warn('Profile dropdown elements not found:', {
+      btn: !!profileDropdownBtn,
+      menu: !!profileDropdownMenu,
+    });
   }
 }
 

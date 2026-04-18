@@ -472,6 +472,22 @@ function setupFilterListeners() {
         fetchProperties(true);
       }, 500);
     });
+
+    searchInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        enhancedState.filters.search = searchInput.value;
+        fetchProperties(true);
+      }
+    });
+  }
+
+  // Search button (authenticated)
+  const searchBtn = document.getElementById('main-search-btn');
+  if (searchBtn && searchInput) {
+    searchBtn.addEventListener('click', () => {
+      enhancedState.filters.search = searchInput.value;
+      fetchProperties(true);
+    });
   }
 
   // Price filter
@@ -574,7 +590,78 @@ function setupFilterListeners() {
     });
   }
 }
-// Hardcoded data removed - now fetching from API
+/**
+ * Fetch popular locations from the API and render chips
+ * @param {boolean} isAuthenticated - Whether the user is authenticated
+ */
+async function loadPopularLocations(isAuthenticated) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/rooms/popular-locations?limit=6`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const result = await response.json();
+    const locations = result.data?.locations ?? [];
+
+    if (locations.length === 0) return;
+
+    // Render chips into both containers (guest + auth hero sections)
+    const containerIds = isAuthenticated
+      ? ['auth-location-chips']
+      : ['guest-location-chips', 'auth-location-chips'];
+
+    containerIds.forEach(containerId => {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      // Keep the label, replace chips
+      const label = container.querySelector('.find-room-chip-label');
+      container.innerHTML = '';
+      if (label) container.appendChild(label);
+
+      locations.forEach(loc => {
+        const btn = document.createElement('button');
+        btn.className = 'find-room-chip';
+        btn.dataset.location = loc.search_value;
+        btn.innerHTML = `<span data-icon="location" data-icon-width="16" data-icon-height="16"></span>${loc.name}`;
+        container.appendChild(btn);
+      });
+    });
+
+    // Re-render icons for the new chips
+    if (window.renderIcons) {
+      setTimeout(() => window.renderIcons(), 50);
+    }
+
+    // Re-attach chip click listeners after rendering
+    attachChipListeners();
+  } catch (err) {
+    console.warn('Could not load popular locations:', err.message);
+  }
+}
+
+/**
+ * Attach click listeners to all location chips
+ */
+function attachChipListeners() {
+  document.querySelectorAll('.find-room-chip').forEach(chip => {
+    // Remove existing listeners by cloning
+    const clone = chip.cloneNode(true);
+    chip.parentNode.replaceChild(clone, chip);
+
+    clone.addEventListener('click', () => {
+      const location = clone.dataset.location;
+      if (!location) return;
+
+      const searchInput =
+        document.getElementById('main-search-input') ||
+        document.getElementById('guest-search-input');
+
+      if (searchInput) searchInput.value = location;
+      enhancedState.filters.search = location;
+      fetchProperties(true);
+    });
+  });
+}
 
 /**
  * Initialize all enhanced features
@@ -629,6 +716,9 @@ async function setupEnhancedFeatures() {
   if (!authState.isAuthenticated) {
     initGuestSearch();
   }
+
+  // Load popular locations and render chips
+  await loadPopularLocations(authState.isAuthenticated);
 
   // Fetch properties from backend
   fetchProperties(true);
@@ -720,35 +810,28 @@ function initGuestSearch() {
   const searchBtn = document.getElementById('guest-search-btn');
   const searchInput = document.getElementById('guest-search-input');
 
+  const doSearch = () => {
+    const query = searchInput.value.trim();
+    enhancedState.filters.search = query;
+    fetchProperties(true);
+    // Sync to authenticated search input in case user logs in mid-session
+    const mainInput = document.getElementById('main-search-input');
+    if (mainInput) mainInput.value = query;
+  };
+
   if (searchBtn && searchInput) {
-    searchBtn.addEventListener('click', () => {
-      const query = searchInput.value.trim();
-      if (query) {
-        // Redirect to login with search query
-        window.location.href = `../auth/login.html?redirect=${encodeURIComponent(
-          window.location.pathname
-        )}&search=${encodeURIComponent(query)}`;
-      }
-    });
+    searchBtn.addEventListener('click', doSearch);
 
     searchInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') {
-        searchBtn.click();
-      }
+      if (e.key === 'Enter') doSearch();
+    });
+
+    searchInput.addEventListener('input', () => {
+      enhancedState.filters.search = searchInput.value;
+      fetchProperties(true);
     });
   }
-
-  // Location chips redirect to login
-  document.querySelectorAll('.find-room-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const location = chip.dataset.location;
-      if (location) {
-        window.location.href = `../auth/login.html?redirect=${encodeURIComponent(
-          window.location.pathname
-        )}&search=${encodeURIComponent(location)}`;
-      }
-    });
-  });
+  // Chip click listeners are handled by attachChipListeners() after popular locations load
 }
 
 /* ==========================================================================

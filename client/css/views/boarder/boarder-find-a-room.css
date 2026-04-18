@@ -5,6 +5,28 @@
 
 /* Remove conflicting dashboard layout styles - using boarder layout instead */
 
+/* Floating Header Hover Enhancements for Boarder */
+.find-room-floating-header-container {
+  /* Add a small invisible hover area at the top to make it easier to trigger */
+  position: relative;
+}
+
+.find-room-floating-header-container::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: transparent;
+  pointer-events: auto;
+}
+
+/* Ensure smooth transitions for boarder users */
+.find-room-floating-header {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .find-room-search-input {
   outline: none;
   font-size: 1rem;

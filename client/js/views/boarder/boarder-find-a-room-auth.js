@@ -45,8 +45,9 @@ function setupBoarderFindARoom() {
   // Setup search and filters
   setupSearchAndFilters();
 
-  // Load properties
+  // Load properties and popular locations in parallel
   loadProperties();
+  loadPopularLocations();
 }
 
 /**
@@ -146,6 +147,42 @@ function initWelcomeBanner() {
 }
 
 /**
+ * Fetch popular locations from the API and render chips dynamically
+ */
+async function loadPopularLocations() {
+  const container = document.getElementById('location-chips');
+  if (!container) return;
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/popular-locations?limit=6`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const result = await response.json();
+    const locations = result.data?.locations ?? [];
+
+    if (locations.length === 0) return;
+
+    const label = container.querySelector('.find-room-chip-label');
+    container.innerHTML = '';
+    if (label) container.appendChild(label);
+
+    locations.forEach(loc => {
+      const btn = document.createElement('button');
+      btn.className = 'find-room-chip';
+      btn.dataset.location = loc.search_value;
+      btn.innerHTML = `<span data-icon="location" data-icon-width="16" data-icon-height="16"></span>${loc.name}`;
+      container.appendChild(btn);
+    });
+
+    if (window.renderIcons) {
+      setTimeout(() => window.renderIcons(), 50);
+    }
+  } catch (err) {
+    console.warn('Could not load popular locations:', err.message);
+  }
+}
+
+/**
  * Setup search and filter functionality
  */
 function setupSearchAndFilters() {
@@ -168,16 +205,19 @@ function setupSearchAndFilters() {
     });
   }
 
-  // Location chips
-  document.querySelectorAll('.find-room-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
+  // Location chips — event delegation handles dynamically rendered chips
+  const locationChipsContainer = document.getElementById('location-chips');
+  if (locationChipsContainer) {
+    locationChipsContainer.addEventListener('click', e => {
+      const chip = e.target.closest('.find-room-chip');
+      if (!chip) return;
       const location = chip.dataset.location;
       if (location && searchInput) {
         searchInput.value = location;
         loadProperties({ search: location });
       }
     });
-  });
+  }
 
   // Price filter
   const priceFilter = document.getElementById('price-filter');

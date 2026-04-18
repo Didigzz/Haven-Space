@@ -373,6 +373,11 @@ Router::get('/api/rooms/detail', function() {
     require_once __DIR__ . '/rooms/detail.php';
 });
 
+// Get popular locations based on property data (no authentication required)
+Router::get('/api/rooms/popular-locations', function() {
+    require_once __DIR__ . '/rooms/popular-locations.php';
+});
+
 // ============================================
 // ALL PROPERTIES ROUTES (FOR MAPS)
 // ============================================
