@@ -35,11 +35,17 @@ export async function initAnnouncements() {
  */
 async function loadAnnouncements() {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/announcements`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: headers,
       credentials: 'include',
     });
 

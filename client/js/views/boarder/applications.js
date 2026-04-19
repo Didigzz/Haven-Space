@@ -95,12 +95,18 @@ export async function initBoarderApplications() {
 async function fetchApplications() {
   try {
     const userId = getCurrentUserId();
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId,
-      },
+      headers: headers,
       credentials: 'include',
     });
 

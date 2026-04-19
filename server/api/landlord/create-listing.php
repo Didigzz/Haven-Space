@@ -159,57 +159,48 @@ try {
         error_log('property_details insert failed: ' . $e->getMessage());
     }
 
-    // Handle photo uploads
-    $uploadedPhotos = [];
-    if (!empty($_FILES['propertyPhotos']) && !empty($_FILES['propertyPhotos']['name'][0])) {
-        $uploadDir = __DIR__ . '/../../storage/properties/' . $propertyId . '/';
+    // Photos are uploaded via a separate POST /api/landlord/listings/{id}/photos request
+    // after the property is created (see listing-photos.php)
 
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        $files = $_FILES['propertyPhotos'];
-        $fileCount = count($files['name']);
-
-        for ($i = 0; $i < $fileCount; $i++) {
-            if ($files['error'][$i] === UPLOAD_ERR_OK) {
-                $tmpName = $files['tmp_name'][$i];
-                $originalName = $files['name'][$i];
-                $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-                $newName = 'listing_' . ($i + 1) . '_' . time() . '.' . $ext;
-                $targetPath = $uploadDir . $newName;
-
-                if (move_uploaded_file($tmpName, $targetPath)) {
-                    $uploadedPhotos[] = '/storage/properties/' . $propertyId . '/' . $newName;
-                }
-            }
-        }
-    }
-
-    // Insert photos if any uploaded
-    if (!empty($uploadedPhotos)) {
-        $photoStmt = $pdo->prepare("
-            INSERT INTO property_photos (
+    // Create rooms for the property
+    $roomsCount = intval($input['propertyRooms']);
+    $roomCapacity = intval($input['propertyCapacity']);
+    $roomPrice = floatval($input['propertyPrice']);
+    
+    // Determine room type based on capacity
+    $roomType = $roomCapacity === 1 ? 'single' : 'shared';
+    $roomTypeDisplay = $roomCapacity === 1 ? 'Single Room' : "Shared Room ({$roomCapacity} persons)";
+    
+    if ($roomsCount > 0) {
+        $roomStmt = $pdo->prepare("
+            INSERT INTO rooms (
                 property_id,
-                photo_url,
-                is_cover,
-                sort_order,
-                created_at
+                landlord_id,
+                title,
+                price,
+                status,
+                room_number,
+                room_type,
+                capacity,
+                created_at,
+                updated_at
             ) VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                NOW()
+                ?, ?, ?, ?, 'available', ?, ?, ?, NOW(), NOW()
             )
         ");
 
-        foreach ($uploadedPhotos as $index => $photoUrl) {
-            $photoStmt->execute([
+        for ($i = 1; $i <= $roomsCount; $i++) {
+            $roomNumber = "Room {$i}";
+            $roomTitle = "{$roomTypeDisplay} - {$roomNumber}";
+            
+            $roomStmt->execute([
                 $propertyId,
-                $photoUrl,
-                $index === 0 ? 1 : 0,
-                $index,
+                $landlordId,
+                $roomTitle,
+                $roomPrice,
+                $roomNumber,
+                $roomType,
+                $roomCapacity
             ]);
         }
     }

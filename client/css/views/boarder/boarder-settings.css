@@ -196,10 +196,45 @@
   cursor: not-allowed;
 }
 
+.form-control[readonly] {
+  background-color: #f8f9fa;
+  color: var(--text-gray);
+  cursor: default;
+}
+
+.form-text {
+  font-size: 12px;
+  color: var(--text-gray);
+  margin-top: 4px;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-start;
+  gap: 12px;
   padding-top: 8px;
+}
+
+/* Load Profile Button */
+#load-profile-btn {
+  align-self: flex-start;
+  margin-bottom: 16px;
+}
+
+#load-profile-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form Validation States */
+.form-control.error {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.form-control.success {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
 }
 
 /* Notification Settings */

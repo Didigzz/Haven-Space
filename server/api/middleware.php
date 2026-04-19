@@ -17,7 +17,10 @@ class Middleware
         if ($simulatedId) {
             $userId = (int) $simulatedId;
             $pdo = Connection::getInstance()->getPdo();
-            $stmt = $pdo->prepare('SELECT id, role, is_verified, account_status FROM users WHERE id = ?');
+            $stmt = $pdo->prepare('
+                SELECT id, role, is_verified, email_verified, account_status, verification_status 
+                FROM users WHERE id = ? AND deleted_at IS NULL
+            ');
             $stmt->execute([$userId]);
             $row = $stmt->fetch();
             
@@ -30,7 +33,10 @@ class Middleware
                 return [
                     'user_id' => (int)$row['id'],
                     'role' => $row['role'],
-                    'is_verified' => (bool)$row['is_verified']
+                    'is_verified' => (bool)$row['is_verified'],
+                    'email_verified' => (bool)$row['email_verified'],
+                    'account_status' => $row['account_status'],
+                    'verification_status' => $row['verification_status']
                 ];
             }
         }
@@ -73,14 +79,30 @@ class Middleware
         $userId = (int) ($payload['user_id'] ?? 0);
         if ($userId > 0) {
             $pdo = Connection::getInstance()->getPdo();
-            $stmt = $pdo->prepare('SELECT account_status FROM users WHERE id = ?');
+            $stmt = $pdo->prepare('
+                SELECT account_status, email_verified, verification_status 
+                FROM users WHERE id = ? AND deleted_at IS NULL
+            ');
             $stmt->execute([$userId]);
             $row = $stmt->fetch();
-            if (!$row || ($row['account_status'] ?? 'active') !== 'active') {
+            
+            if (!$row) {
+                http_response_code(401);
+                echo json_encode(['error' => 'User not found']);
+                exit;
+            }
+            
+            $accountStatus = $row['account_status'] ?? 'active';
+            if (in_array($accountStatus, ['suspended', 'banned'])) {
                 http_response_code(403);
                 echo json_encode(['error' => 'Account is suspended or banned']);
                 exit;
             }
+            
+            // Add verification status to payload
+            $payload['email_verified'] = (bool)$row['email_verified'];
+            $payload['account_status'] = $accountStatus;
+            $payload['verification_status'] = $row['verification_status'];
         }
 
         return $payload;
@@ -111,14 +133,74 @@ class Middleware
         $method = $_SERVER['REQUEST_METHOD'];
         $writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
-        if (in_array($method, $writeMethods) && empty($user['is_verified'])) {
+        // Check email verification first
+        if (!($user['email_verified'] ?? false)) {
             http_response_code(403);
             echo json_encode([
-                'error' => 'Your account is pending verification. Write operations are not allowed until an admin approves your account.'
+                'error' => 'Email verification required',
+                'code' => 'EMAIL_NOT_VERIFIED',
+                'message' => 'Please verify your email address before accessing landlord features.'
             ]);
             exit;
         }
 
+        // For write operations, check full verification status
+        if (in_array($method, $writeMethods)) {
+            $accountStatus = $user['account_status'] ?? 'active';
+            $verificationStatus = $user['verification_status'] ?? null;
+            
+            if ($accountStatus === 'pending_verification' || $verificationStatus === 'pending') {
+                http_response_code(403);
+                echo json_encode([
+                    'error' => 'Account verification pending',
+                    'code' => 'VERIFICATION_PENDING',
+                    'message' => 'Your account is under review. You have read-only access until verification is complete.'
+                ]);
+                exit;
+            }
+            
+            if ($verificationStatus === 'rejected') {
+                http_response_code(403);
+                echo json_encode([
+                    'error' => 'Account verification rejected',
+                    'code' => 'VERIFICATION_REJECTED',
+                    'message' => 'Your account verification was rejected. Please review the feedback and resubmit required documents.'
+                ]);
+                exit;
+            }
+            
+            if (!($user['is_verified'] ?? false) && $verificationStatus !== 'approved') {
+                http_response_code(403);
+                echo json_encode([
+                    'error' => 'Account verification required',
+                    'code' => 'VERIFICATION_REQUIRED',
+                    'message' => 'Your account is pending verification. Write operations are not allowed until an admin approves your account.'
+                ]);
+                exit;
+            }
+        }
+
+        return $user;
+    }
+
+    /**
+     * Authorize verified boarder for critical actions (like applying to rooms)
+     */
+    public static function authorizeVerifiedBoarder()
+    {
+        $user = self::authorize(['boarder']);
+        
+        // Check email verification for critical actions
+        if (!($user['email_verified'] ?? false)) {
+            http_response_code(403);
+            echo json_encode([
+                'error' => 'Email verification required',
+                'code' => 'EMAIL_NOT_VERIFIED',
+                'message' => 'Please verify your email address before applying to rooms.'
+            ]);
+            exit;
+        }
+        
         return $user;
     }
 }

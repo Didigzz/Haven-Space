@@ -124,6 +124,23 @@ Router::get('/api/users/search', function() {
     require_once __DIR__ . '/users/search.php';
 });
 
+Router::get('/api/users/profile', function() {
+    require_once __DIR__ . '/users/profile.php';
+});
+
+Router::put('/api/users/profile', function() {
+    require_once __DIR__ . '/users/profile.php';
+});
+
+Router::patch('/api/users/profile', function() {
+    require_once __DIR__ . '/users/profile.php';
+});
+
+// Avatar upload endpoint
+Router::post('/api/users/avatar', function() {
+    require_once __DIR__ . '/users/avatar.php';
+});
+
 // ============================================
 // MAINTENANCE ROUTES - LANDLORD
 // ============================================
@@ -182,6 +199,21 @@ Router::get('/api/boarder/documents', [OnboardingController::class, 'getBoarderD
 Router::post('/api/boarder/documents/acknowledge', [OnboardingController::class, 'acknowledgeDocument']);
 
 // ============================================
+// SAVED LISTINGS ROUTES - BOARDER
+// ============================================
+Router::get('/api/boarder/saved-listings', function() {
+    require_once __DIR__ . '/boarder/saved-listings.php';
+});
+
+Router::post('/api/boarder/saved-listings', function() {
+    require_once __DIR__ . '/boarder/saved-listings.php';
+});
+
+Router::delete('/api/boarder/saved-listings', function() {
+    require_once __DIR__ . '/boarder/saved-listings.php';
+});
+
+// ============================================
 // ONBOARDING ROUTES - SHARED
 // ============================================
 Router::post('/api/onboarding/welcome', [OnboardingController::class, 'triggerWelcome']);
@@ -201,6 +233,14 @@ Router::post('/api/landlord/listings', function() {
 
 Router::put('/api/landlord/listings/{id}', function($id) {
     require_once __DIR__ . '/landlord/update-listing.php';
+});
+
+Router::post('/api/landlord/upload-photos', function() {
+    require_once __DIR__ . '/landlord/upload-photos.php';
+});
+
+Router::post('/api/landlord/listings/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/listing-photos.php';
 });
 
 // ============================================
@@ -246,6 +286,13 @@ Router::get('/api/boarder/announcements', function() {
 
 Router::post('/api/boarder/announcements/{id}/view', function($id) {
     require_once __DIR__ . '/boarder/announcements.php';
+});
+
+// ============================================
+// BOARDER DASHBOARD ROUTES
+// ============================================
+Router::get('/api/boarder/dashboard/stats', function() {
+    require_once __DIR__ . '/boarder/dashboard-stats.php';
 });
 
 // ============================================
@@ -324,6 +371,19 @@ Router::get('/api/rooms/public', function() {
 // Get single property detail (no authentication required)
 Router::get('/api/rooms/detail', function() {
     require_once __DIR__ . '/rooms/detail.php';
+});
+
+// Get popular locations based on property data (no authentication required)
+Router::get('/api/rooms/popular-locations', function() {
+    require_once __DIR__ . '/rooms/popular-locations.php';
+});
+
+// ============================================
+// ALL PROPERTIES ROUTES (FOR MAPS)
+// ============================================
+// Get all active properties from all landlords for map display
+Router::get('/api/properties/all', function() {
+    require_once __DIR__ . '/properties/all.php';
 });
 
 // ============================================

@@ -3,222 +3,9 @@
  * Handles room details display, gallery, and booking functionality
  */
 
-import { updateBoarderStatus, getBoarderStatus } from '../../shared/routing.js';
+import { updateBoarderStatus } from '../../shared/routing.js';
+import { getImageUrl } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
-
-// Sample room data (fallback for development)
-const roomDataFallback = {
-  1: {
-    id: 1,
-    title: 'Sunrise Dormitory',
-    address: 'Katipunan Avenue, Quezon City, Metro Manila',
-    location: 'University of the Philippines',
-    distance: '0.5 km from UP',
-    price: 4500,
-    sharedPrice: 3000,
-    rating: 4.8,
-    reviews: 24,
-    types: 'Single & Shared',
-    availability: 'Available Now',
-    minStay: '6 months',
-    deposit: '2 months',
-    description: `Sunrise Dormitory offers comfortable and affordable boarding accommodations for students near the University of the Philippines. Our property features modern amenities, 24/7 security, and a conducive environment for studying.
-
-Located in the heart of Katipunan, you'll have easy access to universities, shopping centers, restaurants, and public transportation. The property is regularly inspected and meets all safety and quality standards.`,
-    amenities: [
-      { icon: 'wifi', label: 'High-Speed WiFi' },
-      { icon: 'computerDesktop', label: 'Air Conditioning' },
-      { icon: 'check', label: 'Parking Space' },
-      { icon: 'laundryMachine', label: 'Laundry Area' },
-      { icon: 'shieldCheck', label: '24/7 Security' },
-      { icon: 'cctvCamera', label: 'CCTV Surveillance' },
-      { icon: 'list', label: 'Kitchen Access' },
-      { icon: 'square', label: 'Furnished Rooms' },
-      { icon: 'bolt', label: 'Backup Generator' },
-      { icon: 'drop', label: 'Water Heater' },
-      { icon: 'sparkles', label: 'Weekly Cleaning' },
-      { icon: 'userGroup', label: 'Common Area' },
-    ],
-    rules: [
-      {
-        icon: 'clock',
-        title: 'Curfew',
-        desc: 'Building locks at 11:00 PM on weekdays, 12:00 AM on weekends',
-      },
-      {
-        icon: 'noSmoking',
-        title: 'No Smoking',
-        desc: 'Smoking is not allowed inside the building',
-      },
-      { icon: 'noPets', title: 'No Pets', desc: 'Pets are not allowed on the premises' },
-      { icon: 'userGroup', title: 'Visitors', desc: 'Visitors allowed until 9:00 PM only' },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
-      'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200&q=80',
-    ],
-    badges: ['verified', 'new'],
-    landlord: {
-      name: 'Juan Dela Cruz',
-      properties: 5,
-      rating: 4.7,
-    },
-  },
-  2: {
-    id: 2,
-    title: 'Campus View Residences',
-    address: 'Loyola Heights, Quezon City, Metro Manila',
-    location: 'Ateneo de Manila',
-    distance: '1.2 km from Ateneo',
-    price: 6500,
-    sharedPrice: 4500,
-    rating: 4.6,
-    reviews: 18,
-    types: 'Studio & 1 BHK',
-    availability: 'Available Sept 1',
-    minStay: '12 months',
-    deposit: '3 months',
-    description: `Campus View Residences offers premium boarding accommodations with stunning views of the Ateneo de Manila University campus. Our modern facilities include studio and 1 BHK units perfect for students who value privacy and comfort.
-
-Enjoy easy access to Loyola Heights' vibrant community, with restaurants, cafes, and shops just steps away. The property features state-of-the-art amenities and professional management.`,
-    amenities: [
-      { icon: 'wifi', label: 'High-Speed WiFi' },
-      { icon: 'computerDesktop', label: 'Air Conditioning' },
-      { icon: 'check', label: 'Parking Space' },
-      { icon: 'cctvCamera', label: 'CCTV Surveillance' },
-      { icon: 'shieldCheck', label: '24/7 Security' },
-      { icon: 'square', label: 'Fully Furnished' },
-      { icon: 'bolt', label: 'Backup Generator' },
-      { icon: 'drop', label: 'Water Heater' },
-    ],
-    rules: [
-      { icon: 'clock', title: 'Curfew', desc: 'Building locks at 11:00 PM daily' },
-      {
-        icon: 'noSmoking',
-        title: 'No Smoking',
-        desc: 'Smoking is not allowed inside the building',
-      },
-      { icon: 'noPets', title: 'No Pets', desc: 'Pets are not allowed on the premises' },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
-    ],
-    badges: ['verified'],
-    landlord: {
-      name: 'Maria Santos',
-      properties: 3,
-      rating: 4.8,
-    },
-  },
-  3: {
-    id: 3,
-    title: 'Greenfield Boarding House',
-    address: 'Commonwealth Avenue, Quezon City, Metro Manila',
-    location: 'Miriam College',
-    distance: '2.1 km from Miriam',
-    price: 3200,
-    sharedPrice: 2500,
-    rating: 4.5,
-    reviews: 32,
-    types: 'Shared Rooms',
-    availability: 'Available Now',
-    minStay: '3 months',
-    deposit: '1 month',
-    description: `Greenfield Boarding House provides budget-friendly accommodations for students attending Miriam College and nearby universities. Despite the affordable rates, we maintain high standards of cleanliness and security.
-
-Our communal living environment fosters friendships and study groups. With essential amenities and a prime location on Commonwealth Avenue, you get great value for your money.`,
-    amenities: [
-      { icon: 'wifi', label: 'High-Speed WiFi' },
-      { icon: 'laundryMachine', label: 'Laundry Area' },
-      { icon: 'list', label: 'Kitchen Access' },
-      { icon: 'check', label: 'Parking Space' },
-      { icon: 'shieldCheck', label: 'Security' },
-    ],
-    rules: [
-      {
-        icon: 'clock',
-        title: 'Curfew',
-        desc: 'Building locks at 10:00 PM on weekdays, 11:00 PM on weekends',
-      },
-      {
-        icon: 'noSmoking',
-        title: 'No Smoking',
-        desc: 'Designated smoking area outside the building',
-      },
-      { icon: 'userGroup', title: 'Visitors', desc: 'Visitors allowed until 8:00 PM only' },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
-    ],
-    badges: ['promo'],
-    landlord: {
-      name: 'Pedro Reyes',
-      properties: 2,
-      rating: 4.5,
-    },
-  },
-  4: {
-    id: 4,
-    title: 'Metro Plaza Apartments',
-    address: 'Roxas Boulevard, Quezon City, Metro Manila',
-    location: 'University of the Philippines',
-    distance: '0.8 km from UP',
-    price: 7800,
-    sharedPrice: 5500,
-    rating: 4.9,
-    reviews: 41,
-    types: '1 BHK & Studio',
-    availability: 'Available Aug 15',
-    minStay: '12 months',
-    deposit: '3 months',
-    description: `Metro Plaza Apartments offers luxury boarding accommodations along the iconic Roxas Boulevard. Our premium 1 BHK and studio units are perfect for graduate students and young professionals who demand the best.
-
-Experience bay-side living with stunning views, modern amenities, and proximity to UP Diliman. The building features professional management and top-notch security systems.`,
-    amenities: [
-      { icon: 'wifi', label: 'High-Speed WiFi' },
-      { icon: 'computerDesktop', label: 'Air Conditioning' },
-      { icon: 'shieldCheck', label: '24/7 Security' },
-      { icon: 'cctvCamera', label: 'CCTV Surveillance' },
-      { icon: 'check', label: 'Parking Space' },
-      { icon: 'laundryMachine', label: 'Laundry Area' },
-      { icon: 'square', label: 'Fully Furnished' },
-      { icon: 'list', label: 'Kitchen Access' },
-      { icon: 'bolt', label: 'Backup Generator' },
-      { icon: 'drop', label: 'Water Heater' },
-      { icon: 'sparkles', label: 'Weekly Cleaning' },
-    ],
-    rules: [
-      { icon: 'clock', title: 'Curfew', desc: '24/7 access with key card' },
-      {
-        icon: 'noSmoking',
-        title: 'No Smoking',
-        desc: 'Smoking is not allowed inside the building',
-      },
-      { icon: 'userGroup', title: 'Visitors', desc: 'Visitors must register at reception' },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
-      'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200&q=80',
-    ],
-    badges: ['verified', 'new'],
-    landlord: {
-      name: 'Ana Garcia',
-      properties: 8,
-      rating: 4.9,
-    },
-  },
-};
 
 // State management
 const state = {
@@ -276,16 +63,7 @@ async function setupPage() {
     setupEventListeners(state.roomData);
   } catch (error) {
     console.error('Error loading room details:', error);
-    // Fallback to sample data if API fails
-    const room = roomDataFallback[state.roomId];
-    if (room) {
-      state.roomData = room;
-      populateRoomData(room);
-      setupGallery();
-      setupEventListeners(room);
-    } else {
-      showNotFound();
-    }
+    showNotFound();
   }
 }
 
@@ -479,13 +257,13 @@ function populateRoomData(room) {
   // Update gallery images
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage && room.images && room.images.length > 0) {
-    mainImage.src = room.images[0] || '../../../assets/images/placeholder-room.svg';
+    mainImage.src = getImageUrl(room.images[0]);
     mainImage.alt = `${room.title} - Main View`;
     mainImage.onerror = function () {
-      this.src = '../../../assets/images/placeholder-room.svg';
+      this.src = getImageUrl(null);
     };
   } else if (mainImage) {
-    mainImage.src = '../../../assets/images/placeholder-room.svg';
+    mainImage.src = getImageUrl(null);
     mainImage.alt = 'No image available';
   }
 
@@ -496,7 +274,7 @@ function populateRoomData(room) {
       .map(
         (img, index) => `
           <button class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}">
-            <img src="${img}" alt="Thumbnail ${index + 1}" />
+            <img src="${getImageUrl(img)}" alt="Thumbnail ${index + 1}" />
           </button>
         `
       )
@@ -640,10 +418,9 @@ function updateGalleryImage() {
 
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
-    mainImage.src =
-      room.images[state.currentImageIndex] || '../../../assets/images/placeholder-room.svg';
+    mainImage.src = getImageUrl(room.images[state.currentImageIndex]);
     mainImage.onerror = function () {
-      this.src = '../../../assets/images/placeholder-room.svg';
+      this.src = getImageUrl(null);
     };
   }
 
@@ -706,10 +483,41 @@ function handleApplyNow(room) {
     return;
   }
 
-  console.log('Redirecting to confirmation page');
+  console.log('Redirecting to confirm-booking page');
 
-  // User is logged in, redirect to confirmation page
-  window.location.href = `./confirm-application.html?id=${room.id || state.roomId}`;
+  // Get selected room type and its price
+  const selectedRoomType = document.querySelector('input[name="room-type"]:checked');
+  let roomType = 'Standard Room';
+  let roomPrice = room.price || 0;
+
+  if (selectedRoomType) {
+    const roomOption = selectedRoomType.closest('.booking-room-option');
+    const roomTypeLabel = roomOption?.querySelector('.booking-room-type-label');
+    const roomTypePrice = roomOption?.querySelector('.booking-room-type-price');
+
+    if (roomTypeLabel) {
+      roomType = roomTypeLabel.textContent.trim();
+    }
+
+    if (roomTypePrice) {
+      // Extract price from text like "₱4,500/mo"
+      const priceText = roomTypePrice.textContent.replace(/[₱,/mo]/g, '').trim();
+      roomPrice = parseInt(priceText) || room.price || 0;
+    }
+  }
+
+  // User is logged in, redirect to confirm-booking page to set up moving date
+  // Pass room details as URL parameters since they haven't applied yet
+  const params = new URLSearchParams({
+    id: room.id || state.roomId,
+    title: room.title || 'Property',
+    price: roomPrice,
+    address: room.address || '',
+    landlordName: room.landlord?.name || 'Property Owner',
+    roomType: roomType,
+  });
+
+  window.location.href = `../confirm-booking/index.html?${params.toString()}`;
 }
 
 /**
@@ -833,9 +641,52 @@ async function submitApplication(room, roomType, modalOverlay) {
   submitBtn.textContent = 'Submitting...';
 
   try {
-    // TODO: Integrate with backend API
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Get form data
+    const messageInput = modalOverlay.querySelector('#application-message');
+    const moveInDateInput = modalOverlay.querySelector('#move-in-date');
+    const termsCheckbox = modalOverlay.querySelector('#terms-checkbox');
+
+    // Validate form
+    if (!termsCheckbox.checked) {
+      throw new Error('Please accept the terms and conditions');
+    }
+
+    if (!moveInDateInput.value) {
+      throw new Error('Please select a move-in date');
+    }
+
+    // Prepare application data
+    const applicationData = {
+      room_id: room.id,
+      landlord_id: room.landlord_id,
+      property_id: room.property_id,
+      message: `Move-in Date: ${moveInDateInput.value}\n\n${
+        messageInput.value || 'No additional message provided.'
+      }`,
+    };
+
+    // Get auth token
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.token) {
+      throw new Error('Authentication required. Please log in.');
+    }
+
+    // Submit to backend API
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${user.token}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify(applicationData),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to submit application');
+    }
 
     // Update boarder status
     updateBoarderStatus('applied_pending');
@@ -849,7 +700,7 @@ async function submitApplication(room, roomType, modalOverlay) {
       <span data-icon="paperAirplane" data-icon-width="18" data-icon-height="18"></span>
       Submit Application
     `;
-    alert('Failed to submit application. Please try again.');
+    alert(error.message || 'Failed to submit application. Please try again.');
   }
 }
 

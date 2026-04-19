@@ -1,6 +1,6 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
-import { initLandlordApplications } from './landlord-applications.js';
+import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -39,10 +39,11 @@ export function initLandlordDashboard(config = {}) {
   // Update greeting based on time of day
   updateGreeting(user.name);
 
-  // Check if we're on the listings page - if so, skip dashboard-specific loaders
+  // Check if we're on the listings page or boarders page - if so, skip dashboard-specific loaders
   const isListingsPage = window.location.pathname.includes('/listings/');
+  const isBoardersPage = window.location.pathname.includes('/boarders/');
 
-  if (!isListingsPage) {
+  if (!isListingsPage && !isBoardersPage) {
     // Load dashboard data (placeholder for API integration)
     loadDashboardData();
 
@@ -57,9 +58,12 @@ export function initLandlordDashboard(config = {}) {
 
     // Initialize edit property modal handlers
     initEditPropertyModal();
-  }
 
-  initLandlordApplications();
+    // Dynamically import and initialize applications only on dashboard
+    import('./landlord-applications.js').then(({ initLandlordApplications }) => {
+      initLandlordApplications();
+    });
+  }
 }
 
 /**
@@ -91,10 +95,7 @@ async function loadDashboardData() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/dashboard-stats.php`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': localStorage.getItem('user_id') || '4',
-      },
+      headers: getAuthHeaders('4'),
       credentials: 'include',
     });
 
@@ -721,10 +722,7 @@ async function loadProperties() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': localStorage.getItem('user_id') || '4',
-      },
+      headers: getAuthHeaders('4'),
       credentials: 'include',
     });
 

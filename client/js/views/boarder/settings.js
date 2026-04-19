@@ -2,15 +2,20 @@
  * Boarder Settings Page Logic
  */
 
+import { authenticatedFetch, getState, setState } from '../../shared/state.js';
+import { CONFIG } from '../../config.js';
+
 /**
  * Initialize settings page
  */
 export function initSettingsPage() {
   initSettingsTabs();
-  initProfileForm();
+  initProfileForms();
   initNotificationSettings();
   initPasswordForm();
   initAvatarUpload();
+  initLoadProfileButton();
+  // Don't auto-load profile data - let user choose to load it
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,6 +24,119 @@ document.addEventListener('DOMContentLoaded', () => {
     initSettingsPage();
   }
 });
+
+/**
+ * Initialize load profile button
+ */
+function initLoadProfileButton() {
+  // Add load profile button to basic info section
+  const basicInfoForm = document.getElementById('basic-info-form');
+  if (basicInfoForm) {
+    const loadButton = document.createElement('button');
+    loadButton.type = 'button';
+    loadButton.className = 'btn btn-outline btn-sm';
+    loadButton.id = 'load-profile-btn';
+    loadButton.innerHTML =
+      '<span class="icon-placeholder" data-icon="arrowPath"></span> Load My Current Information';
+    loadButton.style.marginBottom = '16px';
+
+    // Insert before the form actions
+    const formActions = basicInfoForm.querySelector('.form-actions');
+    if (formActions) {
+      basicInfoForm.insertBefore(loadButton, formActions);
+    }
+
+    loadButton.addEventListener('click', loadUserProfile);
+  }
+}
+
+/**
+ * Load user profile data from API
+ */
+async function loadUserProfile() {
+  const loadButton = document.getElementById('load-profile-btn');
+  if (loadButton) {
+    loadButton.disabled = true;
+    loadButton.innerHTML =
+      '<span class="icon-placeholder" data-icon="arrowPath"></span> Loading...';
+  }
+
+  try {
+    const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/users/profile`);
+
+    if (response.ok) {
+      const data = await response.json();
+      populateProfileForms(data.user);
+      showToast('Profile information loaded successfully', 'success');
+    } else {
+      console.warn('Failed to load profile data, using localStorage fallback');
+      // Fallback to localStorage data
+      const state = getState();
+      if (state.user) {
+        populateProfileForms(state.user);
+        showToast('Profile information loaded from cache', 'info');
+      } else {
+        showToast('No profile data found', 'warning');
+      }
+    }
+  } catch (error) {
+    console.error('Error loading profile:', error);
+    // Fallback to localStorage data
+    const state = getState();
+    if (state.user) {
+      populateProfileForms(state.user);
+      showToast('Profile information loaded from cache', 'info');
+    } else {
+      showToast('Failed to load profile information', 'error');
+    }
+  } finally {
+    if (loadButton) {
+      loadButton.disabled = false;
+      loadButton.innerHTML =
+        '<span class="icon-placeholder" data-icon="arrowPath"></span> Load My Current Information';
+    }
+  }
+}
+
+/**
+ * Populate form fields with user data
+ */
+function populateProfileForms(user) {
+  // Basic Information
+  if (user.first_name) document.getElementById('first-name').value = user.first_name;
+  if (user.last_name) document.getElementById('last-name').value = user.last_name;
+  if (user.date_of_birth) document.getElementById('date-of-birth').value = user.date_of_birth;
+  if (user.gender) document.getElementById('gender').value = user.gender;
+  if (user.bio) document.getElementById('bio').value = user.bio;
+  if (user.avatar_url) document.getElementById('profile-avatar-preview').src = user.avatar_url;
+
+  // Contact Details
+  if (user.email) document.getElementById('email').value = user.email;
+  if (user.phone) document.getElementById('phone').value = user.phone;
+  if (user.alt_phone) document.getElementById('alt-phone').value = user.alt_phone;
+  if (user.current_address) document.getElementById('current-address').value = user.current_address;
+
+  // Employment Information
+  if (user.employment_status)
+    document.getElementById('employment-status').value = user.employment_status;
+  if (user.company_name) document.getElementById('company-name').value = user.company_name;
+  if (user.job_title) document.getElementById('job-title').value = user.job_title;
+  if (user.monthly_income) document.getElementById('monthly-income').value = user.monthly_income;
+  if (user.work_schedule) document.getElementById('work-schedule').value = user.work_schedule;
+  if (user.company_address) document.getElementById('company-address').value = user.company_address;
+
+  // Emergency Contact
+  if (user.emergency_contact_name)
+    document.getElementById('emergency-name').value = user.emergency_contact_name;
+  if (user.emergency_contact_relationship)
+    document.getElementById('emergency-relationship').value = user.emergency_contact_relationship;
+  if (user.emergency_contact_phone)
+    document.getElementById('emergency-phone').value = user.emergency_contact_phone;
+  if (user.emergency_contact_alt_phone)
+    document.getElementById('emergency-alt-phone').value = user.emergency_contact_alt_phone;
+  if (user.emergency_contact_address)
+    document.getElementById('emergency-address').value = user.emergency_contact_address;
+}
 
 /**
  * Initialize settings tabs
@@ -48,29 +166,241 @@ function initSettingsTabs() {
 }
 
 /**
- * Initialize profile form
+ * Initialize profile forms
  */
-function initProfileForm() {
-  const profileForm = document.getElementById('profile-form');
+function initProfileForms() {
+  // Add clear form buttons to each form
+  addClearFormButtons();
 
-  if (profileForm) {
-    profileForm.addEventListener('submit', async e => {
+  // Basic Information Form
+  const basicInfoForm = document.getElementById('basic-info-form');
+  if (basicInfoForm) {
+    basicInfoForm.addEventListener('submit', async e => {
       e.preventDefault();
 
-      // TODO: Integrate with backend API
-      // await fetch(`${CONFIG.API_BASE_URL}/api/profile/update`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     firstName: document.getElementById('first-name').value,
-      //     lastName: document.getElementById('last-name').value,
-      //     phone: document.getElementById('phone').value,
-      //   }),
-      // });
+      // Validate required fields
+      const firstName = document.getElementById('first-name').value.trim();
+      const lastName = document.getElementById('last-name').value.trim();
 
-      showToast('Profile updated successfully', 'success');
+      if (!firstName || !lastName) {
+        showToast('First name and last name are required', 'error');
+        return;
+      }
+
+      await updateProfile('basic-info', {
+        first_name: firstName,
+        last_name: lastName,
+        date_of_birth: document.getElementById('date-of-birth').value || null,
+        gender: document.getElementById('gender').value || null,
+        bio: document.getElementById('bio').value.trim() || null,
+      });
     });
   }
+
+  // Contact Details Form
+  const contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      // Validate phone number format (Philippine format)
+      const phone = document.getElementById('phone').value.trim();
+      const altPhone = document.getElementById('alt-phone').value.trim();
+
+      if (phone && !isValidPhoneNumber(phone)) {
+        showToast('Please enter a valid Philippine phone number (+63 9XX XXX XXXX)', 'error');
+        return;
+      }
+
+      if (altPhone && !isValidPhoneNumber(altPhone)) {
+        showToast('Please enter a valid alternative phone number', 'error');
+        return;
+      }
+
+      await updateProfile('contact', {
+        phone: phone || null,
+        alt_phone: altPhone || null,
+        current_address: document.getElementById('current-address').value.trim() || null,
+      });
+    });
+  }
+
+  // Employment Information Form
+  const employmentForm = document.getElementById('employment-form');
+  if (employmentForm) {
+    employmentForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      await updateProfile('employment', {
+        employment_status: document.getElementById('employment-status').value || null,
+        company_name: document.getElementById('company-name').value.trim() || null,
+        job_title: document.getElementById('job-title').value.trim() || null,
+        monthly_income: document.getElementById('monthly-income').value || null,
+        work_schedule: document.getElementById('work-schedule').value || null,
+        company_address: document.getElementById('company-address').value.trim() || null,
+      });
+    });
+  }
+
+  // Emergency Contact Form
+  const emergencyForm = document.getElementById('emergency-contact-form');
+  if (emergencyForm) {
+    emergencyForm.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      // Validate required emergency contact fields
+      const emergencyName = document.getElementById('emergency-name').value.trim();
+      const emergencyRelationship = document.getElementById('emergency-relationship').value;
+      const emergencyPhone = document.getElementById('emergency-phone').value.trim();
+
+      if (emergencyName || emergencyRelationship || emergencyPhone) {
+        // If any emergency contact field is filled, require all essential fields
+        if (!emergencyName) {
+          showToast('Emergency contact name is required', 'error');
+          return;
+        }
+        if (!emergencyRelationship) {
+          showToast('Emergency contact relationship is required', 'error');
+          return;
+        }
+        if (!emergencyPhone) {
+          showToast('Emergency contact phone is required', 'error');
+          return;
+        }
+        if (!isValidPhoneNumber(emergencyPhone)) {
+          showToast('Please enter a valid emergency contact phone number', 'error');
+          return;
+        }
+      }
+
+      const altEmergencyPhone = document.getElementById('emergency-alt-phone').value.trim();
+      if (altEmergencyPhone && !isValidPhoneNumber(altEmergencyPhone)) {
+        showToast('Please enter a valid alternative emergency contact phone number', 'error');
+        return;
+      }
+
+      await updateProfile('emergency', {
+        emergency_contact_name: emergencyName || null,
+        emergency_contact_relationship: emergencyRelationship || null,
+        emergency_contact_phone: emergencyPhone || null,
+        emergency_contact_alt_phone: altEmergencyPhone || null,
+        emergency_contact_address:
+          document.getElementById('emergency-address').value.trim() || null,
+      });
+    });
+  }
+}
+
+/**
+ * Add clear form buttons to each form
+ */
+function addClearFormButtons() {
+  const forms = [
+    { id: 'basic-info-form', name: 'Basic Information' },
+    { id: 'contact-form', name: 'Contact Details' },
+    { id: 'employment-form', name: 'Employment Information' },
+    { id: 'emergency-contact-form', name: 'Emergency Contact' },
+  ];
+
+  forms.forEach(formInfo => {
+    const form = document.getElementById(formInfo.id);
+    if (form) {
+      const formActions = form.querySelector('.form-actions');
+      if (formActions) {
+        const clearButton = document.createElement('button');
+        clearButton.type = 'button';
+        clearButton.className = 'btn btn-outline';
+        clearButton.textContent = `Clear ${formInfo.name}`;
+        clearButton.addEventListener('click', () => clearForm(formInfo.id));
+
+        // Insert before the save button
+        formActions.insertBefore(clearButton, formActions.firstChild);
+      }
+    }
+  });
+}
+
+/**
+ * Clear form fields
+ */
+function clearForm(formId) {
+  const form = document.getElementById(formId);
+  if (form) {
+    // Clear all input and textarea fields
+    const inputs = form.querySelectorAll('input:not([type="file"]), textarea, select');
+    inputs.forEach(input => {
+      if (input.type === 'checkbox' || input.type === 'radio') {
+        input.checked = false;
+      } else {
+        input.value = '';
+      }
+    });
+
+    showToast('Form cleared', 'info');
+  }
+}
+
+/**
+ * Validate Philippine phone number format
+ */
+function isValidPhoneNumber(phone) {
+  // Philippine phone number patterns
+  const patterns = [
+    /^\+63\s?9\d{2}\s?\d{3}\s?\d{4}$/, // +63 9XX XXX XXXX
+    /^09\d{2}\s?\d{3}\s?\d{4}$/, // 09XX XXX XXXX
+    /^9\d{9}$/, // 9XXXXXXXXX
+  ];
+
+  return patterns.some(pattern => pattern.test(phone.replace(/\s/g, '')));
+}
+
+/**
+ * Update user profile via API
+ */
+async function updateProfile(section, data) {
+  try {
+    const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/users/profile`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+
+      // Update localStorage with new user data
+      const currentState = getState();
+      setState({
+        user: { ...currentState.user, ...result.user },
+      });
+
+      // Trigger UI updates across the app
+      window.dispatchEvent(
+        new CustomEvent('userProfileUpdated', {
+          detail: result.user,
+        })
+      );
+
+      showToast(`${getSectionName(section)} updated successfully`, 'success');
+    } else {
+      const error = await response.json();
+      showToast(error.error || 'Failed to update profile', 'error');
+    }
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    showToast('Failed to update profile. Please try again.', 'error');
+  }
+}
+
+/**
+ * Get human-readable section name
+ */
+function getSectionName(section) {
+  const names = {
+    'basic-info': 'Basic Information',
+    contact: 'Contact Details',
+    employment: 'Employment Information',
+    emergency: 'Emergency Contact',
+  };
+  return names[section] || 'Profile';
 }
 
 /**
@@ -158,7 +488,7 @@ function initAvatarUpload() {
       avatarInput.click();
     });
 
-    avatarInput.addEventListener('change', e => {
+    avatarInput.addEventListener('change', async e => {
       const file = e.target.files[0];
       if (file) {
         // Validate file size (max 2MB)
@@ -180,13 +510,42 @@ function initAvatarUpload() {
         };
         reader.readAsDataURL(file);
 
-        // TODO: Upload to backend
-        // const formData = new FormData();
-        // formData.append('avatar', file);
-        // await fetch(`${CONFIG.API_BASE_URL}/api/profile/avatar`, {
-        //   method: 'POST',
-        //   body: formData,
-        // });
+        // Upload to backend
+        try {
+          const formData = new FormData();
+          formData.append('avatar', file);
+
+          const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/users/avatar`, {
+            method: 'POST',
+            body: formData,
+            headers: {}, // Don't set Content-Type for FormData
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+
+            // Update localStorage with new avatar URL
+            const currentState = getState();
+            setState({
+              user: { ...currentState.user, avatar_url: result.avatar_url },
+            });
+
+            // Trigger UI updates across the app
+            window.dispatchEvent(
+              new CustomEvent('userProfileUpdated', {
+                detail: { avatar_url: result.avatar_url },
+              })
+            );
+
+            showToast('Profile picture updated successfully', 'success');
+          } else {
+            const error = await response.json();
+            showToast(error.error || 'Failed to upload image', 'error');
+          }
+        } catch (error) {
+          console.error('Error uploading avatar:', error);
+          showToast('Failed to upload image. Please try again.', 'error');
+        }
       }
     });
   }

@@ -13,55 +13,6 @@ let propertyId = null;
 // Original property data
 let originalProperty = null;
 
-// Sample property data (replace with API call)
-const sampleProperties = {
-  1: {
-    id: 1,
-    name: 'Sunrise Boarding House',
-    type: 'boarding-house',
-    description:
-      'A cozy boarding house near universities with all essential amenities for comfortable living.',
-    price: 5000,
-    deposit: 5000,
-    rooms: 10,
-    capacity: 2,
-    status: 'active',
-    address: '123 España Blvd, Sampaloc',
-    city: 'Manila',
-    province: 'Metro Manila',
-    latitude: '14.6091',
-    longitude: '120.9898',
-    amenities: ['wifi', 'aircon', 'parking', 'laundry', 'cctv'],
-    photos: [
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800',
-    ],
-  },
-  2: {
-    id: 2,
-    name: 'Green Valley Dormitory',
-    type: 'dormitory',
-    description:
-      'Modern dormitory with affordable rates, perfect for students. Walking distance to universities.',
-    price: 4500,
-    deposit: 4500,
-    rooms: 15,
-    capacity: 4,
-    status: 'full',
-    address: '456 Quezon Ave',
-    city: 'Quezon City',
-    province: 'Metro Manila',
-    latitude: '14.6760',
-    longitude: '121.0437',
-    amenities: ['wifi', 'furnished', 'laundry', 'kitchen', 'cctv'],
-    photos: [
-      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800',
-      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800',
-    ],
-  },
-};
-
 /**
  * Initialize the edit property page
  */
@@ -90,53 +41,87 @@ export function initEditProperty() {
 }
 
 /**
- * Load property data into form
+ * Load property data into form from API
  */
-function loadPropertyData(id) {
-  const property = sampleProperties[id];
+async function loadPropertyData(id) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${id}`, {
+      credentials: 'include',
+    });
 
-  if (!property) {
-    alert('Property not found. Redirecting to properties list.');
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('Edit property API returned 401 - user may not be authenticated yet');
+        // Don't redirect here - let the main dashboard handle authentication
+        return;
+      }
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    let property = null;
+    if (result.data && result.data.id) {
+      property = result.data;
+    } else if (result.data && result.data.property) {
+      property = result.data.property;
+    } else if (result.data && result.data.properties && result.data.properties.length > 0) {
+      property = result.data.properties[0];
+    }
+
+    if (!property) {
+      alert('Property not found. Redirecting to properties list.');
+      window.location.href = '../listings/index.html';
+      return;
+    }
+
+    originalProperty = { ...property };
+
+    const photos = Array.isArray(property.photos)
+      ? property.photos.map(p => (typeof p === 'string' ? p : p.url || p.photo_url || ''))
+      : [];
+
+    uploadedPhotos = photos.map((url, index) => ({
+      id: Date.now() + index,
+      url,
+      preview: url,
+      isNew: false,
+    }));
+
+    // Populate form fields
+    document.getElementById('property-name').value = property.name || property.property_name || '';
+    document.getElementById('property-type').value = mapPropertyTypeToForm(
+      property.type || property.property_type || ''
+    );
+    document.getElementById('property-description').value = property.description || '';
+    document.getElementById('property-price').value = property.price || property.monthly_rate || '';
+    document.getElementById('property-deposit').value = property.deposit || '';
+    document.getElementById('property-capacity').value = property.capacity || 2;
+    document.getElementById('property-status').value = property.status || 'inactive';
+    document.getElementById('property-address').value = property.address || '';
+    document.getElementById('property-city').value = property.city || '';
+    document.getElementById('property-province').value = property.province || '';
+    document.getElementById('property-latitude').value = property.latitude || '';
+    document.getElementById('property-longitude').value = property.longitude || '';
+
+    const roomCapacityInput = document.getElementById('room-capacity-input');
+    if (roomCapacityInput) {
+      roomCapacityInput.value = property.total_rooms || property.rooms || 0;
+    }
+
+    // Set amenities
+    const amenityCheckboxes = document.querySelectorAll('input[name="amenities"]');
+    const amenities = Array.isArray(property.amenities) ? property.amenities : [];
+    amenityCheckboxes.forEach(checkbox => {
+      checkbox.checked = amenities.includes(checkbox.value);
+    });
+
+    renderPhotoGrid();
+  } catch (error) {
+    console.error('Error loading property data:', error);
+    alert('Failed to load property data. Redirecting to properties list.');
     window.location.href = '../listings/index.html';
-    return;
   }
-
-  originalProperty = { ...property };
-  uploadedPhotos = property.photos.map((url, index) => ({
-    id: Date.now() + index,
-    url: url, // Existing photos have URL
-    preview: url,
-    isNew: false,
-  }));
-
-  // Populate form fields
-  document.getElementById('property-name').value = property.name;
-  document.getElementById('property-type').value = property.type;
-  document.getElementById('property-description').value = property.description;
-  document.getElementById('property-price').value = property.price;
-  document.getElementById('property-deposit').value = property.deposit;
-  document.getElementById('property-capacity').value = property.capacity;
-  document.getElementById('property-status').value = property.status;
-  document.getElementById('property-address').value = property.address;
-  document.getElementById('property-city').value = property.city;
-  document.getElementById('property-province').value = property.province;
-  document.getElementById('property-latitude').value = property.latitude || '';
-  document.getElementById('property-longitude').value = property.longitude || '';
-
-  // Set room capacity from property.rooms
-  const roomCapacityInput = document.getElementById('room-capacity-input');
-  if (roomCapacityInput) {
-    roomCapacityInput.value = property.rooms;
-  }
-
-  // Set amenities
-  const amenityCheckboxes = document.querySelectorAll('input[name="amenities"]');
-  amenityCheckboxes.forEach(checkbox => {
-    checkbox.checked = property.amenities.includes(checkbox.value);
-  });
-
-  // Render photo grid
-  renderPhotoGrid();
 }
 
 /**
@@ -380,8 +365,11 @@ function hasUnsavedChanges() {
  * Initialize photo upload functionality
  */
 function initPhotoUpload(uploadArea, fileInput) {
-  // Click to upload
-  uploadArea.addEventListener('click', () => fileInput.click());
+  // Click to upload (guard against bubbled clicks from the file input itself)
+  uploadArea.addEventListener('click', e => {
+    if (e.target === fileInput) return;
+    fileInput.click();
+  });
 
   // File selection
   fileInput.addEventListener('change', e => {

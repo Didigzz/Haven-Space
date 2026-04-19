@@ -73,11 +73,16 @@ class ApplicationController
 
         try {
             $result = $this->service->createApplication($data, $userId);
-            json_response(201, ['data' => $result, 'message' => 'Application created successfully']);
+            json_response(201, ['data' => $result, 'message' => 'Application created successfully', 'success' => true]);
         } catch (\InvalidArgumentException $e) {
+            error_log('Application validation error: ' . $e->getMessage());
+            error_log('Data received: ' . json_encode($data));
             json_response(400, ['error' => $e->getMessage()]);
         } catch (\Exception $e) {
-            json_response(500, ['error' => 'Failed to create application']);
+            error_log('Application creation error: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            error_log('Data received: ' . json_encode($data));
+            json_response(500, ['error' => 'Failed to create application', 'message' => $e->getMessage()]);
         }
     }
 

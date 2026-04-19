@@ -50,9 +50,10 @@ function getApiBaseUrl() {
   const apiUrls = {
     production: 'https://haven-space-api.onrender.com', // Production API on Render
     'local-dev': 'http://localhost:8000', // PHP built-in server
+    'local-apache': 'http://localhost:8000', // Apache/XAMPP - still use port 8000 for API
   };
 
-  return apiUrls[env] || apiUrls['local-dev'];
+  return apiUrls[env] || 'http://localhost:8000';
 }
 
 /**

@@ -1,21 +1,11 @@
 /**
- * Landlord Multi-Step Signup Flow
- * Handles 5-step signup: Account → Location → Property → Payment → Review
+ * Landlord 3-Step Signup Flow
+ * Handles 3-step signup: Account → Profile → Review
  */
 
 import CONFIG from '../../../config.js';
 import { getIcon } from '../../../shared/icons.js';
 import { getBasePath } from '../../../shared/routing.js';
-import {
-  initMap,
-  setMarker,
-  reverseGeocode,
-  searchAddress,
-  formatAddress,
-  isValidPhilippinesLocation,
-  debounce,
-  getCurrentLocation,
-} from '../../../shared/map-utils.js';
 
 /**
  * Show toast notification
@@ -50,89 +40,55 @@ function showToast(message, type = 'error') {
 
   document.body.appendChild(toast);
 
-  // Trigger animation
-  requestAnimationFrame(() => {
-    toast.classList.add('toast-visible');
-  });
-
-  // Auto remove after 5 seconds
-  const autoRemoveTimeout = setTimeout(() => {
-    removeToast(toast);
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.remove();
+    }
   }, 5000);
 
-  // Close button handler
-  const closeBtn = toast.querySelector('.toast-close');
-  closeBtn.addEventListener('click', () => {
-    clearTimeout(autoRemoveTimeout);
-    removeToast(toast);
-  });
-
-  // Click outside to close
-  toast.addEventListener('click', e => {
-    if (e.target === toast) {
-      clearTimeout(autoRemoveTimeout);
-      removeToast(toast);
-    }
-  });
-}
-
-/**
- * Remove toast notification
- * @param {HTMLElement} toast - Toast element to remove
- */
-function removeToast(toast) {
-  toast.classList.remove('toast-visible');
-  setTimeout(() => {
+  // Close button functionality
+  toast.querySelector('.toast-close').addEventListener('click', () => {
     toast.remove();
-  }, 300);
+  });
 }
 
 /**
- * Show inline error below form field
- * @param {HTMLInputElement|HTMLSelectElement} input - Form input element
- * @param {string} message - Error message to display
+ * Show inline error for form field
+ * @param {HTMLElement} field - Form field element
+ * @param {string} message - Error message
  */
-function showInlineError(input, message) {
-  // Remove existing error
-  const existingError = input.parentElement.querySelector('.field-error');
-  if (existingError) {
-    existingError.remove();
-  }
+function showInlineError(field, message) {
+  clearInlineError(field);
 
-  // Add error class to input
-  input.classList.add('input-error');
+  field.classList.add('input-error');
 
-  // Create error element
-  const errorEl = document.createElement('div');
-  errorEl.className = 'field-error';
-  errorEl.textContent = message;
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'field-error';
+  errorDiv.textContent = message;
 
-  // Insert after input
-  input.parentElement.appendChild(errorEl);
-
-  // Scroll input into view if needed
-  input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  field.parentNode.appendChild(errorDiv);
 }
 
 /**
- * Clear inline error from form field
- * @param {HTMLInputElement|HTMLSelectElement} input - Form input element
+ * Clear inline error for form field
+ * @param {HTMLElement} field - Form field element
  */
-function clearInlineError(input) {
-  input.classList.remove('input-error');
-  const existingError = input.parentElement.querySelector('.field-error');
-  if (existingError) {
-    existingError.remove();
+function clearInlineError(field) {
+  field.classList.remove('input-error');
+  const errorDiv = field.parentNode.querySelector('.field-error');
+  if (errorDiv) {
+    errorDiv.remove();
   }
 }
 
 /**
  * Clear all inline errors in a form
- * @param {HTMLFormElement} form - Form element
+ * @param {HTMLElement} form - Form element
  */
 function clearAllInlineErrors(form) {
-  form.querySelectorAll('.input-error').forEach(input => {
-    clearInlineError(input);
+  form.querySelectorAll('.input-error').forEach(field => {
+    clearInlineError(field);
   });
 }
 
@@ -167,6 +123,35 @@ function validatePassword(password) {
   }
 
   return { valid: true, message: '' };
+}
+
+/**
+ * Validate Philippine phone number format
+ * @param {string} phone - Phone number to validate
+ * @returns {boolean} - Whether phone number is valid
+ */
+function isValidPhoneNumber(phone) {
+  // Remove all non-digit characters
+  const cleaned = phone.replace(/\D/g, '');
+
+  // Philippine mobile number patterns:
+  // +63 9XX XXX XXXX (11 digits after +63)
+  // 09XX XXX XXXX (11 digits starting with 0)
+  // 9XX XXX XXXX (10 digits starting with 9)
+
+  if (cleaned.length === 12 && cleaned.startsWith('63') && cleaned.charAt(2) === '9') {
+    return true; // +63 9XX XXX XXXX format (63 + 10 digit mobile)
+  }
+
+  if (cleaned.length === 11 && cleaned.startsWith('09')) {
+    return true; // 09XX XXX XXXX format
+  }
+
+  if (cleaned.length === 10 && cleaned.startsWith('9')) {
+    return true; // 9XX XXX XXXX format
+  }
+
+  return false;
 }
 
 /**
@@ -243,90 +228,82 @@ function validateStep1() {
 }
 
 /**
- * Inject icons from centralized library
+ * Validate Step 2 form
+ * @returns {boolean} - Whether form is valid
  */
-function injectIcons() {
-  const iconElements = document.querySelectorAll('[data-icon]');
-  iconElements.forEach(element => {
-    const iconName = element.dataset.icon;
-    const options = {
-      width: element.dataset.iconWidth || 24,
-      height: element.dataset.iconHeight || 24,
-      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
-      className: element.dataset.iconClass || '',
-    };
-    element.innerHTML = getIcon(iconName, options);
-  });
-}
+function validateStep2() {
+  const form = document.getElementById('step2Form');
+  const businessName = form.businessName;
+  const phoneNumber = form.phoneNumber;
+  const city = form.city;
+  const province = form.province;
+  const idType = form.idType;
+  const idNumber = form.idNumber;
 
-/**
- * Signup state management
- */
-const signupState = {
-  currentStep: 1,
-  step1: {
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-  },
-  step2: {
-    latitude: null,
-    longitude: null,
-    address: '',
-  },
-  step3: {
-    boardingHouseName: '',
-    description: '',
-    propertyType: '',
-    totalRooms: 0,
-    streetAddress: '',
-    barangay: '',
-    city: '',
-    province: '',
-    postalCode: '',
-  },
-  step4: {
-    paymentMethod: null,
-    accountNumber: '',
-    accountName: '',
-    bankName: '',
-    skipped: false,
-  },
-};
+  let isValid = true;
 
-/**
- * Load state from session storage
- */
-function loadState() {
-  const saved = sessionStorage.getItem('landlordSignupState');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      Object.assign(signupState, parsed);
-    } catch (e) {
-      console.error('Error loading signup state:', e);
-    }
+  // Clear previous errors
+  clearAllInlineErrors(form);
+
+  // Business name validation
+  if (!businessName.value.trim()) {
+    showInlineError(businessName, 'Business/Property name is required');
+    isValid = false;
+  } else if (businessName.value.trim().length < 3) {
+    showInlineError(businessName, 'Business name must be at least 3 characters');
+    isValid = false;
   }
+
+  // Phone number validation
+  if (!phoneNumber.value.trim()) {
+    showInlineError(phoneNumber, 'Contact number is required');
+    isValid = false;
+  } else if (!isValidPhoneNumber(phoneNumber.value.trim())) {
+    showInlineError(phoneNumber, 'Please enter a valid Philippine phone number');
+    isValid = false;
+  }
+
+  // City validation
+  if (!city.value.trim()) {
+    showInlineError(city, 'City is required');
+    isValid = false;
+  } else if (city.value.trim().length < 2) {
+    showInlineError(city, 'City must be at least 2 characters');
+    isValid = false;
+  }
+
+  // Province validation
+  if (!province.value.trim()) {
+    showInlineError(province, 'Province is required');
+    isValid = false;
+  } else if (province.value.trim().length < 2) {
+    showInlineError(province, 'Province must be at least 2 characters');
+    isValid = false;
+  }
+
+  // ID type validation
+  if (!idType.value) {
+    showInlineError(idType, 'Please select a valid ID type');
+    isValid = false;
+  }
+
+  // ID number validation
+  if (!idNumber.value.trim()) {
+    showInlineError(idNumber, 'ID number is required');
+    isValid = false;
+  }
+
+  // Show toast if validation failed
+  if (!isValid) {
+    showToast('Please fix the errors in the form', 'error');
+  }
+
+  return isValid;
 }
 
 /**
- * Save state to session storage
- */
-function saveState() {
-  sessionStorage.setItem('landlordSignupState', JSON.stringify(signupState));
-}
-
-/**
- * Clear state from session storage
- */
-function clearState() {
-  sessionStorage.removeItem('landlordSignupState');
-}
-
-/**
- * Navigate to a specific step
- * @param {number} stepNumber - Step to navigate to (1-5)
+ * Navigate to specific step
+ * @param {number} stepNumber - Step to navigate to (1-3)
  */
 function goToStep(stepNumber) {
   // Hide all steps
@@ -341,450 +318,36 @@ function goToStep(stepNumber) {
   }
 
   // Update progress indicator
-  updateProgressIndicator(stepNumber);
+  document.querySelectorAll('.signup-progress-step').forEach((step, index) => {
+    if (index + 1 <= stepNumber) {
+      step.classList.add('active');
+    } else {
+      step.classList.remove('active');
+    }
+  });
 
-  // Update state
-  signupState.currentStep = stepNumber;
-  saveState();
-
-  // Step-specific initialization
-  if (stepNumber === 2) {
-    setTimeout(() => {
-      if (!window._signupMap) {
-        initializeMap();
-      } else {
-        window._signupMap.invalidateSize();
-
-        // Re-enable button if location is already set
-        if (signupState.step2.latitude && signupState.step2.longitude) {
-          document.getElementById('step2Next').disabled = false;
-        }
-      }
-    }, 100);
-  }
-
-  if (stepNumber === 5) {
+  // Populate review if going to step 3
+  if (stepNumber === 3) {
     populateReview();
   }
-
-  // Scroll to top
-  window.scrollTo(0, 0);
 }
 
 /**
- * Update progress indicator
- * @param {number} currentStep - Current step number
+ * Convert ID type value to readable format
+ * @param {string} idType - ID type value (e.g., 'drivers_license')
+ * @returns {string} - Readable ID type (e.g., "Driver's License")
  */
-function updateProgressIndicator(currentStep) {
-  const steps = document.querySelectorAll('.signup-progress-step');
-  const lines = document.querySelectorAll('.signup-progress-line');
-
-  steps.forEach((step, index) => {
-    const stepNum = index + 1;
-    step.classList.remove('active', 'completed');
-
-    if (stepNum === currentStep) {
-      step.classList.add('active');
-    } else if (stepNum < currentStep) {
-      step.classList.add('completed');
-    }
-  });
-
-  lines.forEach((line, index) => {
-    if (index + 1 < currentStep) {
-      line.classList.add('completed');
-    } else {
-      line.classList.remove('completed');
-    }
-  });
-}
-
-/**
- * Initialize map for step 2
- */
-function initializeMap() {
-  const mapContainer = document.getElementById('signup-map');
-  if (!mapContainer) return;
-
-  const map = initMap('signup-map', {
-    center: [8.1489, 125.125], // Malaybalay City, Mindanao, Philippines
-    zoom: 13,
-    onMapClick: handleMapClick,
-  });
-
-  window._signupMap = map;
-
-  // Restore marker if location already set
-  if (signupState.step2.latitude && signupState.step2.longitude) {
-    setMarker(map, signupState.step2.latitude, signupState.step2.longitude, {
-      draggable: true,
-      onDragEnd: handleMarkerDrag,
-    });
-
-    // Enable next button since location is already set
-    document.getElementById('step2Next').disabled = false;
-  } else {
-    // Try to get user's current location
-    attemptGeolocation();
-  }
-}
-
-/**
- * Attempt to get user's current location via Geolocation API
- */
-function attemptGeolocation() {
-  getCurrentLocation(
-    async (lat, lng) => {
-      // Validate location is in Philippines
-      if (!isValidPhilippinesLocation(lat, lng)) {
-        return;
-      }
-
-      // Set marker at current location
-      setMarker(window._signupMap, lat, lng, {
-        draggable: true,
-        onDragEnd: handleMarkerDrag,
-      });
-
-      // Update UI
-      document.getElementById('latitude').value = lat.toFixed(6);
-      document.getElementById('longitude').value = lng.toFixed(6);
-
-      // Reverse geocode
-      try {
-        const result = await reverseGeocode(lat, lng);
-        const formattedAddress = result.display_name || formatAddress(result.address);
-
-        document.getElementById('fullAddress').value = formattedAddress;
-
-        // Update state
-        signupState.step2 = {
-          latitude: lat,
-          longitude: lng,
-          address: formattedAddress,
-        };
-        saveState();
-
-        // Enable next button
-        document.getElementById('step2Next').disabled = false;
-      } catch (error) {
-        console.error('Error getting address:', error);
-        document.getElementById('fullAddress').value =
-          'Unable to resolve address. Coordinates saved.';
-
-        // Update state with coordinates even if address resolution failed
-        signupState.step2 = {
-          latitude: lat,
-          longitude: lng,
-          address: '',
-        };
-        saveState();
-
-        // Enable next button - coordinates are saved even if address lookup failed
-        document.getElementById('step2Next').disabled = false;
-      }
-    },
-    _error => {
-      // Silently fail - user can manually select location
-    }
-  );
-}
-
-/**
- * Handle map click event
- * @param {L.LeafletMouseEvent} e - Map click event
- */
-async function handleMapClick(e) {
-  const { lat, lng } = e.latlng;
-
-  // Validate location is in Philippines
-  if (!isValidPhilippinesLocation(lat, lng)) {
-    alert('Please select a location within the Philippines.');
-    return;
-  }
-
-  // Update UI
-  document.getElementById('latitude').value = lat.toFixed(6);
-  document.getElementById('longitude').value = lng.toFixed(6);
-
-  // Set marker
-  setMarker(window._signupMap, lat, lng, {
-    draggable: true,
-    onDragEnd: handleMarkerDrag,
-  });
-
-  // Reverse geocode
-  try {
-    const result = await reverseGeocode(lat, lng);
-    const formattedAddress = result.display_name || formatAddress(result.address);
-
-    document.getElementById('fullAddress').value = formattedAddress;
-
-    // Update state
-    signupState.step2 = {
-      latitude: lat,
-      longitude: lng,
-      address: formattedAddress,
-    };
-    saveState();
-
-    // Enable next button
-    document.getElementById('step2Next').disabled = false;
-  } catch (error) {
-    console.error('Error getting address:', error);
-    document.getElementById('fullAddress').value = 'Unable to resolve address. Coordinates saved.';
-
-    // Update state with coordinates even if address resolution failed
-    signupState.step2 = {
-      latitude: lat,
-      longitude: lng,
-      address: '',
-    };
-    saveState();
-
-    // Enable next button - coordinates are saved even if address lookup failed
-    document.getElementById('step2Next').disabled = false;
-  }
-}
-
-/**
- * Handle marker drag event
- * @param {number} lat - New latitude
- * @param {number} lng - New longitude
- */
-async function handleMarkerDrag(lat, lng) {
-  // Update UI
-  document.getElementById('latitude').value = lat.toFixed(6);
-  document.getElementById('longitude').value = lng.toFixed(6);
-
-  // Reverse geocode
-  try {
-    const result = await reverseGeocode(lat, lng);
-    const formattedAddress = result.display_name || formatAddress(result.address);
-
-    document.getElementById('fullAddress').value = formattedAddress;
-
-    // Update state
-    signupState.step2 = {
-      latitude: lat,
-      longitude: lng,
-      address: formattedAddress,
-    };
-    saveState();
-  } catch (error) {
-    console.error('Error getting address:', error);
-  }
-}
-
-/**
- * Setup address search functionality
- */
-function setupAddressSearch() {
-  const searchInput = document.getElementById('addressSearch');
-  const resultsContainer = document.querySelector('.address-search-results');
-
-  if (!searchInput || !resultsContainer) return;
-
-  const debouncedSearch = debounce(async query => {
-    if (query.length < 3) {
-      resultsContainer.classList.add('hidden');
-      return;
-    }
-
-    try {
-      const results = await searchAddress(query);
-
-      if (results.length === 0) {
-        resultsContainer.innerHTML = '<div class="address-search-result">No results found</div>';
-        resultsContainer.classList.remove('hidden');
-        return;
-      }
-
-      resultsContainer.innerHTML = results
-        .map(
-          (result, index) => `
-        <div class="address-search-result" data-index="${index}">
-          <div class="address-search-result-name">${result.display_name.split(',')[0]}</div>
-          <div class="address-search-result-detail">${result.display_name}</div>
-        </div>
-      `
-        )
-        .join('');
-
-      // Store results for click handling
-      window._searchResults = results;
-
-      // Add click handlers
-      resultsContainer.querySelectorAll('.address-search-result').forEach(el => {
-        el.addEventListener('click', async () => {
-          const index = parseInt(el.dataset.index);
-          const result = window._searchResults[index];
-
-          // Update map view
-          if (window._signupMap) {
-            window._signupMap.setView([result.latitude, result.longitude], 16);
-
-            // Trigger click handler
-            setMarker(window._signupMap, result.latitude, result.longitude, {
-              draggable: true,
-              onDragEnd: handleMarkerDrag,
-            });
-
-            document.getElementById('latitude').value = result.latitude.toFixed(6);
-            document.getElementById('longitude').value = result.longitude.toFixed(6);
-            document.getElementById('fullAddress').value = result.display_name;
-
-            // Update state
-            signupState.step2 = {
-              latitude: result.latitude,
-              longitude: result.longitude,
-              address: result.display_name,
-            };
-            saveState();
-
-            document.getElementById('step2Next').disabled = false;
-          }
-
-          // Hide results
-          resultsContainer.classList.add('hidden');
-          searchInput.value = result.display_name.split(',')[0];
-        });
-      });
-
-      resultsContainer.classList.remove('hidden');
-    } catch (error) {
-      console.error('Error searching address:', error);
-    }
-  }, 500);
-
-  searchInput.addEventListener('input', e => {
-    debouncedSearch(e.target.value);
-  });
-
-  // Hide results when clicking outside
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.address-search-wrapper')) {
-      resultsContainer.classList.add('hidden');
-    }
-  });
-}
-
-/**
- * Setup address search functionality for Step 3
- */
-function setupStep3AddressSearch() {
-  const searchInput = document.getElementById('step3AddressSearch');
-  const resultsContainer = document.getElementById('step3AddressResults');
-
-  if (!searchInput || !resultsContainer) return;
-
-  const debouncedSearch = debounce(async query => {
-    if (query.length < 3) {
-      resultsContainer.classList.add('hidden');
-      return;
-    }
-
-    try {
-      const results = await searchAddress(query);
-
-      if (results.length === 0) {
-        resultsContainer.innerHTML = '<div class="address-search-result">No results found</div>';
-        resultsContainer.classList.remove('hidden');
-        return;
-      }
-
-      resultsContainer.innerHTML = results
-        .map(
-          (result, index) => `
-        <div class="address-search-result" data-index="${index}">
-          <div class="address-search-result-name">${result.display_name.split(',')[0]}</div>
-          <div class="address-search-result-detail">${result.display_name}</div>
-        </div>
-      `
-        )
-        .join('');
-
-      // Store results for click handling
-      window._step3SearchResults = results;
-
-      // Add click handlers
-      resultsContainer.querySelectorAll('.address-search-result').forEach(el => {
-        el.addEventListener('click', async () => {
-          const index = parseInt(el.dataset.index);
-          const result = window._step3SearchResults[index];
-
-          // Parse address components from the result
-          parseAndFillAddress(result);
-
-          // Hide results
-          resultsContainer.classList.add('hidden');
-          searchInput.value = result.display_name.split(',')[0];
-        });
-      });
-
-      resultsContainer.classList.remove('hidden');
-    } catch (error) {
-      console.error('Error searching address:', error);
-    }
-  }, 500);
-
-  searchInput.addEventListener('input', e => {
-    debouncedSearch(e.target.value);
-  });
-
-  // Hide results when clicking outside
-  document.addEventListener('click', e => {
-    if (!e.target.closest('#step3AddressSearch') && !e.target.closest('#step3AddressResults')) {
-      resultsContainer.classList.add('hidden');
-    }
-  });
-}
-
-/**
- * Parse address from search result and fill form fields
- * @param {Object} result - Search result from Nominatim API
- */
-function parseAndFillAddress(result) {
-  const address = result.address || {};
-
-  // Extract street address
-  const streetParts = [];
-  if (address.house_number) streetParts.push(address.house_number);
-  if (address.road) streetParts.push(address.road);
-  if (address.neighbourhood) streetParts.push(address.neighbourhood);
-  const streetAddress = streetParts.join(' ') || address.suburb || '';
-
-  // Extract barangay (can be suburb, village, or neighbourhood)
-  const barangay =
-    address.village || address.suburb || address.neighbourhood || address.hamlet || '';
-
-  // Extract city (can be city, town, or municipality)
-  const city =
-    address.city ||
-    address.town ||
-    address.municipality ||
-    address.city_district ||
-    address.county ||
-    '';
-
-  // Extract province (state or region)
-  const province = address.state || address.region || address.province || '';
-
-  // Extract postal code
-  const postalCode = address.postcode || '';
-
-  // Fill form fields
-  document.getElementById('streetAddress').value = streetAddress;
-  document.getElementById('barangay').value = barangay;
-  document.getElementById('city').value = city;
-  document.getElementById('province').value = province;
-  document.getElementById('postalCode').value = postalCode;
-
-  // Clear any existing errors
-  clearInlineError(document.getElementById('streetAddress'));
-  clearInlineError(document.getElementById('barangay'));
-  clearInlineError(document.getElementById('city'));
-  clearInlineError(document.getElementById('province'));
+function formatIdType(idType) {
+  const idTypeMap = {
+    drivers_license: "Driver's License",
+    passport: 'Passport',
+    national_id: 'National ID (PhilID)',
+    sss_id: 'SSS ID',
+    tin_id: 'TIN ID',
+    postal_id: 'Postal ID',
+    voters_id: "Voter's ID",
+  };
+  return idTypeMap[idType] || idType || 'Not set';
 }
 
 /**
@@ -797,50 +360,73 @@ function populateReview() {
   ).textContent = `${signupState.step1.firstName} ${signupState.step1.lastName}`;
   document.getElementById('reviewEmail').textContent = signupState.step1.email;
 
-  // Location
-  document.getElementById('reviewAddress').textContent = signupState.step2.address || 'Not set';
-
-  // Property details
-  document.getElementById('reviewPropertyName').textContent = signupState.step3.boardingHouseName;
-  document.getElementById('reviewPropertyType').textContent = signupState.step3.propertyType;
-  document.getElementById('reviewRooms').textContent = `${signupState.step3.totalRooms} room(s)`;
-
-  // Full address
-  const fullAddress = [
-    signupState.step3.streetAddress,
-    signupState.step3.barangay,
-    signupState.step3.city,
-    signupState.step3.province,
-    signupState.step3.postalCode,
-  ]
-    .filter(Boolean)
-    .join(', ');
-  document.getElementById('reviewFullAddress').textContent = fullAddress || 'Not set';
-
-  // Payment method
-  if (signupState.step4.skipped) {
-    document.getElementById('reviewPaymentMethod').textContent = 'Will add later';
-  } else if (signupState.step4.paymentMethod) {
-    let paymentText = signupState.step4.paymentMethod;
-    if (signupState.step4.accountNumber) {
-      // Mask account number
-      const masked = maskAccountNumber(signupState.step4.accountNumber);
-      paymentText += ` (${masked})`;
-    }
-    document.getElementById('reviewPaymentMethod').textContent = paymentText;
-  } else {
-    document.getElementById('reviewPaymentMethod').textContent = 'Not set';
-  }
+  // Landlord profile info
+  document.getElementById('reviewBusinessName').textContent =
+    signupState.step2.businessName || 'Not set';
+  document.getElementById('reviewPhone').textContent = signupState.step2.phoneNumber || 'Not set';
+  document.getElementById('reviewLocation').textContent =
+    signupState.step2.city && signupState.step2.province
+      ? `${signupState.step2.city}, ${signupState.step2.province}`
+      : 'Not set';
+  document.getElementById('reviewIdType').textContent = formatIdType(signupState.step2.idType);
 }
 
 /**
- * Mask account number for display
- * @param {string} accountNumber - Full account number
- * @returns {string} Masked account number
+ * Save state to session storage
  */
-function maskAccountNumber(accountNumber) {
-  if (accountNumber.length <= 4) return '****';
-  return `**** ${accountNumber.slice(-4)}`;
+function saveState() {
+  sessionStorage.setItem('landlordSignupState', JSON.stringify(signupState));
+}
+
+/**
+ * Load state from session storage
+ */
+function loadState() {
+  const saved = sessionStorage.getItem('landlordSignupState');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (error) {
+      console.error('Error loading saved state:', error);
+    }
+  }
+  return {
+    step1: {},
+    step2: {},
+  };
+}
+
+/**
+ * Clear state from session storage
+ */
+function clearState() {
+  sessionStorage.removeItem('landlordSignupState');
+}
+
+/**
+ * Setup password visibility toggle
+ * @param {string} toggleId - Toggle button ID
+ * @param {string} inputId - Password input ID
+ */
+function setupPasswordToggle(toggleId, inputId) {
+  const toggle = document.getElementById(toggleId);
+  const input = document.getElementById(inputId);
+  const eyeOpen = toggle.querySelector('.eye-open');
+  const eyeClosed = toggle.querySelector('.eye-closed');
+
+  if (!toggle || !input || !eyeOpen || !eyeClosed) return;
+
+  toggle.addEventListener('click', () => {
+    if (input.type === 'password') {
+      input.type = 'text';
+      eyeOpen.classList.add('hidden');
+      eyeClosed.classList.remove('hidden');
+    } else {
+      input.type = 'password';
+      eyeOpen.classList.remove('hidden');
+      eyeClosed.classList.add('hidden');
+    }
+  });
 }
 
 /**
@@ -867,360 +453,169 @@ function setupEventListeners() {
     };
     saveState();
 
-    showToast('Account information saved. Continuing to location...', 'success');
+    showToast('Account information saved. Continuing to profile...', 'success');
     goToStep(2);
   });
 
-  // Step 2: Next button
-  document.getElementById('step2Next').addEventListener('click', () => {
-    if (!signupState.step2.latitude || !signupState.step2.longitude) {
-      showToast('Please select a location on the map', 'warning');
-      return;
-    }
-
-    showToast('Location saved. Continuing to property details...', 'success');
-    goToStep(3);
-  });
-
-  // Step 3: Property details form
-  document.getElementById('step3Form').addEventListener('submit', e => {
+  // Step 2: Profile form
+  document.getElementById('step2Form').addEventListener('submit', e => {
     e.preventDefault();
 
-    const form = e.target;
-    let isValid = true;
-
-    // Clear previous errors
-    clearAllInlineErrors(form);
-
-    // Boarding house name validation
-    const boardingHouseName = form.boardingHouseName;
-    if (!boardingHouseName.value.trim()) {
-      showInlineError(boardingHouseName, 'Boarding house name is required');
-      isValid = false;
-    } else if (boardingHouseName.value.trim().length < 3) {
-      showInlineError(boardingHouseName, 'Name must be at least 3 characters');
-      isValid = false;
-    }
-
-    // Property type validation
-    const propertyType = form.propertyType;
-    if (!propertyType.value) {
-      showInlineError(propertyType, 'Please select a property type');
-      isValid = false;
-    }
-
-    // Total rooms validation
-    const totalRooms = form.totalRooms;
-    if (!totalRooms.value) {
-      showInlineError(totalRooms, 'Number of rooms is required');
-      isValid = false;
-    } else if (parseInt(totalRooms.value) < 1) {
-      showInlineError(totalRooms, 'Must have at least 1 room');
-      isValid = false;
-    }
-
-    // Street address validation
-    const streetAddress = form.streetAddress;
-    if (!streetAddress.value.trim()) {
-      showInlineError(streetAddress, 'Street address is required');
-      isValid = false;
-    }
-
-    // Barangay validation
-    const barangay = form.barangay;
-    if (!barangay.value.trim()) {
-      showInlineError(barangay, 'Barangay is required');
-      isValid = false;
-    }
-
-    // City validation
-    const city = form.city;
-    if (!city.value.trim()) {
-      showInlineError(city, 'City/Municipality is required');
-      isValid = false;
-    }
-
-    // Province validation
-    const province = form.province;
-    if (!province.value.trim()) {
-      showInlineError(province, 'Province is required');
-      isValid = false;
-    }
-
-    // Postal code validation (optional but validate format if provided)
-    const postalCode = form.postalCode;
-    if (postalCode.value.trim() && !/^\d{4}$/.test(postalCode.value.trim())) {
-      showInlineError(postalCode, 'Postal code must be 4 digits');
-      isValid = false;
-    }
-
-    if (!isValid) {
-      showToast('Please fix the errors in the form', 'error');
-      return;
+    // Validate form
+    if (!validateStep2()) {
+      return; // Stop if validation fails
     }
 
     const formData = new FormData(e.target);
-    signupState.step3 = {
-      boardingHouseName: formData.get('boardingHouseName'),
-      description: formData.get('propertyDescription'),
-      propertyType: formData.get('propertyType'),
-      totalRooms: parseInt(formData.get('totalRooms')),
-      streetAddress: formData.get('streetAddress'),
-      barangay: formData.get('barangay'),
+
+    // Save step 2 data
+    signupState.step2 = {
+      businessName: formData.get('businessName'),
+      businessDescription: formData.get('businessDescription'),
+      phoneNumber: formData.get('phoneNumber'),
       city: formData.get('city'),
       province: formData.get('province'),
-      postalCode: formData.get('postalCode'),
+      experienceLevel: formData.get('experienceLevel'),
+      idType: formData.get('idType'),
+      idNumber: formData.get('idNumber'),
     };
     saveState();
 
-    showToast('Property details saved. Continuing to payment...', 'success');
-    goToStep(4);
+    showToast('Profile information saved. Continuing to review...', 'success');
+    goToStep(3);
   });
 
-  // Step 4: Payment method type change
-  document.getElementById('paymentMethodType').addEventListener('change', e => {
-    const selectedType = e.target.value;
-
-    // Hide all payment field groups
-    document.querySelectorAll('.payment-fields-group').forEach(el => {
-      el.classList.add('hidden');
-    });
-
-    // Show relevant fields based on selection
-    switch (selectedType) {
-      case 'GCash':
-      case 'PayMaya':
-        document.getElementById('ewalletFields').classList.remove('hidden');
-        break;
-      case 'Bank Transfer':
-        document.getElementById('bankFields').classList.remove('hidden');
-        break;
-      case 'PayPal':
-        document.getElementById('paypalFields').classList.remove('hidden');
-        break;
-      case 'Other':
-        document.getElementById('otherFields').classList.remove('hidden');
-        break;
-    }
-  });
-
-  // Step 4: Payment form submission
-  document.getElementById('step4Form').addEventListener('submit', e => {
+  // Step 3: Review and submit form
+  document.getElementById('step3Form').addEventListener('submit', async e => {
     e.preventDefault();
 
     const form = e.target;
-    const paymentType = document.getElementById('paymentMethodType').value;
 
-    // Clear previous errors
-    clearAllInlineErrors(form);
-
-    if (!paymentType) {
-      showToast('Please select a payment method type', 'error');
-      const paymentMethodType = form.paymentMethodType;
-      showInlineError(paymentMethodType, 'Please select a payment method');
+    // Check terms agreement
+    const termsCheckbox = form.querySelector('input[name="terms"]');
+    if (!termsCheckbox.checked) {
+      showToast('Please agree to the Terms of Service to continue', 'error');
       return;
     }
 
-    // Validate based on payment type
-    const paymentData = {
-      paymentMethod: paymentType,
-      accountNumber: '',
-      accountName: '',
-      bankName: '',
-      skipped: false,
+    // Prepare data for submission
+    const registrationData = {
+      // Account info
+      firstName: signupState.step1.firstName,
+      lastName: signupState.step1.lastName,
+      email: signupState.step1.email,
+      password: signupState.step1.password,
+      role: 'landlord',
+
+      // Landlord profile
+      businessName: signupState.step2.businessName,
+      businessDescription: signupState.step2.businessDescription,
+      phoneNumber: signupState.step2.phoneNumber,
+      city: signupState.step2.city,
+      province: signupState.step2.province,
+      experienceLevel: signupState.step2.experienceLevel,
+      idType: signupState.step2.idType,
+      idNumber: signupState.step2.idNumber,
     };
 
-    let isValid = true;
+    // Get button reference and save original text before try block
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
 
-    switch (paymentType) {
-      case 'GCash':
-      case 'PayMaya': {
-        const ewalletNumber = document.getElementById('ewalletNumber');
-        const ewalletName = document.getElementById('ewalletName');
+    try {
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating Account...';
 
-        if (!ewalletNumber.value.trim()) {
-          showInlineError(ewalletNumber, 'Mobile number is required');
-          isValid = false;
-        } else if (!/^(\+63|0)?9\d{9}$/.test(ewalletNumber.value.replace(/\s/g, ''))) {
-          showInlineError(
-            ewalletNumber,
-            'Enter a valid Philippine mobile number (+63 9XX XXX XXXX)'
-          );
-          isValid = false;
+      // Submit registration
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Clear stored state
+        clearState();
+
+        // Store user info and token for automatic login
+        // Use synchronous storage to ensure data is written before redirect
+        const userData = {
+          id: result.user.id || result.user.user_id,
+          user_id: result.user.id || result.user.user_id,
+          first_name: result.user.first_name,
+          last_name: result.user.last_name,
+          email: result.user.email,
+          role: result.user.role,
+          account_status: result.user.account_status,
+          email_verified: result.user.email_verified,
+          verification_status: result.user.verification_status,
+        };
+
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('user_id', String(userData.id));
+        localStorage.setItem('token', result.access_token);
+        localStorage.setItem('landlordStatus', 'new');
+
+        // Force localStorage to flush (some browsers need this)
+        localStorage.getItem('token');
+
+        // Show success message
+        showToast('Account created successfully! Redirecting to your dashboard...', 'success');
+
+        // Debug: Log what we stored and routing info
+        console.log('=== LANDLORD SIGNUP DEBUG ===');
+        console.log('Current URL:', window.location.href);
+        console.log('Stored user:', localStorage.getItem('user'));
+        console.log('Stored user_id:', localStorage.getItem('user_id'));
+        console.log('Stored token:', localStorage.getItem('token'));
+        console.log('Token length:', localStorage.getItem('token')?.length);
+        console.log('Stored landlordStatus:', localStorage.getItem('landlordStatus'));
+
+        const basePath = getBasePath();
+        const redirectUrl = `${basePath}landlord/index.html`;
+        console.log('Calculated base path:', basePath);
+        console.log('Full redirect URL:', redirectUrl);
+        console.log('=== END DEBUG ===');
+
+        // Redirect to landlord dashboard with sufficient delay for localStorage sync
+        setTimeout(() => {
+          console.log('Executing redirect to:', redirectUrl);
+          // Use location.replace to avoid back button issues
+          window.location.replace(redirectUrl);
+        }, 1500);
+      } else {
+        // Handle specific error cases
+        let errorMessage = result.message || result.error || 'Registration failed';
+
+        if (response.status === 409) {
+          if (errorMessage.includes('Email already exists') || errorMessage.includes('email')) {
+            errorMessage =
+              'This email address is already registered. Please use a different email or try logging in instead.';
+
+            // Highlight the email field
+            const emailField = document.getElementById('step1Form').email;
+            showInlineError(emailField, 'This email is already registered');
+
+            // Go back to step 1 to fix the email
+            goToStep(1);
+          }
         }
 
-        if (!ewalletName.value.trim()) {
-          showInlineError(ewalletName, 'Account name is required');
-          isValid = false;
-        }
-
-        if (!isValid) {
-          showToast('Please fix the payment details', 'error');
-          return;
-        }
-
-        paymentData.accountNumber = ewalletNumber.value;
-        paymentData.accountName = ewalletName.value;
-        break;
+        throw new Error(errorMessage);
       }
+    } catch (error) {
+      console.error('Registration error:', error);
+      showToast(error.message || 'Failed to create account. Please try again.', 'error');
 
-      case 'Bank Transfer': {
-        const bankName = document.getElementById('bankName');
-        const bankAccountNumber = document.getElementById('bankAccountNumber');
-        const bankAccountName = document.getElementById('bankAccountName');
-
-        if (!bankName.value) {
-          showInlineError(bankName, 'Please select a bank');
-          isValid = false;
-        }
-
-        if (!bankAccountNumber.value.trim()) {
-          showInlineError(bankAccountNumber, 'Account number is required');
-          isValid = false;
-        }
-
-        if (!bankAccountName.value.trim()) {
-          showInlineError(bankAccountName, 'Account name is required');
-          isValid = false;
-        }
-
-        if (!isValid) {
-          showToast('Please fix the payment details', 'error');
-          return;
-        }
-
-        paymentData.bankName = bankName.value;
-        paymentData.accountNumber = bankAccountNumber.value;
-        paymentData.accountName = bankAccountName.value;
-        break;
-      }
-
-      case 'PayPal': {
-        const paypalEmail = document.getElementById('paypalEmail');
-
-        if (!paypalEmail.value.trim()) {
-          showInlineError(paypalEmail, 'PayPal email is required');
-          isValid = false;
-        } else if (!isValidEmail(paypalEmail.value.trim())) {
-          showInlineError(paypalEmail, 'Please enter a valid email address');
-          isValid = false;
-        }
-
-        if (!isValid) {
-          showToast('Please fix the payment details', 'error');
-          return;
-        }
-
-        paymentData.accountNumber = paypalEmail.value;
-        paymentData.accountName = paypalEmail.value;
-        break;
-      }
-
-      case 'Other': {
-        const otherPaymentType = document.getElementById('otherPaymentType');
-        const otherPaymentAccount = document.getElementById('otherPaymentAccount');
-        const otherPaymentName = document.getElementById('otherPaymentName');
-
-        if (!otherPaymentType.value.trim()) {
-          showInlineError(otherPaymentType, 'Payment type name is required');
-          isValid = false;
-        }
-
-        if (!otherPaymentAccount.value.trim()) {
-          showInlineError(otherPaymentAccount, 'Account details are required');
-          isValid = false;
-        }
-
-        if (!otherPaymentName.value.trim()) {
-          showInlineError(otherPaymentName, 'Account name is required');
-          isValid = false;
-        }
-
-        if (!isValid) {
-          showToast('Please fix the payment details', 'error');
-          return;
-        }
-
-        paymentData.paymentMethod = otherPaymentType.value;
-        paymentData.accountNumber = otherPaymentAccount.value;
-        paymentData.accountName = otherPaymentName.value;
-        break;
-      }
+      // Restore button state
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
     }
-
-    signupState.step4 = paymentData;
-    saveState();
-
-    showToast('Payment method saved. Continuing to review...', 'success');
-    goToStep(5);
-  });
-
-  // Step 4: Skip payment
-  document.getElementById('skipPaymentBtn').addEventListener('click', () => {
-    signupState.step4 = {
-      paymentMethod: null,
-      accountNumber: '',
-      accountName: '',
-      bankName: '',
-      skipped: true,
-    };
-    saveState();
-
-    showToast('Payment setup skipped. Continuing to review...', 'success');
-    goToStep(5);
-  });
-
-  // Setup terms overlay (define before use)
-  const termsOverlay = document.getElementById('termsOverlay');
-  const termsOverlayClose = termsOverlay?.querySelector('.terms-overlay-close');
-  const termsOverlayOk = document.getElementById('termsOverlayOk');
-
-  function showTermsOverlay() {
-    if (termsOverlay) {
-      termsOverlay.classList.add('active');
-    }
-  }
-
-  function hideTermsOverlay() {
-    if (termsOverlay) {
-      termsOverlay.classList.remove('active');
-      // Focus the terms checkbox after closing
-      const termsCheckbox = document.querySelector('#step5Form input[name="terms"]');
-      if (termsCheckbox) {
-        termsCheckbox.focus();
-      }
-    }
-  }
-
-  if (termsOverlayClose) {
-    termsOverlayClose.addEventListener('click', hideTermsOverlay);
-  }
-
-  if (termsOverlayOk) {
-    termsOverlayOk.addEventListener('click', hideTermsOverlay);
-  }
-
-  // Close overlay on backdrop click
-  if (termsOverlay) {
-    termsOverlay.addEventListener('click', function (e) {
-      if (e.target === termsOverlay) {
-        hideTermsOverlay();
-      }
-    });
-  }
-
-  // Step 5: Final submission
-  document.getElementById('step5Form').addEventListener('submit', async e => {
-    e.preventDefault();
-
-    const termsChecked = e.target.terms.checked;
-    if (!termsChecked) {
-      showTermsOverlay();
-      return;
-    }
-
-    // Submit signup data
-    await submitSignup();
   });
 
   // Back buttons
@@ -1234,14 +629,6 @@ function setupEventListeners() {
 
   document.getElementById('step3Back').addEventListener('click', () => {
     goToStep(2);
-  });
-
-  document.getElementById('step4Back').addEventListener('click', () => {
-    goToStep(3);
-  });
-
-  document.getElementById('step5Back').addEventListener('click', () => {
-    goToStep(4);
   });
 
   // Review edit buttons
@@ -1262,8 +649,11 @@ function setupEventListeners() {
     input.addEventListener('input', () => {
       clearInlineError(input);
     });
+  });
 
-    input.addEventListener('blur', () => {
+  const step2Form = document.getElementById('step2Form');
+  step2Form.querySelectorAll('input, select, textarea').forEach(input => {
+    input.addEventListener('input', () => {
       clearInlineError(input);
     });
   });
@@ -1288,299 +678,57 @@ function setupEventListeners() {
       }
     }
   });
-
-  // Real-time validation for Step 3
-  const step3Form = document.getElementById('step3Form');
-  if (step3Form) {
-    step3Form.querySelectorAll('input, select, textarea').forEach(input => {
-      input.addEventListener('input', () => {
-        clearInlineError(input);
-      });
-
-      input.addEventListener('blur', () => {
-        clearInlineError(input);
-      });
-    });
-  }
-
-  // Real-time validation for Step 4
-  const step4Form = document.getElementById('step4Form');
-  if (step4Form) {
-    step4Form.querySelectorAll('input, select').forEach(input => {
-      input.addEventListener('input', () => {
-        clearInlineError(input);
-      });
-
-      input.addEventListener('blur', () => {
-        clearInlineError(input);
-      });
-    });
-  }
 }
 
 /**
- * Setup password visibility toggle
- * @param {string} toggleId - Toggle button ID
- * @param {string} inputId - Password input ID
+ * Inject icons from centralized library
  */
-function setupPasswordToggle(toggleId, inputId) {
-  const toggle = document.getElementById(toggleId);
-  const input = document.getElementById(inputId);
-  const eyeOpen = toggle.querySelector('.eye-open');
-  const eyeClosed = toggle.querySelector('.eye-closed');
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+  iconElements.forEach(element => {
+    const iconName = element.getAttribute('data-icon');
+    const width = element.getAttribute('data-icon-width') || '24';
+    const height = element.getAttribute('data-icon-height') || '24';
+    const strokeWidth = element.getAttribute('data-icon-stroke-width') || '1.5';
 
-  toggle.addEventListener('click', () => {
-    const isPassword = input.type === 'password';
-    input.type = isPassword ? 'text' : 'password';
-    eyeOpen.classList.toggle('hidden');
-    eyeClosed.classList.toggle('hidden');
+    const iconSvg = getIcon(iconName, {
+      width: parseInt(width),
+      height: parseInt(height),
+      strokeWidth,
+    });
+
+    element.innerHTML = iconSvg;
   });
 }
 
-/**
- * Submit signup data to API
- */
-async function submitSignup() {
-  const submitBtn = document.querySelector('#step5Form button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Creating Account...';
+// Global state
+const signupState = loadState();
 
-  try {
-    // Step 1: Create user account
-    const userResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/register.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        role: 'landlord',
-        firstName: signupState.step1.firstName,
-        lastName: signupState.step1.lastName,
-        email: signupState.step1.email,
-        password: signupState.step1.password,
-      }),
-    });
-
-    const userResult = await userResponse.json();
-
-    if (!userResponse.ok || !userResult.success) {
-      throw new Error(userResult.error || 'Registration failed');
-    }
-
-    const userId = userResult.user.id;
-
-    // Step 2: Login immediately to get auth token for subsequent API calls
-    const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        email: signupState.step1.email,
-        password: signupState.step1.password,
-      }),
-    });
-
-    if (!loginResponse.ok) {
-      const loginError = await loginResponse.json();
-      throw new Error(loginError.error || 'Login failed after registration');
-    }
-
-    const loginResult = await loginResponse.json();
-    // Store user info in localStorage
-    localStorage.setItem('user', JSON.stringify(loginResult.user));
-
-    // Step 3: Save boarding house details with auth token
-    const propertyResponse = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/profile.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        userId,
-        boardingHouseName: signupState.step3.boardingHouseName,
-        description: signupState.step3.description,
-        propertyType: signupState.step3.propertyType,
-        totalRooms: signupState.step3.totalRooms,
-        streetAddress: signupState.step3.streetAddress,
-        barangay: signupState.step3.barangay,
-        city: signupState.step3.city,
-        province: signupState.step3.province,
-        postalCode: signupState.step3.postalCode,
-      }),
-    });
-
-    if (!propertyResponse.ok) {
-      const propertyError = await propertyResponse.json();
-      console.error('Failed to save property details:', propertyError);
-      showToast('Property details could not be saved. Please add them later.', 'warning');
-    }
-
-    // Step 4: Save property location with auth token
-    const locationResponse = await fetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/property-location.php`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId,
-          latitude: signupState.step2.latitude,
-          longitude: signupState.step2.longitude,
-          address: signupState.step2.address,
-        }),
-      }
-    );
-
-    if (!locationResponse.ok) {
-      const locationError = await locationResponse.json();
-      console.error('Failed to save property location:', locationError);
-      showToast('Property location could not be saved. Please add it later.', 'warning');
-    }
-
-    // Step 5: Save payment method with auth token (if not skipped)
-    if (!signupState.step4.skipped && signupState.step4.paymentMethod) {
-      const paymentResponse = await fetch(
-        `${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            userId,
-            methodType: signupState.step4.paymentMethod,
-            accountNumber: signupState.step4.accountNumber,
-            accountName: signupState.step4.accountName,
-            bankName: signupState.step4.bankName,
-            isPrimary: true,
-          }),
-        }
-      );
-
-      if (!paymentResponse.ok) {
-        const paymentError = await paymentResponse.json();
-        console.error('Failed to save payment method:', paymentError);
-        showToast('Payment method could not be saved. Please add it later.', 'warning');
-      }
-    }
-
-    // Success - redirect to dashboard
-    clearState();
-
-    const basePath = getBasePath();
-    window.location.href = `${basePath}landlord/index.html`;
-  } catch (error) {
-    console.error('Error during signup:', error);
-    showToast(error.message || 'An error occurred. Please try again.', 'error');
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Create Account & List Property';
-  }
-}
-
-/**
- * Show welcome modal after successful signup
- * @param {Object} _userData - User data object
- */
-function showWelcomeModal(_userData) {
-  const modal = document.createElement('div');
-  modal.className = 'welcome-modal-overlay';
-  modal.innerHTML = `
-    <div class="welcome-modal">
-      <div class="welcome-modal-icon">
-        ${getIcon('checkCircle', { width: 64, height: 64, strokeWidth: '1.5' })}
-      </div>
-      <h2 class="welcome-modal-title">Welcome to Haven Space!</h2>
-      <p class="welcome-modal-message">
-        Thank you for signing up, Landlord! Your account has been created successfully.
-      </p>
-      <p class="welcome-modal-message" style="font-size: 14px; color: var(--text-gray); margin-top: 8px;">
-        Your account is currently under verification. You have read-only access until a superadmin approves your account.
-      </p>
-      <div class="welcome-modal-actions">
-        <button class="welcome-modal-btn welcome-modal-btn-primary" id="goToDashboardBtn">
-          ${getIcon('arrowRightOnRectangle', { width: 20, height: 20, strokeWidth: '2' })}
-          Go to Dashboard
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // Add animation
-  setTimeout(() => {
-    modal.classList.add('welcome-modal-overlay-visible');
-  }, 10);
-
-  // Setup event listeners
-  const dashboardBtn = modal.querySelector('#goToDashboardBtn');
-  dashboardBtn.addEventListener('click', () => {
-    modal.classList.remove('welcome-modal-overlay-visible');
-    setTimeout(() => {
-      modal.remove();
-      const basePath = getBasePath();
-      window.location.href = `${basePath}landlord/index.html`;
-    }, 200);
-  });
-}
-
-/**
- * Initialize signup flow
- */
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   // Inject icons
   injectIcons();
-  // Load saved state
-  loadState();
 
   // Setup event listeners
   setupEventListeners();
 
-  // Setup address search
-  setupAddressSearch();
+  // Load saved form data if available
+  if (signupState.step1.firstName) {
+    const step1Form = document.getElementById('step1Form');
+    step1Form.firstName.value = signupState.step1.firstName || '';
+    step1Form.lastName.value = signupState.step1.lastName || '';
+    step1Form.email.value = signupState.step1.email || '';
+  }
 
-  // Setup step 3 address search
-  setupStep3AddressSearch();
-
-  // Restore to last step if state exists
-  if (signupState.currentStep > 1) {
-    goToStep(signupState.currentStep);
-
-    // Restore form values
-    if (signupState.step1.firstName) {
-      document.getElementById('firstName').value = signupState.step1.firstName;
-      document.getElementById('lastName').value = signupState.step1.lastName;
-      document.getElementById('email').value = signupState.step1.email;
-      document.getElementById('password').value = signupState.step1.password;
-      document.getElementById('confirmPassword').value = signupState.step1.password;
-    }
-
-    if (signupState.step2.latitude) {
-      document.getElementById('latitude').value = signupState.step2.latitude;
-      document.getElementById('longitude').value = signupState.step2.longitude;
-      document.getElementById('fullAddress').value = signupState.step2.address;
-      document.getElementById('step2Next').disabled = false;
-    }
-
-    if (signupState.step3.boardingHouseName) {
-      document.getElementById('boardingHouseName').value = signupState.step3.boardingHouseName;
-      document.getElementById('propertyDescription').value = signupState.step3.description || '';
-      document.getElementById('propertyType').value = signupState.step3.propertyType;
-      document.getElementById('totalRooms').value = signupState.step3.totalRooms;
-      document.getElementById('streetAddress').value = signupState.step3.streetAddress || '';
-      document.getElementById('barangay').value = signupState.step3.barangay || '';
-      document.getElementById('city').value = signupState.step3.city || '';
-      document.getElementById('province').value = signupState.step3.province || '';
-      document.getElementById('postalCode').value = signupState.step3.postalCode || '';
-    }
-  } else {
-    // Start at step 1
-    goToStep(1);
+  if (signupState.step2.businessName) {
+    const step2Form = document.getElementById('step2Form');
+    step2Form.businessName.value = signupState.step2.businessName || '';
+    step2Form.businessDescription.value = signupState.step2.businessDescription || '';
+    step2Form.phoneNumber.value = signupState.step2.phoneNumber || '';
+    step2Form.city.value = signupState.step2.city || '';
+    step2Form.province.value = signupState.step2.province || '';
+    step2Form.experienceLevel.value = signupState.step2.experienceLevel || '';
+    step2Form.idType.value = signupState.step2.idType || '';
+    step2Form.idNumber.value = signupState.step2.idNumber || '';
   }
 });

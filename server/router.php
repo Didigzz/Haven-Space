@@ -41,6 +41,73 @@ if (strpos($uri, '/auth/') === 0 || strpos($uri, '/api/') === 0 || strpos($uri, 
     exit;
 }
 
+// Storage files - serve uploaded files from server/storage
+if (strpos($uri, '/storage/') === 0) {
+    $storageFile = __DIR__ . $uri;
+    
+    if (file_exists($storageFile) && is_file($storageFile)) {
+        $ext = pathinfo($storageFile, PATHINFO_EXTENSION);
+        $mimeTypes = [
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        
+        if (isset($mimeTypes[$ext])) {
+            header('Content-Type: ' . $mimeTypes[$ext]);
+        }
+        
+        readfile($storageFile);
+        exit;
+    }
+    
+    http_response_code(404);
+    echo 'Storage file not found';
+    exit;
+}
+
+// Assets files - serve from client/assets directory
+if (strpos($uri, '/assets/') === 0) {
+    $assetFile = __DIR__ . '/../client' . $uri;
+    
+    if (file_exists($assetFile) && is_file($assetFile)) {
+        $ext = pathinfo($assetFile, PATHINFO_EXTENSION);
+        $mimeTypes = [
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+            'ico' => 'image/x-icon',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'eot' => 'application/vnd.ms-fontobject',
+        ];
+        
+        if (isset($mimeTypes[$ext])) {
+            header('Content-Type: ' . $mimeTypes[$ext]);
+        }
+        
+        readfile($assetFile);
+        exit;
+    }
+    
+    http_response_code(404);
+    echo 'Asset file not found';
+    exit;
+}
+
 // Static file serving from client directory
 // If URI already includes /client prefix, remove it to prevent duplication
 $clientUri = $uri;

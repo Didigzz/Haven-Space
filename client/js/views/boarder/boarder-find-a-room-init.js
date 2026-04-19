@@ -23,6 +23,8 @@ export function initBoarderFindARoomAuth() {
     isAuthenticated: true,
     user: {
       id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
       name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User',
       email: user.email || '',
       initials: getInitials(user),
@@ -47,6 +49,9 @@ export function initBoarderFindARoomAuth() {
   // Show authenticated UI immediately (before the script runs)
   showAuthenticatedUI(authState);
 
+  // Initialize the enhanced find-a-room functionality FIRST
+  initFindARoomEnhanced();
+
   // Wait for DOM to be fully ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -54,6 +59,8 @@ export function initBoarderFindARoomAuth() {
       setTimeout(() => {
         showAuthenticatedUI(authState);
         fixPropertyLinks();
+        ensureDropdownsWork(); // Ensure dropdowns are working
+        initHeaderHoverBehavior(); // Initialize header hover behavior
         // Re-render icons after adding status
         if (window.initIconElements) {
           window.initIconElements();
@@ -65,15 +72,14 @@ export function initBoarderFindARoomAuth() {
     setTimeout(() => {
       showAuthenticatedUI(authState);
       fixPropertyLinks();
+      ensureDropdownsWork(); // Ensure dropdowns are working
+      initHeaderHoverBehavior(); // Initialize header hover behavior
       // Re-render icons after adding status
       if (window.initIconElements) {
         window.initIconElements();
       }
     }, 100);
   }
-
-  // Initialize the enhanced find-a-room functionality
-  initFindARoomEnhanced();
 
   // Set up mutation observer to fix links when properties are dynamically added
   setupLinkObserver();
@@ -87,6 +93,124 @@ export function initBoarderFindARoomAuth() {
       window.initIconElements();
     }
   }, 500);
+}
+
+/**
+ * Initialize header hover behavior for boarders
+ * Allow the header to hide/show on hover like the public version
+ */
+function initHeaderHoverBehavior() {
+  const header = document.getElementById('find-room-floating-header');
+  if (!header) return;
+
+  // Remove any forced visibility styles
+  header.style.display = '';
+  header.style.visibility = '';
+  header.style.opacity = '';
+  header.style.pointerEvents = '';
+  header.style.transform = '';
+
+  // Start with header hidden (let the existing hover system handle it)
+  header.classList.remove('show');
+
+  console.log('Header hover behavior initialized for boarder user');
+}
+
+/**
+ * Ensure dropdown functionality is working
+ * This is a fallback in case the main initialization doesn't attach event listeners
+ */
+function ensureDropdownsWork() {
+  // First, ensure the header is visible and clickable
+  const header = document.getElementById('find-room-floating-header');
+  if (header) {
+    header.classList.add('show');
+    header.style.pointerEvents = 'auto';
+  }
+
+  // Status Dropdown
+  const statusDropdownBtn = document.getElementById('status-dropdown-btn');
+  const statusDropdownMenu = document.getElementById('status-dropdown-menu');
+  const statusCloseBtn = document.getElementById('find-room-status-close');
+
+  if (statusDropdownBtn && statusDropdownMenu) {
+    // Remove any existing listeners by cloning and replacing
+    const newStatusBtn = statusDropdownBtn.cloneNode(true);
+    statusDropdownBtn.parentNode.replaceChild(newStatusBtn, statusDropdownBtn);
+
+    // Ensure the button is clickable
+    newStatusBtn.style.pointerEvents = 'auto';
+    newStatusBtn.style.cursor = 'pointer';
+
+    // Add click listener to toggle dropdown
+    newStatusBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      e.preventDefault();
+      statusDropdownMenu.classList.toggle('show');
+      console.log('Status dropdown toggled:', statusDropdownMenu.classList.contains('show'));
+    });
+
+    // Close button
+    if (statusCloseBtn) {
+      const newCloseBtn = statusCloseBtn.cloneNode(true);
+      statusCloseBtn.parentNode.replaceChild(newCloseBtn, statusCloseBtn);
+
+      newCloseBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        statusDropdownMenu.classList.remove('show');
+      });
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', e => {
+      if (!newStatusBtn.contains(e.target) && !statusDropdownMenu.contains(e.target)) {
+        statusDropdownMenu.classList.remove('show');
+      }
+    });
+
+    console.log('Status dropdown initialized successfully');
+  } else {
+    console.warn('Status dropdown elements not found:', {
+      btn: !!statusDropdownBtn,
+      menu: !!statusDropdownMenu,
+    });
+  }
+
+  // Profile Dropdown (ensure it works too)
+  const profileDropdownBtn = document.getElementById('profile-dropdown-btn');
+  const profileDropdownMenu = document.getElementById('profile-dropdown-menu');
+
+  if (profileDropdownBtn && profileDropdownMenu) {
+    // Remove any existing listeners by cloning and replacing
+    const newProfileBtn = profileDropdownBtn.cloneNode(true);
+    profileDropdownBtn.parentNode.replaceChild(newProfileBtn, profileDropdownBtn);
+
+    // Ensure the button is clickable
+    newProfileBtn.style.pointerEvents = 'auto';
+    newProfileBtn.style.cursor = 'pointer';
+
+    // Add click listener to toggle dropdown
+    newProfileBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      e.preventDefault();
+      profileDropdownMenu.classList.toggle('show');
+      console.log('Profile dropdown toggled:', profileDropdownMenu.classList.contains('show'));
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', e => {
+      if (!newProfileBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {
+        profileDropdownMenu.classList.remove('show');
+      }
+    });
+
+    console.log('Profile dropdown initialized successfully');
+  } else {
+    console.warn('Profile dropdown elements not found:', {
+      btn: !!profileDropdownBtn,
+      menu: !!profileDropdownMenu,
+    });
+  }
 }
 
 /**
@@ -120,6 +244,7 @@ function showAuthenticatedUI(authState) {
   // Show floating header
   const header = document.getElementById('find-room-floating-header');
   if (header) {
+    header.classList.add('show');
     header.style.display = 'block';
     header.style.visibility = 'visible';
     header.style.opacity = '1';
@@ -132,22 +257,28 @@ function showAuthenticatedUI(authState) {
 function updateUserProfile(user) {
   if (!user) return;
 
+  // Create full name from first_name and last_name
+  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+
+  // Create initials from first and last name
+  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+
   // Update profile name
   const profileNames = document.querySelectorAll('.find-room-header-profile-name');
   profileNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile avatar initials in dropdown
   const avatarEl = document.querySelector('.find-room-profile-menu-avatar');
   if (avatarEl) {
-    avatarEl.textContent = user.initials || 'U';
+    avatarEl.textContent = initials;
   }
 
   // Update profile menu name
   const menuNames = document.querySelectorAll('.find-room-profile-menu-name');
   menuNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile menu email

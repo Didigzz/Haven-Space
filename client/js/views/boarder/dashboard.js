@@ -287,12 +287,18 @@ async function loadDashboardData() {
 
     // Fetch applications
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-User-Id': userId,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const appsResponse = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': userId,
-        },
+        headers: headers,
         credentials: 'include',
       });
 
@@ -329,12 +335,18 @@ async function loadDashboardData() {
 
     // Fetch maintenance requests
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-User-Id': userId,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const maintenanceResponse = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/maintenance`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': userId,
-        },
+        headers: headers,
         credentials: 'include',
       });
 
@@ -348,12 +360,18 @@ async function loadDashboardData() {
 
     // Fetch lease information
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-User-Id': userId,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const leaseResponse = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/lease`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': userId,
-        },
+        headers: headers,
         credentials: 'include',
       });
 
@@ -372,12 +390,18 @@ async function loadDashboardData() {
 
     // Fetch payment history for dashboard preview
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-User-Id': userId,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const paymentsResponse = await fetch(`${CONFIG.API_BASE_URL}/api/payments/history?limit=3`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': userId,
-        },
+        headers: headers,
         credentials: 'include',
       });
 

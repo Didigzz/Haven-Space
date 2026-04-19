@@ -4,7 +4,9 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
-import { loadState, getState } from '../../shared/state.js';
+import { loadState, getState, authenticatedFetch } from '../../shared/state.js';
+import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
+import CONFIG from '../../config.js';
 
 // State management for enhanced features
 const enhancedState = {
@@ -185,10 +187,10 @@ function createPropertyCard(property) {
   card.innerHTML = `
     <div class="find-room-card-image-wrapper">
       <img
-        src="${property.image}"
+        src="${getImageUrl(property.image)}"
         alt="${property.title}"
         class="find-room-card-image"
-        onerror="this.src='../../assets/images/placeholder-room.svg'"
+        onerror="${getImageErrorHandler()}"
       />
       <div class="find-room-card-badges">
         ${badgesHtml}
@@ -261,17 +263,125 @@ function createPropertyCard(property) {
 /**
  * Toggle favorite for a property
  */
-function toggleFavorite(propertyId, button) {
+async function toggleFavorite(propertyId, button) {
   const isFavorite = button.dataset.favorite === 'true';
+
+  // Check if user is logged in
+  const token = localStorage.getItem('token');
+  if (!token) {
+    // Redirect to login if not authenticated
+    window.location.href =
+      '../auth/login.html?redirect=' + encodeURIComponent(window.location.href);
+    return;
+  }
+
+  // Optimistic UI update
   const newState = !isFavorite;
   button.dataset.favorite = newState.toString();
+  button.disabled = true;
 
   const icon = button.querySelector('[data-icon]');
   if (icon) {
     icon.dataset.icon = newState ? 'heartSolid' : 'bookmark';
   }
 
-  console.log(`Property ${propertyId} favorite: ${newState}`);
+  try {
+    if (newState) {
+      // Save the property
+      const response = await authenticatedFetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            property_id: parseInt(propertyId),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save property');
+      }
+
+      showToast('Property saved successfully!', 'success');
+    } else {
+      // Remove from saved
+      const response = await authenticatedFetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            property_id: parseInt(propertyId),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to remove property');
+      }
+
+      showToast('Property removed from saved list', 'success');
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+
+    // Revert UI on error
+    button.dataset.favorite = isFavorite.toString();
+    if (icon) {
+      icon.dataset.icon = isFavorite ? 'heartSolid' : 'bookmark';
+    }
+
+    showToast(error.message || 'Failed to update saved status', 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'info') {
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+
+  // Add styles
+  Object.assign(toast.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '12px 20px',
+    borderRadius: '6px',
+    color: 'white',
+    fontWeight: '500',
+    zIndex: '10000',
+    transform: 'translateX(100%)',
+    transition: 'transform 0.3s ease',
+    backgroundColor: type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6',
+  });
+
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.style.transform = 'translateX(0)';
+  }, 100);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
 }
 
 /**
@@ -361,6 +471,22 @@ function setupFilterListeners() {
         enhancedState.filters.search = searchInput.value;
         fetchProperties(true);
       }, 500);
+    });
+
+    searchInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        enhancedState.filters.search = searchInput.value;
+        fetchProperties(true);
+      }
+    });
+  }
+
+  // Search button (authenticated)
+  const searchBtn = document.getElementById('main-search-btn');
+  if (searchBtn && searchInput) {
+    searchBtn.addEventListener('click', () => {
+      enhancedState.filters.search = searchInput.value;
+      fetchProperties(true);
     });
   }
 
@@ -464,290 +590,78 @@ function setupFilterListeners() {
     });
   }
 }
-const sampleApplications = [
-  {
-    id: 1,
-    propertyId: 1,
-    title: 'Sunrise Dormitory',
-    address: 'Katipunan Avenue, Quezon City',
-    price: 4500,
-    image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&q=80',
-    status: 'accepted',
-    appliedDate: '2026-04-01',
-  },
-  {
-    id: 2,
-    propertyId: 2,
-    title: 'Campus View Residences',
-    address: 'Loyola Heights, Quezon City',
-    price: 6500,
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80',
-    status: 'pending',
-    appliedDate: '2026-04-05',
-  },
-  {
-    id: 3,
-    propertyId: 3,
-    title: 'Greenfield Boarding House',
-    address: 'Commonwealth Avenue, Quezon City',
-    price: 3200,
-    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80',
-    status: 'accepted',
-    appliedDate: '2026-04-03',
-  },
-  {
-    id: 4,
-    propertyId: 6,
-    title: 'Prime Location Suites',
-    address: 'Tomas Morato Ave, Quezon City',
-    price: 5500,
-    image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&q=80',
-    status: 'pending',
-    appliedDate: '2026-04-08',
-  },
-];
+/**
+ * Fetch popular locations from the API and render chips
+ * @param {boolean} isAuthenticated - Whether the user is authenticated
+ */
+async function loadPopularLocations(isAuthenticated) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/rooms/popular-locations?limit=6`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-// Sample property data for map (replace with API calls in production)
-const properties = [
-  {
-    id: 1,
-    title: 'Sunrise Dormitory',
-    address: 'Fortich Street, Malaybalay City, Bukidnon',
-    location: 'Capitol University Malaybalay',
-    distance: 0.3,
-    price: 3500,
-    rating: 4.8,
-    reviews: 24,
-    type: 'single',
-    amenities: ['wifi', 'ac', 'parking', 'laundry', 'security', 'cctv'],
-    image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-    badges: ['verified', 'new'],
-    available: 'Now',
-    roomTypes: 'Single & Shared',
-    lat: 8.153,
-    lng: 125.128,
-    phone: '0906 460 1570',
-    locationCode: '8FMH+2Q Malaybalay City',
-    propertyType: 'Boarding House',
-    description:
-      'Sunrise Dormitory offers affordable and comfortable accommodations for students and professionals in the heart of Malaybalay City. With modern amenities and 24/7 security, we ensure a safe and conducive environment for living and studying.',
-    photos: [
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-    ],
-    rooms: [
-      {
-        type: 'Single Room',
-        price: 3500,
-        availability: 'Available',
-        image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80',
-        description: 'Private room with bed, desk, and closet',
-      },
-      {
-        type: 'Shared Room',
-        price: 2500,
-        availability: 'Available',
-        image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80',
-        description: 'Shared room with 2 beds, desks, and closets',
-      },
-    ],
-    reviewsList: [
-      {
-        username: 'Maria Santos',
-        initials: 'MS',
-        reviewsCount: 12,
-        photosCount: 8,
-        rating: 5,
-        time: '2 months ago',
-        text: 'Great place to stay! Very clean and the landlord is accommodating. The WiFi is fast and perfect for online classes. Highly recommended!',
-      },
-      {
-        username: 'Juan Dela Cruz',
-        initials: 'JD',
-        reviewsCount: 5,
-        photosCount: 3,
-        rating: 4,
-        time: '3 months ago',
-        text: 'Good value for money. The room is spacious and well-ventilated. Only minor issue is the occasional water interruption but overall a solid choice.',
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: 'Campus View Residences',
-    address: 'Don Carlos Street, Malaybalay City, Bukidnon',
-    location: 'Bukidnon State University',
-    distance: 0.5,
-    price: 4500,
-    rating: 4.6,
-    reviews: 18,
-    type: 'studio',
-    amenities: ['wifi', 'furnished', 'parking', 'cctv', 'kitchen'],
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-    badges: ['verified'],
-    available: 'Now',
-    roomTypes: 'Studio & 1 BHK',
-    lat: 8.1489,
-    lng: 125.125,
-    phone: '0917 123 4567',
-    locationCode: '8FMH+5P Malaybalay City',
-    propertyType: 'Apartment',
-    description:
-      'Campus View Residences is strategically located near Bukidnon State University, offering modern studio and 1 BHK units. Perfect for students who value convenience and accessibility.',
-    photos: [
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-    ],
-    rooms: [
-      {
-        type: 'Studio Unit',
-        price: 4500,
-        availability: 'Available',
-        image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&q=80',
-        description: 'Studio unit with bed, kitchenette, and bathroom',
-      },
-      {
-        type: '1 BHK',
-        price: 6000,
-        availability: 'Limited',
-        image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&q=80',
-        description: '1 Bedroom with hall, kitchen, and bathroom',
-      },
-    ],
-    reviewsList: [
-      {
-        username: 'Ana Reyes',
-        initials: 'AR',
-        reviewsCount: 8,
-        photosCount: 5,
-        rating: 5,
-        time: '1 month ago',
-        text: 'Amazing location! Walking distance to BSU and very safe area. The rooms are modern and clean.',
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: 'Greenfield Boarding House',
-    address: 'Manny Intal Ave, Malaybalay City, Bukidnon',
-    location: 'Central Mindanao University',
-    distance: 1.2,
-    price: 2800,
-    rating: 4.5,
-    reviews: 32,
-    type: 'shared',
-    amenities: ['wifi', 'laundry', 'kitchen', 'parking'],
-    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-    badges: ['promo'],
-    available: 'Now',
-    roomTypes: 'Shared Rooms',
-    lat: 8.142,
-    lng: 125.12,
-    phone: '0918 987 6543',
-    locationCode: '8FMH+8M Malaybalay City',
-    propertyType: 'Boarding House',
-    description:
-      'Greenfield Boarding House provides budget-friendly accommodations for students and working professionals. Despite the affordable rates, we maintain high standards of cleanliness and security.',
-    photos: [
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-    ],
-    rooms: [
-      {
-        type: 'Shared Room (2 pax)',
-        price: 2800,
-        availability: 'Available',
-        image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80',
-        description: 'Shared room for 2 persons with beds and study tables',
-      },
-      {
-        type: 'Shared Room (4 pax)',
-        price: 2000,
-        availability: 'Available',
-        image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80',
-        description: 'Shared room for 4 persons with beds and lockers',
-      },
-    ],
-    reviewsList: [
-      {
-        username: 'Carlos Garcia',
-        initials: 'CG',
-        reviewsCount: 3,
-        photosCount: 2,
-        rating: 4,
-        time: '2 weeks ago',
-        text: 'Affordable and decent place. The shared kitchen is well-equipped and the landlord is friendly.',
-      },
-    ],
-  },
-  {
-    id: 4,
-    title: 'Metro Plaza Apartments',
-    address: 'Aglugalon Street, Malaybalay City, Bukidnon',
-    location: 'CUMSU Campus',
-    distance: 0.8,
-    price: 5500,
-    rating: 4.9,
-    reviews: 41,
-    type: '1bhk',
-    amenities: ['wifi', 'ac', 'security', 'cctv', 'parking', 'laundry', 'furnished', 'kitchen'],
-    image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
-    badges: ['verified', 'new'],
-    available: 'Now',
-    roomTypes: '1 BHK & Studio',
-    lat: 8.156,
-    lng: 125.131,
-    phone: '0920 555 1234',
-    locationCode: '8FMH+3R Malaybalay City',
-    propertyType: 'Apartment',
-    description:
-      'Metro Plaza Apartments offers premium accommodations with excellent amenities. Located in the city center with easy access to schools, markets, and public transportation.',
-    photos: [
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-    ],
-    rooms: [
-      {
-        type: 'Studio Unit',
-        price: 5500,
-        availability: 'Available',
-        image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&q=80',
-        description: 'Modern studio with AC, WiFi, and kitchenette',
-      },
-      {
-        type: '1 BHK',
-        price: 7500,
-        availability: 'Available',
-        image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&q=80',
-        description: 'Spacious 1 bedroom with hall and full kitchen',
-      },
-    ],
-    reviewsList: [
-      {
-        username: 'Sofia Martinez',
-        initials: 'SM',
-        reviewsCount: 15,
-        photosCount: 10,
-        rating: 5,
-        time: '1 week ago',
-        text: 'Luxurious apartments with excellent amenities. The location is perfect and the security is top-notch. Worth every penny!',
-      },
-      {
-        username: 'Diego Torres',
-        initials: 'DT',
-        reviewsCount: 7,
-        photosCount: 4,
-        rating: 5,
-        time: '3 weeks ago',
-        text: 'Best boarding house I have stayed in. The management is professional and the facilities are well-maintained.',
-      },
-    ],
-  },
-];
+    const result = await response.json();
+    const locations = result.data?.locations ?? [];
+
+    if (locations.length === 0) return;
+
+    // Render chips into both containers (guest + auth hero sections)
+    const containerIds = isAuthenticated
+      ? ['auth-location-chips']
+      : ['guest-location-chips', 'auth-location-chips'];
+
+    containerIds.forEach(containerId => {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      // Keep the label, replace chips
+      const label = container.querySelector('.find-room-chip-label');
+      container.innerHTML = '';
+      if (label) container.appendChild(label);
+
+      locations.forEach(loc => {
+        const btn = document.createElement('button');
+        btn.className = 'find-room-chip';
+        btn.dataset.location = loc.search_value;
+        btn.innerHTML = `<span data-icon="location" data-icon-width="16" data-icon-height="16"></span>${loc.name}`;
+        container.appendChild(btn);
+      });
+    });
+
+    // Re-render icons for the new chips
+    if (window.renderIcons) {
+      setTimeout(() => window.renderIcons(), 50);
+    }
+
+    // Re-attach chip click listeners after rendering
+    attachChipListeners();
+  } catch (err) {
+    console.warn('Could not load popular locations:', err.message);
+  }
+}
+
+/**
+ * Attach click listeners to all location chips
+ */
+function attachChipListeners() {
+  document.querySelectorAll('.find-room-chip').forEach(chip => {
+    // Remove existing listeners by cloning
+    const clone = chip.cloneNode(true);
+    chip.parentNode.replaceChild(clone, chip);
+
+    clone.addEventListener('click', () => {
+      const location = clone.dataset.location;
+      if (!location) return;
+
+      const searchInput =
+        document.getElementById('main-search-input') ||
+        document.getElementById('guest-search-input');
+
+      if (searchInput) searchInput.value = location;
+      enhancedState.filters.search = location;
+      fetchProperties(true);
+    });
+  });
+}
 
 /**
  * Initialize all enhanced features
@@ -763,27 +677,15 @@ export function initFindARoomEnhanced() {
 /**
  * Setup all enhanced feature event listeners
  */
-function setupEnhancedFeatures() {
+async function setupEnhancedFeatures() {
   // Load auth state
   const authState = loadState();
 
   // Render UI based on auth state
   renderAuthState(authState);
 
-  // Load applications from localStorage or use sample data
-  const storedApplications = localStorage.getItem('applications');
-  if (storedApplications) {
-    try {
-      enhancedState.applications = JSON.parse(storedApplications);
-    } catch (error) {
-      console.error('Failed to parse applications from localStorage:', error);
-      enhancedState.applications = sampleApplications;
-    }
-  } else {
-    // Initialize with sample data and persist to localStorage
-    enhancedState.applications = sampleApplications;
-    localStorage.setItem('applications', JSON.stringify(sampleApplications));
-  }
+  // Load applications from API (real data)
+  await loadApplicationsFromAPI();
 
   // Initialize floating header
   initFloatingHeader();
@@ -814,6 +716,9 @@ function setupEnhancedFeatures() {
   if (!authState.isAuthenticated) {
     initGuestSearch();
   }
+
+  // Load popular locations and render chips
+  await loadPopularLocations(authState.isAuthenticated);
 
   // Fetch properties from backend
   fetchProperties(true);
@@ -859,22 +764,28 @@ function renderAuthState(authState) {
 function updateUserProfile(user) {
   if (!user) return;
 
+  // Create full name from first_name and last_name
+  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+
+  // Create initials from first and last name
+  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+
   // Update profile name
   const profileNames = document.querySelectorAll('.find-room-header-profile-name');
   profileNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile avatar initials in dropdown
   const avatarEl = document.querySelector('.find-room-profile-menu-avatar');
-  if (avatarEl && user.initials) {
-    avatarEl.textContent = user.initials;
+  if (avatarEl) {
+    avatarEl.textContent = initials;
   }
 
   // Update profile menu name
   const menuNames = document.querySelectorAll('.find-room-profile-menu-name');
   menuNames.forEach(el => {
-    el.textContent = user.name || 'User';
+    el.textContent = fullName;
   });
 
   // Update profile menu email
@@ -899,35 +810,28 @@ function initGuestSearch() {
   const searchBtn = document.getElementById('guest-search-btn');
   const searchInput = document.getElementById('guest-search-input');
 
+  const doSearch = () => {
+    const query = searchInput.value.trim();
+    enhancedState.filters.search = query;
+    fetchProperties(true);
+    // Sync to authenticated search input in case user logs in mid-session
+    const mainInput = document.getElementById('main-search-input');
+    if (mainInput) mainInput.value = query;
+  };
+
   if (searchBtn && searchInput) {
-    searchBtn.addEventListener('click', () => {
-      const query = searchInput.value.trim();
-      if (query) {
-        // Redirect to login with search query
-        window.location.href = `../auth/login.html?redirect=${encodeURIComponent(
-          window.location.pathname
-        )}&search=${encodeURIComponent(query)}`;
-      }
-    });
+    searchBtn.addEventListener('click', doSearch);
 
     searchInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') {
-        searchBtn.click();
-      }
+      if (e.key === 'Enter') doSearch();
+    });
+
+    searchInput.addEventListener('input', () => {
+      enhancedState.filters.search = searchInput.value;
+      fetchProperties(true);
     });
   }
-
-  // Location chips redirect to login
-  document.querySelectorAll('.find-room-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const location = chip.dataset.location;
-      if (location) {
-        window.location.href = `../auth/login.html?redirect=${encodeURIComponent(
-          window.location.pathname
-        )}&search=${encodeURIComponent(location)}`;
-      }
-    });
-  });
+  // Chip click listeners are handled by attachChipListeners() after popular locations load
 }
 
 /* ==========================================================================
@@ -1019,6 +923,44 @@ function hideHeader() {
    Status Dropdown
    ========================================================================== */
 
+/**
+ * Load real applications from the API
+ */
+async function loadApplicationsFromAPI() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch applications');
+
+    const result = await response.json();
+    const raw = result.data?.applications || result.data || [];
+
+    // Normalise API shape → internal shape
+    enhancedState.applications = raw.map(app => ({
+      id: app.id,
+      propertyId: app.property_id,
+      title: app.property_title || app.room_title || 'Property',
+      address: app.property_address || app.address || '',
+      price: app.rent || app.monthly_rent || app.price || 0,
+      image: getImageUrl(app.property_image || app.image),
+      status: app.status, // 'pending' | 'accepted' | 'rejected'
+      appliedDate: app.created_at,
+      roomTitle: app.room_title || '',
+      landlordName: app.landlord_name || '',
+    }));
+  } catch (err) {
+    console.warn('Could not load applications from API, using empty list:', err.message);
+    enhancedState.applications = [];
+  }
+
+  updateStatusBadge();
+}
+
 function initStatusDropdown() {
   const dropdownBtn = document.getElementById('status-dropdown-btn');
   const dropdownMenu = document.getElementById('status-dropdown-menu');
@@ -1069,53 +1011,88 @@ function renderApplications() {
 
   if (filtered.length === 0) {
     list.innerHTML = `
-      <div class="find-room-empty-state">
-        <p>No applications found</p>
+      <div class="find-room-empty-state" style="padding:2rem;text-align:center;color:var(--text-gray);">
+        <p>No ${
+          enhancedState.currentStatusFilter === 'all' ? '' : enhancedState.currentStatusFilter + ' '
+        }applications found.</p>
       </div>
     `;
     return;
   }
 
+  const statusMeta = {
+    pending: { label: 'Pending', color: '#d97706', bg: 'rgba(251,191,36,0.12)' },
+    accepted: { label: 'Accepted', color: '#059669', bg: 'rgba(16,185,129,0.12)' },
+    rejected: { label: 'Rejected', color: '#dc2626', bg: 'rgba(239,68,68,0.12)' },
+  };
+
   list.innerHTML = filtered
-    .map(
-      app => `
-      <div class="find-room-application-item" data-application-id="${app.id}">
-        <img src="${app.image}" alt="${app.title}" class="find-room-application-image" />
-        <div class="find-room-application-info">
-          <h4 class="find-room-application-title">${app.title}</h4>
-          <p class="find-room-application-address">${app.address}</p>
-          <div class="find-room-application-price">₱${app.price.toLocaleString()}/month</div>
+    .map(app => {
+      const meta = statusMeta[app.status] || statusMeta.pending;
+      const date = app.appliedDate
+        ? new Date(app.appliedDate).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : '';
+      const action =
+        app.status === 'accepted'
+          ? `<button class="find-room-app-action-btn" data-id="${app.id}" style="margin-top:0.5rem;padding:0.4rem 0.9rem;background:var(--primary-green);color:#fff;border:none;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:var(--font-main);">Confirm Booking</button>`
+          : '';
+
+      return `
+      <div class="find-room-application-item" data-application-id="${app.id}" data-status="${
+        app.status
+      }"
+           style="display:flex;gap:0.75rem;padding:0.875rem;border:1px solid var(--border-color);border-radius:12px;margin-bottom:0.625rem;cursor:pointer;transition:box-shadow 0.2s;">
+        <img src="${app.image}" alt="${app.title}"
+             style="width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0;"
+             onerror="${getImageErrorHandler()}" />
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;">
+            <div style="min-width:0;">
+              <p style="font-size:0.938rem;font-weight:600;color:var(--text-dark);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${
+                app.title
+              }</p>
+              ${
+                app.roomTitle
+                  ? `<p style="font-size:0.8rem;color:var(--text-gray);margin:0.125rem 0 0;">${app.roomTitle}</p>`
+                  : ''
+              }
+            </div>
+            <span style="flex-shrink:0;padding:0.25rem 0.625rem;border-radius:100px;font-size:0.75rem;font-weight:700;background:${
+              meta.bg
+            };color:${meta.color};">${meta.label}</span>
+          </div>
+          ${
+            date
+              ? `<p style="font-size:0.8rem;color:var(--text-gray);margin:0.375rem 0 0;">Applied ${date}</p>`
+              : ''
+          }
+          ${action}
         </div>
-        <span class="find-room-application-status find-room-status-${app.status}">
-          ${app.status}
-        </span>
       </div>
-    `
-    )
+    `;
+    })
     .join('');
 
-  // Add click handlers
+  // Confirm Booking buttons
+  list.querySelectorAll('.find-room-app-action-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const appId = btn.dataset.id;
+      window.location.href = `../confirm-booking/index.html?applicationId=${appId}`;
+    });
+  });
+
+  // Click on item → confirm-booking for accepted, nothing for others
   list.querySelectorAll('.find-room-application-item').forEach(item => {
     item.addEventListener('click', () => {
-      const appId = parseInt(item.dataset.applicationId);
-      const application = enhancedState.applications.find(a => a.id === appId);
-      if (!application) return;
-
-      // Check if boarder already accepted a landlord
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.boarderStatus === 'accepted') {
-        // Already confirmed a booking - redirect to boarder dashboard
-        window.location.href = '../../views/boarder/index.html';
-        return;
-      }
-
-      // Navigate based on application status
-      if (application.status === 'accepted') {
-        // Accepted application - go to confirm-booking page
-        window.location.href = `../../views/boarder/confirm-booking/index.html?applicationId=${application.id}`;
-      } else if (application.status === 'pending') {
-        // Pending application - still show details but indicate waiting status
-        window.location.href = `../../views/boarder/confirm-booking/index.html?applicationId=${application.id}`;
+      const status = item.dataset.status;
+      const appId = item.dataset.applicationId;
+      if (status === 'accepted') {
+        window.location.href = `../confirm-booking/index.html?applicationId=${appId}`;
       }
     });
   });
@@ -1200,12 +1177,17 @@ function initProfileDropdown() {
 
       // Clear authentication data
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
 
       // Store logout message in sessionStorage to display after redirect
       sessionStorage.setItem('logoutToast', 'You have successfully logged out');
       sessionStorage.setItem('logoutToastType', 'success');
 
-      window.location.href = '../auth/login.html';
+      // Redirect to public homepage instead of login page
+      const basePath = window.location.pathname.includes('github.io')
+        ? '/Haven-Space/client/views/'
+        : '/views/';
+      window.location.href = `${basePath}public/index.html`;
     });
   }
 
@@ -1292,10 +1274,10 @@ function populateDetailPanel(property) {
   // Set property image
   const propertyImage = document.getElementById('detail-property-image');
   if (propertyImage) {
-    propertyImage.src = property.image || '../../assets/images/placeholder-room.svg';
+    propertyImage.src = getImageUrl(property.image);
     propertyImage.alt = property.title;
     propertyImage.onerror = function () {
-      this.src = '../../assets/images/placeholder-room.svg';
+      this.src = getImageUrl(null);
     };
   }
 

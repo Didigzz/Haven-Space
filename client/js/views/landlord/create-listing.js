@@ -1,24 +1,6 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
-
-/**
- * Inject icons from centralized library into elements with data-icon attributes
- */
-function injectIcons() {
-  const iconElements = document.querySelectorAll('[data-icon]');
-
-  iconElements.forEach(element => {
-    const iconName = element.dataset.icon;
-    const options = {
-      width: element.dataset.iconWidth || 24,
-      height: element.dataset.iconHeight || 24,
-      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
-      className: element.dataset.iconClass || '',
-    };
-
-    element.innerHTML = getIcon(iconName, options);
-  });
-}
+import { getAuthHeaders, getAuthHeadersOnly } from '../../shared/auth-headers.js';
 
 // Maximum number of photos allowed
 const MAX_PHOTOS = 10;
@@ -29,79 +11,117 @@ const MAX_FILE_SIZE_MB = 5;
 const uploadedPhotos = [];
 
 /**
+ * Inject icons from centralized library into elements with data-icon attributes
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
+
+/**
  * Initialize the create listing form
  */
 export function initCreateListing() {
-  const form = document.getElementById('create-listing-form');
-  const uploadArea = document.getElementById('photo-upload-area');
-  const fileInput = document.getElementById('property-photos');
-  const setLocationBtn = document.getElementById('set-location-btn');
-  const cancelBtn = document.getElementById('cancel-btn');
-  const propertyTypeSelect = document.getElementById('property-type');
-  const propertyCapacitySelect = document.getElementById('property-capacity');
-  const addCustomAmenityBtn = document.getElementById('add-custom-amenity-btn');
-  const customAmenityInput = document.getElementById('custom-amenity-input');
+  console.log('Initializing create listing...');
 
-  if (!form || !uploadArea || !fileInput) {
-    return;
-  }
-
-  // Inject icons from centralized library
+  // Inject icons first
   injectIcons();
 
-  // Initialize photo upload handlers
-  initPhotoUpload(uploadArea, fileInput);
+  // Initialize photo upload
+  initPhotoUpload();
 
-  // Form submission
-  form.addEventListener('submit', handleFormSubmit);
+  // Initialize form handlers
+  initFormHandlers();
 
-  // Set location button
-  if (setLocationBtn) {
-    setLocationBtn.addEventListener('click', handleSetLocation);
-  }
-
-  // Cancel button
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to cancel? Your changes will be lost.')) {
-        window.location.href = 'index.html';
-      }
-    });
-  }
-
-  // Property type "Others" toggle
-  if (propertyTypeSelect) {
-    propertyTypeSelect.addEventListener('change', handlePropertyTypeChange);
-  }
-
-  // Property capacity "Custom" toggle
-  if (propertyCapacitySelect) {
-    propertyCapacitySelect.addEventListener('change', handleCapacityChange);
-  }
-
-  // Custom amenities
-  if (addCustomAmenityBtn && customAmenityInput) {
-    addCustomAmenityBtn.addEventListener('click', handleAddCustomAmenity);
-    customAmenityInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter') {
-        handleAddCustomAmenity();
-      }
-    });
-  }
+  // Initialize other features
+  initPropertyTypeToggle();
+  initCapacityToggle();
+  initCustomAmenities();
 }
 
 /**
  * Initialize photo upload functionality
  */
-function initPhotoUpload(uploadArea, fileInput) {
-  // Click to upload
-  uploadArea.addEventListener('click', () => fileInput.click());
+function initPhotoUpload() {
+  console.log('Setting up photo upload...');
 
-  // File selection
+  const uploadArea = document.getElementById('photo-upload-area');
+  const fileInput = document.getElementById('property-photos');
+  const uploadBtn = document.getElementById('upload-photos-btn');
+
+  if (!uploadArea || !fileInput) {
+    console.error('Photo upload elements not found');
+    return;
+  }
+
+  // Function to trigger file selection
+  const triggerFileSelection = () => {
+    console.log('Triggering file selection...');
+
+    // Create a new file input to ensure it works
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.style.display = 'none';
+
+    input.addEventListener('change', event => {
+      console.log('Files selected:', event.target.files.length);
+      if (event.target.files.length > 0) {
+        handleFiles(event.target.files);
+      }
+      // Clean up
+      document.body.removeChild(input);
+    });
+
+    document.body.appendChild(input);
+
+    // Use setTimeout to ensure the input is properly added to DOM
+    setTimeout(() => {
+      input.click();
+    }, 10);
+  };
+
+  // Click to upload on area (but not on button)
+  uploadArea.addEventListener('click', e => {
+    // Don't trigger if clicking on the button
+    if (e.target.id === 'upload-photos-btn' || e.target.closest('#upload-photos-btn')) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Upload area clicked');
+    triggerFileSelection();
+  });
+
+  // Button click handler
+  if (uploadBtn) {
+    uploadBtn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Upload button clicked');
+      triggerFileSelection();
+    });
+  }
+
+  // Original file input (as backup)
   fileInput.addEventListener('change', e => {
-    handleFiles(e.target.files);
-    // Reset input so same file can be selected again
-    fileInput.value = '';
+    console.log('Files selected via original input:', e.target.files.length);
+    if (e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+    // Reset input
+    e.target.value = '';
   });
 
   // Drag and drop
@@ -110,13 +130,15 @@ function initPhotoUpload(uploadArea, fileInput) {
     uploadArea.classList.add('drag-over');
   });
 
-  uploadArea.addEventListener('dragleave', () => {
+  uploadArea.addEventListener('dragleave', e => {
+    e.preventDefault();
     uploadArea.classList.remove('drag-over');
   });
 
   uploadArea.addEventListener('drop', e => {
     e.preventDefault();
     uploadArea.classList.remove('drag-over');
+    console.log('Files dropped:', e.dataTransfer.files.length);
     handleFiles(e.dataTransfer.files);
   });
 }
@@ -125,7 +147,7 @@ function initPhotoUpload(uploadArea, fileInput) {
  * Handle selected/dropped files
  */
 function handleFiles(files) {
-  const _errorEl = document.getElementById('photo-error');
+  console.log('Processing files:', files.length);
 
   for (const file of files) {
     // Check if we've reached max photos
@@ -155,9 +177,11 @@ function handleFiles(files) {
     };
 
     uploadedPhotos.push(photoData);
-    renderPhotoGrid();
-    hideError();
+    console.log('Added photo:', photoData.id, 'Total photos:', uploadedPhotos.length);
   }
+
+  renderPhotoGrid();
+  hideError();
 }
 
 /**
@@ -165,9 +189,7 @@ function handleFiles(files) {
  */
 function renderPhotoGrid() {
   const grid = document.getElementById('photo-preview-grid');
-  if (!grid) {
-    return;
-  }
+  if (!grid) return;
 
   grid.innerHTML = '';
 
@@ -190,16 +212,15 @@ function renderPhotoGrid() {
       ${index === 0 ? '<div class="cover-indicator">Cover Photo</div>' : ''}
     `;
 
-    grid.appendChild(item);
-  });
-
-  // Add remove event listeners
-  grid.querySelectorAll('.photo-remove-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
+    // Add remove event listener
+    const removeBtn = item.querySelector('.photo-remove-btn');
+    removeBtn.addEventListener('click', e => {
       e.stopPropagation();
-      const photoId = parseFloat(btn.dataset.photoId);
+      const photoId = parseFloat(removeBtn.dataset.photoId);
       removePhoto(photoId);
     });
+
+    grid.appendChild(item);
   });
 }
 
@@ -208,9 +229,7 @@ function renderPhotoGrid() {
  */
 function removePhoto(photoId) {
   const photoIndex = uploadedPhotos.findIndex(p => p.id === photoId);
-  if (photoIndex === -1) {
-    return;
-  }
+  if (photoIndex === -1) return;
 
   // Revoke object URL to free memory
   URL.revokeObjectURL(uploadedPhotos[photoIndex].preview);
@@ -241,13 +260,71 @@ function hideError() {
 }
 
 /**
- * Handle set location button click
+ * Initialize form handlers
  */
-function handleSetLocation() {
-  // Open map in new window or navigate to map page
-  // For now, we'll navigate to the map page and return with coordinates
-  const currentUrl = encodeURIComponent(window.location.href);
-  window.location.href = `../maps/index.html?return=${currentUrl}`;
+function initFormHandlers() {
+  const form = document.getElementById('create-listing-form');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const setLocationBtn = document.getElementById('set-location-btn');
+
+  if (form) {
+    form.addEventListener('submit', handleFormSubmit);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to cancel? Your changes will be lost.')) {
+        window.location.href = 'index.html';
+      }
+    });
+  }
+
+  if (setLocationBtn) {
+    setLocationBtn.addEventListener('click', () => {
+      alert('Map functionality temporarily disabled. Please enter coordinates manually.');
+    });
+  }
+}
+
+/**
+ * Initialize property type toggle
+ */
+function initPropertyTypeToggle() {
+  const propertyTypeSelect = document.getElementById('property-type');
+  if (propertyTypeSelect) {
+    propertyTypeSelect.addEventListener('change', handlePropertyTypeChange);
+  }
+}
+
+/**
+ * Initialize capacity toggle
+ */
+function initCapacityToggle() {
+  const propertyCapacitySelect = document.getElementById('property-capacity');
+  if (propertyCapacitySelect) {
+    propertyCapacitySelect.addEventListener('change', handleCapacityChange);
+  }
+}
+
+/**
+ * Initialize custom amenities
+ */
+function initCustomAmenities() {
+  const addCustomAmenityBtn = document.getElementById('add-custom-amenity-btn');
+  const customAmenityInput = document.getElementById('custom-amenity-input');
+
+  if (addCustomAmenityBtn) {
+    addCustomAmenityBtn.addEventListener('click', handleAddCustomAmenity);
+  }
+
+  if (customAmenityInput) {
+    customAmenityInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAddCustomAmenity();
+      }
+    });
+  }
 }
 
 /**
@@ -291,8 +368,8 @@ async function handleFormSubmit(e) {
     propertyAddress: formData.get('propertyAddress'),
     propertyCity: formData.get('propertyCity'),
     propertyProvince: formData.get('propertyProvince'),
-    propertyLatitude: formData.get('propertyLatitude'),
-    propertyLongitude: formData.get('propertyLongitude'),
+    propertyLatitude: formData.get('propertyLatitude') || '14.5995',
+    propertyLongitude: formData.get('propertyLongitude') || '120.9842',
     amenities: [...formData.getAll('amenities'), ...customAmenities],
   };
 
@@ -307,10 +384,7 @@ async function handleFormSubmit(e) {
 
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': localStorage.getItem('user_id') || '4',
-      },
+      headers: getAuthHeaders('4'),
       body: JSON.stringify(data),
       credentials: 'include',
     });
@@ -324,7 +398,13 @@ async function handleFormSubmit(e) {
     const propertyId = result.data?.id;
 
     if (uploadedPhotos.length > 0 && propertyId) {
-      await uploadPhotos(propertyId);
+      try {
+        await uploadPhotos(propertyId);
+      } catch (photoError) {
+        console.error('Photo upload failed:', photoError);
+        showError(`Property created successfully, but photo upload failed: ${photoError.message}`);
+        setTimeout(() => hideError(), 8000);
+      }
     }
 
     showSuccessModal(propertyId, data.propertyName, data.propertyPrice);
@@ -338,23 +418,40 @@ async function handleFormSubmit(e) {
   }
 }
 
+/**
+ * Upload photos to the server
+ */
 async function uploadPhotos(propertyId) {
+  console.log('Starting photo upload for property:', propertyId);
+
   const photoFormData = new FormData();
-  uploadedPhotos.forEach(photo => {
+  uploadedPhotos.forEach((photo, index) => {
+    console.log(`Adding photo ${index + 1}:`, photo.file.name);
     photoFormData.append('propertyPhotos[]', photo.file);
   });
 
-  try {
-    await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}/photos`, {
+  const response = await fetch(
+    `${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}/photos`,
+    {
       method: 'POST',
+      headers: getAuthHeadersOnly('4'),
       body: photoFormData,
       credentials: 'include',
-    });
-  } catch (error) {
-    console.error('Failed to upload photos:', error);
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to upload photos');
   }
+
+  const result = await response.json();
+  console.log('Photos uploaded successfully:', result);
 }
 
+/**
+ * Show success modal
+ */
 function showSuccessModal(propertyId, propertyName, propertyPrice) {
   const modal = document.getElementById('listing-success-modal');
   const detailsContainer = document.getElementById('listing-success-details');
@@ -399,6 +496,9 @@ function showSuccessModal(propertyId, propertyName, propertyPrice) {
   injectIcons();
 }
 
+/**
+ * Escape HTML to prevent XSS
+ */
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
@@ -413,9 +513,7 @@ function handlePropertyTypeChange() {
   const otherGroup = document.getElementById('property-type-other-group');
   const otherInput = document.getElementById('property-type-other');
 
-  if (!select || !otherGroup) {
-    return;
-  }
+  if (!select || !otherGroup) return;
 
   if (select.value === 'others') {
     otherGroup.style.display = 'block';
@@ -438,9 +536,7 @@ function handleCapacityChange() {
   const customGroup = document.getElementById('property-capacity-custom-group');
   const customInput = document.getElementById('property-capacity-custom');
 
-  if (!select || !customGroup) {
-    return;
-  }
+  if (!select || !customGroup) return;
 
   if (select.value === 'custom') {
     customGroup.style.display = 'block';
@@ -455,9 +551,7 @@ function handleCapacityChange() {
   }
 }
 
-/**
- * Store custom amenities
- */
+// Store custom amenities
 let customAmenitiesList = [];
 
 /**
@@ -467,14 +561,10 @@ function handleAddCustomAmenity() {
   const input = document.getElementById('custom-amenity-input');
   const listContainer = document.getElementById('custom-amenities-list');
 
-  if (!input || !listContainer) {
-    return;
-  }
+  if (!input || !listContainer) return;
 
   const value = input.value.trim();
-  if (!value) {
-    return;
-  }
+  if (!value) return;
 
   // Add to array
   customAmenitiesList.push(value);
@@ -483,16 +573,20 @@ function handleAddCustomAmenity() {
   const tag = document.createElement('div');
   tag.className = 'amenity-tag-custom';
   tag.style.cssText =
-    'display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--bg-green); color: var(--primary-green); border-radius: 20px; font-size: 0.85rem; font-weight: 500;';
+    'display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--bg-green); color: var(--primary-green); border-radius: 20px; font-size: 0.85rem; font-weight: 500; margin: 0.25rem;';
+
   tag.innerHTML = `
     ${value}
-    <button type="button" onclick="removeCustomAmenity('${value.replace(
-      /'/g,
-      "\\'"
-    )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
+    <button type="button" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
       ${getIcon('xMark', { width: 16, height: 16 })}
     </button>
   `;
+
+  // Add remove event listener
+  const removeBtn = tag.querySelector('button');
+  removeBtn.addEventListener('click', () => {
+    removeCustomAmenity(value);
+  });
 
   listContainer.appendChild(tag);
 
@@ -504,30 +598,41 @@ function handleAddCustomAmenity() {
 /**
  * Remove custom amenity
  */
-function _removeCustomAmenity(value) {
+function removeCustomAmenity(value) {
   customAmenitiesList = customAmenitiesList.filter(a => a !== value);
+  renderCustomAmenities();
+}
 
-  // Re-render list
+/**
+ * Render custom amenities list
+ */
+function renderCustomAmenities() {
   const listContainer = document.getElementById('custom-amenities-list');
-  if (listContainer) {
-    listContainer.innerHTML = '';
-    customAmenitiesList.forEach(amenity => {
-      const tag = document.createElement('div');
-      tag.className = 'amenity-tag-custom';
-      tag.style.cssText =
-        'display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--bg-green); color: var(--primary-green); border-radius: 20px; font-size: 0.85rem; font-weight: 500;';
-      tag.innerHTML = `
-        ${amenity}
-        <button type="button" onclick="removeCustomAmenity('${amenity.replace(
-          /'/g,
-          "\\'"
-        )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-          ${getIcon('xMark', { width: 16, height: 16 })}
-        </button>
-      `;
-      listContainer.appendChild(tag);
+  if (!listContainer) return;
+
+  listContainer.innerHTML = '';
+
+  customAmenitiesList.forEach(amenity => {
+    const tag = document.createElement('div');
+    tag.className = 'amenity-tag-custom';
+    tag.style.cssText =
+      'display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--bg-green); color: var(--primary-green); border-radius: 20px; font-size: 0.85rem; font-weight: 500; margin: 0.25rem;';
+
+    tag.innerHTML = `
+      ${amenity}
+      <button type="button" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
+        ${getIcon('xMark', { width: 16, height: 16 })}
+      </button>
+    `;
+
+    // Add remove event listener
+    const removeBtn = tag.querySelector('button');
+    removeBtn.addEventListener('click', () => {
+      removeCustomAmenity(amenity);
     });
-  }
+
+    listContainer.appendChild(tag);
+  });
 }
 
 /**
@@ -537,35 +642,8 @@ function getCustomAmenities() {
   return customAmenitiesList;
 }
 
-/**
- * Set coordinates from URL parameters (when returning from map)
- */
-export function setCoordinatesFromUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const lat = urlParams.get('lat');
-  const lng = urlParams.get('lng');
-
-  if (lat && lng) {
-    const latInput = document.getElementById('property-latitude');
-    const lngInput = document.getElementById('property-longitude');
-
-    if (latInput && lngInput) {
-      latInput.value = lat;
-      lngInput.value = lng;
-
-      // Show confirmation
-      const setLocationBtn = document.getElementById('set-location-btn');
-      if (setLocationBtn) {
-        setLocationBtn.textContent = '✓ Location Set';
-        setLocationBtn.style.backgroundColor = 'var(--primary-green)';
-        setLocationBtn.style.color = 'var(--white)';
-      }
-    }
-  }
-}
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing create listing...');
   initCreateListing();
-  setCoordinatesFromUrl();
 });

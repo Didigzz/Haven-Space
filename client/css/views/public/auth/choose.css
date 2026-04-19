@@ -1,0 +1,260 @@
+/* Choose Role Page Styles */
+
+.choose-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 48px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 100;
+}
+
+.choose-main {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 140px 24px 80px;
+  background: #ffffff;
+}
+
+.choose-container {
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+}
+
+.choose-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 48px;
+  line-height: 1.2;
+}
+
+/* Role Selection - Using exact styles from auth.css */
+.role-selection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--white);
+}
+
+.role-card:hover {
+  border-color: #bbb;
+  background: #fafafa;
+}
+
+.role-card.selected {
+  border-color: var(--primary-green);
+  background: #f0f7e6;
+}
+
+.role-card.selected .role-radio {
+  border-color: var(--primary-green);
+  background: var(--primary-green);
+}
+
+.role-card.selected .role-radio::after {
+  opacity: 1;
+}
+
+.role-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.role-icon {
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+}
+
+.role-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.role-radio::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: var(--white);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.role-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.choose-btn {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px 32px;
+  background: var(--primary-green);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0 auto;
+  display: block;
+}
+
+.choose-btn:hover:not(:disabled) {
+  background: var(--dark-green);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.3);
+}
+
+.choose-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.choose-footer-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 24px;
+}
+
+.choose-footer-text a {
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.choose-footer-text a:hover {
+  text-decoration: underline;
+}
+
+/* Signup Decorative Corner Images */
+.signup-decorative-images {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.signup-decorative-left,
+.signup-decorative-right {
+  position: absolute;
+  bottom: 0;
+}
+
+.signup-decorative-left {
+  left: 0;
+}
+
+.signup-decorative-right {
+  right: 0;
+}
+
+.signup-decorative-left img,
+.signup-decorative-right img {
+  height: auto;
+  max-width: 300px;
+  display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .choose-header {
+    padding: 16px 24px;
+  }
+
+  .choose-main {
+    padding: 100px 16px 60px;
+  }
+
+  .choose-title {
+    font-size: 24px;
+    margin-bottom: 32px;
+  }
+
+  .role-selection {
+    grid-template-columns: 1fr;
+  }
+
+  .role-card {
+    padding: 1.25rem 1rem;
+  }
+
+  .choose-btn {
+    max-width: 100%;
+  }
+
+  .signup-decorative-left img,
+  .signup-decorative-right img {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .choose-title {
+    font-size: 20px;
+  }
+
+  .choose-card-label {
+    padding: 24px 16px;
+    min-height: 160px;
+  }
+
+  .choose-card-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .choose-card-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .choose-card-text {
+    font-size: 15px;
+  }
+
+  .choose-card-subtext {
+    font-size: 13px;
+  }
+}

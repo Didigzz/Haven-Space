@@ -3,15 +3,94 @@
  * Handles conditional redirects based on boarder status
  */
 
+import { getState } from './state.js';
+
+/**
+ * Check if user is authenticated
+ * @returns {boolean} Whether user is authenticated
+ */
+export function isAuthenticated() {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  return !!(token && user);
+}
+
+/**
+ * Get current user from localStorage
+ * @returns {Object|null} User object or null if not authenticated
+ */
+export function getCurrentUser() {
+  try {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  } catch (e) {
+    console.warn('Failed to parse user from localStorage', e);
+    return null;
+  }
+}
+
+/**
+ * Redirect authenticated users from public find-a-room to boarder find-a-room
+ * Call this on public pages that have find-a-room functionality
+ */
+export function redirectAuthenticatedUsers() {
+  if (isAuthenticated()) {
+    const user = getCurrentUser();
+    if (user && user.role === 'boarder') {
+      const basePath = getBasePath();
+      window.location.href = `${basePath}boarder/find-a-room/index.html`;
+      return true; // Indicates redirect happened
+    }
+  }
+  return false; // No redirect
+}
+
+/**
+ * Setup authentication-aware navigation for find-a-room links
+ * Call this on public pages that have links to find-a-room
+ */
+export function setupAuthenticatedNavigation() {
+  // Find all links that point to find-a-room
+  const findRoomLinks = document.querySelectorAll('a[href*="find-a-room"]');
+
+  findRoomLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      if (isAuthenticated()) {
+        const user = getCurrentUser();
+        if (user && user.role === 'boarder') {
+          e.preventDefault();
+          const basePath = getBasePath();
+          window.location.href = `${basePath}boarder/find-a-room/index.html`;
+        }
+      }
+      // If not authenticated or not a boarder, let the default link behavior happen
+    });
+  });
+}
+
 /**
  * Get the base path for navigation (handles GitHub Pages vs local dev)
  * @returns {string} Base path for navigation
  */
 export function getBasePath() {
   const pathname = window.location.pathname;
+  const hostname = window.location.hostname;
 
   if (pathname.includes('github.io')) {
     return '/Haven-Space/client/views/';
+  }
+
+  // For localhost development (Apache serves from /views/)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Check if we're already in a views subdirectory
+    if (pathname.includes('/views/')) {
+      // Extract the base path up to /views/
+      const viewsIndex = pathname.indexOf('/views/');
+      return pathname.substring(0, viewsIndex + 7); // Include '/views/'
+    }
+
+    // Default for localhost Apache setup - views are served directly
+    return '/views/';
   }
 
   return '/views/';
@@ -24,17 +103,18 @@ export function getBasePath() {
  */
 export function getBoarderRedirectPath(user) {
   const basePath = getBasePath();
-  const boarderStatus = user.boarderStatus || 'new';
+  const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
 
   switch (boarderStatus) {
     case 'new':
     case 'browsing':
-      // New boarders need to apply first - redirect to boarder find-a-room page (authenticated)
+      // New boarders with no application yet - redirect to authenticated find-a-room page
       return `${basePath}boarder/find-a-room/index.html`;
 
-    case 'applied_pending':
-      // Has pending applications - show applications page
-      return `${basePath}boarder/applications/index.html`;
+    case 'applied_pending': {
+      // Has pending applications - show applications dashboard
+      return `${basePath}boarder/applications-dashboard/index.html`;
+    }
 
     case 'pending_confirmation':
       // Landlord accepted, waiting for boarder confirmation
@@ -45,12 +125,12 @@ export function getBoarderRedirectPath(user) {
       return `${basePath}boarder/index.html`;
 
     case 'rejected':
-      // Application rejected - redirect to boarder find-a-room to apply elsewhere (authenticated)
-      return `${basePath}boarder/find-a-room/index.html`;
+      // Application rejected - redirect to applications dashboard to apply elsewhere
+      return `${basePath}boarder/applications-dashboard/index.html`;
 
     default:
-      // Fallback to boarder find-a-room for unknown status (authenticated)
-      return `${basePath}boarder/find-a-room/index.html`;
+      // Fallback to applications dashboard for unknown status
+      return `${basePath}boarder/applications-dashboard/index.html`;
   }
 }
 
@@ -61,7 +141,8 @@ export function getBoarderRedirectPath(user) {
 export function updateBoarderStatus(status) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (user.role === 'boarder') {
-    user.boarderStatus = status;
+    user.boarder_status = status;
+    user.boarderStatus = status; // Keep both for compatibility
     localStorage.setItem('user', JSON.stringify(user));
   }
 }
@@ -73,7 +154,7 @@ export function updateBoarderStatus(status) {
 export function getBoarderStatus() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (user.role === 'boarder') {
-    return user.boarderStatus || 'new';
+    return user.boarder_status || user.boarderStatus || 'new';
   }
   return null;
 }

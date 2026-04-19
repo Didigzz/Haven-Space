@@ -11,6 +11,13 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="../../../css/global.css" />
     <link rel="stylesheet" href="../../../css/components/sidebar.css" />
     <link rel="stylesheet" href="../../../css/components/navbar.css" />
@@ -137,7 +144,7 @@
                     type="text"
                     id="property-name"
                     name="propertyName"
-                    placeholder="e.g. Sunrise Boarding House, Campus View Dormitory"
+                    placeholder="e.g. Campus View Dormitory, Green Valley Boarding House"
                     required
                   />
                 </div>
@@ -392,299 +399,6 @@
               </div>
             </section>
 
-            <!-- Amenities & Features Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <span
-                    data-icon="sparkles"
-                    data-icon-width="24"
-                    data-icon-height="24"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  Amenities & Features
-                </h2>
-                <p class="section-description">Select all amenities that your property offers</p>
-              </div>
-
-              <div class="amenities-section">
-                <h3 class="amenities-category-title">Essential Amenities</h3>
-                <div class="amenities-grid">
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="wifi" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="wifi"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">WiFi / Internet</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="aircon" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="computerDesktop"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Air Conditioning</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="furnished" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="home"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Fully Furnished</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="kitchen" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="fire"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Kitchen Access</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="cr" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="home"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Private Bathroom</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="water-heater" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="drop"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Water Heater</span>
-                    </span>
-                  </label>
-                </div>
-
-                <h3 class="amenities-category-title">Facilities & Services</h3>
-                <div class="amenities-grid">
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="laundry" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="sparkles"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Laundry Area</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="parking" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="truck"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Parking Space</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="cctv" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="camera"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">CCTV Security</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="security" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="shieldCheck"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">24/7 Security</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="generator" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="bolt"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Backup Generator</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="common-area" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="userGroup"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Common Area</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="cleaning" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="sparkles"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Weekly Cleaning</span>
-                    </span>
-                  </label>
-
-                  <label class="amenity-checkbox">
-                    <input type="checkbox" name="amenities" value="elevator" />
-                    <span class="amenity-content">
-                      <span
-                        data-icon="arrowUp"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span class="amenity-label">Elevator</span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            <!-- House Rules Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <span
-                    data-icon="clipboard"
-                    data-icon-width="24"
-                    data-icon-height="24"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  House Rules & Policies
-                </h2>
-                <p class="section-description">Set clear expectations for your boarders</p>
-              </div>
-
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="property-curfew">Curfew Time</label>
-                  <select id="property-curfew" name="propertyCurfew">
-                    <option value="">No curfew</option>
-                    <option value="10pm">10:00 PM</option>
-                    <option value="11pm">11:00 PM</option>
-                    <option value="12am">12:00 AM (Midnight)</option>
-                    <option value="1am">1:00 AM</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="property-visitors">Visitor Policy</label>
-                  <select id="property-visitors" name="propertyVisitors">
-                    <option value="allowed">Visitors Allowed</option>
-                    <option value="limited">Limited Hours Only</option>
-                    <option value="not-allowed">No Visitors</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label>Smoking Policy</label>
-                  <div class="radio-group">
-                    <label class="radio-option">
-                      <input type="radio" name="propertySmoking" value="not-allowed" checked />
-                      <span>No Smoking</span>
-                    </label>
-                    <label class="radio-option">
-                      <input type="radio" name="propertySmoking" value="designated-area" />
-                      <span>Designated Area Only</span>
-                    </label>
-                    <label class="radio-option">
-                      <input type="radio" name="propertySmoking" value="allowed" />
-                      <span>Allowed</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label>Pet Policy</label>
-                  <div class="radio-group">
-                    <label class="radio-option">
-                      <input type="radio" name="propertyPets" value="not-allowed" checked />
-                      <span>No Pets</span>
-                    </label>
-                    <label class="radio-option">
-                      <input type="radio" name="propertyPets" value="small-pets" />
-                      <span>Small Pets Only</span>
-                    </label>
-                    <label class="radio-option">
-                      <input type="radio" name="propertyPets" value="allowed" />
-                      <span>Pets Allowed</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div class="form-group full-width">
-                  <label for="property-additional-rules">
-                    Additional Rules (Optional)
-                    <span class="label-hint">Any other important rules or policies</span>
-                  </label>
-                  <textarea
-                    id="property-additional-rules"
-                    name="propertyAdditionalRules"
-                    rows="3"
-                    placeholder="e.g. Quiet hours from 10 PM to 6 AM, No cooking in rooms, Guests must register at front desk..."
-                  ></textarea>
-                </div>
-              </div>
-            </section>
-
             <!-- Contact Information Section -->
             <section class="form-section">
               <div class="section-header">
@@ -754,15 +468,6 @@
                 ></span>
                 Cancel
               </button>
-              <button type="button" id="preview-btn" class="btn-preview">
-                <span
-                  data-icon="eye"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-                Preview Changes
-              </button>
               <button type="submit" class="btn-submit">
                 <span
                   data-icon="check"
@@ -815,6 +520,71 @@
         </div>
       </div>
     </div>
+
+    <!-- Map Location Modal -->
+    <div class="map-modal-overlay" id="map-modal" style="display: none">
+      <div class="map-modal">
+        <div class="map-modal-header">
+          <h3 class="map-modal-title">Set Property Location</h3>
+          <button type="button" class="map-modal-close" id="map-modal-close">
+            <span
+              data-icon="xMark"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="map-modal-body">
+          <div class="map-search-wrapper">
+            <input
+              type="text"
+              id="map-address-search"
+              class="map-search-input"
+              placeholder="Search for an address..."
+            />
+            <button type="button" id="geocode-address-btn" class="btn-geocode">
+              <span
+                data-icon="search"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+              Search
+            </button>
+            <button type="button" id="use-current-location-btn" class="btn-current-location">
+              <span
+                data-icon="target"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+              Use Current Location
+            </button>
+          </div>
+          <div class="map-search-results" id="map-search-results"></div>
+          <div id="edit-map" class="edit-map"></div>
+          <p class="map-hint">Click on the map or drag the marker to set the exact location</p>
+          <div class="map-coordinates">
+            <span id="map-lat-display">Lat: --</span>
+            <span id="map-lng-display">Lng: --</span>
+          </div>
+        </div>
+        <div class="map-modal-footer">
+          <button type="button" class="btn-secondary" id="map-cancel-btn">Cancel</button>
+          <button type="button" class="btn-primary" id="map-confirm-btn" disabled>
+            Confirm Location
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../../js/main.js"></script>

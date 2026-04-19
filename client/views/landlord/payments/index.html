@@ -60,67 +60,67 @@
           <!-- Payment Summary Cards -->
           <div class="payment-summary-grid">
             <div class="payment-summary-card payment-summary-green">
-              <div class="payment-summary-icon">
-                <span
-                  data-icon="checkCircle"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="payment-summary-info">
+              <div class="payment-summary-header">
                 <span class="payment-summary-label">Paid On Time</span>
-                <span class="payment-summary-value">12</span>
-                <span class="payment-summary-trend">This month</span>
+                <div class="payment-summary-icon">
+                  <span
+                    data-icon="checkCircle"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="payment-summary-value" data-stat="paid-on-time">--</div>
+              <div class="payment-summary-trend">This month</div>
             </div>
 
             <div class="payment-summary-card payment-summary-orange">
-              <div class="payment-summary-icon">
-                <span
-                  data-icon="calendar"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="payment-summary-info">
+              <div class="payment-summary-header">
                 <span class="payment-summary-label">Due Within 7 Days</span>
-                <span class="payment-summary-value">3</span>
-                <span class="payment-summary-trend">Upcoming</span>
+                <div class="payment-summary-icon">
+                  <span
+                    data-icon="calendar"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="payment-summary-value" data-stat="due-within-7">--</div>
+              <div class="payment-summary-trend">Upcoming</div>
             </div>
 
             <div class="payment-summary-card payment-summary-red">
-              <div class="payment-summary-icon">
-                <span
-                  data-icon="exclamation"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="payment-summary-info">
+              <div class="payment-summary-header">
                 <span class="payment-summary-label">Overdue</span>
-                <span class="payment-summary-value">2</span>
-                <span class="payment-summary-trend">Requires attention</span>
+                <div class="payment-summary-icon">
+                  <span
+                    data-icon="exclamation"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="payment-summary-value" data-stat="overdue">--</div>
+              <div class="payment-summary-trend">Requires attention</div>
             </div>
 
             <div class="payment-summary-card payment-summary-blue">
-              <div class="payment-summary-icon">
-                <span
-                  data-icon="currencyDollar"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="payment-summary-info">
+              <div class="payment-summary-header">
                 <span class="payment-summary-label">Total Revenue</span>
-                <span class="payment-summary-value">₱67,500</span>
-                <span class="payment-summary-trend">This month</span>
+                <div class="payment-summary-icon">
+                  <span
+                    data-icon="currencyDollar"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="payment-summary-value" data-stat="total-revenue">--</div>
+              <div class="payment-summary-trend">This month</div>
             </div>
           </div>
 
@@ -161,9 +161,6 @@
                   <label for="propertyFilter">Property:</label>
                   <select id="propertyFilter" class="payments-select">
                     <option value="all">All Properties</option>
-                    <option value="sunrise">Sunrise Dormitory</option>
-                    <option value="green-valley">Green Valley</option>
-                    <option value="metro">Metro Boarding</option>
                   </select>
                 </div>
               </div>

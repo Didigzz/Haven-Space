@@ -6,6 +6,7 @@
  */
 
 import CONFIG from '../config.js';
+import { getAuthHeadersOnly } from './auth-headers.js';
 
 /**
  * Check if the current user is a verified landlord.
@@ -15,7 +16,8 @@ import CONFIG from '../config.js';
  */
 export async function checkLandlordVerification() {
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      headers: getAuthHeadersOnly(),
       credentials: 'include',
     });
 
@@ -487,6 +489,11 @@ export async function initLandlordPermissions() {
     // Check if this is a newly signed-up landlord
     const isNewLandlord = localStorage.getItem('landlordStatus') === 'new';
     const shouldShowWelcome = isNewLandlord && !localStorage.getItem('landlordWelcomeDismissed');
+
+    // Clear the new landlord status after checking
+    if (isNewLandlord) {
+      localStorage.removeItem('landlordStatus');
+    }
 
     // Store last known status for change detection
     let lastKnownStatus = false;

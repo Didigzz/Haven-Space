@@ -61,12 +61,18 @@ async function setupMaintenancePage() {
 async function loadMaintenanceTickets() {
   try {
     const userId = getCurrentUserId();
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/maintenance`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId,
-      },
+      headers: headers,
       credentials: 'include',
     });
 

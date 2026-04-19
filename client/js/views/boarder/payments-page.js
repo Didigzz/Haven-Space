@@ -72,12 +72,18 @@ function formatDate(dateString, format = 'long') {
 async function fetchPaymentOverview() {
   try {
     const userId = getCurrentUserId();
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId.toString(),
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/overview`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId.toString(),
-      },
+      headers: headers,
       credentials: 'include',
     });
 
@@ -99,12 +105,18 @@ async function fetchPaymentOverview() {
 async function fetchPaymentHistory() {
   try {
     const userId = getCurrentUserId();
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId.toString(),
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/history`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId.toString(),
-      },
+      headers: headers,
       credentials: 'include',
     });
 
@@ -126,12 +138,18 @@ async function fetchPaymentHistory() {
 async function fetchPaymentMethods() {
   try {
     const userId = getCurrentUserId();
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId.toString(),
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId.toString(),
-      },
+      headers: headers,
       credentials: 'include',
     });
 

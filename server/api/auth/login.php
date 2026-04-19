@@ -9,6 +9,42 @@ use App\Core\Database\Connection;
 use App\Core\Auth\JWT;
 use App\Core\Auth\RateLimiter;
 
+/**
+ * Determine boarder status based on applications
+ */
+function determineBoarderStatus($pdo, $boarderId) {
+    // Check for accepted applications
+    $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $acceptedStmt->execute([$boarderId, 'accepted']);
+    $acceptedCount = $acceptedStmt->fetchColumn();
+    
+    if ($acceptedCount > 0) {
+        return 'accepted';
+    }
+    
+    // Check for pending applications
+    $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $pendingStmt->execute([$boarderId, 'pending']);
+    $pendingCount = $pendingStmt->fetchColumn();
+    
+    if ($pendingCount > 0) {
+        return 'applied_pending';
+    }
+    
+    // Check for any applications (rejected/cancelled)
+    $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
+    $anyStmt->execute([$boarderId]);
+    $anyCount = $anyStmt->fetchColumn();
+    
+    if ($anyCount > 0) {
+        // Has applications but none are pending or accepted (likely rejected)
+        return 'rejected';
+    }
+    
+    // No applications at all
+    return 'new';
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
@@ -50,7 +86,8 @@ try {
 
     if ($user && password_verify($password, $user['password_hash'])) {
         $accountStatus = $user['account_status'] ?? 'active';
-        if ($accountStatus !== 'active') {
+        // Allow 'active' and 'pending_verification' (landlords waiting for verification)
+        if (!in_array($accountStatus, ['active', 'pending_verification'])) {
             RateLimiter::registerFailure($ip);
             http_response_code(403);
             echo json_encode(['error' => 'This account is suspended or banned. Contact support if you believe this is a mistake.']);
@@ -75,17 +112,31 @@ try {
         // Set authentication cookies
         JWT::setAuthCookies($accessToken, $refreshToken, $config);
 
+        // Determine boarder status if user is a boarder
+        $boarderStatus = null;
+        if ($user['role'] === 'boarder') {
+            $boarderStatus = determineBoarderStatus($pdo, $user['id']);
+        }
+
+        $userResponse = [
+            'id' => $user['id'],
+            'first_name' => $user['first_name'],
+            'last_name' => $user['last_name'],
+            'email' => $user['email'],
+            'role' => $user['role'],
+            'is_verified' => (bool) $user['is_verified'],
+            'account_status' => $accountStatus,
+        ];
+
+        // Add boarder status if applicable
+        if ($boarderStatus !== null) {
+            $userResponse['boarder_status'] = $boarderStatus;
+        }
+
         echo json_encode([
             'success' => true,
-            'user' => [
-                'id' => $user['id'],
-                'first_name' => $user['first_name'],
-                'last_name' => $user['last_name'],
-                'email' => $user['email'],
-                'role' => $user['role'],
-                'is_verified' => (bool) $user['is_verified'],
-                'account_status' => $accountStatus,
-            ]
+            'access_token' => $accessToken,
+            'user' => $userResponse
         ]);
     } else {
         RateLimiter::registerFailure($ip);

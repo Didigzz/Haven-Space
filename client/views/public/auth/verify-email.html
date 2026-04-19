@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Verify Email - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/views/public/auth.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="auth-header">
+      <div class="auth-header-content">
+        <a
+          href="../index.html"
+          class="auth-logo"
+          style="display: flex; align-items: center; text-decoration: none"
+        >
+          <img
+            src="../../../assets/images/Haven_Space_Logo.png"
+            alt="Haven Space"
+            style="height: 28px; width: auto"
+          />
+          <span
+            style="
+              font-family: 'Plus Jakarta Sans', sans-serif;
+              font-size: 20px;
+              font-weight: 700;
+              color: #333333;
+              margin-left: 8px;
+            "
+            >Haven Space</span
+          >
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="auth-main">
+      <div class="auth-container auth-container-narrow">
+        <!-- Loading State -->
+        <div id="loadingState" class="verification-state">
+          <div class="verification-icon">
+            <span
+              data-icon="loading"
+              data-icon-width="64"
+              data-icon-height="64"
+              data-icon-stroke-width="2"
+            ></span>
+          </div>
+          <h1 class="auth-title">Verifying your email...</h1>
+          <p class="auth-subtitle">Please wait while we verify your email address.</p>
+        </div>
+
+        <!-- Success State -->
+        <div id="successState" class="verification-state hidden">
+          <div class="verification-icon verification-icon-success">
+            <span
+              data-icon="checkCircle"
+              data-icon-width="64"
+              data-icon-height="64"
+              data-icon-stroke-width="2"
+            ></span>
+          </div>
+          <h1 class="auth-title">Email verified successfully!</h1>
+          <p class="auth-subtitle" id="successMessage">Your email has been verified.</p>
+
+          <div id="nextStepsContainer" class="next-steps-container hidden">
+            <h3>What's next?</h3>
+            <ul id="nextStepsList" class="next-steps-list"></ul>
+          </div>
+
+          <div class="auth-actions">
+            <a href="login.html" class="auth-btn-primary">Continue to Login</a>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="verification-state hidden">
+          <div class="verification-icon verification-icon-error">
+            <span
+              data-icon="exclamationCircle"
+              data-icon-width="64"
+              data-icon-height="64"
+              data-icon-stroke-width="2"
+            ></span>
+          </div>
+          <h1 class="auth-title">Verification failed</h1>
+          <p class="auth-subtitle" id="errorMessage">There was an issue verifying your email.</p>
+
+          <div class="auth-actions">
+            <button id="resendBtn" class="auth-btn-primary">Resend Verification Email</button>
+            <a href="login.html" class="auth-btn-secondary">Back to Login</a>
+          </div>
+        </div>
+
+        <!-- Already Verified State -->
+        <div id="alreadyVerifiedState" class="verification-state hidden">
+          <div class="verification-icon verification-icon-info">
+            <span
+              data-icon="informationCircle"
+              data-icon-width="64"
+              data-icon-height="64"
+              data-icon-stroke-width="2"
+            ></span>
+          </div>
+          <h1 class="auth-title">Email already verified</h1>
+          <p class="auth-subtitle">
+            Your email address has already been verified. You can now log in to your account.
+          </p>
+
+          <div class="auth-actions">
+            <a href="login.html" class="auth-btn-primary">Continue to Login</a>
+          </div>
+        </div>
+
+        <!-- Resend Form -->
+        <div id="resendForm" class="verification-state hidden">
+          <div class="verification-icon">
+            <span
+              data-icon="envelope"
+              data-icon-width="64"
+              data-icon-height="64"
+              data-icon-stroke-width="2"
+            ></span>
+          </div>
+          <h1 class="auth-title">Resend verification email</h1>
+          <p class="auth-subtitle">Enter your email address to receive a new verification link.</p>
+
+          <form class="auth-form" id="resendEmailForm">
+            <div class="form-group">
+              <label for="email" class="form-label">Email address</label>
+              <input type="email" id="email" name="email" class="form-input" required />
+            </div>
+
+            <button type="submit" class="auth-btn-primary auth-btn-full">
+              Send Verification Email
+            </button>
+          </form>
+
+          <div class="auth-actions">
+            <a href="login.html" class="auth-btn-secondary">Back to Login</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="../../../js/auth/verify-email.js"></script>
+  </body>
+</html>

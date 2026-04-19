@@ -35,8 +35,8 @@
 .payment-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 20px;
+  margin-bottom: 32px;
 }
 
 .payment-summary-card {
@@ -45,20 +45,14 @@
   border-radius: 12px;
   padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.payment-summary-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-direction: column;
+  gap: 12px;
 }
 
 .payment-summary-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,45 +60,43 @@
 }
 
 .payment-summary-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
+}
+
+.payment-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .payment-summary-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .payment-summary-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--dashboard-text-secondary);
 }
 
 .payment-summary-value {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--dashboard-text-primary);
 }
 
 .payment-summary-trend {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--dashboard-text-secondary);
 }
 
 /* Payment Summary Color Variants */
-.payment-summary-green {
-  border-left: 4px solid var(--dashboard-success);
-}
-
 .payment-summary-green .payment-summary-icon {
   background-color: rgba(34, 197, 94, 0.1);
   color: var(--dashboard-success);
-}
-
-.payment-summary-orange {
-  border-left: 4px solid var(--dashboard-orange);
 }
 
 .payment-summary-orange .payment-summary-icon {
@@ -112,17 +104,9 @@
   color: var(--dashboard-orange);
 }
 
-.payment-summary-red {
-  border-left: 4px solid var(--dashboard-red);
-}
-
 .payment-summary-red .payment-summary-icon {
   background-color: rgba(239, 68, 68, 0.1);
   color: var(--dashboard-red);
-}
-
-.payment-summary-blue {
-  border-left: 4px solid var(--dashboard-info);
 }
 
 .payment-summary-blue .payment-summary-icon {

@@ -20,3 +20,7 @@ build/
 
 # Qoder config
 qoder.json
+
+# Storage uploads (user uploaded files)
+storage/uploads/
+server/storage/uploads/

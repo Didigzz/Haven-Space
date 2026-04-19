@@ -13,19 +13,27 @@ const NAV_CONFIG = {
       items: [
         { label: 'Dashboard', href: '../boarder/index.html', icon: 'home' },
         {
-          label: 'My Lease',
-          href: '../boarder/lease/index.html',
-          icon: 'application',
+          label: 'My Applications',
+          href: '../boarder/applications/index.html',
+          icon: 'clipboardList',
         },
-        { label: 'Applications', href: '../boarder/applications/index.html', icon: 'clipboard' },
+        { label: 'My Lease', href: '../boarder/lease/index.html', icon: 'document' },
+      ],
+    },
+    {
+      group: 'Communication',
+      items: [
         { label: 'Messages', href: '../boarder/messages/index.html', icon: 'chat', badge: '3' },
-        { label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' },
         {
           label: 'Announcements',
           href: '../boarder/announcements/index.html',
           icon: 'announcement',
         },
       ],
+    },
+    {
+      group: 'Payments',
+      items: [{ label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' }],
     },
     {
       group: 'Discovery',
@@ -37,14 +45,41 @@ const NAV_CONFIG = {
         {
           label: 'House Rules / Handbook',
           href: '../boarder/house-rules/index.html',
-          icon: 'document',
+          icon: 'book',
         },
-        { label: 'Contact Management', href: '../boarder/contacts/index.html', icon: 'phone' },
+        { label: 'Contact Management', href: '../boarder/contacts/index.html', icon: 'users' },
       ],
     },
     {
       group: 'Account',
       items: [{ label: 'Settings', href: '../boarder/settings/index.html', icon: 'settings' }],
+    },
+  ],
+  // Pre-acceptance boarder navigation (limited features)
+  boarderPreAcceptance: [
+    {
+      group: 'Main',
+      items: [
+        {
+          label: 'Applications Dashboard',
+          href: '../boarder/applications-dashboard/index.html',
+          icon: 'home',
+        },
+      ],
+    },
+    {
+      group: 'Discovery',
+      items: [{ label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' }],
+    },
+    {
+      group: 'Account',
+      items: [
+        {
+          label: 'Settings',
+          href: '../boarder/applications-dashboard/settings/index.html',
+          icon: 'settings',
+        },
+      ],
     },
   ],
   landlord: [
@@ -113,12 +148,14 @@ const NAV_CONFIG = {
  * Initialize sidebar component
  * @param {Object} options - Configuration options
  * @param {string} options.role - User role: 'boarder', 'landlord', or 'admin'
+ * @param {string} options.boarderStatus - Boarder status: 'accepted', 'applied_pending', etc. (only for boarder role)
  * @param {string} options.containerId - ID of container element (default: 'sidebar-container')
  * @param {Object} options.user - User info object with name, initials, role
  */
 export function initSidebar(options = {}) {
   const {
     role = 'boarder',
+    boarderStatus = 'accepted', // Default to accepted for backward compatibility
     containerId = 'sidebar-container',
     onAfterRender,
     user = {
@@ -152,7 +189,7 @@ export function initSidebar(options = {}) {
         logoLink.href = `${basePath}/views/public/index.html`;
       }
 
-      renderNavigation(role, basePath);
+      renderNavigation(role, boarderStatus, basePath);
       updateUserInfo(user);
       setActiveState();
       setupNavbarSidebarToggle();
@@ -214,17 +251,24 @@ function resolveNavHref(href, basePath) {
 }
 
 /**
- * Render navigation items based on role
+ * Render navigation items based on role and boarder status
  * @param {string} role - User role
+ * @param {string} boarderStatus - Boarder status (only used for boarder role)
  * @param {string} basePath - Base path for resolving hrefs
  */
-function renderNavigation(role, basePath) {
+function renderNavigation(role, boarderStatus, basePath) {
   const navContent = document.getElementById('sidebar-nav-content');
   if (!navContent) {
     return;
   }
 
-  const config = NAV_CONFIG[role] || NAV_CONFIG.boarder;
+  // Determine which navigation config to use
+  let configKey = role;
+  if (role === 'boarder' && boarderStatus === 'applied_pending') {
+    configKey = 'boarderPreAcceptance';
+  }
+
+  const config = NAV_CONFIG[configKey] || NAV_CONFIG.boarder;
   navContent.innerHTML = config
     .map(
       group => `

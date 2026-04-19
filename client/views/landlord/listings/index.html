@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="../../../css/global.css" />
     <link rel="stylesheet" href="../../../css/components/sidebar.css" />
     <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
     <link rel="stylesheet" href="../../../css/views/landlord/landlord-listings.css" />
   </head>
   <body data-view="landlord" data-dashboard-type="landlord">
@@ -50,60 +51,64 @@
           <!-- Stats Overview -->
           <div class="listings-stats-row">
             <div class="listings-stat-card">
-              <div class="stat-icon green">
-                <span
-                  data-icon="building"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="stat-info">
-                <span class="stat-value" data-total="properties">--</span>
+              <div class="stat-header">
                 <span class="stat-label">Total Properties</span>
+                <div class="stat-icon green">
+                  <span
+                    data-icon="building"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="stat-value" data-total="properties">--</div>
+              <div class="stat-description">All your listings</div>
             </div>
             <div class="listings-stat-card">
-              <div class="stat-icon blue">
-                <span
-                  data-icon="home"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="stat-info">
-                <span class="stat-value" data-total="rooms">--</span>
+              <div class="stat-header">
                 <span class="stat-label">Total Rooms</span>
+                <div class="stat-icon blue">
+                  <span
+                    data-icon="home"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="stat-value" data-total="rooms">--</div>
+              <div class="stat-description">Across all properties</div>
             </div>
             <div class="listings-stat-card">
-              <div class="stat-icon purple">
-                <span
-                  data-icon="userGroup"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="stat-info">
-                <span class="stat-value" data-total="boarders">--</span>
+              <div class="stat-header">
                 <span class="stat-label">Current Boarders</span>
+                <div class="stat-icon purple">
+                  <span
+                    data-icon="userGroup"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="stat-value" data-total="boarders">--</div>
+              <div class="stat-description">Active tenants</div>
             </div>
             <div class="listings-stat-card">
-              <div class="stat-icon orange">
-                <span
-                  data-icon="currencyDollar"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <div class="stat-info">
-                <span class="stat-value" data-total="revenue">--</span>
+              <div class="stat-header">
                 <span class="stat-label">Monthly Revenue</span>
+                <div class="stat-icon orange">
+                  <span
+                    data-icon="currencyDollar"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
               </div>
+              <div class="stat-value" data-total="revenue">--</div>
+              <div class="stat-description">This month</div>
             </div>
           </div>
 

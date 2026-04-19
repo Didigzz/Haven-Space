@@ -55,62 +55,62 @@
   border-radius: 12px;
   padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: all 0.2s ease;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.applications-stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+.applications-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .applications-stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
+.applications-stat-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 .applications-stat-icon.pending {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--dashboard-warning);
 }
 
 .applications-stat-icon.approved {
-  background-color: var(--bg-green);
-  color: var(--primary-green);
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--dashboard-success);
 }
 
 .applications-stat-icon.rejected {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--dashboard-red);
 }
 
 .applications-stat-icon.total {
-  background-color: #dbeafe;
-  color: #2563eb;
-}
-
-.applications-stat-content {
-  flex: 1;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--dashboard-info);
 }
 
 .applications-stat-value {
-  font-size: 1.5rem;
+  font-size: 28px;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   line-height: 1;
-  margin-bottom: 4px;
 }
 
 .applications-stat-label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 /* ===== Filters ===== */
