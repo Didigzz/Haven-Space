@@ -327,7 +327,8 @@ function renderNavigation(role, boarderStatus, basePath) {
 
   // Determine which navigation config to use
   let configKey = role;
-  if (role === 'boarder' && boarderStatus === 'applied_pending') {
+  if (role === 'boarder' && boarderStatus !== 'accepted') {
+    // All non-accepted boarders get the pre-acceptance navigation
     configKey = 'boarderPreAcceptance';
   }
 

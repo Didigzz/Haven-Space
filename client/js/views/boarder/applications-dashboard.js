@@ -13,6 +13,19 @@ import CONFIG from '../../config.js';
  * Initialize the applications dashboard
  */
 export async function initApplicationsDashboard() {
+  // Check boarder status and redirect if accepted
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+
+  if (boarderStatus === 'accepted') {
+    // Accepted boarders should be in main dashboard
+    const basePath = window.location.pathname.includes('github.io')
+      ? '/Haven-Space/client/views/'
+      : '/views/';
+    window.location.href = `${basePath}boarder/index.html`;
+    return;
+  }
+
   // Initialize sidebar and navbar
   initializeComponents();
 

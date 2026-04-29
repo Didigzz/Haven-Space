@@ -77,6 +77,17 @@ export async function initBoarderDashboard() {
     return;
   }
 
+  // Check boarder status and redirect if not accepted
+  const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+  if (boarderStatus !== 'accepted') {
+    // Non-accepted boarders should be in applications dashboard
+    const basePath = window.location.pathname.includes('github.io')
+      ? '/Haven-Space/client/views/'
+      : '/views/';
+    window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
+    return;
+  }
+
   // Initialize profile data first
   await initDashboard();
 
@@ -188,7 +199,16 @@ function setupNavbarListeners() {
 
   // Listen for profile click from navbar
   window.addEventListener('navbar:user:profile:click', () => {
-    // Navigate to profile tab in settings
-    window.location.href = '../settings/index.html#profile';
+    // Check boarder status before navigating
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+
+    // Only accepted boarders can access main settings
+    if (boarderStatus === 'accepted') {
+      window.location.href = '../settings/index.html#profile';
+    } else {
+      // Non-accepted boarders go to applications dashboard settings
+      window.location.href = '../applications-dashboard/settings/index.html#profile';
+    }
   });
 }

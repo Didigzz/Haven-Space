@@ -270,8 +270,12 @@ function renderNotifications(notifications) {
 
   // Setup click handlers for notification items
   list.querySelectorAll('.navbar-notification-item').forEach(item => {
-    item.addEventListener('click', () => {
+    item.addEventListener('click', async () => {
       const notificationId = parseInt(item.dataset.id);
+
+      // Get the notification to check its type
+      const notification = notifications.find(n => n.id === notificationId);
+
       window.dispatchEvent(
         new CustomEvent('navbar:notification:click', {
           detail: { id: notificationId },
@@ -291,6 +295,44 @@ function renderNotifications(notifications) {
             item.classList.add('unread');
             updateUnreadCount(1);
           });
+      }
+
+      // If this is an application status notification, sync user data
+      if (
+        notification &&
+        (notification.type === 'application_accepted' ||
+          notification.type === 'application_rejected')
+      ) {
+        try {
+          const { syncUserData } = await import('../shared/auth-sync.js');
+          const updatedUser = await syncUserData();
+
+          if (updatedUser) {
+            // Check if boarder status changed and redirect if needed
+            const currentPath = window.location.pathname;
+            const boarderStatus = updatedUser.boarder_status || updatedUser.boarderStatus || 'new';
+
+            // If rejected and on main dashboard, redirect to applications dashboard
+            if (boarderStatus === 'rejected' && currentPath.includes('/boarder/index.html')) {
+              const basePath = currentPath.includes('github.io')
+                ? '/Haven-Space/client/views/'
+                : '/views/';
+              window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
+            }
+            // If accepted and on applications dashboard, redirect to main dashboard
+            else if (
+              boarderStatus === 'accepted' &&
+              currentPath.includes('/applications-dashboard/')
+            ) {
+              const basePath = currentPath.includes('github.io')
+                ? '/Haven-Space/client/views/'
+                : '/views/';
+              window.location.href = `${basePath}boarder/index.html`;
+            }
+          }
+        } catch (error) {
+          console.error('Failed to sync user data after notification:', error);
+        }
       }
     });
   });

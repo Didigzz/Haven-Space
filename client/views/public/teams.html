@@ -3,449 +3,763 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Development Team - Haven Space</title>
-    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Room Details - Haven Space</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../css/global.css?v=1777136032299" />
-    <link rel="stylesheet" href="../../css/views/public/public.css?v=1777136032299" />
-    <link rel="stylesheet" href="../../css/views/public/team.css?v=1777136032299" />
-
+    <link rel="stylesheet" href="../../../css/global.css?v=1777136032299" />
+    <link rel="stylesheet" href="../../../css/views/public/public.css?v=1777136032299" />
+    <link rel="stylesheet" href="../../../css/views/boarder/room-detail.css?v=1777136032299" />
+    <link
+      rel="stylesheet"
+      href="../../../css/views/boarder/room-detail-modal.css?v=1777136032299"
+    />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css?v=1777136032299"
+    />
     <script type="module">
-      import { initIconElements } from '../../js/shared/icons.js';
-      document.addEventListener('DOMContentLoaded', () => {
-        initIconElements();
-      });
+      import { getIcon, initIconElements } from '../../../js/shared/icons.js';
+      window.getIcon = getIcon;
+      window.initIconElements = initIconElements;
     </script>
   </head>
   <body data-view="public">
-    <!-- Navigation -->
-    <nav class="navbar">
-      <div class="nav-container">
-        <div class="nav-logo">
-          <a href="index.html" style="text-decoration: none">
-            <span class="logo-text">Haven Space</span>
-          </a>
-        </div>
-        <ul class="nav-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="our-story.html">Our Story</a></li>
-          <li><a href="teams.html" class="active">Our Team</a></li>
-          <li><a href="for-landlords.html">For Landlords</a></li>
-        </ul>
-        <div class="nav-actions">
-          <a href="auth/login.html" class="btn-login">Log in</a>
-          <a href="auth/choose.html" class="btn-join">Join now</a>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Team Section -->
-    <main class="team-container">
-      <!-- Dashed Top Fade Grid -->
-      <div class="vision-grid-background"></div>
-      <header class="team-header">
-        <h1>DEVELOPMENT TEAM</h1>
-        <p class="team-subtitle">BSIT 2B – The team behind Haven Space</p>
-        <div class="header-accent"></div>
-      </header>
-
-      <div class="team-grid" id="teamGrid">
-        <!-- Team Member 1 -->
-        <div class="team-card" data-member="1">
-          <div class="card-number">01</div>
-          <div class="card-image">
-            <img src="../../assets/images/public/dev_img1.png" alt="John Paul Digal" />
-          </div>
-          <div class="card-details">
-            <h2 class="member-name">JOHN PAUL DIGAL</h2>
-            <p class="member-role">Project Manager / Team Leader</p>
-            <div class="role-divider"></div>
-            <p class="member-course">BSIT 2B</p>
-            <p class="member-description">
-              Oversees project development, assigns tasks and ensures deadlines are met. Coordinates
-              documentation and final submission for Haven Space.
-            </p>
-            <div class="member-tags">
-              <span class="tag">Project Management</span>
-              <span class="tag">Team Coordination</span>
-              <span class="tag">Documentation</span>
-            </div>
-            <button class="collapse-btn">← Collapse</button>
-          </div>
-        </div>
-
-        <!-- Team Member 2 -->
-        <div class="team-card" data-member="2">
-          <div class="card-number">02</div>
-          <div class="card-image">
-            <img src="../../assets/images/public/dev_img1.png" alt="Alistair Ybanez" />
-          </div>
-          <div class="card-details">
-            <h2 class="member-name">ALISTAIR YBANEZ</h2>
-            <p class="member-role">Front-End Developer</p>
-            <div class="role-divider"></div>
-            <p class="member-course">BSIT 2B</p>
-            <p class="member-description">
-              Designs UI/UX using HTML, CSS, Bootstrap. Ensures responsiveness and usability across
-              all devices and implements client-side validation.
-            </p>
-            <div class="member-tags">
-              <span class="tag">UI/UX Design</span>
-              <span class="tag">Responsive Design</span>
-              <span class="tag">Front-End Dev</span>
-            </div>
-            <button class="collapse-btn">← Collapse</button>
-          </div>
-        </div>
-
-        <!-- Team Member 3 -->
-        <div class="team-card" data-member="3">
-          <div class="card-number">03</div>
-          <div class="card-image">
-            <img src="../../assets/images/public/dev_img1.png" alt="John Paul Abecia" />
-          </div>
-          <div class="card-details">
-            <h2 class="member-name">JOHN PAUL ABECIA</h2>
-            <p class="member-role">Back-End Developer</p>
-            <div class="role-divider"></div>
-            <p class="member-course">BSIT 2B</p>
-            <p class="member-description">
-              Develops PHP logic and server-side functionality. Handles authentication, business
-              logic, and connects application to database.
-            </p>
-            <div class="member-tags">
-              <span class="tag">PHP Development</span>
-              <span class="tag">Database Design</span>
-              <span class="tag">API Integration</span>
-            </div>
-            <button class="collapse-btn">← Collapse</button>
-          </div>
-        </div>
-
-        <!-- Team Member 4 -->
-        <div class="team-card" data-member="4">
-          <div class="card-number">04</div>
-          <div class="card-image">
-            <img src="../../assets/images/public/dev_img1.png" alt="Melvis Alfonse Palmares" />
-          </div>
-          <div class="card-details">
-            <h2 class="member-name">MELVIS ALFONSE PALMARES</h2>
-            <p class="member-role">QA / Tester / Documentation Lead</p>
-            <div class="role-divider"></div>
-            <p class="member-course">BSIT 2B</p>
-            <p class="member-description">
-              Tests system functionality and reports bugs. Ensures system meets requirements and
-              handles user manual and technical documentation.
-            </p>
-            <div class="member-tags">
-              <span class="tag">QA Testing</span>
-              <span class="tag">Bug Tracking</span>
-              <span class="tag">Documentation</span>
-            </div>
-            <button class="collapse-btn">← Collapse</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Project Mission Section -->
-      <section class="mission-section">
-        <div class="mission-container">
-          <div class="mission-icon">
+    <div class="room-detail-dashboard">
+      <!-- Main Content -->
+      <main class="room-detail-main room-detail-main-public">
+        <!-- Content Wrapper -->
+        <div class="room-detail-content">
+          <!-- Breadcrumb Navigation -->
+          <nav class="room-detail-breadcrumb">
+            <a href="../find-a-room.html" class="breadcrumb-link">
+              <span data-icon="home" data-icon-width="16" data-icon-height="16"></span>
+              Find a Room
+            </a>
             <span
-              data-icon="target"
-              data-icon-width="48"
-              data-icon-height="48"
-              data-icon-stroke-width="1.5"
+              data-icon="chevronRight"
+              data-icon-width="16"
+              data-icon-height="16"
+              class="breadcrumb-separator"
             ></span>
+            <span class="breadcrumb-current" id="breadcrumb-title">Room Details</span>
+          </nav>
+
+          <!-- Image Gallery -->
+          <section class="room-detail-gallery">
+            <div class="gallery-toggle">
+              <button class="toggle-btn" id="toggle-view-btn">
+                <span data-icon="map" data-icon-width="18" data-icon-height="18"></span>
+                <span class="toggle-text">Show Map</span>
+              </button>
+            </div>
+            <div class="gallery-main">
+              <img
+                src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80"
+                alt="Property - Main View"
+                id="gallery-main-image"
+                class="gallery-main-image"
+              />
+              <button class="gallery-btn gallery-prev" id="gallery-prev">
+                <span data-icon="chevronLeft" data-icon-width="24" data-icon-height="24"></span>
+              </button>
+              <button class="gallery-btn gallery-next" id="gallery-next">
+                <span data-icon="chevronRight" data-icon-width="24" data-icon-height="24"></span>
+              </button>
+              <button class="gallery-favorite-btn" id="gallery-favorite" data-favorite="false">
+                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
+              </button>
+            </div>
+            <div class="gallery-thumbnails" id="gallery-thumbnails">
+              <button class="gallery-thumb active" data-index="0">
+                <img
+                  src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=300&q=80"
+                  alt="Thumbnail 1"
+                />
+              </button>
+              <button class="gallery-thumb" data-index="1">
+                <img
+                  src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=300&q=80"
+                  alt="Thumbnail 2"
+                />
+              </button>
+              <button class="gallery-thumb" data-index="2">
+                <img
+                  src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=300&q=80"
+                  alt="Thumbnail 3"
+                />
+              </button>
+              <button class="gallery-thumb" data-index="3">
+                <img
+                  src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=300&q=80"
+                  alt="Thumbnail 4"
+                />
+              </button>
+              <button class="gallery-thumb" data-index="4">
+                <img
+                  src="https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=300&q=80"
+                  alt="Thumbnail 5"
+                />
+              </button>
+            </div>
+          </section>
+          <div class="room-detail-map" id="room-map" style="display: none">
+            <div class="map-header">
+              <button class="toggle-btn" id="back-to-gallery-btn">
+                <span data-icon="chevronLeft" data-icon-width="18" data-icon-height="18"></span>
+                <span class="toggle-text">Back to Images</span>
+              </button>
+            </div>
+            <div id="leaflet-map"></div>
           </div>
-          <h2 class="mission-title">OUR MISSION</h2>
-          <p class="mission-statement">
-            Haven Space bridges the gap between boarders and boarding house owners through a
-            seamless digital platform. We empower students to find verified, affordable living
-            spaces near their schools—while giving landlords tools to manage properties efficiently.
-          </p>
-          <div class="mission-values">
-            <div class="value-item">
-              <span class="value-number">01</span>
-              <span class="value-text"> transparency in every listing</span>
+
+          <!-- Main Content Grid -->
+          <div class="room-detail-grid">
+            <!-- Left Column: Details -->
+            <div class="room-detail-info">
+              <!-- Header Section -->
+              <section class="room-detail-header">
+                <div class="room-detail-header-content">
+                  <div class="room-detail-badges">
+                    <span class="room-badge room-badge-verified">
+                      <span
+                        data-icon="badgeCheck"
+                        data-icon-width="16"
+                        data-icon-height="16"
+                      ></span>
+                      Verified Property
+                    </span>
+                    <span class="room-badge room-badge-new">New Listing</span>
+                  </div>
+                  <h1 class="room-detail-title" id="room-title">Loading...</h1>
+                  <div class="room-detail-location">
+                    <span data-icon="location" data-icon-width="18" data-icon-height="18"></span>
+                    <span id="room-address"></span>
+                  </div>
+                  <div class="room-detail-meta">
+                    <div class="room-detail-rating">
+                      <span data-icon="starSolid" data-icon-width="18" data-icon-height="18"></span>
+                      <span class="room-detail-rating-value" id="room-rating"></span>
+                      <span class="room-detail-rating-count" id="room-reviews"></span>
+                    </div>
+                    <span class="room-detail-divider">•</span>
+                    <div class="room-detail-distance">
+                      <span data-icon="target" data-icon-width="16" data-icon-height="16"></span>
+                      <span id="room-distance"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Quick Info Cards -->
+              <section class="room-detail-quick-info">
+                <div class="quick-info-card">
+                  <div class="quick-info-icon">
+                    <span data-icon="userCircle" data-icon-width="24" data-icon-height="24"></span>
+                  </div>
+                  <div class="quick-info-content">
+                    <h3 class="quick-info-label">Room Types</h3>
+                    <p class="quick-info-value" id="room-types">Single & Shared</p>
+                  </div>
+                </div>
+                <div class="quick-info-card">
+                  <div class="quick-info-icon">
+                    <span data-icon="calendar" data-icon-width="24" data-icon-height="24"></span>
+                  </div>
+                  <div class="quick-info-content">
+                    <h3 class="quick-info-label">Availability</h3>
+                    <p class="quick-info-value" id="room-availability">Available Now</p>
+                  </div>
+                </div>
+                <div class="quick-info-card">
+                  <div class="quick-info-icon">
+                    <span data-icon="clock" data-icon-width="24" data-icon-height="24"></span>
+                  </div>
+                  <div class="quick-info-content">
+                    <h3 class="quick-info-label">Min. Stay</h3>
+                    <p class="quick-info-value">6 months</p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Description -->
+              <section class="room-detail-section">
+                <h2 class="room-detail-section-title">About This Property</h2>
+                <div class="room-detail-description" id="room-description"></div>
+              </section>
+
+              <!-- Amenities -->
+              <section class="room-detail-section">
+                <h2 class="room-detail-section-title">Amenities</h2>
+                <div class="room-detail-amenities" id="room-amenities">
+                  <!-- Amenities will be populated by JavaScript from API -->
+                </div>
+              </section>
+
+              <!-- House Rules -->
+              <section class="room-detail-section">
+                <h2 class="room-detail-section-title">House Rules</h2>
+                <div class="room-detail-rules">
+                  <div class="rule-item">
+                    <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
+                    <div class="rule-content">
+                      <h4>Curfew</h4>
+                      <p>Building locks at 11:00 PM on weekdays, 12:00 AM on weekends</p>
+                    </div>
+                  </div>
+                  <div class="rule-item">
+                    <span data-icon="noSmoking" data-icon-width="20" data-icon-height="20"></span>
+                    <div class="rule-content">
+                      <h4>No Smoking</h4>
+                      <p>Smoking is not allowed inside the building</p>
+                    </div>
+                  </div>
+                  <div class="rule-item">
+                    <span data-icon="noPets" data-icon-width="20" data-icon-height="20"></span>
+                    <div class="rule-content">
+                      <h4>No Pets</h4>
+                      <p>Pets are not allowed on the premises</p>
+                    </div>
+                  </div>
+                  <div class="rule-item">
+                    <span data-icon="userGroup" data-icon-width="20" data-icon-height="20"></span>
+                    <div class="rule-content">
+                      <h4>Visitors</h4>
+                      <p>Visitors allowed until 9:00 PM only</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Reviews Section -->
+              <section class="room-detail-section">
+                <div class="room-detail-reviews-header">
+                  <h2 class="room-detail-section-title">Reviews & Ratings</h2>
+                  <div class="reviews-summary">
+                    <div class="reviews-average">
+                      <span class="reviews-average-value" id="reviews-average">4.8</span>
+                      <span class="reviews-average-label">out of 5</span>
+                    </div>
+                    <div class="reviews-count"><span id="reviews-total">24</span> reviews</div>
+                  </div>
+                </div>
+
+                <!-- Rating Breakdown -->
+                <div class="rating-breakdown">
+                  <div class="rating-bar">
+                    <span class="rating-label">5 stars</span>
+                    <div class="rating-progress">
+                      <div class="rating-progress-fill" style="width: 75%"></div>
+                    </div>
+                    <span class="rating-count">18</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">4 stars</span>
+                    <div class="rating-progress">
+                      <div class="rating-progress-fill" style="width: 17%"></div>
+                    </div>
+                    <span class="rating-count">4</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">3 stars</span>
+                    <div class="rating-progress">
+                      <div class="rating-progress-fill" style="width: 8%"></div>
+                    </div>
+                    <span class="rating-count">2</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">2 stars</span>
+                    <div class="rating-progress">
+                      <div class="rating-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <span class="rating-count">0</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">1 star</span>
+                    <div class="rating-progress">
+                      <div class="rating-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <span class="rating-count">0</span>
+                  </div>
+                </div>
+
+                <!-- Individual Reviews -->
+                <div class="reviews-list" id="reviews-list">
+                  <div class="review-card">
+                    <div class="review-header">
+                      <div class="reviewer-avatar">
+                        <span
+                          data-icon="userCircle"
+                          data-icon-width="40"
+                          data-icon-height="40"
+                        ></span>
+                      </div>
+                      <div class="reviewer-info">
+                        <h4 class="reviewer-name">Maria Santos</h4>
+                        <div class="review-meta">
+                          <div class="review-rating">
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                          </div>
+                          <span class="review-date">2 weeks ago</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p class="review-text">
+                      Great place to stay! Very convenient location near UP Diliman. The WiFi is
+                      fast and the security is excellent. Highly recommended for students!
+                    </p>
+                  </div>
+
+                  <div class="review-card">
+                    <div class="review-header">
+                      <div class="reviewer-avatar">
+                        <span
+                          data-icon="userCircle"
+                          data-icon-width="40"
+                          data-icon-height="40"
+                        ></span>
+                      </div>
+                      <div class="reviewer-info">
+                        <h4 class="reviewer-name">John Cruz</h4>
+                        <div class="review-meta">
+                          <div class="review-rating">
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="star"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                          </div>
+                          <span class="review-date">1 month ago</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p class="review-text">
+                      Clean rooms and friendly staff. The only downside is the curfew on weekdays,
+                      but overall it's a solid choice for the price.
+                    </p>
+                  </div>
+
+                  <div class="review-card">
+                    <div class="review-header">
+                      <div class="reviewer-avatar">
+                        <span
+                          data-icon="userCircle"
+                          data-icon-width="40"
+                          data-icon-height="40"
+                        ></span>
+                      </div>
+                      <div class="reviewer-info">
+                        <h4 class="reviewer-name">Anna Reyes</h4>
+                        <div class="review-meta">
+                          <div class="review-rating">
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                            <span
+                              data-icon="starSolid"
+                              data-icon-width="14"
+                              data-icon-height="14"
+                            ></span>
+                          </div>
+                          <span class="review-date">2 months ago</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p class="review-text">
+                      I've been staying here for 6 months now. The place is well-maintained and the
+                      landlord is responsive to concerns. Worth every peso!
+                    </p>
+                  </div>
+                </div>
+              </section>
             </div>
-            <div class="value-item">
-              <span class="value-number">02</span>
-              <span class="value-text"> trust through verified properties</span>
+
+            <!-- Right Column: Booking Card -->
+            <aside class="room-detail-booking-card">
+              <div class="booking-card-content">
+                <div class="booking-price">
+                  <span class="booking-price-amount" id="room-price">₱4,500</span>
+                  <span class="booking-price-period">/month</span>
+                </div>
+
+                <div class="booking-info-items">
+                  <div class="booking-info-item">
+                    <span data-icon="calendar" data-icon-width="18" data-icon-height="18"></span>
+                    <span>Available: <strong id="booking-availability">Now</strong></span>
+                  </div>
+                  <div class="booking-info-item">
+                    <span data-icon="clock" data-icon-width="18" data-icon-height="18"></span>
+                    <span>Min. stay: <strong>6 months</strong></span>
+                  </div>
+                  <div class="booking-info-item">
+                    <span data-icon="banknotes" data-icon-width="18" data-icon-height="18"></span>
+                    <span>Deposit: <strong>2 months</strong></span>
+                  </div>
+                </div>
+
+                <div class="booking-divider"></div>
+
+                <div class="booking-room-types">
+                  <h3 class="booking-section-title">Available Room Types</h3>
+                  <div class="booking-room-type-options">
+                    <label class="booking-room-option">
+                      <input type="radio" name="room-type" value="single" checked />
+                      <div class="booking-room-type-content">
+                        <div class="booking-room-type-info">
+                          <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
+                          <span class="booking-room-type-label">Single Room</span>
+                        </div>
+                        <span class="booking-room-type-price">₱4,500/mo</span>
+                      </div>
+                    </label>
+                    <label class="booking-room-option">
+                      <input type="radio" name="room-type" value="shared" />
+                      <div class="booking-room-type-content">
+                        <div class="booking-room-type-info">
+                          <span
+                            data-icon="userGroup"
+                            data-icon-width="18"
+                            data-icon-height="18"
+                          ></span>
+                          <span class="booking-room-type-label">Shared Room</span>
+                        </div>
+                        <span class="booking-room-type-price">₱3,000/mo</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="booking-actions">
+                  <button class="booking-btn booking-btn-primary" id="apply-now-btn">
+                    <span data-icon="application" data-icon-width="20" data-icon-height="20"></span>
+                    Apply Now
+                  </button>
+                  <button class="booking-btn booking-btn-secondary" id="schedule-tour-btn">
+                    <span
+                      data-icon="calendarDays"
+                      data-icon-width="20"
+                      data-icon-height="20"
+                    ></span>
+                    Schedule a Tour
+                  </button>
+                </div>
+
+                <div class="booking-contact">
+                  <p class="booking-contact-text">Questions about this property?</p>
+                  <button class="booking-contact-btn" id="contact-landlord-btn">
+                    <span data-icon="chat" data-icon-width="18" data-icon-height="18"></span>
+                    Contact Landlord
+                  </button>
+                </div>
+              </div>
+
+              <!-- Landlord Info -->
+              <div class="booking-landlord-info">
+                <h4 class="landlord-info-title">Property Managed by</h4>
+                <div class="landlord-card">
+                  <div class="landlord-avatar">
+                    <span data-icon="userCircle" data-icon-width="48" data-icon-height="48"></span>
+                  </div>
+                  <div class="landlord-content">
+                    <h5 class="landlord-name" id="landlord-name">Juan Dela Cruz</h5>
+                    <p class="landlord-role">Verified Landlord</p>
+                    <div class="landlord-stats">
+                      <div class="landlord-stat">
+                        <span class="landlord-stat-value">5</span>
+                        <span class="landlord-stat-label">Properties</span>
+                      </div>
+                      <div class="landlord-stat">
+                        <span class="landlord-stat-value">4.7</span>
+                        <span class="landlord-stat-label">Rating</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <!-- Available Rooms Section -->
+          <section class="room-detail-section available-rooms-section">
+            <h2 class="room-detail-section-title">Available Rooms</h2>
+            <div class="available-rooms-grid" id="available-rooms-grid">
+              <!-- Room cards will be loaded dynamically via JavaScript -->
             </div>
-            <div class="value-item">
-              <span class="value-number">03</span>
-              <span class="value-text"> community over transactions</span>
+          </section>
+
+          <!-- Similar Properties Section -->
+          <section class="room-detail-section similar-properties">
+            <h2 class="room-detail-section-title">Similar Properties</h2>
+            <div class="similar-properties-grid" id="similar-properties">
+              <!-- Property Card 1 -->
+              <div class="similar-property-card" data-property-id="2">
+                <div class="similar-property-image-wrapper">
+                  <img
+                    src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80"
+                    alt="Campus View Residences"
+                    class="similar-property-image"
+                  />
+                  <div class="similar-property-badges">
+                    <span class="similar-property-badge similar-property-badge-verified">
+                      <span
+                        data-icon="badgeCheck"
+                        data-icon-width="14"
+                        data-icon-height="14"
+                      ></span>
+                      Verified
+                    </span>
+                  </div>
+                </div>
+                <div class="similar-property-content">
+                  <h3 class="similar-property-title">Campus View Residences</h3>
+                  <div class="similar-property-location">
+                    <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                    <span>Loyola Heights, QC</span>
+                  </div>
+                  <div class="similar-property-meta">
+                    <div class="similar-property-rating">
+                      <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                      <span>4.6</span>
+                      <span class="similar-property-rating-count">(18)</span>
+                    </div>
+                    <div class="similar-property-price">
+                      <span class="similar-property-price-amount">₱6,500</span>
+                      <span class="similar-property-price-period">/mo</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Property Card 2 -->
+              <div class="similar-property-card" data-property-id="3">
+                <div class="similar-property-image-wrapper">
+                  <img
+                    src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80"
+                    alt="Greenfield Boarding House"
+                    class="similar-property-image"
+                  />
+                  <div class="similar-property-badges">
+                    <span class="similar-property-badge similar-property-badge-promo">Promo</span>
+                  </div>
+                </div>
+                <div class="similar-property-content">
+                  <h3 class="similar-property-title">Greenfield Boarding House</h3>
+                  <div class="similar-property-location">
+                    <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                    <span>Commonwealth Ave, QC</span>
+                  </div>
+                  <div class="similar-property-meta">
+                    <div class="similar-property-rating">
+                      <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                      <span>4.5</span>
+                      <span class="similar-property-rating-count">(32)</span>
+                    </div>
+                    <div class="similar-property-price">
+                      <span class="similar-property-price-amount">₱3,200</span>
+                      <span class="similar-property-price-period">/mo</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Property Card 3 -->
+              <div class="similar-property-card" data-property-id="4">
+                <div class="similar-property-image-wrapper">
+                  <img
+                    src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80"
+                    alt="Metro Plaza Apartments"
+                    class="similar-property-image"
+                  />
+                  <div class="similar-property-badges">
+                    <span class="similar-property-badge similar-property-badge-verified">
+                      <span
+                        data-icon="badgeCheck"
+                        data-icon-width="14"
+                        data-icon-height="14"
+                      ></span>
+                      Verified
+                    </span>
+                    <span class="similar-property-badge similar-property-badge-new">New</span>
+                  </div>
+                </div>
+                <div class="similar-property-content">
+                  <h3 class="similar-property-title">Metro Plaza Apartments</h3>
+                  <div class="similar-property-location">
+                    <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                    <span>Roxas Boulevard, QC</span>
+                  </div>
+                  <div class="similar-property-meta">
+                    <div class="similar-property-rating">
+                      <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                      <span>4.9</span>
+                      <span class="similar-property-rating-count">(41)</span>
+                    </div>
+                    <div class="similar-property-price">
+                      <span class="similar-property-price-amount">₱7,800</span>
+                      <span class="similar-property-price-period">/mo</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- Room Detail Modal -->
+    <div class="room-detail-modal-overlay" id="room-detail-modal">
+      <div class="room-detail-modal">
+        <div class="room-detail-modal-header">
+          <h3 class="room-detail-modal-title" id="modal-room-title">Room Details</h3>
+          <button class="room-detail-modal-close" id="close-room-modal">
+            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+          </button>
+        </div>
+        <div class="room-detail-modal-body">
+          <!-- Room Gallery -->
+          <div class="room-modal-gallery" id="modal-room-gallery">
+            <img src="" alt="Room" class="room-modal-main-image" id="modal-main-image" />
+            <div class="room-modal-thumbnails" id="modal-thumbnails">
+              <!-- Thumbnails will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Room Info -->
+          <div class="room-modal-info">
+            <div class="room-modal-header-info">
+              <div class="room-modal-status-badge" id="modal-room-status">Available</div>
+              <div class="room-modal-price">
+                <span class="room-modal-price-amount" id="modal-room-price">₱0</span>
+                <span class="room-modal-price-period">/month</span>
+              </div>
+            </div>
+
+            <div class="room-modal-details-grid">
+              <div class="room-modal-detail-item">
+                <span data-icon="userGroup" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Capacity</span>
+                  <span class="room-modal-detail-value" id="modal-room-capacity">-</span>
+                </div>
+              </div>
+              <div class="room-modal-detail-item">
+                <span data-icon="home" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Room Type</span>
+                  <span class="room-modal-detail-value" id="modal-room-type">-</span>
+                </div>
+              </div>
+              <div class="room-modal-detail-item">
+                <span data-icon="ruler" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Size</span>
+                  <span class="room-modal-detail-value" id="modal-room-size">-</span>
+                </div>
+              </div>
+              <div class="room-modal-detail-item">
+                <span data-icon="bed" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Furnishing</span>
+                  <span class="room-modal-detail-value" id="modal-room-furnishing">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="room-modal-description">
+              <h4>Description</h4>
+              <p id="modal-room-description">No description available.</p>
+            </div>
+
+            <div class="room-modal-amenities" id="modal-room-amenities">
+              <h4>Room Amenities</h4>
+              <div class="room-modal-amenities-list" id="modal-amenities-list">
+                <!-- Amenities will be populated by JavaScript -->
+              </div>
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- Challenges Overcome Section -->
-      <section class="challenges-section">
-        <div class="challenges-container">
-          <h2 class="challenges-title">CHALLENGES WE OVERCAME</h2>
-          <div class="challenges-grid">
-            <div class="challenge-card">
-              <div class="challenge-number">01</div>
-              <h3 class="challenge-heading">Limited Online Presence</h3>
-              <p class="challenge-text">
-                Many boarding houses lacked visibility. We built a centralized platform where owners
-                can list and boarders can discover spaces effortlessly.
-              </p>
-            </div>
-            <div class="challenge-card">
-              <div class="challenge-number">02</div>
-              <h3 class="challenge-heading">Manual Inquiry Process</h3>
-              <p class="challenge-text">
-                Traditional boarding searches relied on phone calls and physical visits. We
-                digitized the entireprocess—application, verification, and communication.
-              </p>
-            </div>
-            <div class="challenge-card">
-              <div class="challenge-number">03</div>
-              <h3 class="challenge-heading">Trust Deficiency</h3>
-              <p class="challenge-text">
-                Boarders often doubted listing authenticity. We implemented verification workflows
-                and owner reviews to establish credibility in every transaction.
-              </p>
-            </div>
-            <div class="challenge-card">
-              <div class="challenge-number">04</div>
-              <h3 class="challenge-heading">Fragmented Management</h3>
-              <p class="challenge-text">
-                Landlords juggled multiple channels for inquiries and payments. Our unified
-                dashboard consolidates everything into one streamlined experience.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Future Roadmap Section -->
-      <section class="roadmap-section">
-        <div class="roadmap-container">
-          <h2 class="roadmap-title">FUTURE ROADMAP</h2>
-          <p class="roadmap-subtitle">What's next for Haven Space</p>
-          <div class="roadmap-timeline">
-            <div class="roadmap-phase">
-              <div class="phase-marker">
-                <span class="phase-dot"></span>
-              </div>
-              <div class="phase-content">
-                <span class="phase-badge">PHASE 1</span>
-                <h3 class="phase-title">Core Platform Launch</h3>
-                <p class="phase-text">
-                  Initial release with listings, authentication, and basic dashboards for boarders
-                  and landlords.
-                </p>
-              </div>
-            </div>
-            <div class="roadmap-phase active">
-              <div class="phase-marker">
-                <span class="phase-dot"></span>
-              </div>
-              <div class="phase-content">
-                <span class="phase-badge">PHASE 2</span>
-                <h3 class="phase-title">Enhanced Features</h3>
-                <p class="phase-text">
-                  Map integration, advanced search filters, messaging system, and payment tracking.
-                  <span class="phase-status">(Current)</span>
-                </p>
-              </div>
-            </div>
-            <div class="roadmap-phase">
-              <div class="phase-marker">
-                <span class="phase-dot"></span>
-              </div>
-              <div class="phase-content">
-                <span class="phase-badge">PHASE 3</span>
-                <h3 class="phase-title">Mobile Application</h3>
-                <p class="phase-text">
-                  Native iOS and Android apps withPush notifications and offline access.
-                </p>
-              </div>
-            </div>
-            <div class="roadmap-phase">
-              <div class="phase-marker">
-                <span class="phase-dot"></span>
-              </div>
-              <div class="phase-content">
-                <span class="phase-badge">PHASE 4</span>
-                <h3 class="phase-title">AI Integration</h3>
-                <p class="phase-text">
-                  Smart recommendations, chat support, and automated Property verification using
-                  AI/ML.
-                </p>
-              </div>
-            </div>
-            <div class="roadmap-phase">
-              <div class="phase-marker">
-                <span class="phase-dot"></span>
-              </div>
-              <div class="phase-content">
-                <span class="phase-badge">PHASE 5</span>
-                <h3 class="phase-title">National Expansion</h3>
-                <p class="phase-text">
-                  Scale to boarding markets across the Philippines and Southeast Asia.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- University Info Section -->
-      <section class="university-section">
-        <div class="university-container">
-          <div class="university-badge">
-            <span class="badge-icon">🎓</span>
-            <span class="badge-text">ACADEMIC PROJECT</span>
-          </div>
-          <div class="university-content">
-            <h2 class="university-title">UNIVERSITY INFORMATION</h2>
-            <div class="university-grid">
-              <div class="university-item">
-                <span class="item-label">Institution</span>
-                <span class="item-value">University of Cebu - Main Campus</span>
-              </div>
-              <div class="university-item">
-                <span class="item-label">Program</span>
-                <span class="item-value">Bachelor of Science in Information Technology</span>
-              </div>
-              <div class="university-item">
-                <span class="item-label">Year Level</span>
-                <span class="item-value">2nd Year</span>
-              </div>
-              <div class="university-item">
-                <span class="item-label">Section</span>
-                <span class="item-value">BSIT 2B</span>
-              </div>
-              <div class="university-item">
-                <span class="item-label">Academic Year</span>
-                <span class="item-value">2025 - 2026</span>
-              </div>
-              <div class="university-item">
-                <span class="item-label">Course</span>
-                <span class="item-value">IT 212 - IT Fundamentals</span>
-              </div>
-            </div>
-            <div class="university-signature">
-              <p class="signature-text">
-                Submitted in partial fulfillment of the requirements in IT 212
-              </p>
-              <p class="signature-course">IT Fundamentals - Final Requirement</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Footer Section -->
-    <footer class="footer">
-      <div class="footer-container">
-        <div class="footer-grid">
-          <!-- Brand Column -->
-          <div class="footer-brand">
-            <div class="footer-logo">
-              <span class="logo-text">Haven Space</span>
-            </div>
-            <p class="footer-tagline">Your trusted boarding house platform.</p>
-            <div class="footer-social">
-              <a href="#linkedin" class="social-link" aria-label="LinkedIn">
-                <span
-                  data-icon="linkedin"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="1.5"
-                ></span>
-              </a>
-              <a href="#twitter" class="social-link" aria-label="Twitter">
-                <span
-                  data-icon="twitter"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="1.5"
-                ></span>
-              </a>
-              <a href="#instagram" class="social-link" aria-label="Instagram">
-                <img src="../../assets/images/instagram.png" alt="" width="20" height="20" />
-              </a>
-            </div>
-            <div class="footer-status">
-              <span class="status-dot"></span>
-              <span>All Systems Normal</span>
-            </div>
-          </div>
-
-          <!-- Company Column -->
-          <div class="footer-column">
-            <h3 class="footer-column-title">Company</h3>
-            <ul class="footer-links">
-              <li><a href="#properties">Properties</a></li>
-              <li><a href="#new">What's New</a></li>
-              <li><a href="our-story.html">Our Story</a></li>
-              <li><a href="#press">Press</a></li>
-              <li><a href="#careers">Careers</a></li>
-            </ul>
-          </div>
-
-          <!-- Community Column -->
-          <div class="footer-column">
-            <h3 class="footer-column-title">Community</h3>
-            <ul class="footer-links">
-              <li><a href="#landlord-guide">Landlord Guide</a></li>
-              <li><a href="#boarder-guide">Boarder Guide</a></li>
-              <li><a href="#success-stories">Success Stories</a></li>
-              <li><a href="#trending">Trending</a></li>
-              <li><a href="#explore">Explore Listings</a></li>
-            </ul>
-          </div>
-
-          <!-- Support Column -->
-          <div class="footer-column">
-            <h3 class="footer-column-title">Support</h3>
-            <ul class="footer-links">
-              <li><a href="#help">Help Topics</a></li>
-              <li><a href="#getting-started">Getting Started</a></li>
-              <li><a href="#pro">Haven Pro</a></li>
-              <li><a href="#faqs">FAQs</a></li>
-              <li><a href="#report">Report a Violation</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Footer Bottom -->
-        <div class="footer-bottom">
-          <div class="footer-copyright">
-            <p>
-              &copy; 2026 Haven Space. All rights reserved &bull; Built with
-              <span class="heart-icon">&hearts;</span> by Qwenzy
-            </p>
-          </div>
-          <div class="footer-legal">
-            <a href="terms-of-service.html">T&C</a>
-            <span class="separator">&bull;</span>
-            <a href="privacy-policy.html">Privacy Notice</a>
-            <span class="separator">&bull;</span>
-            <a href="#cookies">Cookie Notice</a>
-            <span class="separator">&bull;</span>
-            <a href="#trust">Trust Center</a>
-            <span class="separator">&bull;</span>
-            <a href="#cookie-preferences">Cookie Preferences</a>
-          </div>
+        <div class="room-detail-modal-footer">
+          <button class="room-modal-btn room-modal-btn-secondary" id="modal-close-btn">
+            Close
+          </button>
+          <button class="room-modal-btn room-modal-btn-primary" id="modal-apply-btn">
+            <span data-icon="application" data-icon-width="18" data-icon-height="18"></span>
+            Apply for This Room
+          </button>
         </div>
       </div>
-    </footer>
+    </div>
 
-    <script type="module" src="../../js/views/public/team.js?v=1777136032299"></script>
-
-    <!-- ES Module Entry Point -->
-    <script type="module" src="../../js/main.js?v=1777136032299"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js?v=1777136032299"></script>
+    <!-- Scripts -->
+    <script type="module" src="../../../js/views/public/room-detail.js?v=1777136032299"></script>
   </body>
 </html>

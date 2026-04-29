@@ -146,17 +146,25 @@ function initializeRoleSelection() {
         const result = await response.json();
 
         if (result.success) {
+          // Store user data if provided
+          if (result.user) {
+            localStorage.setItem('user', JSON.stringify(result.user));
+          }
+
           // Use the redirect URL from the response if available (includes auth data)
           if (result.redirect_url) {
             window.location.href = result.redirect_url;
           } else {
-            // Fallback to default redirects
+            // Fallback to default redirects based on role and status
             if (selectedRole === 'admin') {
               window.location.href = '/views/admin/index.html';
             } else if (selectedRole === 'landlord') {
               window.location.href = '/views/landlord/index.html';
+            } else if (selectedRole === 'boarder') {
+              // For boarders, redirect to applications dashboard (they haven't been accepted yet)
+              window.location.href = '/views/boarder/applications-dashboard/index.html';
             } else {
-              window.location.href = '/views/boarder/index.html';
+              window.location.href = '/views/boarder/applications-dashboard/index.html';
             }
           }
         } else {
