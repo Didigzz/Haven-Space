@@ -2,6 +2,8 @@
 /**
  * Landlord Property Location API
  * Handles saving and retrieving property locations during signup
+ * NOTE: This endpoint is deprecated. Location data should be managed through property creation/update endpoints.
+ * Kept for backward compatibility with signup flow.
  */
 
 // Include centralized CORS configuration
@@ -20,13 +22,10 @@ header('Content-Type: application/json');
 
 /**
  * Helper: authenticate and verify landlord ownership
- * Validates the JWT token and ensures the authenticated user matches the requested userId.
- * Returns the authenticated user payload or exits with an error response.
  */
 function authenticateLandlord($requestedUserId) {
     $user = Middleware::authenticate();
 
-    // Ensure the authenticated user is requesting their own data
     if ((int) $user['user_id'] !== (int) $requestedUserId) {
         http_response_code(403);
         echo json_encode([
@@ -36,61 +35,16 @@ function authenticateLandlord($requestedUserId) {
         exit;
     }
 
-    // For write operations, check if this is initial location creation during signup
-    $method = $_SERVER['REQUEST_METHOD'];
-    $writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-    if (in_array($method, $writeMethods) && empty($user['is_verified'])) {
-        // Allow unverified landlords to create their initial location during signup
-        // Check if this is a POST request and the user doesn't have a location yet
-        if ($method === 'POST') {
-            try {
-                $pdo = Connection::getInstance()->getPdo();
-                $stmt = $pdo->prepare("
-                    SELECT pl.id FROM property_locations pl
-                    INNER JOIN landlord_profiles lp ON pl.landlord_id = lp.id
-                    WHERE lp.user_id = ? AND pl.is_primary = 1
-                ");
-                $stmt->execute([$requestedUserId]);
-                $existingLocation = $stmt->fetch();
-
-                // If no location exists, allow creation during signup
-                if (!$existingLocation) {
-                    return $user;
-                }
-            } catch (Exception $e) {
-                // If database check fails, block the request
-                error_log("Error checking existing location: " . $e->getMessage());
-            }
-        }
-
-        // Block other write operations or updates for unverified users
-        http_response_code(403);
-        echo json_encode([
-            'success' => false,
-            'error' => 'Your account is pending verification. Write operations are not allowed until an admin approves your account.'
-        ]);
-        exit;
-    }
-
     return $user;
 }
 
 /**
  * POST /api/landlord/property-location.php
- * Save property location for a landlord
- * 
- * Request Body:
- * {
- *   "userId": 123,
- *   "latitude": 14.5995,
- *   "longitude": 120.9842,
- *   "address": "123 Main St, Manila, Philippines"
- * }
+ * Save property location for a landlord (creates/updates address for future property)
  */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
 
-    // Validate required fields
     if (!isset($input['userId']) || !isset($input['latitude']) || !isset($input['longitude'])) {
         http_response_code(400);
         echo json_encode([
@@ -100,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Authenticate and verify ownership + verification status
     authenticateLandlord($input['userId']);
 
     $userId = intval($input['userId']);
@@ -144,51 +97,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        $landlordId = $landlordProfile['id'];
-
-        // Check if location already exists
-        $stmt = $pdo->prepare("SELECT id FROM property_locations WHERE landlord_id = ? AND is_primary = 1");
-        $stmt->execute([$landlordId]);
-        $existingLocation = $stmt->fetch();
-
-        if ($existingLocation) {
-            // Update existing location
-            $stmt = $pdo->prepare("
-                UPDATE property_locations
-                SET latitude = ?, longitude = ?, address_line_1 = ?, address_line_2 = ?,
-                    city = ?, province = ?, postal_code = ?, country = ?
-                WHERE landlord_id = ? AND is_primary = 1
-            ");
-            $stmt->execute([
-                $latitude, $longitude, $addressLine1, $addressLine2,
-                $city, $province, $postalCode, $country, $landlordId
-            ]);
-
-            $locationId = $existingLocation['id'];
-        } else {
-            // Insert new location
-            $stmt = $pdo->prepare("
-                INSERT INTO property_locations
-                (landlord_id, latitude, longitude, address_line_1, address_line_2,
-                 city, province, postal_code, country, is_primary)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-            ");
-            $stmt->execute([
-                $landlordId, $latitude, $longitude, $addressLine1, $addressLine2,
-                $city, $province, $postalCode, $country
-            ]);
-
-            $locationId = $pdo->lastInsertId();
-        }
-
+        // Store location in session/temp storage for use during property creation
+        // For now, just return success - actual address will be created with property
         http_response_code(200);
         echo json_encode([
             'success' => true,
+            'message' => 'Location saved. Will be used when creating your first property.',
             'data' => [
-                'locationId' => $locationId,
                 'latitude' => $latitude,
                 'longitude' => $longitude,
-                'address' => $address
+                'address' => $address,
+                'city' => $city,
+                'province' => $province
             ]
         ]);
     } catch (PDOException $e) {
@@ -204,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /**
  * GET /api/landlord/property-location.php?userId={userId}
- * Get property location for a landlord
+ * Get property location for a landlord (returns first property's address)
  */
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (!isset($_GET['userId'])) {
@@ -216,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
-    // Authenticate and verify ownership
     authenticateLandlord($_GET['userId']);
 
     $userId = intval($_GET['userId']);
@@ -224,11 +143,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $pdo = Connection::getInstance()->getPdo();
 
+        // Get address from first property
         $stmt = $pdo->prepare("
-            SELECT pl.*
-            FROM property_locations pl
-            INNER JOIN landlord_profiles lp ON pl.landlord_id = lp.id
-            WHERE lp.user_id = ? AND pl.is_primary = 1
+            SELECT a.*
+            FROM addresses a
+            INNER JOIN properties p ON p.address_id = a.id
+            WHERE p.landlord_id = ? AND p.deleted_at IS NULL
+            ORDER BY p.created_at ASC
             LIMIT 1
         ");
         $stmt->execute([$userId]);

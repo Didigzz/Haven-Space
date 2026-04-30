@@ -38,10 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 p.listing_moderation_status,
                 p.created_at,
                 p.landlord_id,
-                pd.city,
-                pd.province,
-                pd.property_type,
-                pd.total_rooms as property_total_rooms,
+                a.city,
+                a.province,
                 COUNT(DISTINCT r.id) as rooms_count,
                 COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
                 u.first_name as landlord_first_name,
@@ -49,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 lp.boarding_house_name as landlord_business_name
             FROM properties p
             LEFT JOIN addresses a ON p.address_id = a.id
-            LEFT JOIN property_details pd ON pd.property_id = p.id
             LEFT JOIN rooms r ON p.id = r.property_id AND r.deleted_at IS NULL
             LEFT JOIN users u ON u.id = p.landlord_id
             LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
@@ -58,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 AND p.listing_moderation_status = 'published'
                 AND a.latitude IS NOT NULL 
                 AND a.longitude IS NOT NULL
-            GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, pd.city, pd.province, pd.property_type, pd.total_rooms, u.first_name, u.last_name, lp.boarding_house_name
+            GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, a.city, a.province, u.first_name, u.last_name, lp.boarding_house_name
             ORDER BY p.created_at DESC
         ");
         $stmt->execute();
@@ -74,10 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             
             // Get amenities
             $amenitiesStmt = $pdo->prepare("
-                SELECT pa.property_id, a.amenity_name 
-                FROM property_amenities pa
-                JOIN amenities a ON pa.amenity_id = a.id
-                WHERE pa.property_id IN ($placeholders)
+                SELECT property_id, amenity_name 
+                FROM amenities
+                WHERE property_id IN ($placeholders)
             ");
             $amenitiesStmt->execute($propertyIds);
             $amenitiesRows = $amenitiesStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -113,8 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Transform data for frontend
         $transformedProperties = array_map(function($property) use ($amenitiesMap, $photosMap) {
-            // Use property_total_rooms from property_details if available, otherwise fall back to rooms_count
-            $totalRooms = $property['property_total_rooms'] ? intval($property['property_total_rooms']) : intval($property['rooms_count']);
+            $totalRooms = intval($property['rooms_count']);
             $occupiedRooms = intval($property['occupied_rooms']);
             $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100) : 0;
 
@@ -124,16 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $displayStatus = 'full';
             }
 
-            // Map property_type to frontend format
-            $typeMapping = [
-                'Single unit' => 'boarding-house',
-                'Multi-unit' => 'boarding-house',
-                'Apartment' => 'apartment',
-                'Dormitory' => 'dormitory',
-            ];
-            $type = isset($typeMapping[$property['property_type']]) 
-                ? $typeMapping[$property['property_type']] 
-                : 'boarding-house';
+            $type = 'boarding-house';
 
             // Determine landlord display name
             $landlordName = $property['landlord_business_name'] 

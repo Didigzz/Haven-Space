@@ -146,52 +146,6 @@ try {
 
     $propertyId = $pdo->lastInsertId();
 
-    // Insert property details if table exists
-    try {
-        $detailStmt = $pdo->prepare("
-            INSERT INTO property_details (
-                property_id,
-                property_type,
-                deposit,
-                rooms_available,
-                capacity_per_room,
-                city,
-                province,
-                amenities,
-                created_at,
-                updated_at
-            ) VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                NOW(),
-                NOW()
-            )
-        ");
-
-        // Process amenities as JSON
-        $amenities = !empty($input['amenities']) ? json_encode($input['amenities']) : json_encode([]);
-
-        $detailStmt->execute([
-            $propertyId,
-            $input['propertyType'],
-            floatval($input['propertyDeposit']),
-            intval($input['propertyRooms']),
-            $input['propertyCapacity'],
-            $input['propertyCity'],
-            $input['propertyProvince'],
-            $amenities,
-        ]);
-    } catch (PDOException $e) {
-        // property_details table might not exist, continue without it
-        error_log('property_details insert failed: ' . $e->getMessage());
-    }
-
     // Photos are uploaded via a separate POST /api/landlord/listings/{id}/photos request
     // after the property is created (see listing-photos.php)
 

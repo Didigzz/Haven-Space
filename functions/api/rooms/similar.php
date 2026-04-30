@@ -40,11 +40,9 @@ try {
             p.price,
             a.city,
             a.province,
-            pd.property_type,
             p.landlord_id
         FROM properties p
         LEFT JOIN addresses a ON p.address_id = a.id
-        LEFT JOIN property_details pd ON p.id = pd.property_id
         WHERE p.id = ?
           AND p.deleted_at IS NULL 
           AND p.listing_moderation_status = 'published'
@@ -72,13 +70,11 @@ try {
             a.address_line_1 as address,
             a.city,
             a.province,
-            pd.property_type,
             0 as rating,
             0 as review_count,
             (SELECT photo_url FROM property_photos WHERE property_id = p.id AND is_cover = 1 LIMIT 1) as cover_image
         FROM properties p
         LEFT JOIN addresses a ON p.address_id = a.id
-        LEFT JOIN property_details pd ON p.id = pd.property_id
         WHERE p.id != ?
           AND p.deleted_at IS NULL 
           AND p.listing_moderation_status = 'published'
@@ -90,8 +86,6 @@ try {
         ORDER BY 
             -- Prioritize same city
             CASE WHEN a.city = ? THEN 0 ELSE 1 END,
-            -- Then same property type
-            CASE WHEN pd.property_type = ? THEN 0 ELSE 1 END,
             -- Then by rating
             rating DESC,
             -- Then by price proximity
@@ -106,7 +100,6 @@ try {
         $currentProperty['city'],
         $currentProperty['province'],
         $currentProperty['city'],
-        $currentProperty['property_type']
     ]);
 
     $similarProperties = $similarStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -123,7 +116,6 @@ try {
             'address' => htmlspecialchars($property['address'] ?? ''),
             'city' => htmlspecialchars($property['city'] ?? ''),
             'province' => htmlspecialchars($property['province'] ?? ''),
-            'propertyType' => htmlspecialchars($property['property_type'] ?? ''),
             'rating' => $property['rating'] ? round(floatval($property['rating']), 1) : 0,
             'reviewCount' => intval($property['review_count'] ?? 0),
             'coverImage' => $property['cover_image'] ? htmlspecialchars($property['cover_image']) : '/assets/images/placeholder-room.svg',

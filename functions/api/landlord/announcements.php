@@ -40,14 +40,8 @@ if ($method === 'GET') {
                 a.publish_date,
                 a.view_count,
                 a.created_at,
-                a.updated_at,
-                CASE 
-                    WHEN a.property_id IS NULL THEN 'All Properties'
-                    ELSE p.title
-                END as target_property,
-                a.property_id
+                a.updated_at
             FROM announcements a
-            LEFT JOIN properties p ON a.property_id = p.id
             WHERE a.landlord_id = ? AND a.deleted_at IS NULL
             ORDER BY a.publish_date DESC, a.created_at DESC
         ");
@@ -84,14 +78,16 @@ if ($method === 'GET') {
         $transformedAnnouncements = array_map(function($announcement) use ($multiPropertyMap) {
             $id = intval($announcement['id']);
             $targetProperties = [];
+            $targetProperty = 'All Properties';
             
             if (isset($multiPropertyMap[$id]) && !empty($multiPropertyMap[$id])) {
                 $targetProperties = $multiPropertyMap[$id];
-            } elseif ($announcement['property_id']) {
-                $targetProperties = [[
-                    'id' => intval($announcement['property_id']),
-                    'title' => $announcement['target_property']
-                ]];
+                // If targeting specific properties, show first property name or count
+                if (count($targetProperties) === 1) {
+                    $targetProperty = $targetProperties[0]['title'];
+                } else {
+                    $targetProperty = count($targetProperties) . ' Properties';
+                }
             }
 
             return [
@@ -102,7 +98,7 @@ if ($method === 'GET') {
                 'priority' => $announcement['priority'],
                 'publish_date' => $announcement['publish_date'],
                 'view_count' => intval($announcement['view_count']),
-                'target_property' => $announcement['target_property'],
+                'target_property' => $targetProperty,
                 'target_properties' => $targetProperties,
                 'created_at' => $announcement['created_at'],
                 'updated_at' => $announcement['updated_at']
@@ -137,7 +133,6 @@ if ($method === 'POST') {
         $pdo->beginTransaction();
 
         // Determine property targeting
-        $propertyId = null;
         $targetProperties = $input['properties'] ?? ['all'];
         
         // If not targeting all properties, we'll use the junction table
@@ -146,8 +141,8 @@ if ($method === 'POST') {
         // Insert announcement
         $stmt = $pdo->prepare("
             INSERT INTO announcements 
-            (landlord_id, property_id, title, description, category, priority, publish_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (landlord_id, title, description, category, priority, publish_date)
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
 
         $publishDate = $input['publish_date'] ?? date('Y-m-d');
@@ -156,7 +151,6 @@ if ($method === 'POST') {
 
         $stmt->execute([
             $landlordId,
-            $propertyId, // NULL for all or multi-property
             $input['title'],
             $input['description'],
             $category,

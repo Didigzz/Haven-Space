@@ -106,14 +106,6 @@ class MessageRepository
         $stmt->execute();
         $messages = $stmt->fetchAll();
 
-        foreach ($messages as &$message) {
-            $stmt = $this->pdo->prepare(
-                'SELECT * FROM message_attachments WHERE message_id = ?'
-            );
-            $stmt->execute([$message['id']]);
-            $message['attachments'] = $stmt->fetchAll();
-        }
-
         return array_reverse($messages);
     }
 
@@ -167,25 +159,6 @@ class MessageRepository
         $stmt->execute();
 
         return (int) $this->pdo->lastInsertId();
-    }
-
-    /**
-     * Add attachment to message
-     */
-    public function addAttachment(int $messageId, int $conversationId, string $fileUrl, string $fileName, string $fileType, int $fileSize, int $uploadedBy): bool
-    {
-        $sql = 'INSERT INTO message_attachments (message_id, conversation_id, file_url, file_name, file_type, file_size, uploaded_by) 
-                VALUES (:message_id, :conversation_id, :file_url, :file_name, :file_type, :file_size, :uploaded_by)';
-        
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':message_id', $messageId, PDO::PARAM_INT);
-        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
-        $stmt->bindValue(':file_url', $fileUrl);
-        $stmt->bindValue(':file_name', $fileName);
-        $stmt->bindValue(':file_type', $fileType);
-        $stmt->bindValue(':file_size', $fileSize, PDO::PARAM_INT);
-        $stmt->bindValue(':uploaded_by', $uploadedBy, PDO::PARAM_INT);
-        return $stmt->execute();
     }
 
     /**

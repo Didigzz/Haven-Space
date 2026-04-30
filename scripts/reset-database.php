@@ -164,13 +164,11 @@ section('Step 4: Truncating Tables');
 // Define tables to truncate in order (respecting dependencies)
 $tablesToTruncate = [
     'signup_sessions',
-    'landlord_verification_log',
     'property_reports',
     'disputes',
     'applications',
     'rooms',
     'payment_methods',
-    'property_locations',
     'landlord_profiles',
     'properties',
     'login_attempts',

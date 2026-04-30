@@ -154,19 +154,16 @@ try {
 
     // Create role-specific profiles
     if ($role === 'landlord') {
-        // Resolve property_type_id (default to first available type)
-        $stmt = $pdo->prepare('SELECT id FROM property_types LIMIT 1');
-        $stmt->execute();
-        $propTypeRow = $stmt->fetch(\PDO::FETCH_ASSOC);
-        $propertyTypeId = $propTypeRow ? $propTypeRow['id'] : 1;
+        // Default property type
+        $propertyType = 'Single unit';
 
         // Create landlord profile
         $stmt = $pdo->prepare('
             INSERT INTO landlord_profiles 
-            (user_id, boarding_house_name, boarding_house_description, property_type_id, total_rooms, available_rooms) 
+            (user_id, boarding_house_name, boarding_house_description, property_type, total_rooms, available_rooms) 
             VALUES (?, ?, ?, ?, ?, ?)
         ');
-        $stmt->execute([$userId, $businessName, $businessDescription, $propertyTypeId, 1, 1]);
+        $stmt->execute([$userId, $businessName, $businessDescription, $propertyType, 1, 1]);
 
         // Create a verification record for the landlord
         $stmt = $pdo->prepare('SELECT id FROM verification_statuses WHERE status_name = ?');
@@ -181,13 +178,9 @@ try {
             $stmt->execute(['user', $userId, $vsRow['id']]);
         }
 
-        // Store additional verification data
-        $stmt = $pdo->prepare('
-            INSERT INTO landlord_verification_data 
-            (user_id, phone_number, experience_level, id_type, id_number) 
-            VALUES (?, ?, ?, ?, ?)
-        ');
-        $stmt->execute([$userId, $phoneNumber, $experienceLevel, $idType, $idNumber]);
+        // Note: Additional verification data (experience_level, id_type, id_number) 
+        // is no longer stored in database. ID verification should be done through 
+        // document uploads in the verification process.
 
     } elseif ($role === 'boarder') {
         // Create basic boarder profile

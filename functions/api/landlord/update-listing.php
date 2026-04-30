@@ -87,70 +87,18 @@ try {
         $landlordId,
     ]);
 
-    // Update or insert property_details
-    if (isset($input['type']) || isset($input['city']) || isset($input['province']) || isset($input['deposit']) || isset($input['total_rooms']) || isset($input['capacity']) || isset($input['min_stay']) || isset($input['availability'])) {
-        $detailsCheckStmt = $pdo->prepare("SELECT id FROM property_details WHERE property_id = ?");
-        $detailsCheckStmt->execute([$propertyId]);
-        $detailsExist = $detailsCheckStmt->fetch();
 
-        if ($detailsExist) {
-            // Update existing details
-            $detailsStmt = $pdo->prepare("
-                UPDATE property_details 
-                SET city = ?,
-                    province = ?,
-                    property_type = ?,
-                    deposit = ?,
-                    capacity = ?,
-                    min_stay = ?,
-                    availability = ?,
-                    total_rooms = ?,
-                    updated_at = NOW()
-                WHERE property_id = ?
-            ");
-
-            $detailsStmt->execute([
-                $input['city'] ?? null,
-                $input['province'] ?? null,
-                $input['type'] ?? null,
-                $input['deposit'] ?? null,
-                $input['capacity'] ?? null,
-                $input['min_stay'] ?? null,
-                $input['availability'] ?? null,
-                isset($input['total_rooms']) ? intval($input['total_rooms']) : null,
-                $propertyId,
-            ]);
-        } else {
-            // Insert new details
-            $detailsStmt = $pdo->prepare("
-                INSERT INTO property_details (property_id, city, province, property_type, deposit, capacity, min_stay, availability, total_rooms, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-            ");
-
-            $detailsStmt->execute([
-                $propertyId,
-                $input['city'] ?? null,
-                $input['province'] ?? null,
-                $input['type'] ?? null,
-                $input['deposit'] ?? null,
-                $input['capacity'] ?? null,
-                $input['min_stay'] ?? null,
-                $input['availability'] ?? null,
-                isset($input['total_rooms']) ? intval($input['total_rooms']) : null,
-            ]);
-        }
-    }
 
     // Update amenities
     if (isset($input['amenities']) && is_array($input['amenities'])) {
         // Delete existing amenities
-        $deleteAmenitiesStmt = $pdo->prepare("DELETE FROM property_amenities WHERE property_id = ?");
+        $deleteAmenitiesStmt = $pdo->prepare("DELETE FROM amenities WHERE property_id = ?");
         $deleteAmenitiesStmt->execute([$propertyId]);
 
         // Insert new amenities
         if (!empty($input['amenities'])) {
             $amenityStmt = $pdo->prepare("
-                INSERT INTO property_amenities (property_id, amenity_name, created_at)
+                INSERT INTO amenities (property_id, amenity_name, created_at)
                 VALUES (?, ?, NOW())
             ");
 

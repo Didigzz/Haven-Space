@@ -14,7 +14,6 @@ class Message
     public bool $hasAttachment;
     public bool $isRead;
     public ?string $createdAt;
-    public ?array $attachments;
     public ?string $senderName;
 
     public function __construct(array $data = [])
@@ -26,7 +25,6 @@ class Message
         $this->hasAttachment = (bool) ($data['has_attachment'] ?? false);
         $this->isRead = (bool) ($data['is_read'] ?? false);
         $this->createdAt = $data['created_at'] ?? null;
-        $this->attachments = $data['attachments'] ?? [];
         $this->senderName = $data['sender_name'] ?? null;
     }
 
@@ -51,7 +49,6 @@ class Message
             'sender_name' => $this->senderName,
             'message_text' => $this->messageText,
             'has_attachment' => $this->hasAttachment,
-            'attachments' => $this->attachments,
             'is_read' => $this->isRead,
             'created_at' => $this->createdAt,
         ];

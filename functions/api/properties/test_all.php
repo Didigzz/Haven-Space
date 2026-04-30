@@ -29,7 +29,7 @@ try {
     echo "2. Testing normalized tables...\n";
     $tables = [
         'properties', 'addresses', 'users', 'landlord_profiles', 
-        'rooms', 'amenities', 'property_amenities'
+        'rooms', 'amenities'
     ];
     
     foreach ($tables as $table) {
@@ -113,11 +113,10 @@ try {
         $placeholders = implode(',', array_fill(0, count($propertyIds), '?'));
         
         $amenitiesStmt = $pdo->prepare("
-            SELECT pa.property_id, a.amenity_name, a.category
-            FROM property_amenities pa
-            JOIN amenities a ON pa.amenity_id = a.id
-            WHERE pa.property_id IN ($placeholders)
-            ORDER BY pa.property_id, a.category, a.amenity_name
+            SELECT property_id, amenity_name
+            FROM amenities
+            WHERE property_id IN ($placeholders)
+            ORDER BY property_id, amenity_name
         ");
         $amenitiesStmt->execute($propertyIds);
         $amenitiesRows = $amenitiesStmt->fetchAll(PDO::FETCH_ASSOC);

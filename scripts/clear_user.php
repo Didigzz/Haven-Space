@@ -20,8 +20,6 @@ try {
         $userId = $user['id'];
         
         // Delete related records first (foreign key constraints)
-        $pdo->prepare('DELETE FROM landlord_verification_data WHERE user_id = ?')->execute([$userId]);
-        $pdo->prepare('DELETE FROM property_locations WHERE landlord_id IN (SELECT id FROM landlord_profiles WHERE user_id = ?)')->execute([$userId]);
         $pdo->prepare('DELETE FROM landlord_profiles WHERE user_id = ?')->execute([$userId]);
         $pdo->prepare('DELETE FROM boarder_profiles WHERE user_id = ?')->execute([$userId]);
         

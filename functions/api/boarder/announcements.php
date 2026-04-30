@@ -72,33 +72,24 @@ if ($method === 'GET') {
                 a.publish_date,
                 a.view_count,
                 a.created_at,
-                CASE 
-                    WHEN a.property_id IS NULL THEN 'All Properties'
-                    ELSE p.title
-                END as target_property,
                 u.first_name,
                 u.last_name,
                 av.viewed_at
             FROM announcements a
-            LEFT JOIN properties p ON a.property_id = p.id
             LEFT JOIN users u ON a.landlord_id = u.id
             LEFT JOIN announcement_views av ON a.id = av.announcement_id AND av.user_id = ?
+            LEFT JOIN announcement_properties ap ON a.id = ap.announcement_id
             WHERE a.deleted_at IS NULL
             AND a.landlord_id IN ($landlordPlaceholders)
             AND (
-                a.property_id IS NULL
-                OR a.property_id IN ($placeholders)
-                OR EXISTS (
-                    SELECT 1 FROM announcement_properties ap
-                    WHERE ap.announcement_id = a.id
-                    AND ap.property_id IN ($placeholders)
-                )
+                ap.announcement_id IS NULL
+                OR ap.property_id IN ($placeholders)
             )
             AND a.publish_date <= CURDATE()
             ORDER BY a.publish_date DESC, a.created_at DESC
         ");
         
-        $params = array_merge([$boarderId], $landlordIds, $propertyIds, $propertyIds);
+        $params = array_merge([$boarderId], $landlordIds, $propertyIds);
         $stmt->execute($params);
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -112,7 +103,6 @@ if ($method === 'GET') {
                 'priority' => $announcement['priority'],
                 'publish_date' => $announcement['publish_date'],
                 'view_count' => intval($announcement['view_count']),
-                'target_property' => $announcement['target_property'],
                 'landlord_name' => htmlspecialchars($announcement['first_name'] . ' ' . $announcement['last_name']),
                 'is_viewed' => $announcement['viewed_at'] !== null,
                 'viewed_at' => $announcement['viewed_at'],

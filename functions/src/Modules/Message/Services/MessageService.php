@@ -201,25 +201,11 @@ class MessageService
         }
 
         $data['sender_id'] = $senderId;
-        $data['has_attachment'] = true;
+        $data['has_attachment'] = false; // Attachments no longer supported
 
         $messageId = $this->repository->createMessage($data);
 
-        // Upload files
-        foreach ($files as $file) {
-            $fileUrl = $this->uploadHandler->upload($file, 'messages');
-            if ($fileUrl) {
-                $this->repository->addAttachment(
-                    $messageId,
-                    $data['conversation_id'],
-                    $fileUrl,
-                    $file['name'],
-                    $file['type'],
-                    $file['size'],
-                    $senderId
-                );
-            }
-        }
+        // Note: File attachments are no longer supported in this version
 
         return $this->getConversation($data['conversation_id'], $senderId);
     }
@@ -274,21 +260,10 @@ class MessageService
             'conversation_id' => $conversationId,
             'sender_id' => $landlordId,
             'message_text' => $welcomeMessage,
-            'has_attachment' => !empty($documents),
+            'has_attachment' => false, // Attachments no longer supported
         ]);
 
-        // Attach documents
-        foreach ($documents as $doc) {
-            $this->repository->addAttachment(
-                $messageId,
-                $conversationId,
-                $doc['document_url'],
-                $doc['document_name'],
-                $doc['document_type'] ?? 'application/pdf',
-                $doc['file_size'] ?? 0,
-                $landlordId
-            );
-        }
+        // Note: Document attachments are no longer supported in this version
 
         return $conversationId;
     }

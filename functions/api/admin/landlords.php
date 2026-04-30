@@ -67,11 +67,13 @@ function handleGet($pdo) {
         }
 
         // Get property locations
+        // Get property locations from properties table
         $stmt = $pdo->prepare("
             SELECT
-                pl.address_line_1, pl.city, pl.province, pl.latitude, pl.longitude
-            FROM property_locations pl
-            WHERE pl.landlord_id = (SELECT id FROM landlord_profiles WHERE user_id = ?)
+                a.address_line_1, a.city, a.province, a.latitude, a.longitude
+            FROM addresses a
+            INNER JOIN properties p ON p.address_id = a.id
+            WHERE p.landlord_id = ? AND p.deleted_at IS NULL
         ");
         $stmt->execute([$id]);
         $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -84,14 +86,16 @@ function handleGet($pdo) {
     if (isset($params['history'])) {
         $landlordId = intval($params['history']);
 
+        // Get verification history from normalized verification_log table
         $stmt = $pdo->prepare("
             SELECT
-                l.created_at, l.action, l.comment,
+                vl.created_at, vl.action, vl.comment,
                 u.first_name as admin_first, u.last_name as admin_last
-            FROM landlord_verification_log l
-            JOIN users u ON l.admin_user_id = u.id
-            WHERE l.landlord_user_id = ?
-            ORDER BY l.created_at DESC
+            FROM verification_log vl
+            JOIN verification_records vr ON vl.verification_record_id = vr.id
+            JOIN users u ON vl.admin_user_id = u.id
+            WHERE vr.entity_type = 'user' AND vr.entity_id = ?
+            ORDER BY vl.created_at DESC
             LIMIT 50
         ");
         $stmt->execute([$landlordId]);
@@ -189,13 +193,24 @@ function handlePost($pdo, $adminId = null) {
             json_response(400, ['error' => 'Invalid action. Use approve or reject']);
         }
 
-        // Log verification action
+        // Log verification action to normalized verification_log table
         if ($adminId) {
+            // Get the verification_record_id for this landlord
             $stmt = $pdo->prepare("
-                INSERT INTO landlord_verification_log (landlord_user_id, admin_user_id, action, comment, created_at)
-                VALUES (?, ?, ?, ?, NOW())
+                SELECT id FROM verification_records 
+                WHERE entity_type = 'user' AND entity_id = ?
+                ORDER BY created_at DESC LIMIT 1
             ");
-            $stmt->execute([$landlordId, $adminId, $action, $comment]);
+            $stmt->execute([$landlordId]);
+            $verificationRecord = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($verificationRecord) {
+                $stmt = $pdo->prepare("
+                    INSERT INTO verification_log (verification_record_id, admin_user_id, action, comment, created_at)
+                    VALUES (?, ?, ?, ?, NOW())
+                ");
+                $stmt->execute([$verificationRecord['id'], $adminId, $action, $comment]);
+            }
         }
 
         $pdo->commit();

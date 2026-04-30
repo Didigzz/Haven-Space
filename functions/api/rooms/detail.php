@@ -45,6 +45,11 @@ try {
             p.listing_moderation_status,
             p.created_at,
             p.landlord_id,
+            p.deposit,
+            p.min_stay,
+            p.house_rules,
+            a.city,
+            a.province,
             u.first_name as landlord_first_name,
             u.last_name as landlord_last_name
         FROM properties p
@@ -75,13 +80,10 @@ try {
     $propertyTotalRooms = 0;
     $houseRules = [];
     
-    // Try to get amenities from property_amenities table
+    // Get amenities
     try {
         $amenityStmt = $pdo->prepare("
-            SELECT a.amenity_name 
-            FROM property_amenities pa
-            JOIN amenities a ON pa.amenity_id = a.id
-            WHERE pa.property_id = ?
+            SELECT amenity_name FROM amenities WHERE property_id = ?
         ");
         $amenityStmt->execute([$propertyId]);
         $amenityRows = $amenityStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -93,42 +95,18 @@ try {
         error_log('Property amenities fetch error: ' . $e->getMessage());
     }
     
-    // Try to get additional details from property_details table if it exists
-    try {
-        $detailStmt = $pdo->prepare("
-            SELECT 
-                city, 
-                province, 
-                property_type,
-                deposit,
-                min_stay,
-                capacity,
-                availability,
-                total_rooms,
-                house_rules
-            FROM property_details 
-            WHERE property_id = ?
-        ");
-        $detailStmt->execute([$propertyId]);
-        $detailData = $detailStmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($detailData) {
-            $city = $detailData['city'] ?? '';
-            $province = $detailData['province'] ?? '';
-            $propertyType = $detailData['property_type'] ?? '';
-            $deposit = $detailData['deposit'] ?? '';
-            $minStay = $detailData['min_stay'] ?? '';
-            $capacity = $detailData['capacity'] ?? '';
-            $availabilityStatus = $detailData['availability'] ?? '';
-            $propertyTotalRooms = $detailData['total_rooms'] ? intval($detailData['total_rooms']) : 0;
-            
-            if (!empty($detailData['house_rules'])) {
-                $houseRules = json_decode($detailData['house_rules'], true) ?: [];
-            }
-        }
-    } catch (PDOException $e) {
-        // property_details table doesn't exist or error occurred
-        error_log('Property details fetch error: ' . $e->getMessage());
+    // Get details from properties table (deposit, min_stay, house_rules migrated there)
+    $city = $property['city'] ?? '';
+    $province = $property['province'] ?? '';
+    $propertyType = '';
+    $deposit = $property['deposit'] ?? '';
+    $minStay = $property['min_stay'] ?? '';
+    $capacity = '';
+    $availabilityStatus = '';
+    $propertyTotalRooms = 0;
+    $houseRules = [];
+    if (!empty($property['house_rules'])) {
+        $houseRules = json_decode($property['house_rules'], true) ?: [];
     }
 
     // Get all property photos
@@ -270,8 +248,7 @@ try {
         }
     }
     
-    // Use property_total_rooms if available, otherwise use rooms count
-    $totalRooms = $propertyTotalRooms > 0 ? $propertyTotalRooms : count($rooms);
+    $totalRooms = count($rooms);
     
     // Determine availability text based on availabilityStatus or room availability
     $availability = 'Contact for details';

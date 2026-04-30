@@ -49,6 +49,9 @@ try {
             p.listing_moderation_status,
             p.created_at,
             p.landlord_id,
+            p.min_stay,
+            a.city,
+            a.province,
             u.first_name as landlord_first_name,
             u.last_name as landlord_last_name,
             lp.boarding_house_name as landlord_business_name
@@ -67,38 +70,25 @@ try {
         json_response(404, ['error' => 'Property not found']);
     }
 
-    // Get property details
+    // Get property details from properties + addresses + amenities
     $amenities = [];
-    $city = '';
-    $province = '';
     $capacity = '';
-    $minStay = '';
+    $minStay = $property['min_stay'] ?? '';
     $availability = '';
     $propertyType = '';
     $propertyTotalRooms = 0;
-    
+    $city = $property['city'] ?? '';
+    $province = $property['province'] ?? '';
+
+    // Get amenities
     try {
-        $detailStmt = $pdo->prepare("
-            SELECT amenities, city, province, property_type, capacity, min_stay, availability, total_rooms 
-            FROM property_details 
-            WHERE property_id = ?
+        $amenityStmt = $pdo->prepare("
+            SELECT amenity_name FROM amenities WHERE property_id = ?
         ");
-        $detailStmt->execute([$propertyId]);
-        $detailData = $detailStmt->fetch(PDO::FETCH_ASSOC);
-        if ($detailData) {
-            if (!empty($detailData['amenities'])) {
-                $amenities = json_decode($detailData['amenities'], true) ?: [];
-            }
-            $city = $detailData['city'] ?? '';
-            $province = $detailData['province'] ?? '';
-            $capacity = $detailData['capacity'] ?? '';
-            $minStay = $detailData['min_stay'] ?? '';
-            $availability = $detailData['availability'] ?? '';
-            $propertyType = $detailData['property_type'] ?? '';
-            $propertyTotalRooms = $detailData['total_rooms'] ? intval($detailData['total_rooms']) : 0;
-        }
+        $amenityStmt->execute([$propertyId]);
+        $amenities = $amenityStmt->fetchAll(PDO::FETCH_COLUMN);
     } catch (PDOException $e) {
-        // property_details table doesn't exist
+        // amenities not available
     }
 
     // Get property photos
@@ -205,8 +195,7 @@ try {
         // rooms table doesn't exist
     }
 
-    // Use property_total_rooms if available, otherwise use rooms count
-    $totalRooms = $propertyTotalRooms > 0 ? $propertyTotalRooms : $roomsCount;
+    $totalRooms = $roomsCount;
 
     // Determine landlord display name
     $landlordName = $property['landlord_business_name'] 

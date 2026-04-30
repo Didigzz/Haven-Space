@@ -136,31 +136,20 @@ try {
     $enrichedProperties = array_map(function($property) use ($pdo) {
         $propertyId = $property['id'];
         
-        // Get property details for amenities, capacity, and other info
+        // Get amenities
         $amenities = [];
-        $city = '';
-        $province = '';
+        $city = $property['city'] ?? '';
+        $province = $property['province'] ?? '';
         $capacity = '';
         $minStay = '';
         $availability = '';
         $propertyTotalRooms = 0;
         try {
-            $detailStmt = $pdo->prepare("SELECT amenities, city, province, property_type, capacity, min_stay, availability, total_rooms FROM property_details WHERE property_id = ?");
-            $detailStmt->execute([$propertyId]);
-            $detailData = $detailStmt->fetch(PDO::FETCH_ASSOC);
-            if ($detailData) {
-                if (!empty($detailData['amenities'])) {
-                    $amenities = json_decode($detailData['amenities'], true) ?: [];
-                }
-                $city = $detailData['city'] ?? '';
-                $province = $detailData['province'] ?? '';
-                $capacity = $detailData['capacity'] ?? '';
-                $minStay = $detailData['min_stay'] ?? '';
-                $availability = $detailData['availability'] ?? '';
-                $propertyTotalRooms = $detailData['total_rooms'] ? intval($detailData['total_rooms']) : 0;
-            }
+            $amenityStmt = $pdo->prepare("SELECT amenity_name FROM amenities WHERE property_id = ?");
+            $amenityStmt->execute([$propertyId]);
+            $amenities = $amenityStmt->fetchAll(PDO::FETCH_COLUMN);
         } catch (PDOException $e) {
-            // property_details table doesn't exist or columns missing
+            // amenities not available
         }
 
         // Get room counts from rooms table
@@ -236,8 +225,7 @@ try {
             // rooms table doesn't exist
         }
 
-        // Use property_total_rooms if available, otherwise use rooms count
-        $totalRooms = $propertyTotalRooms > 0 ? $propertyTotalRooms : $roomsCount;
+            $totalRooms = $roomsCount;
 
         // Get property photo
         $image = '/assets/images/placeholder-room.svg';

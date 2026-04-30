@@ -30,44 +30,32 @@ try {
 
     $userMessage = $input['message'];
 
-    // Check if this is a property-related query and enhance with real-time data
+    // Always fetch current listings so every response is grounded in real data
     $propertyService = new PropertyService();
-    $isPropertyQuery = $propertyService->isPropertyRelatedQuery($userMessage);
-    
-    $systemMessage = 'You are Haven AI, a smart boarding house assistant for the Haven Space platform. '
-        . 'Your role is to help users find boarding houses, answer questions about the platform, '
-        . 'and provide helpful information about rental properties. '
-        . 'Be friendly, helpful, and concise. '
-        . 'If you don\'t know something, say you don\'t have that information. '
-        . 'Never make up property listings or specific details.';
-    
+    $properties = $propertyService->getActivePropertiesForAI();
+    $propertyContext = $propertyService->formatPropertiesForAIContext($properties);
+
     $messages = [
         [
             'role' => 'system',
-            'content' => $systemMessage
-        ]
-    ];
-    
-    // Add real-time property data if it's a property-related query
-    if ($isPropertyQuery) {
-        $properties = $propertyService->getActivePropertiesForAI();
-        $propertyContext = $propertyService->formatPropertiesForAIContext($properties);
-        
-        $messages[] = [
+            'content' => 'You are Haven AI, a smart boarding house assistant for the Haven Space platform. '
+                . 'Your role is to help users find boarding houses, answer questions about the platform, '
+                . 'and provide helpful information about rental properties. '
+                . 'Be friendly, helpful, and concise. '
+                . 'Base your answers on the current listings provided. '
+                . 'Never make up property listings or specific details not present in the data.'
+        ],
+        [
             'role' => 'system',
-            'content' => 'Current property listings (real-time data):
-
-' . $propertyContext . '
-
-' . 
-                'When answering property-related questions, use this up-to-date information. '
-                . 'If no properties match the user\'s criteria, suggest they check back later or adjust their search.'
-        ];
-    }
-    
-    $messages[] = [
-        'role' => 'user',
-        'content' => $userMessage
+            'content' => "Current property listings from the database (real-time):\n\n"
+                . $propertyContext
+                . "\nUse this data to answer property-related questions accurately. "
+                . "If no properties match the user's criteria, say so and suggest they adjust their search."
+        ],
+        [
+            'role' => 'user',
+            'content' => $userMessage
+        ]
     ];
 
     $response = $groqService->chatCompletion($messages);

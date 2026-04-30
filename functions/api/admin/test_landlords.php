@@ -29,7 +29,7 @@ try {
     echo "2. Testing normalized tables...\n";
     $tables = [
         'users', 'user_roles', 'account_statuses', 'landlord_profiles', 
-        'verification_records', 'verification_statuses', 'property_types',
+        'verification_records', 'verification_statuses',
         'files', 'addresses'
     ];
     
@@ -66,7 +66,7 @@ try {
             lp.total_rooms,
             lp.available_rooms,
             -- Property type (normalized)
-            pt.type_name as property_type,
+            lp.property_type as property_type,
             -- Avatar file (normalized)
             f.file_url as avatar_url,
             f.file_name as avatar_filename,
@@ -80,7 +80,7 @@ try {
         JOIN user_roles ur ON u.role_id = ur.id
         JOIN account_statuses acs ON u.account_status_id = acs.id
         LEFT JOIN landlord_profiles lp ON u.id = lp.user_id
-        LEFT JOIN property_types pt ON lp.property_type_id = pt.id
+        -- property_type is now VARCHAR in landlord_profiles
         LEFT JOIN files f ON u.avatar_file_id = f.id AND f.deleted_at IS NULL
         LEFT JOIN (
             SELECT vr1.* 

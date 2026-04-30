@@ -4,7 +4,6 @@ namespace App\Modules\Application\Services;
 
 use App\Modules\Application\Repositories\ApplicationRepository;
 use App\Modules\Notification\Services\NotificationService;
-use App\Modules\Onboarding\Helpers\OnboardingTrigger;
 use App\Modules\Payment\Services\PaymentService;
 
 /**
@@ -264,13 +263,7 @@ class ApplicationService
                 $application['room_price'] ?? 0
             );
 
-            // Trigger the welcome flow
-            OnboardingTrigger::onApplicationAccepted(
-                $application['boarder_id'],
-                $application['landlord_id'],
-                $application['property_id'] ?? 0,
-                $houseName
-            );
+            // Welcome flow removed - onboarding document system was never implemented
 
             // Create initial payment for the boarder
             $this->paymentService->createInitialPayment(
