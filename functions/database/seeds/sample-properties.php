@@ -116,29 +116,7 @@ try {
         ]);
     }
 
-    // Create property details for property ID 5
-    try {
-        $pdo->exec("\n            CREATE TABLE IF NOT EXISTS property_details (\n                id INT AUTO_INCREMENT PRIMARY KEY,\n                property_id INT NOT NULL,\n                city VARCHAR(100),\n                province VARCHAR(100),\n                property_type VARCHAR(100),\n                deposit VARCHAR(100),\n                rooms_available INT,\n                capacity_per_room INT,\n                amenities TEXT,\n                house_rules JSON NULL,\n                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n            )\n        ");
-
-        $detailStmt = $pdo->prepare("\n            INSERT IGNORE INTO property_details (property_id, city, province, property_type, deposit, amenities, house_rules) \n            VALUES (?, ?, ?, ?, ?, ?, ?)\n        ");
-        $detailStmt->execute([
-            5,
-            'Quezon City',
-            'Metro Manila',
-            'Single unit',
-            '4500',
-            json_encode(['WiFi', 'Air Conditioning', 'Study Area', 'Laundry Service', '24/7 Security']),
-            json_encode([
-                ['icon' => 'clock', 'title' => 'Curfew', 'desc' => 'Building locks at 11:00 PM on weekdays, 12:00 AM on weekends'],
-                ['icon' => 'noSmoking', 'title' => 'No Smoking', 'desc' => 'Smoking is not allowed inside the building'],
-                ['icon' => 'noPets', 'title' => 'No Pets', 'desc' => 'Pets are not allowed on the premises'],
-                ['icon' => 'userGroup', 'title' => 'Visitors', 'desc' => 'Visitors allowed until 9:00 PM only']
-            ])
-        ]);
-    } catch (PDOException $e) {
-        // property_details table might not exist, continue without it
-        error_log('property_details insert failed: ' . $e->getMessage());
-    }
+    // Note: property_details table has been removed. Property details are now stored in properties table.
 
     // Create rooms for property ID 5
     try {
