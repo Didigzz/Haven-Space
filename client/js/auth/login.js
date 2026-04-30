@@ -189,7 +189,6 @@ function initializeLogin() {
  */
 function handleEmailCheckResult(data) {
   const passwordGroup = document.querySelector('.form-group:has(#password)');
-  const socialLogin = document.querySelector('.social-login');
   const authDivider = document.querySelector('.auth-divider');
 
   if (!passwordGroup) return;

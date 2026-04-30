@@ -428,8 +428,6 @@ async function loadDashboardData() {
         dashboardState.lease = leaseData.data || null;
         renderLeaseInfo(dashboardState.lease);
 
-        // Render document vault and important info based on lease status
-        await renderDocumentVault(dashboardState.lease);
         renderImportantInformation(dashboardState.lease);
       }
     } catch (error) {
@@ -1020,97 +1018,6 @@ function setContractStatus(status) {
   updateDynamicCards();
 }
 
-`;
-    }
-
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/documents`, {
-      method: 'GET',
-      headers: headers,
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      return data.data || [];
-    } else {
-      console.error('Failed to fetch documents');
-      return [];
-    }
-  } catch (error) {
-    console.error('Error fetching documents:', error);
-    return [];
-  }
-}
-
-);
-}
-
-/**
- * Create a document card from API data
- */
-function createDocumentCard(doc) {
-  const card = document.createElement('div');
-  card.className = 'boarder-document-card';
-
-  // Determine document type and icon
-  const docType = doc.category?.toLowerCase() || 'document';
-  let iconClass = 'boarder-document-contract'; // default
-  let iconSvg =
-    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />';
-
-  if (docType.includes('receipt') || docType.includes('payment')) {
-    iconClass = 'boarder-document-receipt';
-    iconSvg =
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM19 10a2 2 0 11-4 0 2 2 0 014 0z" />';
-  } else if (docType.includes('id') || docType.includes('identification')) {
-    iconClass = 'boarder-document-id';
-    iconSvg =
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />';
-  }
-
-  // Format date
-  const receivedDate = doc.received_at
-    ? new Date(doc.received_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : 'Unknown date';
-
-  // Format document info
-  let propertyInfo = doc.document_name || 'Document';
-  let dateInfo = `Received: ${receivedDate}`;
-
-  if (docType.includes('receipt') || docType.includes('payment')) {
-    const amount = doc.amount ? `₱${parseFloat(doc.amount).toLocaleString()}` : '';
-    propertyInfo = doc.description || 'Payment Receipt';
-    dateInfo = `${receivedDate} • ${amount}`;
-  }
-
-  card.innerHTML = `
-    <div class="boarder-document-icon ${iconClass}">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        ${iconSvg}
-      </svg>
-    </div>
-    <div class="boarder-document-info">
-      <h4 class="boarder-document-name">${escapeHtml(doc.document_name || 'Document')}</h4>
-      <p class="boarder-document-property" id="dashboard-document-property">${escapeHtml(
-        propertyInfo
-      )}</p>
-      <p class="boarder-document-date">${escapeHtml(dateInfo)}</p>
-    </div>
-    <button class="boarder-document-action" data-document-id="${doc.id}">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
-    </button>
-  `;
-
-  return card;
-}
-
-
 /**
  * Render important information based on lease status
  */
@@ -1184,7 +1091,6 @@ export {
   initializeDynamicCards,
   updateDynamicCards,
   setContractStatus,
-  renderDocumentVault,
   renderImportantInformation,
   initializeKeyboardNavigation,
 };
