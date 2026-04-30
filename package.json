@@ -24,6 +24,8 @@
     "format:check": "prettier --check .",
     "lint": "eslint client/js --ext .js",
     "lint:fix": "eslint --fix client/js --ext .js",
+    "php:lint": "php -l functions/api/routes.php && php -l functions/router.php",
+    "php:analyze": "composer analyze --working-dir functions",
     "build": "node scripts/build.js",
     "clear-cache": "node scripts/clear-cache.js",
     "prepare": "husky install"

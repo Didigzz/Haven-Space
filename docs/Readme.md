@@ -1,0 +1,5 @@
+- files - Generic file storage (used by ALL users, not just landlords)
+- landlord_profiles - Landlord business information
+- verification_records - Normalized verification tracking for all entities (users, properties, documents)
+- verification_log - Admin action audit trail for verification records
+- landlord_documents - Landlord-specific documents for boarders
