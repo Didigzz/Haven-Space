@@ -201,9 +201,8 @@ function handleEmailCheckResult(data) {
   }
 
   if (data.exists && data.is_google_account) {
-    // Hide password field and social buttons
+    // Hide password field only; keep social buttons visible so Google login still works
     passwordGroup.style.display = 'none';
-    if (socialLogin) socialLogin.style.display = 'none';
     if (authDivider) authDivider.style.display = 'none';
 
     // Create Google account notice
@@ -241,7 +240,6 @@ function handleEmailCheckResult(data) {
   } else {
     // Show normal login form
     passwordGroup.style.display = 'block';
-    if (socialLogin) socialLogin.style.display = 'block';
     if (authDivider) authDivider.style.display = 'block';
   }
 }

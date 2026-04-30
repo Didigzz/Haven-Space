@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initializePaymentAlerts();
   initializeMapPreview();
   initializeSavedSearches();
-  initializeDocumentVault();
   initializeApplicationTracker();
   initializeDynamicCards();
   initializeKeyboardNavigation();
@@ -183,33 +182,6 @@ function initializeSavedSearches() {
         isEnabled ? 'Search alerts enabled' : 'Search alerts disabled',
         isEnabled ? 'success' : 'info'
       );
-    });
-  });
-}
-
-/**
- * Initialize document vault download functionality
- */
-function initializeDocumentVault() {
-  const documentActions = document.querySelectorAll('.boarder-document-action');
-
-  documentActions.forEach(action => {
-    // Ensure document action buttons have proper ARIA attributes
-    if (!action.getAttribute('aria-label')) {
-      const docName =
-        action.closest('.boarder-document-card')?.querySelector('.boarder-document-name')
-          ?.textContent || 'document';
-      action.setAttribute('aria-label', `Download ${docName}`);
-    }
-
-    action.addEventListener('click', () => {
-      const docName =
-        action.closest('.boarder-document-card')?.querySelector('.boarder-document-name')
-          ?.textContent || 'document';
-      showNotification(`Download started for ${docName}`, 'success');
-
-      // In production, this would trigger a file download
-      // window.location.href = `/api/documents/download/${docId}`;
     });
   });
 }
@@ -1048,19 +1020,7 @@ function setContractStatus(status) {
   updateDynamicCards();
 }
 
-/**
- * Fetch documents from API
- */
-async function fetchDocuments() {
-  try {
-    const token = localStorage.getItem('token');
-    const userId = getCurrentUserId();
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-User-Id': userId,
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+`;
     }
 
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/documents`, {
@@ -1082,22 +1042,7 @@ async function fetchDocuments() {
   }
 }
 
-/**
- * Render document cards from real API data
- */
-function renderDocumentCards(documents) {
-  const documentsGrid = document.querySelector('.boarder-documents-grid');
-  if (!documentsGrid) return;
-
-  documentsGrid.innerHTML = '';
-
-  // Limit to 3 documents for dashboard preview
-  const limitedDocuments = documents.slice(0, 3);
-
-  limitedDocuments.forEach(doc => {
-    const documentCard = createDocumentCard(doc);
-    documentsGrid.appendChild(documentCard);
-  });
+);
 }
 
 /**
@@ -1165,46 +1110,6 @@ function createDocumentCard(doc) {
   return card;
 }
 
-/**
- * Render document vault based on lease status
- */
-async function renderDocumentVault(lease) {
-  const documentsGrid = document.querySelector('.boarder-documents-grid');
-  if (!documentsGrid) return;
-
-  if (!lease) {
-    // Show empty state when no active lease
-    documentsGrid.innerHTML = `
-      <div class="boarder-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #6b7280;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px; opacity: 0.5;">
-          <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
-        </svg>
-        <p style="margin: 0; font-size: 14px; font-weight: 500;">No documents available</p>
-        <p style="margin: 8px 0 0 0; font-size: 13px;">Your rental contract and documents will appear here once you have an active lease</p>
-      </div>
-    `;
-    return;
-  }
-
-  // Fetch real documents from API
-  const documents = await fetchDocuments();
-
-  if (documents.length === 0) {
-    documentsGrid.innerHTML = `
-      <div class="boarder-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #6b7280;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px; opacity: 0.5;">
-          <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
-        </svg>
-        <p style="margin: 0; font-size: 14px; font-weight: 500;">No documents available</p>
-        <p style="margin: 8px 0 0 0; font-size: 13px;">Your rental contract and documents will appear here once you have an active lease</p>
-      </div>
-    `;
-    return;
-  }
-
-  // Render real documents
-  renderDocumentCards(documents);
-}
 
 /**
  * Render important information based on lease status
