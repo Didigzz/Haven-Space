@@ -150,15 +150,11 @@ try {
     // after the property is created (see listing-photos.php)
 
     // Create rooms for the property
-    $roomsCount = intval($input['propertyRooms']);
-    $roomCapacity = intval($input['propertyCapacity']);
-    $roomPrice = floatval($input['propertyPrice']);
+    // Check if custom rooms data is provided from frontend
+    $customRooms = isset($input['rooms']) && is_array($input['rooms']) ? $input['rooms'] : [];
     
-    // Determine room type based on capacity
-    $roomType = $roomCapacity === 1 ? 'single' : 'shared';
-    $roomTypeDisplay = $roomCapacity === 1 ? 'Single Room' : "Shared Room ({$roomCapacity} persons)";
-    
-    if ($roomsCount > 0) {
+    if (!empty($customRooms)) {
+        // Use custom room data from frontend
         $roomStmt = $pdo->prepare("
             INSERT INTO rooms (
                 property_id,
@@ -176,19 +172,69 @@ try {
             )
         ");
 
-        for ($i = 1; $i <= $roomsCount; $i++) {
-            $roomNumber = "Room {$i}";
-            $roomTitle = "{$roomTypeDisplay} - {$roomNumber}";
+        foreach ($customRooms as $index => $roomData) {
+            $roomName = isset($roomData['name']) && trim($roomData['name']) !== '' 
+                ? trim($roomData['name']) 
+                : "Room " . ($index + 1);
+            
+            $roomCapacity = isset($roomData['capacity']) ? intval($roomData['capacity']) : 1;
+            $roomPrice = floatval($input['propertyPrice']);
+            
+            // Determine room type based on capacity
+            $roomType = $roomCapacity === 1 ? 'single' : 'shared';
             
             $roomStmt->execute([
                 $propertyId,
                 $landlordId,
-                $roomTitle,
+                $roomName,
                 $roomPrice,
-                $roomNumber,
+                $roomName, // room_number uses the custom name
                 $roomType,
                 $roomCapacity
             ]);
+        }
+    } else {
+        // Fallback to old behavior if no custom rooms data provided
+        $roomsCount = intval($input['propertyRooms']);
+        $roomCapacity = intval($input['propertyCapacity']);
+        $roomPrice = floatval($input['propertyPrice']);
+        
+        // Determine room type based on capacity
+        $roomType = $roomCapacity === 1 ? 'single' : 'shared';
+        $roomTypeDisplay = $roomCapacity === 1 ? 'Single Room' : "Shared Room ({$roomCapacity} persons)";
+        
+        if ($roomsCount > 0) {
+            $roomStmt = $pdo->prepare("
+                INSERT INTO rooms (
+                    property_id,
+                    landlord_id,
+                    title,
+                    price,
+                    status,
+                    room_number,
+                    room_type,
+                    capacity,
+                    created_at,
+                    updated_at
+                ) VALUES (
+                    ?, ?, ?, ?, 'available', ?, ?, ?, NOW(), NOW()
+                )
+            ");
+
+            for ($i = 1; $i <= $roomsCount; $i++) {
+                $roomNumber = "Room {$i}";
+                $roomTitle = "{$roomTypeDisplay} - {$roomNumber}";
+                
+                $roomStmt->execute([
+                    $propertyId,
+                    $landlordId,
+                    $roomTitle,
+                    $roomPrice,
+                    $roomNumber,
+                    $roomType,
+                    $roomCapacity
+                ]);
+            }
         }
     }
 

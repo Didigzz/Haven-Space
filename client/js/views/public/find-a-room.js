@@ -1238,10 +1238,10 @@ function initProfileDropdown() {
 
         // Redirect based on boarder status
         if (boarderStatus === 'accepted') {
-          // If accepted, go to main settings
-          window.location.href = `${basePath}boarder/settings/index.html`;
+          // If accepted, go to main settings profile
+          window.location.href = `${basePath}boarder/settings/index.html#profile`;
         } else {
-          // If not yet accepted, go to applications dashboard
+          // If not yet accepted, stay in applications dashboard
           window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
         }
       } else {

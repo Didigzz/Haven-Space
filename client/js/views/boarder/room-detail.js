@@ -790,19 +790,20 @@ function loadAvailableRooms(property) {
       const roomDescription = room.description || 'No description available';
       const roomSize = room.size ? `${room.size} sqm` : 'N/A';
       const furnishing = room.furnishing || 'Not specified';
-      const roomType = room.room_type || room.roomType || 'Room';
+      const roomName = room.roomNumber || room.roomType || 'Room';
+      const roomType = room.roomType || 'shared';
 
       return `
         <div class="available-room-card" data-room-id="${room.id}" data-room='${JSON.stringify(
         room
       ).replace(/'/g, '&apos;')}'>
           <div class="available-room-image-wrapper">
-            <img src="${roomImage}" alt="${roomType}" class="available-room-image" />
+            <img src="${roomImage}" alt="${roomName}" class="available-room-image" />
             <span class="available-room-status-badge ${statusClass}">${statusText}</span>
           </div>
           <div class="available-room-content">
             <div class="available-room-header">
-              <h3 class="available-room-type">${roomType}</h3>
+              <h3 class="available-room-type">${roomName}</h3>
               <div class="available-room-price">
                 <span class="available-room-price-amount">₱${room.price.toLocaleString()}</span>
                 <span class="available-room-price-period">/mo</span>
@@ -850,8 +851,9 @@ function showRoomDetailModal(room, property) {
 
   // Populate modal with room data
   const modalTitle = document.getElementById('modal-room-title');
-  const roomType = room.room_type || room.roomType || 'Room';
-  if (modalTitle) modalTitle.textContent = roomType;
+  const roomName = room.roomNumber || room.roomType || 'Room';
+  const roomType = room.roomType || 'shared';
+  if (modalTitle) modalTitle.textContent = roomName;
 
   // Update status badge
   const statusBadge = document.getElementById('modal-room-status');
@@ -884,7 +886,7 @@ function showRoomDetailModal(room, property) {
   if (furnishing) furnishing.textContent = room.furnishing || 'Not specified';
 
   // Update description
-  const description = document.getElementById('modal-room-description');
+  const description = document.getElementByIdyId('modal-room-description');
   if (description) description.textContent = room.description || 'No description available.';
 
   // Update gallery
@@ -896,7 +898,7 @@ function showRoomDetailModal(room, property) {
   if (roomImages && roomImages.length > 0) {
     if (mainImage) {
       mainImage.src = getImageUrl(roomImages[0]);
-      mainImage.alt = roomType;
+      mainImage.alt = roomName;
     }
 
     if (thumbnailsContainer) {
@@ -905,7 +907,7 @@ function showRoomDetailModal(room, property) {
           (img, index) => `
           <img 
             src="${getImageUrl(img)}" 
-            alt="Room ${index + 1}" 
+            alt="${roomName} ${index + 1}" 
             class="room-modal-thumbnail ${index === 0 ? 'active' : ''}" 
             data-index="${index}"
           />

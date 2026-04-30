@@ -138,24 +138,21 @@ if ($method === 'POST') {
     $status      = in_array($input['status'] ?? '', ['available', 'occupied', 'maintenance'])
                    ? $input['status'] : 'available';
     $capacity    = isset($input['capacity'])    ? intval($input['capacity'])    : 1;
-    $size        = isset($input['size'])        ? floatval($input['size'])      : null;
-    $description = $input['description']        ?? null;
 
     try {
         $stmt = $pdo->prepare(
             "INSERT INTO rooms
-             (property_id, landlord_id, room_number, price, status, capacity, size, description, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
+             (property_id, landlord_id, title, room_number, price, status, capacity, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
         );
         $stmt->execute([
             $propertyId,
             $landlordId,
+            $input['room_number'], // Use room_number as title for consistency
             $input['room_number'],
             floatval($input['price']),
             $status,
             $capacity,
-            $size,
-            $description,
         ]);
         $newId = intval($pdo->lastInsertId());
 
@@ -216,7 +213,7 @@ if ($method === 'PUT') {
     }
 
     // Build dynamic SET clause from provided fields
-    $allowed = ['room_number', 'price', 'status', 'capacity', 'size', 'description'];
+    $allowed = ['room_number', 'price', 'status', 'capacity'];
     $sets    = ['updated_at = NOW()'];
     $params  = [];
 
@@ -330,8 +327,6 @@ function formatRoom(array $room): array {
         'price'       => floatval($room['price']),
         'status'      => $room['status'] ?? 'available',
         'capacity'    => intval($room['capacity'] ?? 1),
-        'size'        => $room['size'] ? floatval($room['size']) : null,
-        'description' => $room['description'] ?? '',
         'cover_photo' => $coverPhoto,
         'photos'      => array_map(function($p) {
             return [

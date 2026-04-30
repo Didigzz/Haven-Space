@@ -144,7 +144,7 @@ try {
     // Get available rooms for this property
     $rooms = [];
     try {
-        // First, try the new schema with room_number, room_type, capacity
+        // First, try the new schema with room_number, room_type, capacity, description, size
         $roomStmt = $pdo->prepare("
             SELECT 
                 id,
@@ -152,7 +152,9 @@ try {
                 room_type,
                 price,
                 status,
-                capacity
+                capacity,
+                description,
+                size
             FROM rooms 
             WHERE property_id = ? 
               AND deleted_at IS NULL
@@ -160,6 +162,32 @@ try {
         ");
         $roomStmt->execute([$propertyId]);
         $rooms = $roomStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Fetch photos for each room
+        foreach ($rooms as &$room) {
+            $roomPhotos = [];
+            try {
+                $photoStmt = $pdo->prepare("
+                    SELECT photo_url, is_cover 
+                    FROM room_photos 
+                    WHERE room_id = ? 
+                    ORDER BY is_cover DESC, display_order ASC, id ASC
+                ");
+                $photoStmt->execute([$room['id']]);
+                $photos = $photoStmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                foreach ($photos as $photo) {
+                    if (!empty($photo['photo_url'])) {
+                        $roomPhotos[] = $photo['photo_url'];
+                    }
+                }
+            } catch (PDOException $e) {
+                error_log('Room photos fetch error: ' . $e->getMessage());
+            }
+            
+            $room['photos'] = $roomPhotos;
+        }
+        unset($room); // Break reference
     } catch (PDOException $e) {
         // If columns don't exist, try the old schema
         error_log('Rooms fetch error (trying old schema): ' . $e->getMessage());
@@ -186,6 +214,9 @@ try {
                     'price' => $room['price'],
                     'status' => $room['status'],
                     'capacity' => 1,
+                    'description' => null,
+                    'size' => null,
+                    'photos' => [],
                 ];
             }
         } catch (PDOException $e2) {
@@ -318,11 +349,15 @@ try {
         'rooms' => array_map(function($room) {
             return [
                 'id' => intval($room['id']),
-                'roomNumber' => htmlspecialchars($room['room_number']),
-                'roomType' => htmlspecialchars($room['room_type']),
+                'roomNumber' => htmlspecialchars($room['room_number'] ?? 'N/A'),
+                'roomType' => htmlspecialchars($room['room_type'] ?? 'Room'),
                 'price' => floatval($room['price']),
                 'status' => htmlspecialchars($room['status']),
-                'capacity' => intval($room['capacity']),
+                'capacity' => intval($room['capacity'] ?? 1),
+                'description' => htmlspecialchars($room['description'] ?? ''),
+                'size' => $room['size'] ? floatval($room['size']) : null,
+                'images' => $room['photos'] ?? [],
+                'furnishing' => 'Not specified', // TODO: Add furnishing column to rooms table
             ];
         }, $rooms),
         'landlord' => [

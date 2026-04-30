@@ -265,14 +265,14 @@ function ensureDropdownsWork() {
           // Redirect based on boarder status
           if (boarderStatus === 'accepted') {
             // If accepted, go to main settings
-            window.location.href = '../settings/index.html';
+            window.location.href = '../settings/index.html#profile';
           } else {
-            // If not yet accepted, go to applications dashboard
+            // If not yet accepted, stay in applications dashboard
             window.location.href = '../applications-dashboard/index.html';
           }
         } else {
           // For non-boarders, navigate to settings
-          window.location.href = '../settings/index.html';
+          window.location.href = '../settings/index.html#profile';
         }
       });
     }
