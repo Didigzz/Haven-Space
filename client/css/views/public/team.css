@@ -63,6 +63,9 @@
   flex-direction: row;
   background: #ffffff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  /* Promote each card to its own compositor layer to prevent repaint bleed */
+  contain: layout style;
+  transform: translateZ(0);
 }
 
 .team-card[data-member='1'] {
