@@ -21,7 +21,6 @@ use App\Api\Middleware;
 use App\Modules\Notification\Controllers\NotificationController;
 use App\Modules\Message\Controllers\MessageController;
 use App\Modules\Maintenance\Controllers\MaintenanceController;
-use App\Modules\Onboarding\Controllers\OnboardingController;
 use App\Modules\Application\Controllers\ApplicationController;
 use App\Core\Upload\UploadController;
 use App\AI\GroqService;
@@ -250,23 +249,6 @@ Router::get('/api/landlord/applications/{id}', [ApplicationController::class, 's
 Router::patch('/api/landlord/applications/{id}/status', [ApplicationController::class, 'updateStatus']);
 
 // ============================================
-// ONBOARDING ROUTES - LANDLORD
-// ============================================
-Router::get('/api/landlord/welcome-message', [OnboardingController::class, 'getWelcomeTemplate']);
-Router::post('/api/landlord/welcome-message', [OnboardingController::class, 'saveWelcomeTemplate']);
-Router::get('/api/landlord/documents', [OnboardingController::class, 'getDocuments']);
-Router::post('/api/landlord/documents', [OnboardingController::class, 'uploadDocument']);
-Router::post('/api/landlord/documents/auto-send', [OnboardingController::class, 'toggleAutoSend']);
-Router::get('/api/landlord/documents/auto-send', [OnboardingController::class, 'getAutoSendDocuments']);
-Router::delete('/api/landlord/documents/{id}', [OnboardingController::class, 'deleteDocument']);
-
-// ============================================
-// ONBOARDING ROUTES - BOARDER
-// ============================================
-Router::get('/api/boarder/documents', [OnboardingController::class, 'getBoarderDocuments']);
-Router::post('/api/boarder/documents/acknowledge', [OnboardingController::class, 'acknowledgeDocument']);
-
-// ============================================
 // SAVED LISTINGS ROUTES - BOARDER
 // ============================================
 Router::get('/api/boarder/saved-listings', function() {
@@ -280,11 +262,6 @@ Router::post('/api/boarder/saved-listings', function() {
 Router::delete('/api/boarder/saved-listings', function() {
     require_once __DIR__ . '/boarder/saved-listings.php';
 });
-
-// ============================================
-// ONBOARDING ROUTES - SHARED
-// ============================================
-Router::post('/api/onboarding/welcome', [OnboardingController::class, 'triggerWelcome']);
 
 // ============================================
 // LANDLORD DASHBOARD ROUTES
