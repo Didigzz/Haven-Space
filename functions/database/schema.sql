@@ -8,7 +8,7 @@
 CREATE TABLE IF NOT EXISTS user_roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
+    description TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -21,7 +21,7 @@ INSERT IGNORE INTO user_roles (role_name, description) VALUES
 CREATE TABLE IF NOT EXISTS account_statuses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     status_name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
+    description TEXT NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -34,38 +34,14 @@ INSERT IGNORE INTO account_statuses (status_name, description, is_active) VALUES
 
 
 
--- Verification status lookup table
-CREATE TABLE IF NOT EXISTS verification_statuses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    status_name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT IGNORE INTO verification_statuses (status_name, description) VALUES
-('pending', 'Verification pending review'),
-('approved', 'Verification approved'),
-('rejected', 'Verification rejected');
+-- Verification system removed (2026-05-01)
+-- Now using simple users.is_verified boolean flag instead of complex verification_records system
 
 -- Property types are now stored as VARCHAR directly in landlord_profiles
 -- Common values: 'Single unit', 'Multi-unit', 'Apartment', 'Dormitory'
 
--- Payment method types lookup table
-CREATE TABLE IF NOT EXISTS payment_method_types (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    method_name VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT IGNORE INTO payment_method_types (method_name, description) VALUES
-('GCash', 'GCash mobile wallet'),
-('PayMaya', 'PayMaya digital wallet'),
-('Bank Transfer', 'Direct bank transfer'),
-('PayPal', 'PayPal online payment'),
-('GrabPay', 'GrabPay mobile wallet'),
-('Other', 'Other payment methods');
+-- Payment method types are now stored as VARCHAR directly in payment_methods
+-- Common values: 'GCash', 'PayMaya', 'Bank Transfer', 'PayPal', 'GrabPay', 'Other'
 
 -- ============================================================================
 -- CORE ENTITY TABLES
@@ -75,13 +51,13 @@ INSERT IGNORE INTO payment_method_types (method_name, description) VALUES
 CREATE TABLE IF NOT EXISTS addresses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     address_line_1 VARCHAR(255) NOT NULL,
-    address_line_2 VARCHAR(255) NULL,
+    address_line_2 VARCHAR(255) NOT NULL DEFAULT '',
     city VARCHAR(100) NOT NULL,
     province VARCHAR(100) NOT NULL,
-    postal_code VARCHAR(20) NULL,
+    postal_code VARCHAR(20) NOT NULL DEFAULT '',
     country VARCHAR(100) NOT NULL DEFAULT 'Philippines',
-    latitude DECIMAL(10, 8) NULL,
-    longitude DECIMAL(11, 8) NULL,
+    latitude DECIMAL(10, 8) NOT NULL DEFAULT 0.0,
+    longitude DECIMAL(11, 8) NOT NULL DEFAULT 0.0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_location (latitude, longitude),
@@ -96,8 +72,8 @@ CREATE TABLE IF NOT EXISTS files (
     file_name VARCHAR(255) NOT NULL,
     file_size INT NOT NULL,
     mime_type VARCHAR(100) NOT NULL,
-    file_hash VARCHAR(64) NULL COMMENT 'For duplicate detection',
-    uploaded_by INT NULL COMMENT 'Will be NOT NULL after users table is created',
+    file_hash VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'For duplicate detection',
+    uploaded_by INT NULL COMMENT 'Will be set to NOT NULL after admin user is created',
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
     INDEX idx_hash (file_hash)
@@ -111,18 +87,18 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    phone_number VARCHAR(20) NULL,
-    google_id VARCHAR(255) UNIQUE,
-    google_token TEXT,
-    google_refresh_token TEXT,
+    phone_number VARCHAR(20) NOT NULL DEFAULT '',
+    google_id VARCHAR(255) NULL UNIQUE,
+    google_token TEXT NOT NULL,
+    google_refresh_token TEXT NOT NULL,
     avatar_file_id INT NULL,
-    password_hash VARCHAR(255) NULL,
+    password_hash VARCHAR(255) NOT NULL DEFAULT '',
     role_id INT NOT NULL,
     account_status_id INT NOT NULL DEFAULT 1,
     is_verified BOOLEAN DEFAULT FALSE,
     email_verified BOOLEAN DEFAULT FALSE,
-    email_verification_token VARCHAR(255) NULL,
-    email_verification_expires TIMESTAMP NULL,
+    email_verification_token VARCHAR(255) NOT NULL DEFAULT '',
+    email_verification_expires DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -140,35 +116,19 @@ CREATE TABLE IF NOT EXISTS users (
 
 
 
--- Verification records table (normalized verification tracking)
-CREATE TABLE IF NOT EXISTS verification_records (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    entity_type ENUM('user', 'landlord_profile', 'property', 'document') NOT NULL,
-    entity_id INT NOT NULL,
-    verification_status_id INT NOT NULL,
-    submitted_at TIMESTAMP NULL,
-    reviewed_at TIMESTAMP NULL,
-    reviewed_by INT NULL,
-    notes TEXT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (verification_status_id) REFERENCES verification_statuses(id),
-    FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
-    INDEX idx_entity (entity_type, entity_id),
-    INDEX idx_status (verification_status_id)
-);
+
 
 -- Properties Table (normalized)
 CREATE TABLE IF NOT EXISTS properties (
     id INT AUTO_INCREMENT PRIMARY KEY,
     landlord_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL,
     address_id INT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
-    deposit VARCHAR(100) NULL,
-    min_stay VARCHAR(100) NULL,
-    house_rules JSON NULL,
+    deposit VARCHAR(100) NOT NULL DEFAULT '0',
+    min_stay VARCHAR(100) NOT NULL DEFAULT '1 month',
+    house_rules JSON NOT NULL,
 
     status ENUM('available', 'occupied', 'hidden') DEFAULT 'available',
     listing_moderation_status ENUM('pending_review', 'published', 'rejected') NOT NULL DEFAULT 'published',
@@ -199,11 +159,11 @@ CREATE TABLE IF NOT EXISTS landlord_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     boarding_house_name VARCHAR(255) NOT NULL,
-    boarding_house_description TEXT,
+    boarding_house_description TEXT NOT NULL,
     property_type VARCHAR(100) NOT NULL,
     total_rooms INT NOT NULL DEFAULT 1,
     available_rooms INT NOT NULL DEFAULT 1,
-    welcome_message TEXT NULL,
+    welcome_message TEXT NOT NULL,
     house_rules_file_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -216,16 +176,16 @@ CREATE TABLE IF NOT EXISTS landlord_profiles (
 CREATE TABLE IF NOT EXISTS payment_methods (
     id INT AUTO_INCREMENT PRIMARY KEY,
     landlord_id INT NOT NULL,
-    payment_method_type_id INT NOT NULL,
+    method_type VARCHAR(100) NOT NULL,
     account_number VARCHAR(255) NOT NULL,
     account_name VARCHAR(255) NOT NULL,
-    bank_name VARCHAR(100) NULL,
+    bank_name VARCHAR(100) NOT NULL DEFAULT '',
     is_primary BOOLEAN DEFAULT FALSE,
     is_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (landlord_id) REFERENCES landlord_profiles(id) ON DELETE CASCADE,
-    FOREIGN KEY (payment_method_type_id) REFERENCES payment_method_types(id)
+    INDEX idx_method_type (method_type)
 );
 
 -- Flat amenities table (property_id + amenity_name, no lookup/junction)
@@ -241,18 +201,26 @@ CREATE TABLE IF NOT EXISTS amenities (
 -- Rooms Table (normalized)
 CREATE TABLE IF NOT EXISTS rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    room_number VARCHAR(50) DEFAULT NULL,
+    room_type VARCHAR(100) DEFAULT NULL,
     property_id INT NOT NULL,
     landlord_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    size DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Room size in square meters',
+    description TEXT NOT NULL,
     status VARCHAR(32) DEFAULT 'available',
+    capacity INT DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
     FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_property (property_id),
     INDEX idx_status (status),
-    INDEX idx_price (price)
+    INDEX idx_price (price),
+    INDEX idx_room_type (room_type),
+    INDEX idx_capacity (capacity)
 );
 
 -- Applications Table (normalized)
@@ -262,7 +230,7 @@ CREATE TABLE IF NOT EXISTS applications (
     landlord_id INT NOT NULL,
     room_id INT NOT NULL,
     property_id INT NULL,
-    message TEXT,
+    message TEXT NOT NULL,
     status VARCHAR(32) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -276,30 +244,18 @@ CREATE TABLE IF NOT EXISTS applications (
     INDEX idx_status (status)
 );
 
--- Verification log table (normalized)
-CREATE TABLE IF NOT EXISTS verification_log (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    verification_record_id INT NOT NULL,
-    admin_user_id INT NOT NULL,
-    action ENUM('approve', 'reject', 'note', 'request_changes') NOT NULL,
-    comment TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (verification_record_id) REFERENCES verification_records(id) ON DELETE CASCADE,
-    FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_verification_record (verification_record_id),
-    INDEX idx_admin (admin_user_id)
-);
+
 
 -- Boarder Profiles Table (normalized)
 CREATE TABLE IF NOT EXISTS boarder_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    budget_min DECIMAL(10, 2) NULL,
-    budget_max DECIMAL(10, 2) NULL,
-    preferred_location VARCHAR(255) NULL,
-    move_in_date DATE NULL,
-    occupation VARCHAR(255) NULL,
-    bio TEXT NULL,
+    budget_min DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    budget_max DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    preferred_location VARCHAR(255) NOT NULL DEFAULT '',
+    move_in_date DATE NOT NULL DEFAULT '1970-01-01',
+    occupation VARCHAR(255) NOT NULL DEFAULT '',
+    bio TEXT NOT NULL,
     profile_completed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -312,12 +268,12 @@ CREATE TABLE IF NOT EXISTS disputes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('payment', 'tenancy', 'property', 'other') NOT NULL,
     title VARCHAR(255) NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL,
     opened_by INT NOT NULL,
     related_user_id INT NULL,
     related_property_id INT NULL,
     status ENUM('open', 'in_review', 'resolved', 'escalated') NOT NULL DEFAULT 'open',
-    resolution_notes TEXT,
+    resolution_notes TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -365,9 +321,9 @@ CREATE TABLE IF NOT EXISTS conversation_participants (
     id INT AUTO_INCREMENT PRIMARY KEY,
     conversation_id INT NOT NULL,
     user_id INT NOT NULL,
-    role VARCHAR(50) NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'member',
     is_active BOOLEAN DEFAULT TRUE,
-    last_read_at TIMESTAMP NULL,
+    last_read_at DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_conv_user (conversation_id, user_id),
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
@@ -382,7 +338,7 @@ CREATE TABLE IF NOT EXISTS messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     conversation_id INT NOT NULL,
     sender_id INT NOT NULL,
-    message_text TEXT NULL,
+    message_text TEXT NOT NULL,
     has_attachment BOOLEAN DEFAULT FALSE,
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -401,8 +357,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     user_id INT NOT NULL,
     type VARCHAR(64) NOT NULL COMMENT 'application_accepted, application_rejected, maintenance_update, message, system, etc.',
     title VARCHAR(255) NOT NULL,
-    message TEXT,
-    metadata JSON NULL COMMENT 'Additional context like application_id, property_id, room_id, etc.',
+    message TEXT NOT NULL,
+    metadata JSON NOT NULL COMMENT 'Additional context like application_id, property_id, room_id, etc.',
     is_read BOOLEAN DEFAULT FALSE,
     read_at TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -429,6 +385,155 @@ CREATE TABLE IF NOT EXISTS saved_listings (
     INDEX idx_property_saved (property_id)
 );
 
+-- Property Photos Table (normalized)
+CREATE TABLE IF NOT EXISTS property_photos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id INT NOT NULL,
+    photo_url VARCHAR(500) NOT NULL,
+    is_cover BOOLEAN DEFAULT FALSE COMMENT 'Is this the cover/main photo?',
+    display_order INT DEFAULT 0 COMMENT 'Order in which photos should be displayed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_property_id (property_id),
+    INDEX idx_is_cover (property_id, is_cover),
+    INDEX idx_display_order (property_id, display_order),
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
+);
+
+-- Room Photos Table (normalized)
+CREATE TABLE IF NOT EXISTS room_photos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT NOT NULL,
+    photo_url VARCHAR(500) NOT NULL,
+    is_cover TINYINT(1) DEFAULT 0 COMMENT 'Is this the cover/main photo?',
+    display_order INT DEFAULT 0 COMMENT 'Order in which photos should be displayed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    INDEX idx_room_id (room_id),
+    INDEX idx_is_cover (room_id, is_cover),
+    INDEX idx_display_order (room_id, display_order)
+);
+
+-- Property Reports Table (normalized)
+CREATE TABLE IF NOT EXISTS property_reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id INT NOT NULL,
+    reporter_id INT NOT NULL,
+    reason VARCHAR(64) NOT NULL,
+    details TEXT NOT NULL,
+    status ENUM('open', 'reviewing', 'resolved', 'dismissed') NOT NULL DEFAULT 'open',
+    resolution_notes TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_status (status),
+    INDEX idx_deleted_at (deleted_at)
+);
+
+-- Announcements Table (normalized)
+CREATE TABLE IF NOT EXISTS announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    landlord_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    category ENUM('general', 'maintenance', 'urgent', 'reminder', 'event') NOT NULL DEFAULT 'general',
+    priority ENUM('low', 'medium', 'high') NOT NULL DEFAULT 'medium',
+    publish_date DATE NOT NULL,
+    view_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_landlord_id (landlord_id),
+    INDEX idx_publish_date (publish_date)
+);
+
+-- Announcement Properties Junction Table (normalized)
+CREATE TABLE IF NOT EXISTS announcement_properties (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    announcement_id INT NOT NULL,
+    property_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_announcement_property (announcement_id, property_id)
+);
+
+-- Announcement Views Table (normalized)
+CREATE TABLE IF NOT EXISTS announcement_views (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    announcement_id INT NOT NULL,
+    user_id INT NOT NULL,
+    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_announcement_view (announcement_id, user_id)
+);
+
+-- Payments Table (normalized)
+CREATE TABLE IF NOT EXISTS payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    boarder_id INT NOT NULL,
+    landlord_id INT NOT NULL,
+    room_id INT NOT NULL,
+    property_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    late_fee DECIMAL(10, 2) DEFAULT 0,
+    due_date DATE NOT NULL,
+    paid_date DATE NULL,
+    status ENUM('pending', 'paid', 'overdue', 'cancelled') NOT NULL DEFAULT 'pending',
+    payment_method VARCHAR(50) NOT NULL DEFAULT '',
+    reference_number VARCHAR(100) NOT NULL DEFAULT '',
+    notes TEXT NOT NULL,
+    reminder_sent_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (boarder_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
+    INDEX idx_landlord_status (landlord_id, status),
+    INDEX idx_due_date (due_date),
+    INDEX idx_boarder_status (boarder_id, status)
+);
+
+-- Password Reset Requests Table (normalized)
+CREATE TABLE IF NOT EXISTS password_reset_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    reset_code VARCHAR(6) NOT NULL,
+    expires_at INT NOT NULL,
+    attempts INT NOT NULL DEFAULT 0,
+    is_used BOOLEAN NOT NULL DEFAULT FALSE,
+    used_at INT NOT NULL DEFAULT 0,
+    created_at INT NOT NULL,
+    INDEX idx_email (email),
+    INDEX idx_user_id (user_id),
+    INDEX idx_reset_code (reset_code),
+    INDEX idx_is_used (is_used)
+);
+
+-- OAuth Pending Registrations Table (normalized)
+CREATE TABLE IF NOT EXISTS oauth_pending_registrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(64) NOT NULL UNIQUE,
+    google_id VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100) NOT NULL DEFAULT '',
+    last_name VARCHAR(100) NOT NULL DEFAULT '',
+    avatar_url VARCHAR(500) NOT NULL DEFAULT '',
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL,
+    email_verified TINYINT(1) DEFAULT 0,
+    came_from_login TINYINT(1) DEFAULT 0,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Default Super Admin User
 -- Email: admin@mail.com
 -- Password: Superadmin123
@@ -441,28 +546,20 @@ INSERT IGNORE INTO users (first_name, last_name, email, password_hash, role_id, 
 
 -- Now that both users and files tables exist, we can safely add the foreign key constraints
 
--- Add index to files table (ignore if already exists)
-SET @sql = 'ALTER TABLE files ADD INDEX idx_uploaded_by (uploaded_by)';
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
--- Handle any existing orphaned data in files table
-DELETE FROM files WHERE uploaded_by IS NOT NULL AND uploaded_by NOT IN (SELECT id FROM users);
+-- Handle any existing orphaned data in files table and set default
 UPDATE files SET uploaded_by = 1 WHERE uploaded_by IS NULL;
+DELETE FROM files WHERE uploaded_by IS NOT NULL AND uploaded_by NOT IN (SELECT id FROM users);
 
--- Add foreign key constraint to files table (ignore if already exists)
-SET @sql = 'ALTER TABLE files ADD CONSTRAINT fk_files_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL';
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+-- Make uploaded_by NOT NULL now that we have default values
+ALTER TABLE files MODIFY COLUMN uploaded_by INT NOT NULL DEFAULT 1;
+
+-- Note: We don't add a FK constraint for uploaded_by because it's NOT NULL
+-- and ON DELETE SET NULL would conflict with that. The application layer
+-- will ensure referential integrity.
 
 -- Handle any existing orphaned data in users table
 DELETE FROM users WHERE avatar_file_id IS NOT NULL AND avatar_file_id NOT IN (SELECT id FROM files);
-UPDATE users SET avatar_file_id = NULL WHERE avatar_file_id IS NOT NULL AND avatar_file_id NOT IN (SELECT id FROM files);
 
--- Add foreign key constraint to users table (ignore if already exists)
-SET @sql = 'ALTER TABLE users ADD CONSTRAINT fk_users_avatar_file_id FOREIGN KEY (avatar_file_id) REFERENCES files(id) ON DELETE SET NULL';
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+-- Add foreign key constraint to users table
+-- Note: This will fail silently if constraint already exists, which is fine
+ALTER TABLE users ADD CONSTRAINT fk_users_avatar_file_id FOREIGN KEY (avatar_file_id) REFERENCES files(id) ON DELETE SET NULL;

@@ -1,7 +1,7 @@
 -- Migration: Create password_reset_requests table
 -- This table stores password reset requests for users who request password recovery
 
-CREATE TABLE password_reset_requests (
+CREATE TABLE IF NOT EXISTS password_reset_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL,
     email VARCHAR(255) NOT NULL,
