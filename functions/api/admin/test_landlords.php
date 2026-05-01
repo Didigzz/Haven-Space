@@ -29,7 +29,6 @@ try {
     echo "2. Testing normalized tables...\n";
     $tables = [
         'users', 'user_roles', 'account_statuses', 'landlord_profiles', 
-        'verification_records', 'verification_statuses',
         'files', 'addresses'
     ];
     
@@ -65,46 +64,14 @@ try {
             lp.boarding_house_description,
             lp.total_rooms,
             lp.available_rooms,
-            -- Property type (normalized)
             lp.property_type as property_type,
-            -- Avatar file (normalized)
             f.file_url as avatar_url,
-            f.file_name as avatar_filename,
-            -- Verification status (normalized)
-            vr.id as verification_record_id,
-            vs.status_name as verification_status,
-            vr.submitted_at as verification_submitted_at,
-            vr.reviewed_at as verification_reviewed_at,
-            vr.notes as verification_notes
+            f.file_name as avatar_filename
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
         JOIN account_statuses acs ON u.account_status_id = acs.id
         LEFT JOIN landlord_profiles lp ON u.id = lp.user_id
-        -- property_type is now VARCHAR in landlord_profiles
         LEFT JOIN files f ON u.avatar_file_id = f.id AND f.deleted_at IS NULL
-        LEFT JOIN (
-            SELECT vr1.* 
-            FROM verification_records vr1
-            INNER JOIN verification_statuses vs1 ON vr1.verification_status_id = vs1.id
-            WHERE vr1.entity_type = 'user'
-            AND vr1.id IN (
-                SELECT vr2.id
-                FROM verification_records vr2
-                LEFT JOIN verification_statuses vs2 ON vr2.verification_status_id = vs2.id
-                WHERE vr2.entity_type = 'user' AND vr2.entity_id = vr1.entity_id
-                ORDER BY 
-                    CASE vs2.status_name
-                        WHEN 'approved' THEN 1
-                        WHEN 'pending' THEN 2
-                        WHEN 'rejected' THEN 3
-                        ELSE 4
-                    END,
-                    vr2.reviewed_at DESC,
-                    vr2.submitted_at DESC
-                LIMIT 1
-            )
-        ) vr ON vr.entity_id = u.id
-        LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
         WHERE ur.role_name = 'landlord' 
             AND u.deleted_at IS NULL
         ORDER BY u.created_at DESC
@@ -147,9 +114,7 @@ try {
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
         JOIN account_statuses acs ON u.account_status_id = acs.id
-        LEFT JOIN verification_records vr ON vr.entity_type = 'user' AND vr.entity_id = u.id
-        LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
-        WHERE ur.role_name = 'landlord' 
+        LEFT JOIN verification_records vr ON vr.entity_type = 'user' AND vr.entity_id = u.id        WHERE ur.role_name = 'landlord' 
             AND u.deleted_at IS NULL
     ");
     $statsStmt->execute();

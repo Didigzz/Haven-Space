@@ -77,15 +77,11 @@ if (empty($token) && $simulatedId) {
     $stmt = $pdo->prepare(
         'SELECT u.id, u.first_name, u.last_name, u.email, 
                 ur.role_name as role, u.is_verified, u.email_verified, acs.status_name as account_status, 
-                f.file_url as avatar_url, vr.verification_status_id,
-                vs.status_name as verification_status
+                f.file_url as avatar_url
          FROM users u
          JOIN user_roles ur ON u.role_id = ur.id
          JOIN account_statuses acs ON u.account_status_id = acs.id
-         LEFT JOIN files f ON u.avatar_file_id = f.id
-         LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
-         LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
-         WHERE u.id = ? AND u.deleted_at IS NULL
+         LEFT JOIN files f ON u.avatar_file_id = f.id         WHERE u.id = ? AND u.deleted_at IS NULL
          ORDER BY 
              CASE vs.status_name
                  WHEN "approved" THEN 1
@@ -166,12 +162,10 @@ if ($userRow) {
         echo json_encode(['error' => 'Account is suspended or banned']);
         exit;
     }
-    // Derive verification_status for landlords:
-    // If a verification_records row exists, use its status_name.
-    // Otherwise fall back to is_verified flag so admin approvals via
-    // the simple is_verified=1 path are still recognised.
-    $verificationStatus = $userRow['verification_status'] ?? null;
-    if ($userRow['role'] === 'landlord' && $verificationStatus === null) {
+    
+    // Derive verification_status for landlords from is_verified flag
+    $verificationStatus = null;
+    if ($userRow['role'] === 'landlord') {
         $verificationStatus = $userRow['is_verified'] ? 'approved' : 'pending';
     }
 

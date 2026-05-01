@@ -336,17 +336,6 @@ try {
                 $stmt->execute([$userId, 'My Boarding House', 'Boarding house managed via Haven Space', $propertyType, 1, 1]);
 
                 // Create a verification record for the landlord
-                $stmt = $pdo->prepare('SELECT id FROM verification_statuses WHERE status_name = ?');
-                $stmt->execute(['pending']);
-                $vsRow = $stmt->fetch(\PDO::FETCH_ASSOC);
-                if ($vsRow) {
-                    $stmt = $pdo->prepare('
-                        INSERT INTO verification_records 
-                        (entity_type, entity_id, verification_status_id, submitted_at) 
-                        VALUES (?, ?, ?, NOW())
-                    ');
-                    $stmt->execute(['user', $userId, $vsRow['id']]);
-                }
 
                 // Note: Verification data will be collected through the verification process
                 // Phone number is already stored in users.phone_number
@@ -374,14 +363,9 @@ try {
 
     // Fetch verification and account status for the user
     $stmtVerified = $pdo->prepare('
-        SELECT u.is_verified, acs.status_name as account_status,
-               vr.verification_status_id,
-               vs.status_name as verification_status
+        SELECT u.is_verified, acs.status_name as account_status
         FROM users u
-        JOIN account_statuses acs ON u.account_status_id = acs.id
-        LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
-        LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
-        WHERE u.id = ?
+        JOIN account_statuses acs ON u.account_status_id = acs.id        WHERE u.id = ?
         ORDER BY 
             CASE vs.status_name
                 WHEN "approved" THEN 1

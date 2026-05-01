@@ -34,23 +34,11 @@ class Middleware
             $pdo = Connection::getInstance()->getPdo();
             $stmt = $pdo->prepare('
                 SELECT u.id, ur.role_name as role, u.is_verified, u.email_verified, 
-                       acs.status_name as account_status, vr.verification_status_id,
-                       vs.status_name as verification_status
+                       acs.status_name as account_status
                 FROM users u
                 JOIN user_roles ur ON u.role_id = ur.id
                 JOIN account_statuses acs ON u.account_status_id = acs.id
-                LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
-                LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
                 WHERE u.id = ? AND u.deleted_at IS NULL
-                ORDER BY 
-                    CASE vs.status_name
-                        WHEN "approved" THEN 1
-                        WHEN "pending" THEN 2
-                        WHEN "rejected" THEN 3
-                        ELSE 4
-                    END,
-                    vr.reviewed_at DESC,
-                    vr.submitted_at DESC
                 LIMIT 1
             ');
             $stmt->execute([$userId]);
@@ -67,7 +55,7 @@ class Middleware
                     'is_verified' => (bool)$row['is_verified'],
                     'email_verified' => (bool)$row['email_verified'],
                     'account_status' => $row['account_status'],
-                    'verification_status' => $row['verification_status'],
+                    'verification_status' => null,
                 ];
             }
         }
@@ -107,24 +95,12 @@ class Middleware
         if ($userId > 0) {
             $pdo = Connection::getInstance()->getPdo();
             $stmt = $pdo->prepare('
-                SELECT acs.status_name as account_status, u.email_verified, 
-                       vs.status_name as verification_status,
-                       ur.role_name as role
+                SELECT acs.status_name as account_status, u.email_verified,
+                       u.is_verified, ur.role_name as role
                 FROM users u
                 JOIN account_statuses acs ON u.account_status_id = acs.id
-                LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
-                LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
                 JOIN user_roles ur ON u.role_id = ur.id
                 WHERE u.id = ? AND u.deleted_at IS NULL
-                ORDER BY 
-                    CASE vs.status_name
-                        WHEN "approved" THEN 1
-                        WHEN "pending" THEN 2
-                        WHEN "rejected" THEN 3
-                        ELSE 4
-                    END,
-                    vr.reviewed_at DESC,
-                    vr.submitted_at DESC
                 LIMIT 1
             ');
             $stmt->execute([$userId]);
@@ -141,8 +117,9 @@ class Middleware
             }
 
             $payload['email_verified'] = (bool)$row['email_verified'];
+            $payload['is_verified'] = (bool)$row['is_verified'];
             $payload['account_status'] = $accountStatus;
-            $payload['verification_status'] = $row['verification_status'];
+            $payload['verification_status'] = null;
             
             // Ensure role is always set, either from JWT or database
             if (empty($payload['role']) && !empty($row['role'])) {
@@ -199,9 +176,8 @@ class Middleware
 
         if (in_array($method, $writeMethods)) {
             $accountStatus = $user['account_status'] ?? 'active';
-            $verificationStatus = $user['verification_status'] ?? null;
 
-            if ($accountStatus === 'pending_verification' || $verificationStatus === 'pending') {
+            if ($accountStatus === 'pending_verification') {
                 _respond(403, [
                     'error' => 'Account verification pending',
                     'code' => 'VERIFICATION_PENDING',
@@ -209,15 +185,7 @@ class Middleware
                 ]);
             }
 
-            if ($verificationStatus === 'rejected') {
-                _respond(403, [
-                    'error' => 'Account verification rejected',
-                    'code' => 'VERIFICATION_REJECTED',
-                    'message' => 'Your account verification was rejected. Please review the feedback and resubmit required documents.',
-                ]);
-            }
-
-            if (!($user['is_verified'] ?? false) && $verificationStatus !== 'approved') {
+            if (!($user['is_verified'] ?? false)) {
                 _respond(403, [
                     'error' => 'Account verification required',
                     'code' => 'VERIFICATION_REQUIRED',

@@ -165,23 +165,6 @@ try {
         ');
         $stmt->execute([$userId, $businessName, $businessDescription, $propertyType, 1, 1]);
 
-        // Create a verification record for the landlord
-        $stmt = $pdo->prepare('SELECT id FROM verification_statuses WHERE status_name = ?');
-        $stmt->execute(['pending']);
-        $vsRow = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if ($vsRow) {
-            $stmt = $pdo->prepare('
-                INSERT INTO verification_records 
-                (entity_type, entity_id, verification_status_id, submitted_at) 
-                VALUES (?, ?, ?, NOW())
-            ');
-            $stmt->execute(['user', $userId, $vsRow['id']]);
-        }
-
-        // Note: Additional verification data (experience_level, id_type, id_number) 
-        // is no longer stored in database. ID verification should be done through 
-        // document uploads in the verification process.
-
     } elseif ($role === 'boarder') {
         // Create basic boarder profile
         $stmt = $pdo->prepare('

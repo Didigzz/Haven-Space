@@ -57,9 +57,17 @@ try {
         exit;
     }
     
+    // Create file record for avatar if it exists
+    $avatarFileId = null;
+    if ($pendingUser['avatar_url']) {
+        $stmt = $pdo->prepare('INSERT INTO files (file_url, file_name, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?)');
+        $stmt->execute([$pendingUser['avatar_url'], 'google_avatar.jpg', 0, 'image/jpeg', 1]); // Temporary uploaded_by, will update after user creation
+        $avatarFileId = $pdo->lastInsertId();
+    }
+    
     // Create user account
     $stmt = $pdo->prepare('
-        INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_url, role, is_verified, country) 
+        INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role, is_verified, country) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
     
@@ -70,13 +78,19 @@ try {
         $pendingUser['google_id'],
         $pendingUser['access_token'],
         $pendingUser['refresh_token'],
-        $pendingUser['avatar_url'],
+        $avatarFileId,
         $role,
         $pendingUser['email_verified'] ? 1 : 0,
         $country,
     ]);
     
     $userId = $pdo->lastInsertId();
+    
+    // Update file record with correct uploaded_by
+    if ($avatarFileId) {
+        $stmt = $pdo->prepare('UPDATE files SET uploaded_by = ? WHERE id = ?');
+        $stmt->execute([$userId, $avatarFileId]);
+    }
     
     // Generate JWT tokens
     $payload = [

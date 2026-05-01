@@ -82,26 +82,9 @@ function handleGet($pdo) {
         json_response(200, ['data' => $landlord]);
     }
 
-    // Get verification history
+    // Get verification history - no longer available (verification system removed)
     if (isset($params['history'])) {
-        $landlordId = intval($params['history']);
-
-        // Get verification history from normalized verification_log table
-        $stmt = $pdo->prepare("
-            SELECT
-                vl.created_at, vl.action, vl.comment,
-                u.first_name as admin_first, u.last_name as admin_last
-            FROM verification_log vl
-            JOIN verification_records vr ON vl.verification_record_id = vr.id
-            JOIN users u ON vl.admin_user_id = u.id
-            WHERE vr.entity_type = 'user' AND vr.entity_id = ?
-            ORDER BY vl.created_at DESC
-            LIMIT 50
-        ");
-        $stmt->execute([$landlordId]);
-        $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        json_response(200, ['data' => $history]);
+        json_response(200, ['data' => []]);
     }
 
     // Get landlords list with optional status filter
@@ -151,7 +134,6 @@ function handlePost($pdo, $adminId = null) {
         $pdo->beginTransaction();
 
         if ($action === 'approve') {
-            // When approving a landlord, also verify their email automatically and set account to active
             $stmt = $pdo->prepare("
                 UPDATE users u 
                 SET u.is_verified = 1, 
@@ -160,17 +142,6 @@ function handlePost($pdo, $adminId = null) {
                 WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')
             ");
             $stmt->execute([$landlordId]);
-
-            // Update or create verification record
-            $stmt = $pdo->prepare("
-                INSERT INTO verification_records (entity_type, entity_id, verification_status_id, reviewed_by, reviewed_at, notes)
-                VALUES ('user', ?, (SELECT id FROM verification_statuses WHERE status_name = 'approved'), ?, NOW(), ?)
-                ON DUPLICATE KEY UPDATE
-                verification_status_id = (SELECT id FROM verification_statuses WHERE status_name = 'approved'),
-                reviewed_by = ?, reviewed_at = NOW(), notes = ?
-            ");
-            $stmt->execute([$landlordId, $adminId, $comment, $adminId, $comment]);
-
         } elseif ($action === 'reject') {
             $stmt = $pdo->prepare("
                 UPDATE users u 
@@ -178,39 +149,8 @@ function handlePost($pdo, $adminId = null) {
                 WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')
             ");
             $stmt->execute([$landlordId]);
-
-            // Update or create verification record
-            $stmt = $pdo->prepare("
-                INSERT INTO verification_records (entity_type, entity_id, verification_status_id, reviewed_by, reviewed_at, notes)
-                VALUES ('user', ?, (SELECT id FROM verification_statuses WHERE status_name = 'rejected'), ?, NOW(), ?)
-                ON DUPLICATE KEY UPDATE
-                verification_status_id = (SELECT id FROM verification_statuses WHERE status_name = 'rejected'),
-                reviewed_by = ?, reviewed_at = NOW(), notes = ?
-            ");
-            $stmt->execute([$landlordId, $adminId, $comment, $adminId, $comment]);
-
         } else {
             json_response(400, ['error' => 'Invalid action. Use approve or reject']);
-        }
-
-        // Log verification action to normalized verification_log table
-        if ($adminId) {
-            // Get the verification_record_id for this landlord
-            $stmt = $pdo->prepare("
-                SELECT id FROM verification_records 
-                WHERE entity_type = 'user' AND entity_id = ?
-                ORDER BY created_at DESC LIMIT 1
-            ");
-            $stmt->execute([$landlordId]);
-            $verificationRecord = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($verificationRecord) {
-                $stmt = $pdo->prepare("
-                    INSERT INTO verification_log (verification_record_id, admin_user_id, action, comment, created_at)
-                    VALUES (?, ?, ?, ?, NOW())
-                ");
-                $stmt->execute([$verificationRecord['id'], $adminId, $action, $comment]);
-            }
         }
 
         $pdo->commit();
