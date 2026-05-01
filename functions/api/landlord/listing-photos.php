@@ -78,19 +78,31 @@ try {
             continue;
         }
 
-        $type = $files['type'][$i];
         $size = $files['size'][$i];
-
-        // Validate type and size
-        if (!in_array($type, $allowedTypes)) {
-            continue;
-        }
-        if ($size > $maxSize) {
-            continue;
-        }
-
         $originalName = $files['name'][$i];
+        
+        // Validate file extension (more reliable than MIME type)
         $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        
+        if (!in_array($ext, $allowedExtensions)) {
+            error_log("Property photo rejected - unsupported extension: {$originalName}");
+            continue;
+        }
+
+        // Also check MIME type as secondary validation
+        $type = $files['type'][$i];
+        if (!in_array($type, $allowedTypes)) {
+            // Log for debugging but don't fail - browser MIME types can be inconsistent
+            error_log("Property photo MIME type mismatch for {$originalName}: got {$type}, expected one of " . implode(', ', $allowedTypes));
+        }
+
+        // Validate size
+        if ($size > $maxSize) {
+            error_log("Property photo rejected - exceeds size limit: {$originalName}");
+            continue;
+        }
+
         $newName = 'listing_' . uniqid() . '_' . time() . '.' . $ext;
         $targetPath = $uploadDir . $newName;
 
