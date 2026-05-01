@@ -182,7 +182,8 @@ function populateRoomData(room) {
   }
 
   const roomTypes = document.getElementById('room-types');
-  if (roomTypes) roomTypes.textContent = room.roomTypes || room.types || 'Available';
+  if (roomTypes)
+    roomTypes.textContent = capitalizeFirstLetter(room.roomTypes || room.types || 'Available');
 
   const roomAvailability = document.getElementById('room-availability');
   if (roomAvailability)
@@ -315,7 +316,9 @@ function populateRoomData(room) {
                     <span data-icon="${
                       r.capacity > 1 ? 'users' : 'user'
                     }" data-icon-width="18" data-icon-height="18"></span>
-                    <span class="booking-room-type-label">${r.roomType}</span>
+                    <span class="booking-room-type-label">${capitalizeFirstLetter(
+                      r.roomType
+                    )}</span>
                   </div>
                   <span class="booking-room-type-price">₱${r.price.toLocaleString()}/mo</span>
                 </div>
@@ -731,12 +734,17 @@ function loadAvailableRooms(property) {
       const roomSize = room.size ? `${room.size} sqm` : null;
       const furnishing =
         room.furnishing && room.furnishing !== 'Not specified' ? room.furnishing : null;
-      const roomType =
+      // Extract just the room number without the type suffix (e.g., "Room 1-1" -> "Room 1")
+      let roomType =
         room.roomType && room.roomType !== 'N/A'
           ? room.roomType
           : room.roomNumber && room.roomNumber !== 'N/A'
           ? room.roomNumber
           : 'Room';
+      // Remove the "-X" suffix if present (e.g., "Room 1-1" -> "Room 1")
+      roomType = roomType.replace(/-\d+$/, '');
+      // Capitalize the room type
+      roomType = capitalizeFirstLetter(roomType);
 
       return `
         <div class="available-room-card" data-room-id="${room.id}" data-room='${JSON.stringify(
@@ -809,13 +817,22 @@ function loadAvailableRooms(property) {
 /**
  * Show room detail modal
  */
+/**
+ * Capitalize the first letter of a string
+ */
+function capitalizeFirstLetter(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function showRoomDetailModal(room, property) {
   const modal = document.getElementById('room-detail-modal');
   if (!modal) return;
 
   // Populate modal with room data
   const modalTitle = document.getElementById('modal-room-title');
-  const roomType =
+  // Extract just the room number without the type suffix (e.g., "Room 1-1" -> "Room 1")
+  let roomType =
     room.roomType && room.roomType !== 'N/A'
       ? room.roomType
       : room.room_type && room.room_type !== 'N/A'
@@ -823,6 +840,10 @@ function showRoomDetailModal(room, property) {
       : room.roomNumber && room.roomNumber !== 'N/A'
       ? room.roomNumber
       : 'Room';
+  // Remove the "-X" suffix if present (e.g., "Room 1-1" -> "Room 1")
+  roomType = roomType.replace(/-\d+$/, '');
+  // Capitalize the room type
+  roomType = capitalizeFirstLetter(roomType);
   if (modalTitle) modalTitle.textContent = roomType;
 
   // Update status badge

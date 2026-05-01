@@ -463,6 +463,242 @@
   }
 }
 
+/* Room Type Modal List */
+.room-type-modal-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--bg-cream);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.room-type-modal-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--white);
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  max-height: 120px;
+}
+
+.room-type-modal-summary-item.available {
+  border-color: var(--primary-green);
+  background: rgba(74, 124, 35, 0.05);
+}
+
+.room-type-modal-summary-item.occupied {
+  border-color: #9ca3af;
+  background: rgba(156, 163, 175, 0.05);
+}
+
+.room-type-modal-summary-label {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.room-type-modal-summary-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.room-type-modal-summary-item.available .room-type-modal-summary-value {
+  color: var(--primary-green);
+}
+
+.room-type-modal-summary-item.occupied .room-type-modal-summary-value {
+  color: #9ca3af;
+}
+
+.room-type-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0;
+}
+
+.room-type-modal-item {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1.5rem;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--white);
+  transition: all 0.2s ease;
+}
+
+.room-type-modal-item:hover {
+  border-color: var(--primary-green);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.room-type-modal-item.occupied {
+  opacity: 0.7;
+  background: var(--bg-cream);
+}
+
+.room-type-modal-image {
+  position: relative;
+  width: 200px;
+  height: 150px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.room-type-modal-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.room-type-modal-status {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.room-type-modal-status.available {
+  color: var(--primary-green);
+  background: rgba(74, 124, 35, 0.95);
+  color: white;
+}
+
+.room-type-modal-status.occupied {
+  color: var(--text-gray);
+  background: rgba(156, 163, 175, 0.95);
+  color: white;
+}
+
+.room-type-modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.room-type-modal-room-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.room-type-modal-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.room-type-modal-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+.room-type-modal-detail span:first-child {
+  color: var(--primary-green);
+}
+
+.room-type-modal-description {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background: var(--bg-cream);
+  border-radius: 6px;
+}
+
+.room-type-modal-occupied-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: rgba(156, 163, 175, 0.1);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.room-type-modal-occupied-notice span:first-child {
+  color: #9ca3af;
+}
+
+.room-type-modal-apply-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--primary-green);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.room-type-modal-apply-btn:hover {
+  background: var(--dark-green);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .room-type-modal-item {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .room-type-modal-image {
+    width: 100%;
+    height: 200px;
+  }
+
+  .room-type-modal-apply-btn {
+    width: 100%;
+  }
+
+  .room-type-modal-summary {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .room-type-modal-summary-item {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.75rem;
+  }
+
+  .room-type-modal-summary-value {
+    font-size: 1.5rem;
+  }
+}
+
 @media (max-width: 480px) {
   .available-rooms-grid {
     grid-template-columns: 1fr;
@@ -482,5 +718,10 @@
     position: absolute;
     top: 1rem;
     right: 1rem;
+  }
+
+  .room-type-modal-details {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }

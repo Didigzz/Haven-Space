@@ -25,6 +25,16 @@ const roomsData = [];
 // Track current room index for navigation
 let currentRoomIndex = 0;
 
+// Room type options
+const ROOM_TYPES = [
+  { value: 'single', label: 'Single Room' },
+  { value: 'shared', label: 'Shared Room' },
+  { value: 'studio', label: 'Studio' },
+  { value: 'suite', label: 'Suite' },
+  { value: 'dormitory', label: 'Dormitory Style' },
+  { value: 'other', label: 'Other' },
+];
+
 // Map state
 let mapInstance = null;
 null;
@@ -578,6 +588,7 @@ async function handleFormSubmit(e) {
     rooms: roomsData.map(room => ({
       name: room.name,
       capacity: parseInt(room.capacity),
+      roomType: room.roomType,
       description: room.description,
       photoCount: room.photos.length,
     })),
@@ -1047,6 +1058,7 @@ function generateRoomCards(numRooms) {
       id: i + 1,
       name: `Room ${i + 1}`,
       capacity: '',
+      roomType: '',
       description: '',
       photos: [],
     });
@@ -1128,6 +1140,21 @@ function createRoomCard(room, index) {
           />
         </div>
         <div class="room-form-group">
+          <label for="room-type-${index}">Room Type *</label>
+          <select id="room-type-${index}" name="rooms[${index}][roomType]" required>
+            <option value="">Select type</option>
+            ${ROOM_TYPES.map(
+              type =>
+                `<option value="${type.value}" ${room.roomType === type.value ? 'selected' : ''}>${
+                  type.label
+                }</option>`
+            ).join('')}
+          </select>
+        </div>
+      </div>
+      
+      <div class="room-form-row">
+        <div class="room-form-group">
           <label for="room-capacity-${index}">Person Capacity *</label>
           <select id="room-capacity-${index}" name="rooms[${index}][capacity]" required>
             <option value="">Select capacity</option>
@@ -1201,6 +1228,14 @@ function setupRoomCardEventListeners(card, index) {
       if (title) {
         title.textContent = e.target.value || `Room ${index + 1}`;
       }
+    });
+  }
+
+  // Room type select
+  const roomTypeSelect = card.querySelector(`#room-type-${index}`);
+  if (roomTypeSelect) {
+    roomTypeSelect.addEventListener('change', e => {
+      roomsData[index].roomType = e.target.value;
     });
   }
 
