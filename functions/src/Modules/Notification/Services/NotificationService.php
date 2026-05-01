@@ -41,15 +41,12 @@ class NotificationService
                 if ($userRole === 'landlord') {
                     return $notificationType === 'new_application' || 
                            $notificationType === 'application_accepted' ||
-                           $notificationType === 'application_rejected' ||
-                           $notificationType === 'maintenance_request' ||
-                           $notificationType === 'maintenance_status_change';
+                           $notificationType === 'application_rejected';
                 }
                 
                 // Boarder: only show accepted listing notifications
                 if ($userRole === 'boarder') {
-                    return $notificationType === 'application_accepted' ||
-                           $notificationType === 'maintenance_status_change';
+                    return $notificationType === 'application_accepted';
                 }
                 
                 return true; // Default: show all if role not specified
@@ -190,54 +187,6 @@ class NotificationService
     public function hasAcceptedApplications(int $boarderId): array
     {
         return $this->repository->hasAcceptedApplications($boarderId);
-    }
-
-    /**
-     * Create maintenance request notification for landlord
-     */
-    public function notifyMaintenanceRequest(int $landlordId, int $boarderId, int $maintenanceId, string $title): int
-    {
-        $data = [
-            'user_id' => $landlordId,
-            'type' => 'maintenance_request',
-            'title' => 'New Maintenance Request',
-            'message' => "A new maintenance request has been submitted: {$title}",
-            'metadata' => [
-                'maintenance_id' => $maintenanceId,
-                'boarder_id' => $boarderId,
-            ],
-        ];
-
-        return $this->repository->create($data);
-    }
-
-    /**
-     * Create maintenance status change notification for boarder
-     */
-    public function notifyMaintenanceStatusChange(int $boarderId, int $landlordId, int $maintenanceId, string $status, string $title): int
-    {
-        $statusMessages = [
-            'pending' => 'Your maintenance request is pending',
-            'in_progress' => 'Your maintenance request is now in progress',
-            'completed' => 'Your maintenance request has been completed',
-            'cancelled' => 'Your maintenance request has been cancelled',
-        ];
-
-        $message = $statusMessages[$status] ?? 'Your maintenance request status has been updated';
-
-        $data = [
-            'user_id' => $boarderId,
-            'type' => 'maintenance_status_change',
-            'title' => 'Maintenance Request Update',
-            'message' => "{$message}: {$title}",
-            'metadata' => [
-                'maintenance_id' => $maintenanceId,
-                'landlord_id' => $landlordId,
-                'status' => $status,
-            ],
-        ];
-
-        return $this->repository->create($data);
     }
 
     /**

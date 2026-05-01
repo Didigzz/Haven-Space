@@ -74,8 +74,8 @@ try {
             NULL as amount
         FROM applications a
         INNER JOIN users u ON a.boarder_id = u.id
-        INNER JOIN properties pr ON a.property_id = pr.id
         INNER JOIN rooms r ON a.room_id = r.id
+        INNER JOIN properties pr ON r.property_id = pr.id
         WHERE a.landlord_id = ? 
             AND a.status = 'pending'
         ORDER BY a.created_at DESC
@@ -107,28 +107,7 @@ try {
     $reminders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $activities = array_merge($activities, $reminders);
 
-    // 4. Get recent maintenance requests
-    $stmt = $pdo->prepare("
-        SELECT 
-            'maintenance_request' as type,
-            m.id,
-            m.created_at as activity_date,
-            r.title as entity_name,
-            pr.title as property_name,
-            r.title as room_name,
-            NULL as amount
-        FROM maintenance_requests m
-        INNER JOIN rooms r ON m.room_id = r.id
-        INNER JOIN properties pr ON r.property_id = pr.id
-        WHERE pr.landlord_id = ?
-        ORDER BY m.created_at DESC
-        LIMIT 5
-    ");
-    $stmt->execute([$landlordId]);
-    $maintenance = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $activities = array_merge($activities, $maintenance);
-
-    // 5. Get recent lease renewals (approved applications with recent status update)
+    // 4. Get recent lease renewals (approved applications with recent status update)
     $stmt = $pdo->prepare("
         SELECT 
             'lease_renewal' as type,
@@ -140,8 +119,8 @@ try {
             NULL as amount
         FROM applications a
         INNER JOIN users u ON a.boarder_id = u.id
-        INNER JOIN properties pr ON a.property_id = pr.id
         INNER JOIN rooms r ON a.room_id = r.id
+        INNER JOIN properties pr ON r.property_id = pr.id
         WHERE a.landlord_id = ? 
             AND a.status = 'approved'
             AND a.updated_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
@@ -211,12 +190,6 @@ function formatActivity($activity) {
             $icon = 'exclamation';
             $color = 'yellow';
             $description = "<strong>Payment reminder</strong> sent to {$entityName}";
-            break;
-            
-        case 'maintenance_request':
-            $icon = 'wrenchScrewdriver';
-            $color = 'orange';
-            $description = "<strong>Maintenance request</strong> from {$roomName}";
             break;
             
         case 'lease_renewal':

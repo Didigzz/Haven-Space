@@ -139,14 +139,12 @@ function buildRoomCard(room) {
     {
       available: 'available',
       occupied: 'occupied',
-      maintenance: 'maintenance',
     }[room.status] ?? 'available';
 
   const statusLabel =
     {
       available: 'Available',
       occupied: 'Occupied',
-      maintenance: 'Maintenance',
     }[room.status] ?? room.status;
 
   const tenantHtml = room.tenant

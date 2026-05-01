@@ -540,8 +540,6 @@ function initEventListeners() {
     const type = activeEvent.type;
     if (type === 'payment') {
       window.location.href = '../payments/index.html';
-    } else if (type === 'maintenance') {
-      window.location.href = '../maintenance/index.html';
     } else if (type === 'lease') {
       window.location.href = '../applications/index.html';
     }

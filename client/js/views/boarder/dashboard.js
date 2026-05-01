@@ -797,7 +797,6 @@ function renderDashboardAnnouncements(announcements) {
       // Icon name based on category
       const iconNameMap = {
         urgent: 'exclamationTriangle',
-        maintenance: 'wrenchScrewdriver',
         general: 'info',
         reminder: 'bell',
         event: 'calendar',

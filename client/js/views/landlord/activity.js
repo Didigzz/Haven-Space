@@ -270,7 +270,6 @@ function formatType(type) {
   const types = {
     payment: 'Payment',
     application: 'Application',
-    maintenance: 'Maintenance',
     message: 'Message',
     general: 'General',
   };

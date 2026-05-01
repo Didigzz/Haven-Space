@@ -137,61 +137,6 @@ try {
         ];
     }
 
-    // ----------------------------------------------------------------
-    // 3. Maintenance events
-    // ----------------------------------------------------------------
-    $stmt = $pdo->prepare("
-        SELECT
-            m.id,
-            m.created_at        AS event_date,
-            m.title,
-            m.description,
-            m.priority,
-            m.status,
-            m.completed_at,
-            r.title             AS room_name,
-            pr.title            AS property_name,
-            CONCAT(u.first_name, ' ', u.last_name) AS boarder_name
-        FROM maintenance_requests m
-        INNER JOIN rooms r  ON m.room_id     = r.id
-        INNER JOIN properties pr ON r.property_id = pr.id
-        LEFT  JOIN users u  ON m.boarder_id  = u.id
-        WHERE m.landlord_id = :landlord_id
-          AND DATE(m.created_at) BETWEEN :start_date AND :end_date
-          AND m.deleted_at IS NULL
-        ORDER BY m.created_at ASC
-    ");
-    $stmt->execute([
-        'landlord_id' => $landlordId,
-        'start_date'  => $startDate,
-        'end_date'    => $endDate,
-    ]);
-    $maintenance = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($maintenance as $maint) {
-        if ($maint['priority'] === 'urgent') {
-            $color = 'red';
-        } elseif ($maint['status'] === 'completed') {
-            $color = 'green';
-        } else {
-            $color = 'orange';
-        }
-
-        $events[] = [
-            'id'          => 'maintenance_' . $maint['id'],
-            'title'       => 'Maintenance - ' . $maint['room_name'],
-            'date'        => date('Y-m-d', strtotime($maint['event_date'])),
-            'type'        => 'maintenance',
-            'color'       => $color,
-            'description' => $maint['title'] . ': ' . $maint['description'],
-            'property'    => $maint['property_name'] . ' - ' . $maint['room_name'],
-            'priority'    => $maint['priority'],
-            'status'      => $maint['status'],
-            'tenant'      => $maint['boarder_name'],
-            'time'        => date('g:i A', strtotime($maint['event_date'])),
-        ];
-    }
-
     // Sort all events by date
     usort($events, fn($a, $b) => strtotime($a['date']) - strtotime($b['date']));
 

@@ -20,7 +20,6 @@ require_once __DIR__ . '/middleware.php';
 use App\Api\Middleware;
 use App\Modules\Notification\Controllers\NotificationController;
 use App\Modules\Message\Controllers\MessageController;
-use App\Modules\Maintenance\Controllers\MaintenanceController;
 use App\Modules\Application\Controllers\ApplicationController;
 use App\Core\Upload\UploadController;
 use App\AI\GroqService;
@@ -208,30 +207,6 @@ Router::post('/api/users/avatar', function() {
     require_once __DIR__ . '/users/avatar.php';
 });
 
-// ============================================
-// MAINTENANCE ROUTES - LANDLORD
-// ============================================
-Router::get('/api/landlord/maintenance', [MaintenanceController::class, 'index']);
-Router::get('/api/landlord/maintenance/{id}', [MaintenanceController::class, 'show']);
-Router::patch('/api/landlord/maintenance/{id}/status', [MaintenanceController::class, 'updateStatus']);
-Router::post('/api/landlord/maintenance/{id}/comment', [MaintenanceController::class, 'addComment']);
-Router::delete('/api/landlord/maintenance/{id}', [MaintenanceController::class, 'destroy']);
-Router::patch('/api/landlord/maintenance/bulk-status', [MaintenanceController::class, 'bulkUpdateStatus']);
-Router::post('/api/landlord/maintenance/{id}/assign', [MaintenanceController::class, 'assignContractor']);
-
-// ============================================
-// MAINTENANCE ROUTES - BOARDER
-// ============================================
-Router::get('/api/boarder/maintenance', [MaintenanceController::class, 'index']);
-Router::get('/api/boarder/maintenance/{id}', [MaintenanceController::class, 'show']);
-Router::post('/api/boarder/maintenance', [MaintenanceController::class, 'store']);
-Router::post('/api/boarder/maintenance/{id}/comment', [MaintenanceController::class, 'addComment']);
-Router::post('/api/boarder/maintenance/{id}/rate', [MaintenanceController::class, 'rateRequest']);
-
-// ============================================
-// MAINTENANCE ROUTES - SHARED
-// ============================================
-Router::get('/api/maintenance/stats', [MaintenanceController::class, 'stats']);
 
 // ============================================
 // APPLICATION ROUTES - BOARDER
