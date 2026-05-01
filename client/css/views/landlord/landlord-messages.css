@@ -39,33 +39,6 @@
   font-family: var(--font-main);
 }
 
-.messages-new-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 16px;
-  background-color: var(--dashboard-accent);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font-main);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.messages-new-btn:hover {
-  background-color: var(--dashboard-accent-hover);
-}
-
-.messages-new-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
 /* Search Messages */
 .messages-search {
   padding: 16px 24px;

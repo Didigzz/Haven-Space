@@ -6,6 +6,7 @@ use App\Core\Database\Connection;
 use App\Modules\Application\Repositories\ApplicationRepository;
 use App\Modules\Notification\Services\NotificationService;
 use App\Modules\Payment\Services\PaymentService;
+use App\Modules\Message\Services\MessageService;
 
 /**
  * Application Service
@@ -16,12 +17,14 @@ class ApplicationService
     private ApplicationRepository $repository;
     private NotificationService $notificationService;
     private PaymentService $paymentService;
+    private MessageService $messageService;
 
     public function __construct()
     {
         $this->repository = new ApplicationRepository();
         $this->notificationService = new NotificationService();
         $this->paymentService = new PaymentService();
+        $this->messageService = new MessageService();
     }
 
     /**
@@ -263,6 +266,17 @@ class ApplicationService
                 $application['room_title'] ?? 'a room',
                 $application['room_price'] ?? 0
             );
+
+            // Auto-create conversation between landlord and boarder
+            try {
+                $conversationId = $this->messageService->getOrCreateConversation(
+                    $application['landlord_id'],
+                    $application['boarder_id']
+                );
+                error_log("Auto-created conversation {$conversationId} between landlord {$application['landlord_id']} and boarder {$application['boarder_id']}");
+            } catch (\Exception $e) {
+                error_log("Failed to auto-create conversation for application {$application['id']}: " . $e->getMessage());
+            }
 
             // Welcome flow removed - onboarding document system was never implemented
 

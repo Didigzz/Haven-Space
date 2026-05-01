@@ -35,15 +35,6 @@
             <div class="messages-sidebar">
               <div class="messages-sidebar-header">
                 <h1>Messages</h1>
-                <button class="messages-new-btn" id="messages-new-btn" aria-label="New message">
-                  <span
-                    data-icon="plus"
-                    data-icon-width="24"
-                    data-icon-height="24"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  New Message
-                </button>
               </div>
 
               <!-- Search Messages -->
@@ -138,56 +129,6 @@
           </div>
         </div>
       </main>
-    </div>
-
-    <!-- New Message Modal -->
-    <div class="modal-overlay" id="new-message-modal" style="display: none">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>New Message</h2>
-          <button class="modal-close" id="modal-close-btn" aria-label="Close">
-            <span
-              data-icon="close"
-              data-icon-width="24"
-              data-icon-height="24"
-              data-icon-stroke-width="2"
-            ></span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="new-message-form">
-            <div class="form-group">
-              <label for="message-recipient">To</label>
-              <input type="text" id="message-recipient" placeholder="Search boarders..." required />
-            </div>
-            <div class="form-group">
-              <label for="message-subject">Subject</label>
-              <input type="text" id="message-subject" placeholder="Message subject" />
-            </div>
-            <div class="form-group">
-              <label for="message-body">Message</label>
-              <textarea
-                id="message-body"
-                rows="6"
-                placeholder="Type your message..."
-                required
-              ></textarea>
-            </div>
-            <div class="form-group">
-              <label for="message-attachment">Attachment (optional)</label>
-              <input type="file" id="message-attachment" />
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="landlord-btn landlord-btn-outline" id="modal-cancel-btn">
-            Cancel
-          </button>
-          <button type="submit" form="new-message-form" class="landlord-btn landlord-btn-primary">
-            Send Message
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Scripts -->
