@@ -152,7 +152,7 @@ function populatePropertyData(property) {
             <div class="room-type-content">
               <div class="room-type-info">
                 <span data-icon="${
-                  room.capacity > 1 ? 'userGroup' : 'user'
+                  room.capacity > 1 ? 'users' : 'user'
                 }" data-icon-width="20" data-icon-height="20"></span>
                 <div class="room-type-text">
                   <span class="room-type-label">${room.roomType}</span>

@@ -142,8 +142,8 @@ if ($method === 'POST') {
     try {
         $stmt = $pdo->prepare(
             "INSERT INTO rooms
-             (property_id, landlord_id, title, room_number, price, status, capacity, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
+             (property_id, landlord_id, title, room_number, price, deposit, status, capacity, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
         );
         $stmt->execute([
             $propertyId,
@@ -151,6 +151,7 @@ if ($method === 'POST') {
             $input['room_number'], // Use room_number as title for consistency
             $input['room_number'],
             floatval($input['price']),
+            isset($input['deposit']) ? floatval($input['deposit']) : 0.00,
             $status,
             $capacity,
         ]);
@@ -213,14 +214,14 @@ if ($method === 'PUT') {
     }
 
     // Build dynamic SET clause from provided fields
-    $allowed = ['room_number', 'price', 'status', 'capacity'];
+    $allowed = ['room_number', 'price', 'deposit', 'status', 'capacity'];
     $sets    = ['updated_at = NOW()'];
     $params  = [];
 
     foreach ($allowed as $field) {
         if (array_key_exists($field, $input)) {
             $sets[]   = "$field = ?";
-            $params[] = $field === 'price'    ? floatval($input[$field])
+            $params[] = ($field === 'price' || $field === 'deposit') ? floatval($input[$field])
                       : ($field === 'capacity' ? intval($input[$field])
                       : $input[$field]);
         }
@@ -325,6 +326,7 @@ function formatRoom(array $room): array {
         'property_id' => intval($room['property_id']),
         'room_number' => $room['room_number'] ?? '',
         'price'       => floatval($room['price']),
+        'deposit'     => floatval($room['deposit'] ?? 0),
         'status'      => $room['status'] ?? 'available',
         'capacity'    => intval($room['capacity'] ?? 1),
         'cover_photo' => $coverPhoto,

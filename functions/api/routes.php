@@ -297,6 +297,19 @@ Router::delete('/api/landlord/rooms', function() {
     require_once __DIR__ . '/landlord/rooms.php';
 });
 
+// Room photo management
+Router::post('/api/landlord/rooms/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/room-photo-upload.php';
+});
+
+Router::patch('/api/landlord/rooms/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/room-photo-upload.php';
+});
+
+Router::delete('/api/landlord/rooms/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/room-photo-upload.php';
+});
+
 // ============================================
 // ANNOUNCEMENT ROUTES - LANDLORD
 // ============================================
