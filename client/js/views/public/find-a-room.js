@@ -3,7 +3,6 @@
  * Handles floating smart header, status dropdown, map view, and modals
  */
 
-import { getIcon } from '../../shared/icons.js';
 import { loadState, authenticatedFetch } from '../../shared/state.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import { getDisplayName, getUserInitials, getAvatarUrl } from '../../shared/profile-utils.js';
@@ -1598,7 +1597,7 @@ function populateDetailPanel(property) {
 }
 
 /**
- * Generate star rating HTML
+ * Generate star rating HTML using SVG icons
  */
 function generateStarRating(rating, size = 16) {
   const fullStars = Math.floor(rating);
@@ -1608,15 +1607,15 @@ function generateStarRating(rating, size = 16) {
   let starsHtml = '';
 
   for (let i = 0; i < fullStars; i++) {
-    starsHtml += getIcon('starSolid', { width: size, height: size });
+    starsHtml += `<span data-icon="starSolid" data-icon-width="${size}" data-icon-height="${size}"></span>`;
   }
 
   if (hasHalfStar) {
-    starsHtml += getIcon('starHalf', { width: size, height: size });
+    starsHtml += `<span data-icon="starHalf" data-icon-width="${size}" data-icon-height="${size}"></span>`;
   }
 
   for (let i = 0; i < emptyStars; i++) {
-    starsHtml += getIcon('star', { width: size, height: size });
+    starsHtml += `<span data-icon="star" data-icon-width="${size}" data-icon-height="${size}"></span>`;
   }
 
   return starsHtml;
