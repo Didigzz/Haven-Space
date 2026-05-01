@@ -117,6 +117,27 @@ class ApplicationRepository
             throw new \InvalidArgumentException('Invalid room_id: Room does not exist');
         }
 
+        // Check for existing application (including soft-deleted ones)
+        $duplicateCheck = $this->pdo->prepare(
+            'SELECT id, status, deleted_at FROM applications 
+             WHERE boarder_id = ? AND room_id = ?'
+        );
+        $duplicateCheck->execute([$data['boarder_id'], $data['room_id']]);
+        $existing = $duplicateCheck->fetch();
+        
+        if ($existing) {
+            if ($existing['deleted_at'] === null) {
+                // Active application exists
+                throw new \InvalidArgumentException(
+                    'You have already applied to this room. Status: ' . $existing['status']
+                );
+            } else {
+                // Soft-deleted application exists - hard delete it first to allow new application
+                $hardDelete = $this->pdo->prepare('DELETE FROM applications WHERE id = ?');
+                $hardDelete->execute([$existing['id']]);
+            }
+        }
+
         $sql = 'INSERT INTO applications (boarder_id, landlord_id, room_id, message, status)
                 VALUES (?, ?, ?, ?, ?)';
 

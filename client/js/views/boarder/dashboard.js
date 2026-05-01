@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApplicationTracker();
   initializeDynamicCards();
   initializeKeyboardNavigation();
+
+  // Load dashboard data from API
+  loadDashboardData();
 });
 
 /**
@@ -624,12 +627,11 @@ function renderDashboardPayments(payments) {
         year: 'numeric',
       });
 
-      const period =
-        index === 0
-          ? 'Current Month'
-          : index === 1
-          ? 'Previous Month'
-          : date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      // Only show "Current Month" for the first unpaid payment
+      // For paid payments, show the actual month/year
+      const period = isPaid
+        ? date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        : 'Current Month';
 
       if (isCurrent) {
         const daysLeft = Math.ceil(
@@ -1038,8 +1040,135 @@ function renderImportantInformation(lease) {
     return;
   }
 
-  // If there's a lease, keep the hardcoded information for now
-  // In production, this would fetch actual property info from the API
+  // Render house rules
+  const houseRules = lease.house_rules || [];
+  const houseRulesHtml =
+    houseRules.length > 0
+      ? houseRules
+          .slice(0, 3)
+          .map(
+            rule => `
+        <div class="boarder-info-rule-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>${escapeHtml(rule)}</span>
+        </div>
+      `
+          )
+          .join('')
+      : '<p style="color: #6b7280; font-size: 14px;">No house rules specified</p>';
+
+  // Calculate utility costs
+  const electricityCost = lease.property_electricity_cost || 0;
+  const waterCost = lease.property_water_cost || 0;
+  const internetCost = lease.property_internet_cost || 0;
+  const totalUtilities = electricityCost + waterCost + internetCost;
+
+  // Render utility costs
+  const utilitiesHtml = `
+    <div class="boarder-info-utility-row">
+      <span class="boarder-info-utility-label">Electricity</span>
+      <span class="boarder-info-utility-value">₱${formatCurrency(electricityCost)}/mo</span>
+    </div>
+    <div class="boarder-info-utility-row">
+      <span class="boarder-info-utility-label">Water</span>
+      <span class="boarder-info-utility-value">₱${formatCurrency(waterCost)}/mo</span>
+    </div>
+    <div class="boarder-info-utility-row">
+      <span class="boarder-info-utility-label">Internet</span>
+      <span class="boarder-info-utility-value">${
+        internetCost > 0 ? '₱' + formatCurrency(internetCost) + '/mo' : 'Included'
+      }</span>
+    </div>
+  `;
+
+  // Render landlord verification
+  const landlord = lease.landlord || {};
+  const landlordName = landlord.name || 'Unknown';
+  const isVerified = landlord.is_verified || false;
+  const rating = landlord.rating || 0;
+  const landlordInitials = landlordName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+
+  const landlordHtml = `
+    <div class="boarder-info-landlord-profile">
+      <div class="boarder-info-landlord-avatar">${landlordInitials}</div>
+      <div class="boarder-info-landlord-details">
+        <h4 class="boarder-info-landlord-name">${escapeHtml(landlordName)}</h4>
+        <div class="boarder-info-landlord-status">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${
+            isVerified ? '#22c55e' : '#6b7280'
+          }" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span style="color: ${isVerified ? '#22c55e' : '#6b7280'};">${
+    isVerified ? 'Identity Verified' : 'Not Verified'
+  }</span>
+        </div>
+      </div>
+    </div>
+    <p class="boarder-info-landlord-description">
+      This landlord has been ${
+        isVerified ? 'verified and has' : 'not yet verified but has'
+      } a ${rating.toFixed(1)}★ rating
+    </p>
+  `;
+
+  // Update the info cards
+  infoCards.innerHTML = `
+    <!-- House Rules Card -->
+    <div class="boarder-info-card">
+      <div class="boarder-info-card-header">
+        <h3 class="boarder-info-card-title">House Rules</h3>
+        <span class="boarder-info-badge boarder-info-badge-warning">Required Reading</span>
+      </div>
+      <div class="boarder-info-card-body">
+        ${houseRulesHtml}
+        ${
+          houseRules.length > 3
+            ? `<a href="./house-rules/index.html" class="boarder-info-link">View complete rules →</a>`
+            : ''
+        }
+      </div>
+    </div>
+
+    <!-- Utility Costs Card -->
+    <div class="boarder-info-card">
+      <div class="boarder-info-card-header">
+        <h3 class="boarder-info-card-title">Utility Costs</h3>
+        <span class="boarder-info-badge boarder-info-badge-info">Breakdown</span>
+      </div>
+      <div class="boarder-info-card-body">
+        ${utilitiesHtml}
+        <div class="boarder-info-utility-total">
+          <span class="boarder-info-utility-label">Total</span>
+          <span class="boarder-info-utility-value">₱${formatCurrency(totalUtilities)}/mo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Landlord Verification Card -->
+    <div class="boarder-info-card">
+      <div class="boarder-info-card-header">
+        <h3 class="boarder-info-card-title">Landlord Verification</h3>
+        <span class="boarder-info-badge ${
+          isVerified ? 'boarder-info-badge-success' : 'boarder-info-badge-default'
+        }">
+          ${isVerified ? 'Verified' : 'Unverified'}
+        </span>
+      </div>
+      <div class="boarder-info-card-body">
+        ${landlordHtml}
+      </div>
+    </div>
+  `;
+
+  announceToScreenReader('Property information loaded.');
 }
 
 // Add animation keyframes for notifications

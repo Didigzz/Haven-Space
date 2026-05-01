@@ -377,6 +377,17 @@ async function handleSubmitApplication(application) {
       '<span data-icon="paperAirplane" data-icon-width="20" data-icon-height="20"></span> Submit Application';
 
     // Check for specific error types and provide better messages
+    if (error.message.includes('already applied')) {
+      alert(
+        'You have already submitted an application for this room. Please check your applications dashboard to view the status.'
+      );
+      // Redirect to applications dashboard
+      setTimeout(() => {
+        window.location.href = '../applications-dashboard/index.html';
+      }, 2000);
+      return;
+    }
+
     if (error.message.includes('Forbidden') || error.message.includes('permission')) {
       // Check if user is logged in as wrong role
       const user = JSON.parse(localStorage.getItem('user') || '{}');

@@ -30,9 +30,10 @@ if ($method === 'GET') {
 
         // Get properties where boarder has accepted applications
         $propStmt = $pdo->prepare("
-            SELECT DISTINCT property_id
-            FROM applications
-            WHERE boarder_id = ? AND status = 'accepted' AND deleted_at IS NULL
+            SELECT DISTINCT r.property_id
+            FROM applications a
+            JOIN rooms r ON a.room_id = r.id
+            WHERE a.boarder_id = ? AND a.status = 'accepted' AND a.deleted_at IS NULL
         ");
         $propStmt->execute([$boarderId]);
         $propertyIds = $propStmt->fetchAll(PDO::FETCH_COLUMN);

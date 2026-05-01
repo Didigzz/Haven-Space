@@ -283,12 +283,11 @@ export function renderDashboardPayments(payments) {
         year: 'numeric',
       });
 
-      const period =
-        index === 0
-          ? 'Current Month'
-          : index === 1
-          ? 'Previous Month'
-          : date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      // Only show "Current Month" for the first unpaid payment
+      // For paid payments, show the actual month/year
+      const period = isPaid
+        ? date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        : 'Current Month';
 
       if (isCurrent) {
         const daysLeft = Math.ceil(

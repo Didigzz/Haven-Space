@@ -132,6 +132,41 @@
 
 Whenever a recurring bug appears across prompts, and a fix has been identified and implemented, the fix should be documented in AGENTS.md. This ensures that when a similar issue arises in the future, the solution is already recorded, helping to avoid repeating the same mistake.
 
+### Fixed: Duplicate Applications Allowed (2026-05-01)
+
+**Problem**: Boarders could accidentally submit multiple applications to the same room by clicking the apply button multiple times or navigating back and resubmitting. This created duplicate records in the database and confused landlords viewing applications.
+
+**Root Cause**: The `applications` table had no unique constraint to prevent duplicate applications from the same boarder to the same room. The application creation logic also didn't check for existing applications before inserting.
+
+**Evidence**:
+
+- Multiple application records with same `boarder_id` and `room_id` in database
+- Landlord boarders page showed duplicate entries for the same boarder
+- No validation in `ApplicationRepository::create()` to check for existing applications
+- No database constraint to enforce uniqueness
+
+**Solution**:
+
+- Created migration `037_prevent_duplicate_applications.sql` to:
+  - Remove existing duplicate applications (keeping the oldest one)
+  - Add unique constraint `UNIQUE KEY unique_boarder_room_application (boarder_id, room_id)`
+- Updated `ApplicationRepository::create()` to:
+  - Check for existing applications (including soft-deleted ones) before inserting
+  - Throw `InvalidArgumentException` with user-friendly message if active application exists
+  - Hard-delete soft-deleted applications to allow re-application after deletion
+- Updated `client/js/views/boarder/confirm-booking.js` to:
+  - Catch duplicate application errors and show user-friendly message
+  - Redirect to applications dashboard after 2 seconds when duplicate detected
+- Updated `functions/database/schema.sql` to include the unique constraint
+
+**Current Pattern**: Application uniqueness is enforced at two levels:
+
+- **Database Level**: Unique constraint on `(boarder_id, room_id)` prevents duplicates even if validation is bypassed
+- **Application Level**: Repository checks for existing applications and provides user-friendly error messages
+- **Soft Delete Handling**: Soft-deleted applications are hard-deleted automatically when boarder re-applies to same room
+
+**Prevention**: When creating tables that should have unique combinations of columns, add unique constraints from the start. Always validate uniqueness in the repository layer before database insertion to provide better error messages. Test duplicate scenarios during development.
+
 ### Fixed: Missing Authorization Headers in API Requests (2026-04-27)
 
 **Problem**: Several frontend JavaScript files were making API requests without including the required Authorization header with JWT token, resulting in 401 Unauthorized errors.
@@ -586,6 +621,17 @@ const response = await fetch(url, {
 - Updated `functions/database/schema.sql` to remove `property_id` column and FK constraint from applications table definition
 - Updated `ApplicationRepository::create()` to remove property_id from INSERT statement
 - Updated migration `033_convert_all_nulls_to_not_null.sql` comments to note property_id was removed
+- Fixed 9 additional files that were querying `a.property_id` or `applications.property_id`:
+  - `functions/src/Modules/Notification/Repositories/NotificationRepository.php` - 2 queries (getAcceptedApplications, hasAcceptedApplications)
+  - `functions/api/landlord/boarders.php` - boarder listing query
+  - `functions/api/payments/overview.php` - payment overview query
+  - `functions/api/landlord/announcements.php` - boarder lookup for announcements
+  - `functions/api/payments/history.php` - payment history query
+  - `functions/api/boarder/lease.php` - lease information query
+  - `functions/api/boarder/announcements.php` - landlord lookup query
+  - `functions/api/admin/test_applications.php` - admin applications view
+  - `functions/api/landlord/test_dashboard-stats.php` - dashboard stats query
+- All queries now join through rooms table: `JOIN rooms r ON a.room_id = r.id` then `JOIN properties p ON r.property_id = p.id`
 - Property ID can still be retrieved via JOIN: `SELECT r.property_id FROM applications a JOIN rooms r ON a.room_id = r.id`
 
 **Current Pattern**: Applications table structure:

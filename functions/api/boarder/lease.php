@@ -30,7 +30,7 @@ if ($method === 'GET') {
     try {
         $pdo = Connection::getInstance()->getPdo();
 
-        // Get active lease information from accepted applications
+        // Get active lease information from accepted applications with property details
         $stmt = $pdo->prepare("
             SELECT 
                 a.id as application_id,
@@ -52,12 +52,22 @@ if ($method === 'GET') {
                 0 as water_cost,
                 r.price as next_payment_amount,
                 DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY) as next_payment_date,
-                DATEDIFF(DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY), NOW()) as days_until_payment
+                DATEDIFF(DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY), NOW()) as days_until_payment,
+                p.house_rules,
+                p.electricity_cost as property_electricity_cost,
+                p.water_cost as property_water_cost,
+                p.internet_cost as property_internet_cost,
+                p.landlord_id,
+                u.first_name as landlord_first_name,
+                u.last_name as landlord_last_name,
+                u.is_verified as landlord_is_verified,
+                lp.average_rating as landlord_rating
             FROM applications a
             JOIN rooms r ON a.room_id = r.id
             JOIN properties p ON r.property_id = p.id
             JOIN addresses addr ON p.address_id = addr.id
-            JOIN rooms r ON a.room_id = r.id
+            JOIN users u ON p.landlord_id = u.id
+            LEFT JOIN landlord_profiles lp ON u.id = lp.user_id
             WHERE a.boarder_id = ? 
             AND a.status = 'accepted' 
             AND a.deleted_at IS NULL
@@ -80,6 +90,12 @@ if ($method === 'GET') {
 
         error_log("Lease API: Found lease for boarder ID $boarderId - Application ID {$lease['application_id']}");
 
+        // Parse house rules JSON
+        $houseRules = [];
+        if (!empty($lease['house_rules'])) {
+            $houseRules = json_decode($lease['house_rules'], true) ?: [];
+        }
+
         // Transform data
         $leaseData = [
             'application_id' => intval($lease['application_id']),
@@ -101,7 +117,19 @@ if ($method === 'GET') {
             'water_cost' => floatval($lease['water_cost']),
             'next_payment_amount' => floatval($lease['next_payment_amount']),
             'next_payment_date' => $lease['next_payment_date'],
-            'days_until_payment' => intval($lease['days_until_payment'])
+            'days_until_payment' => intval($lease['days_until_payment']),
+            // Property information
+            'house_rules' => $houseRules,
+            'property_electricity_cost' => floatval($lease['property_electricity_cost'] ?? 0),
+            'property_water_cost' => floatval($lease['property_water_cost'] ?? 0),
+            'property_internet_cost' => floatval($lease['property_internet_cost'] ?? 0),
+            // Landlord information
+            'landlord' => [
+                'id' => intval($lease['landlord_id']),
+                'name' => htmlspecialchars(trim($lease['landlord_first_name'] . ' ' . $lease['landlord_last_name'])),
+                'is_verified' => (bool)$lease['landlord_is_verified'],
+                'rating' => floatval($lease['landlord_rating'] ?? 0)
+            ]
         ];
 
         json_response(200, [

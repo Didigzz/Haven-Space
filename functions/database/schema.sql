@@ -129,6 +129,9 @@ CREATE TABLE IF NOT EXISTS properties (
     deposit VARCHAR(100) NOT NULL DEFAULT '0',
     min_stay VARCHAR(100) NOT NULL DEFAULT '1 month',
     house_rules JSON NOT NULL,
+    electricity_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    water_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    internet_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
 
     status ENUM('available', 'occupied', 'hidden') DEFAULT 'available',
     listing_moderation_status ENUM('pending_review', 'published', 'rejected') NOT NULL DEFAULT 'published',
@@ -142,7 +145,8 @@ CREATE TABLE IF NOT EXISTS properties (
     INDEX idx_status (status),
     INDEX idx_price (price),
     INDEX idx_deposit (deposit),
-    INDEX idx_min_stay (min_stay)
+    INDEX idx_min_stay (min_stay),
+    INDEX idx_utility_costs (electricity_cost, water_cost, internet_cost)
 );
 
 -- Login Attempts Table (unchanged - already normalized)
@@ -240,7 +244,8 @@ CREATE TABLE IF NOT EXISTS applications (
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
     INDEX idx_boarder (boarder_id),
     INDEX idx_landlord (landlord_id),
-    INDEX idx_status (status)
+    INDEX idx_status (status),
+    UNIQUE KEY unique_boarder_room_application (boarder_id, room_id)
 );
 
 

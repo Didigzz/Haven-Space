@@ -67,9 +67,9 @@ try {
             $stmt->execute();
             $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // If no payments exist, generate mock data for current month
+            // If no payments exist, generate only current month payment for newly accepted boarders
             if (empty($payments)) {
-                // Get active application to generate payment data
+                // Get active application to generate current month payment
                 $appStmt = $pdo->prepare("
                     SELECT 
                         a.id,
@@ -87,30 +87,25 @@ try {
                 $application = $appStmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($application) {
-                    // Generate 3 months of payment data (current + 2 previous)
+                    // Generate only current month payment (no previous months for newly accepted boarders)
                     $payments = [];
                     $amount = floatval($application['price']);
+                    $dueDate = date('Y-m-d', strtotime("first day of this month"));
                     
-                    for ($i = 0; $i < 3; $i++) {
-                        $monthOffset = $i;
-                        $dueDate = date('Y-m-d', strtotime("first day of this month -$monthOffset months"));
-                        $isPaid = $i > 0; // Current month unpaid, previous months paid
-                        
-                        $payments[] = [
-                            'id' => null,
-                            'amount' => $amount,
-                            'payment_date' => $isPaid ? date('Y-m-d', strtotime($dueDate . ' +5 days')) : null,
-                            'due_date' => $dueDate,
-                            'status' => $isPaid ? 'paid' : 'pending',
-                            'payment_method' => $isPaid ? 'GCash' : null,
-                            'reference_number' => $isPaid ? 'REF' . strtoupper(substr(md5($dueDate), 0, 10)) : null,
-                            'notes' => null,
-                            'created_at' => $dueDate,
-                            'property_name' => $application['property_name'],
-                            'room_title' => $application['room_title'],
-                            'room_number' => $application['room_number']
-                        ];
-                    }
+                    $payments[] = [
+                        'id' => null,
+                        'amount' => $amount,
+                        'payment_date' => null,
+                        'due_date' => $dueDate,
+                        'status' => 'pending',
+                        'payment_method' => null,
+                        'reference_number' => null,
+                        'notes' => null,
+                        'created_at' => $dueDate,
+                        'property_name' => $application['property_name'],
+                        'room_title' => $application['room_title'],
+                        'room_number' => $application['room_number']
+                    ];
                 }
             }
 
@@ -119,7 +114,7 @@ try {
                 return [
                     'id' => $payment['id'],
                     'amount' => floatval($payment['amount']),
-                    'payment_date' => $payment['paid_date'],
+                    'payment_date' => $payment['paid_date'] ?? $payment['payment_date'] ?? null,
                     'due_date' => $payment['due_date'],
                     'status' => $payment['status'],
                     'payment_method' => $payment['payment_method'],
