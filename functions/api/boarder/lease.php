@@ -54,7 +54,8 @@ if ($method === 'GET') {
                 DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY) as next_payment_date,
                 DATEDIFF(DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY), NOW()) as days_until_payment
             FROM applications a
-            JOIN properties p ON a.property_id = p.id
+            JOIN rooms r ON a.room_id = r.id
+            JOIN properties p ON r.property_id = p.id
             JOIN addresses addr ON p.address_id = addr.id
             JOIN rooms r ON a.room_id = r.id
             WHERE a.boarder_id = ? 

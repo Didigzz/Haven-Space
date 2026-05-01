@@ -2,6 +2,7 @@
 
 namespace App\Modules\Application\Services;
 
+use App\Core\Database\Connection;
 use App\Modules\Application\Repositories\ApplicationRepository;
 use App\Modules\Notification\Services\NotificationService;
 use App\Modules\Payment\Services\PaymentService;

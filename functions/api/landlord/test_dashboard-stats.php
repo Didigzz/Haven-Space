@@ -115,7 +115,8 @@ try {
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as upcoming_renewals
         FROM applications a
-        INNER JOIN properties p ON a.property_id = p.id
+        INNER JOIN rooms r ON a.room_id = r.id
+        INNER JOIN properties p ON r.property_id = p.id
         WHERE a.landlord_id = ? 
             AND a.status = 'approved'
             AND p.deleted_at IS NULL

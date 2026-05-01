@@ -44,7 +44,7 @@ if ($method === 'GET') {
                     a.created_at
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
-                JOIN properties p ON a.property_id = p.id
+                JOIN properties p ON r.property_id = p.id
                 WHERE a.boarder_id = ? AND a.status = 'accepted' AND a.deleted_at IS NULL
                 LIMIT 1
             ");

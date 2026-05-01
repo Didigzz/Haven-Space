@@ -76,7 +76,8 @@ if ($method === 'GET') {
             JOIN users u  ON a.boarder_id  = u.id
             LEFT JOIN rooms r ON a.room_id = r.id
             LEFT JOIN files f ON u.avatar_file_id = f.id
-            WHERE a.property_id = ?
+            JOIN properties p ON r.property_id = p.id
+            WHERE p.id = ?
               AND a.landlord_id = ?
               AND a.status      = 'accepted'
               AND a.deleted_at  IS NULL

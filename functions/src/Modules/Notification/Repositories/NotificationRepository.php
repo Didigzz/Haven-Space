@@ -118,18 +118,18 @@ class NotificationRepository
      */
     public function getAcceptedApplications(int $boarderId): array
     {
-        $sql = 'SELECT a.id as application_id, a.status, a.created_at as applied_at,
+        $sql = 'SELECT app.id as application_id, app.status, app.created_at as applied_at,
                        r.title as room_title, r.price as room_price,
-                       p.id as property_id, p.title as property_name, a.address_line_1 as address,
-                       a.latitude, a.longitude,
+                       p.id as property_id, p.title as property_name, addr.address_line_1 as address,
+                       addr.latitude, addr.longitude,
                        u.first_name as landlord_first_name, u.last_name as landlord_last_name
-                FROM applications a
-                JOIN rooms r ON a.room_id = r.id
-                JOIN properties p ON a.property_id = p.id
-                JOIN addresses a ON p.address_id = a.id
-                JOIN users u ON a.landlord_id = u.id
-                WHERE a.boarder_id = ? AND a.status = ? AND a.deleted_at IS NULL
-                ORDER BY a.created_at DESC';
+                FROM applications app
+                JOIN rooms r ON app.room_id = r.id
+                JOIN properties p ON r.property_id = p.id
+                JOIN addresses addr ON p.address_id = addr.id
+                JOIN users u ON app.landlord_id = u.id
+                WHERE app.boarder_id = ? AND app.status = ? AND app.deleted_at IS NULL
+                ORDER BY app.created_at DESC';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$boarderId, 'accepted']);
@@ -143,9 +143,10 @@ class NotificationRepository
     public function hasAcceptedApplications(int $boarderId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT COUNT(*) as count, GROUP_CONCAT(DISTINCT property_id) as property_ids
-             FROM applications 
-             WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL'
+            'SELECT COUNT(*) as count, GROUP_CONCAT(DISTINCT r.property_id) as property_ids
+             FROM applications a
+             JOIN rooms r ON a.room_id = r.id
+             WHERE a.boarder_id = ? AND a.status = ? AND a.deleted_at IS NULL'
         );
         $stmt->execute([$boarderId, 'accepted']);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);

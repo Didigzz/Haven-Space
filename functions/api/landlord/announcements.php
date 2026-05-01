@@ -345,7 +345,8 @@ function createAnnouncementNotifications($pdo, $announcementId, $landlordId, $ta
             $stmt = $pdo->prepare("
                 SELECT DISTINCT a.boarder_id
                 FROM applications a
-                JOIN properties p ON a.property_id = p.id
+                JOIN rooms r ON a.room_id = r.id
+                JOIN properties p ON r.property_id = p.id
                 WHERE p.landlord_id = ? AND a.status = 'accepted' AND a.deleted_at IS NULL
             ");
             $stmt->execute([$landlordId]);

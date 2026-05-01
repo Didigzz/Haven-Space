@@ -82,7 +82,7 @@ try {
         LEFT JOIN users u_landlord ON a.landlord_id = u_landlord.id
         LEFT JOIN landlord_profiles lp ON u_landlord.id = lp.user_id
         -- Property joins (normalized with address)
-        LEFT JOIN properties p ON a.property_id = p.id
+        LEFT JOIN properties p ON r.property_id = p.id
         LEFT JOIN addresses addr ON p.address_id = addr.id
         -- Room joins
         LEFT JOIN rooms r ON a.room_id = r.id
