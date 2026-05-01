@@ -23,6 +23,7 @@ import { updateNavbarNotifications } from '../../components/navbar.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
 import { ensureAuth } from '../../shared/auth-sync.js';
 import { initOAuthHandler } from '../../shared/oauth-handler.js';
+import onboardingChecklist from '../../components/onboarding-checklist.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -143,11 +144,23 @@ export async function initBoarderDashboard() {
   // Initialize boarder status banners (pending/rejected states)
   initBoarderStatus();
 
-  // Initialize dashboard map
-  initDashboardMap();
-
   // Initialize specific pages based on current view
   const currentPath = window.location.pathname;
+
+  // Initialize onboarding checklist (only on main dashboard)
+  // Temporarily disabled due to endpoint issues
+  /*
+  if (currentPath.includes('/boarder/index.html') || currentPath.endsWith('/boarder/')) {
+    try {
+      await onboardingChecklist.init();
+    } catch (error) {
+      console.error('Error initializing onboarding checklist:', error);
+    }
+  }
+  */
+
+  // Initialize dashboard map
+  initDashboardMap();
 
   if (currentPath.includes('find-a-room')) {
     initBoarderFindARoom();

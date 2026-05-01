@@ -262,10 +262,16 @@ CREATE TABLE IF NOT EXISTS boarder_profiles (
     occupation VARCHAR(255) NOT NULL DEFAULT '',
     bio TEXT NOT NULL,
     profile_completed BOOLEAN DEFAULT FALSE,
+    onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    onboarding_payment_method_added BOOLEAN NOT NULL DEFAULT FALSE,
+    onboarding_profile_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    onboarding_house_rules_read BOOLEAN NOT NULL DEFAULT FALSE,
+    onboarding_dismissed_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_boarder (user_id)
+    UNIQUE KEY unique_user_boarder (user_id),
+    INDEX idx_onboarding_completed (onboarding_completed)
 );
 
 -- Disputes table (normalized)

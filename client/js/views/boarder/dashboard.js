@@ -494,30 +494,7 @@ async function loadDashboardData() {
       console.error('Error loading announcements:', error);
     }
 
-    // Fetch maintenance requests
-    try {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId,
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const maintenanceResponse = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/maintenance`, {
-        method: 'GET',
-        headers: headers,
-        credentials: 'include',
-      });
-
-      if (maintenanceResponse.ok) {
-        const maintenanceData = await maintenanceResponse.json();
-        dashboardState.maintenance = maintenanceData.data || [];
-      }
-    } catch (error) {
-      console.error('Error loading maintenance:', error);
-    }
+    // Maintenance system was removed - skip maintenance fetch
 
     // Fetch tenancy information
     try {
@@ -655,54 +632,74 @@ function renderLeaseInfo(lease) {
   const leasePeriodValue = document.querySelector('[data-tenancy-period]');
   const leasePeriodDesc = document.querySelector('[data-tenancy-renewal]');
 
-  if (leasePeriodValue && lease.current_month && lease.total_months) {
-    leasePeriodValue.textContent = `Month ${lease.current_month} / ${lease.total_months}`;
+  if (leasePeriodValue && lease.months_since_move_in !== undefined) {
+    leasePeriodValue.textContent = `${lease.months_since_move_in} Month${
+      lease.months_since_move_in !== 1 ? 's' : ''
+    }`;
   }
 
-  if (leasePeriodDesc && lease.end_date) {
-    const endDate = new Date(lease.end_date).toLocaleDateString('en-US', {
+  if (leasePeriodDesc && lease.tenancy_start_date) {
+    const startDate = new Date(lease.tenancy_start_date).toLocaleDateString('en-US', {
       month: 'short',
+      day: 'numeric',
       year: 'numeric',
     });
-    leasePeriodDesc.textContent = `Next Renewal: ${endDate}`;
+    leasePeriodDesc.textContent = `Started: ${startDate}`;
   }
 
-  // Update outstanding balance
+  // Update outstanding balance (monthly rent)
   const balanceValue = document.querySelector('[data-balance-value]');
-  if (balanceValue && lease.outstanding_balance !== undefined) {
-    balanceValue.textContent = `₱${formatCurrency(lease.outstanding_balance)}`;
+  if (balanceValue && lease.monthly_rent !== undefined) {
+    balanceValue.textContent = `₱${formatCurrency(lease.monthly_rent)}`;
   }
 
   // Update utilities
   const utilitiesValue = document.querySelector('[data-utilities-value]');
   const utilitiesDesc = document.querySelector('[data-utilities-breakdown]');
 
-  if (utilitiesValue && lease.current_utilities !== undefined) {
-    utilitiesValue.textContent = `₱${formatCurrency(lease.current_utilities)}`;
+  const totalUtilities =
+    (lease.property_electricity_cost || 0) +
+    (lease.property_water_cost || 0) +
+    (lease.property_internet_cost || 0);
+
+  if (utilitiesValue) {
+    utilitiesValue.textContent = `₱${formatCurrency(totalUtilities)}`;
   }
 
-  if (utilitiesDesc && lease.electricity_cost !== undefined && lease.water_cost !== undefined) {
-    utilitiesDesc.textContent = `Electricity: ₱${formatCurrency(
-      lease.electricity_cost
-    )} | Water: ₱${formatCurrency(lease.water_cost)}`;
+  if (utilitiesDesc) {
+    const parts = [];
+    if (lease.property_electricity_cost > 0)
+      parts.push(`Electricity: ₱${formatCurrency(lease.property_electricity_cost)}`);
+    if (lease.property_water_cost > 0)
+      parts.push(`Water: ₱${formatCurrency(lease.property_water_cost)}`);
+    if (lease.property_internet_cost > 0)
+      parts.push(`Internet: ₱${formatCurrency(lease.property_internet_cost)}`);
+
+    utilitiesDesc.textContent = parts.length > 0 ? parts.join(' | ') : 'No utility charges';
   }
 
-  // Update next payment
+  // Update next payment - calculate based on tenancy start date
   const nextPaymentValue = document.querySelector('[data-payment-days]');
   const nextPaymentDesc = document.querySelector('[data-payment-details]');
 
-  if (nextPaymentValue && lease.days_until_payment !== undefined) {
-    nextPaymentValue.textContent = `${lease.days_until_payment} Days Left`;
-  }
+  if (nextPaymentValue && nextPaymentDesc && lease.tenancy_start_date && lease.monthly_rent) {
+    const startDate = new Date(lease.tenancy_start_date);
+    const today = new Date();
 
-  if (nextPaymentDesc && lease.next_payment_amount && lease.next_payment_date) {
-    const paymentDate = new Date(lease.next_payment_date).toLocaleDateString('en-US', {
+    // Calculate next payment date (1st of next month)
+    const nextPaymentDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const daysUntilPayment = Math.ceil((nextPaymentDate - today) / (1000 * 60 * 60 * 24));
+
+    nextPaymentValue.textContent = `${daysUntilPayment} Days`;
+
+    const paymentDateFormatted = nextPaymentDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
     });
     nextPaymentDesc.textContent = `₱${formatCurrency(
-      lease.next_payment_amount
-    )} due on ${paymentDate}`;
+      lease.monthly_rent
+    )} due ${paymentDateFormatted}`;
   }
 }
 

@@ -456,6 +456,14 @@ Router::delete('/api/notifications/{id}', [NotificationController::class, 'destr
 Router::get('/api/boarder/accepted-applications', [NotificationController::class, 'getAcceptedApplications']);
 Router::get('/api/boarder/has-accepted-applications', [NotificationController::class, 'hasAcceptedApplications']);
 
+// Boarder onboarding checklist
+Router::get('/api/boarder/onboarding-status', function() {
+    require_once __DIR__ . '/boarder/onboarding-status.php';
+});
+Router::post('/api/boarder/update-onboarding', function() {
+    require_once __DIR__ . '/boarder/update-onboarding.php';
+});
+
 // ============================================
 // AI POWERED FEATURES
 // ============================================
