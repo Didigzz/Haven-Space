@@ -6,6 +6,9 @@
  *   POST   /api/landlord/rooms                – create room
  *   PUT    /api/landlord/rooms?id=Y           – update room
  *   DELETE /api/landlord/rooms?id=Y           – delete room
+ *   POST   /api/landlord/rooms/{id}/photos    – upload room photos
+ *   PATCH  /api/landlord/rooms/{id}/photos    – set cover photo
+ *   DELETE /api/landlord/rooms/{id}/photos    – delete a photo
  */
 
 import CONFIG from '../../config.js';
@@ -20,6 +23,10 @@ let propertyId = null;
 let propertyData = null;
 let allRooms = [];
 let editingRoomId = null; // null = creating new room
+
+// Photo state for the modal
+// Each entry: { file: File|null, previewUrl: string, photoId: number|null, isCover: bool, toDelete: bool }
+let pendingPhotos = [];
 
 /* ------------------------------------------------------------------ */
 /* Bootstrap                                                           */
@@ -38,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadPropertyAndRooms();
   bindUI();
+  bindPhotoUI();
   initLandlordPermissions();
 });
 
@@ -173,7 +181,7 @@ function buildRoomCard(room) {
       </div>
       <div class="room-details">
         <div class="room-detail">
-          ${getIcon('userGroup', { width: 16, height: 16, strokeWidth: '2' })}
+          ${getIcon('users', { width: 16, height: 16, strokeWidth: '2' })}
           Capacity: ${room.capacity}
         </div>
         ${
@@ -181,6 +189,14 @@ function buildRoomCard(room) {
             ? `<div class="room-detail">
           ${getIcon('home', { width: 16, height: 16, strokeWidth: '2' })}
           ${room.size} sqm
+        </div>`
+            : ''
+        }
+        ${
+          room.deposit > 0
+            ? `<div class="room-detail room-detail--deposit">
+          ${getIcon('currencyDollar', { width: 16, height: 16, strokeWidth: '2' })}
+          Deposit: ₱${Number(room.deposit).toLocaleString()}
         </div>`
             : ''
         }
@@ -224,6 +240,7 @@ function openAddModal() {
   setText('modal-title', 'Add New Room');
   document.getElementById('room-form').reset();
   hideTenantSection();
+  resetPhotoUI();
   openModal('room-modal');
 }
 
@@ -236,6 +253,7 @@ function openEditModal(roomId) {
 
   setVal('room-number', room.room_number);
   setVal('room-price', room.price);
+  setVal('room-deposit', room.deposit ?? 0);
   setVal('room-size', room.size ?? '');
   setVal('room-capacity', room.capacity);
   setVal('room-status', room.status);
@@ -249,6 +267,21 @@ function openEditModal(roomId) {
     setVal('lease-end', room.tenant.lease_end ?? '');
   } else {
     hideTenantSection();
+  }
+
+  // Load existing photos into the photo UI
+  resetPhotoUI();
+  if (room.photos && room.photos.length > 0) {
+    room.photos.forEach(p => {
+      pendingPhotos.push({
+        file: null,
+        previewUrl: p.photo_url,
+        photoId: p.id,
+        isCover: p.is_cover,
+        toDelete: false,
+      });
+    });
+    renderPhotoPreviews();
   }
 
   openModal('room-modal');
@@ -267,6 +300,7 @@ async function saveRoom() {
     property_id: propertyId,
     room_number: getVal('room-number'),
     price: parseFloat(getVal('room-price')),
+    deposit: getVal('room-deposit') ? parseFloat(getVal('room-deposit')) : 0,
     size: getVal('room-size') ? parseFloat(getVal('room-size')) : null,
     capacity: getVal('room-capacity') ? parseInt(getVal('room-capacity')) : 1,
     status: getVal('room-status'),
@@ -278,12 +312,14 @@ async function saveRoom() {
 
   try {
     let result;
+    let savedRoomId;
+
     if (editingRoomId) {
       result = await apiFetch(`${CONFIG.API_BASE_URL}/api/landlord/rooms?id=${editingRoomId}`, {
         method: 'PUT',
         body: JSON.stringify({ ...payload, id: editingRoomId }),
       });
-      // Replace in local array
+      savedRoomId = editingRoomId;
       const idx = allRooms.findIndex(r => r.id === editingRoomId);
       if (idx !== -1) allRooms[idx] = result.data;
       showToast('Room updated successfully', 'success');
@@ -292,8 +328,23 @@ async function saveRoom() {
         method: 'POST',
         body: JSON.stringify(payload),
       });
+      savedRoomId = result.data.id;
       allRooms.push(result.data);
       showToast('Room created successfully', 'success');
+    }
+
+    // Handle photo operations
+    await syncPhotos(savedRoomId);
+
+    // Reload the room to get updated photos
+    try {
+      const refreshed = await apiFetch(
+        `${CONFIG.API_BASE_URL}/api/landlord/rooms?propertyId=${propertyId}&id=${savedRoomId}`
+      );
+      const idx = allRooms.findIndex(r => r.id === savedRoomId);
+      if (idx !== -1) allRooms[idx] = refreshed.data;
+    } catch (_) {
+      // Non-critical – grid will still update from local state
     }
 
     closeModal('room-modal');
@@ -304,7 +355,84 @@ async function saveRoom() {
     showToast(`Failed to save room: ${err.message}`, 'error');
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Room';
+    saveBtn.innerHTML = `${getIcon('check', {
+      width: 20,
+      height: 20,
+      strokeWidth: '2',
+    })} Save Room`;
+  }
+}
+
+/**
+ * Sync pending photo changes to the server:
+ * 1. Delete photos marked for removal
+ * 2. Upload new files
+ * 3. Apply cover change if needed
+ */
+async function syncPhotos(roomId) {
+  const token = localStorage.getItem('token');
+  const baseUrl = `${CONFIG.API_BASE_URL}/api/landlord/rooms/${roomId}/photos`;
+
+  // 1. Delete removed photos
+  const toDelete = pendingPhotos.filter(p => p.toDelete && p.photoId);
+  for (const p of toDelete) {
+    try {
+      await fetch(baseUrl, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ photo_id: p.photoId }),
+      });
+    } catch (e) {
+      console.warn('Failed to delete photo', p.photoId, e);
+    }
+  }
+
+  // 2. Upload new files
+  const newFiles = pendingPhotos.filter(p => p.file && !p.toDelete);
+  if (newFiles.length > 0) {
+    const formData = new FormData();
+    newFiles.forEach(p => formData.append('roomPhotos[]', p.file));
+
+    try {
+      const res = await fetch(baseUrl, {
+        method: 'POST',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(
+          `Photo upload warning: ${json.error || 'Some photos may not have saved'}`,
+          'warning'
+        );
+      }
+    } catch (e) {
+      console.warn('Photo upload failed', e);
+      showToast('Photos could not be uploaded', 'warning');
+    }
+  }
+
+  // 3. Set cover if a new cover was chosen (existing photo, not a new upload)
+  const coverEntry = pendingPhotos.find(p => p.isCover && p.photoId && !p.toDelete && !p.file);
+  if (coverEntry) {
+    try {
+      await fetch(baseUrl, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ photo_id: coverEntry.photoId }),
+      });
+    } catch (e) {
+      console.warn('Failed to set cover photo', e);
+    }
   }
 }
 
@@ -398,10 +526,14 @@ function bindUI() {
   document.getElementById('delete-confirm')?.addEventListener('click', confirmDelete);
 
   // Close modals
-  document.getElementById('modal-close')?.addEventListener('click', () => closeModal('room-modal'));
-  document
-    .getElementById('modal-cancel')
-    ?.addEventListener('click', () => closeModal('room-modal'));
+  document.getElementById('modal-close')?.addEventListener('click', () => {
+    resetPhotoUI();
+    closeModal('room-modal');
+  });
+  document.getElementById('modal-cancel')?.addEventListener('click', () => {
+    resetPhotoUI();
+    closeModal('room-modal');
+  });
   document
     .getElementById('delete-modal-close')
     ?.addEventListener('click', () => closeModal('delete-room-modal'));
@@ -414,12 +546,16 @@ function bindUI() {
     document
       .getElementById(id)
       ?.querySelector('.modal-overlay')
-      ?.addEventListener('click', () => closeModal(id));
+      ?.addEventListener('click', () => {
+        if (id === 'room-modal') resetPhotoUI();
+        closeModal(id);
+      });
   });
 
   // Escape key
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
+      resetPhotoUI();
       closeModal('room-modal');
       closeModal('delete-room-modal');
     }
@@ -505,4 +641,197 @@ function escHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/* ------------------------------------------------------------------ */
+/* Photo UI                                                            */
+/* ------------------------------------------------------------------ */
+
+function bindPhotoUI() {
+  const input = document.getElementById('room-photos-input');
+  const placeholder = document.getElementById('photo-upload-placeholder');
+  const addMoreBtn = document.getElementById('photo-add-more-btn');
+  const uploadArea = document.getElementById('photo-upload-area');
+
+  // Click on placeholder opens file picker
+  placeholder?.addEventListener('click', () => input?.click());
+
+  // "Add more" button
+  addMoreBtn?.addEventListener('click', () => input?.click());
+
+  // File input change
+  input?.addEventListener('change', e => {
+    addFilesToPending(Array.from(e.target.files));
+    e.target.value = ''; // reset so same file can be re-added
+  });
+
+  // Drag & drop
+  uploadArea?.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+  });
+  uploadArea?.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+  uploadArea?.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    addFilesToPending(files);
+  });
+}
+
+function addFilesToPending(files) {
+  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const maxSize = 5 * 1024 * 1024;
+  let skipped = 0;
+
+  files.forEach(file => {
+    if (!allowed.includes(file.type)) {
+      skipped++;
+      return;
+    }
+    if (file.size > maxSize) {
+      skipped++;
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    const isFirstEver = pendingPhotos.filter(p => !p.toDelete).length === 0;
+    pendingPhotos.push({
+      file,
+      previewUrl,
+      photoId: null,
+      isCover: isFirstEver,
+      toDelete: false,
+    });
+  });
+
+  if (skipped > 0) {
+    setHint(`${skipped} file(s) skipped (unsupported type or > 5 MB)`, 'error');
+  } else {
+    setHint('');
+  }
+
+  renderPhotoPreviews();
+}
+
+function renderPhotoPreviews() {
+  const grid = document.getElementById('photo-preview-grid');
+  const placeholder = document.getElementById('photo-upload-placeholder');
+  const addMoreBtn = document.getElementById('photo-add-more-btn');
+
+  if (!grid) return;
+
+  const visible = pendingPhotos.filter(p => !p.toDelete);
+
+  grid.innerHTML = '';
+
+  if (visible.length === 0) {
+    placeholder && (placeholder.style.display = 'flex');
+    addMoreBtn && (addMoreBtn.style.display = 'none');
+    return;
+  }
+
+  placeholder && (placeholder.style.display = 'none');
+  addMoreBtn && (addMoreBtn.style.display = 'block');
+
+  visible.forEach((entry, visIdx) => {
+    const realIdx = pendingPhotos.indexOf(entry);
+
+    const item = document.createElement('div');
+    item.className = 'photo-preview-item' + (entry.isCover ? ' is-cover' : '');
+
+    const img = document.createElement('img');
+    // For existing server photos, prefix with API base if relative
+    img.src = entry.file
+      ? entry.previewUrl
+      : entry.previewUrl.startsWith('http')
+      ? entry.previewUrl
+      : `${CONFIG.API_BASE_URL}${entry.previewUrl}`;
+    img.alt = `Room photo ${visIdx + 1}`;
+    item.appendChild(img);
+
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'photo-remove-btn';
+    removeBtn.title = 'Remove photo';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => removePhoto(realIdx));
+    item.appendChild(removeBtn);
+
+    if (entry.isCover) {
+      const badge = document.createElement('span');
+      badge.className = 'photo-cover-badge';
+      badge.textContent = 'Cover';
+      item.appendChild(badge);
+    } else {
+      const setCoverBtn = document.createElement('button');
+      setCoverBtn.type = 'button';
+      setCoverBtn.className = 'photo-set-cover-btn';
+      setCoverBtn.textContent = 'Set cover';
+      setCoverBtn.addEventListener('click', () => setCover(realIdx));
+      item.appendChild(setCoverBtn);
+    }
+
+    grid.appendChild(item);
+  });
+}
+
+function removePhoto(idx) {
+  const entry = pendingPhotos[idx];
+  if (!entry) return;
+
+  if (entry.photoId) {
+    // Existing server photo – mark for deletion
+    entry.toDelete = true;
+    // If it was the cover, promote the next visible photo
+    if (entry.isCover) {
+      const next = pendingPhotos.find(p => !p.toDelete && p !== entry);
+      if (next) next.isCover = true;
+    }
+  } else {
+    // New file – just remove from array and revoke object URL
+    URL.revokeObjectURL(entry.previewUrl);
+    pendingPhotos.splice(idx, 1);
+    // Ensure at least one cover among remaining
+    const remaining = pendingPhotos.filter(p => !p.toDelete);
+    if (remaining.length > 0 && !remaining.some(p => p.isCover)) {
+      remaining[0].isCover = true;
+    }
+  }
+
+  renderPhotoPreviews();
+}
+
+function setCover(idx) {
+  pendingPhotos.forEach((p, i) => {
+    p.isCover = i === idx;
+  });
+  renderPhotoPreviews();
+}
+
+function resetPhotoUI() {
+  // Revoke any object URLs for new files
+  pendingPhotos.forEach(p => {
+    if (p.file) URL.revokeObjectURL(p.previewUrl);
+  });
+  pendingPhotos = [];
+
+  const grid = document.getElementById('photo-preview-grid');
+  const placeholder = document.getElementById('photo-upload-placeholder');
+  const addMoreBtn = document.getElementById('photo-add-more-btn');
+
+  if (grid) grid.innerHTML = '';
+  if (placeholder) placeholder.style.display = 'flex';
+  if (addMoreBtn) addMoreBtn.style.display = 'none';
+
+  setHint('');
+}
+
+function setHint(msg, type = '') {
+  const el = document.getElementById('photo-upload-hint');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'photo-upload-hint' + (type ? ` ${type}` : '');
+  el.style.display = msg ? 'block' : 'none';
 }

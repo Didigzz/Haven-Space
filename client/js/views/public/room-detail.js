@@ -313,7 +313,7 @@ function populateRoomData(room) {
                 <div class="booking-room-type-content">
                   <div class="booking-room-type-info">
                     <span data-icon="${
-                      r.capacity > 1 ? 'userGroup' : 'user'
+                      r.capacity > 1 ? 'users' : 'user'
                     }" data-icon-width="18" data-icon-height="18"></span>
                     <span class="booking-room-type-label">${r.roomType}</span>
                   </div>
@@ -727,10 +727,16 @@ function loadAvailableRooms(property) {
           : 'Limited';
       const roomImage =
         room.images && room.images.length > 0 ? getImageUrl(room.images[0]) : getImageUrl(null);
-      const roomDescription = room.description || 'No description available';
-      const roomSize = room.size ? `${room.size} sqm` : 'N/A';
-      const furnishing = room.furnishing || 'Not specified';
-      const roomType = room.room_type || room.roomType || 'Room';
+      const roomDescription = room.description || '';
+      const roomSize = room.size ? `${room.size} sqm` : null;
+      const furnishing =
+        room.furnishing && room.furnishing !== 'Not specified' ? room.furnishing : null;
+      const roomType =
+        room.roomType && room.roomType !== 'N/A'
+          ? room.roomType
+          : room.roomNumber && room.roomNumber !== 'N/A'
+          ? room.roomNumber
+          : 'Room';
 
       return `
         <div class="available-room-card" data-room-id="${room.id}" data-room='${JSON.stringify(
@@ -750,19 +756,38 @@ function loadAvailableRooms(property) {
             </div>
             <div class="available-room-details">
               <div class="available-room-detail">
-                <span data-icon="userGroup" data-icon-width="16" data-icon-height="16"></span>
+                <span data-icon="users" data-icon-width="16" data-icon-height="16"></span>
                 <span>${room.capacity} ${room.capacity > 1 ? 'persons' : 'person'}</span>
               </div>
+              ${
+                roomSize
+                  ? `
               <div class="available-room-detail">
-                <span data-icon="ruler" data-icon-width="16" data-icon-height="16"></span>
+                <span data-icon="square" data-icon-width="16" data-icon-height="16"></span>
                 <span>${roomSize}</span>
-              </div>
+              </div>`
+                  : ''
+              }
+              ${
+                furnishing
+                  ? `
               <div class="available-room-detail">
-                <span data-icon="bed" data-icon-width="16" data-icon-height="16"></span>
+                <span data-icon="home" data-icon-width="16" data-icon-height="16"></span>
                 <span>${furnishing}</span>
-              </div>
+              </div>`
+                  : ''
+              }
+              ${
+                room.deposit > 0
+                  ? `
+              <div class="available-room-detail">
+                <span data-icon="currencyDollar" data-icon-width="16" data-icon-height="16"></span>
+                <span>Deposit: ₱${room.deposit.toLocaleString()}</span>
+              </div>`
+                  : ''
+              }
             </div>
-            <p class="available-room-description">${roomDescription}</p>
+            ${roomDescription ? `<p class="available-room-description">${roomDescription}</p>` : ''}
           </div>
         </div>
       `;
@@ -790,7 +815,14 @@ function showRoomDetailModal(room, property) {
 
   // Populate modal with room data
   const modalTitle = document.getElementById('modal-room-title');
-  const roomType = room.room_type || room.roomType || 'Room';
+  const roomType =
+    room.roomType && room.roomType !== 'N/A'
+      ? room.roomType
+      : room.room_type && room.room_type !== 'N/A'
+      ? room.room_type
+      : room.roomNumber && room.roomNumber !== 'N/A'
+      ? room.roomNumber
+      : 'Room';
   if (modalTitle) modalTitle.textContent = roomType;
 
   // Update status badge

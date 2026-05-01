@@ -196,7 +196,7 @@
           <form id="room-form">
             <div class="form-row">
               <div class="form-group">
-                <label for="room-number">Room Number *</label>
+                <label for="room-number">Room Name *</label>
                 <input type="text" id="room-number" name="room_number" required />
               </div>
               <div class="form-group">
@@ -206,9 +206,22 @@
             </div>
             <div class="form-row">
               <div class="form-group">
+                <label for="room-deposit">Security Deposit (₱)</label>
+                <input
+                  type="number"
+                  id="room-deposit"
+                  name="deposit"
+                  min="0"
+                  step="100"
+                  value="0"
+                />
+              </div>
+              <div class="form-group">
                 <label for="room-size">Room Size (sqm)</label>
                 <input type="number" id="room-size" name="size" min="0" step="0.1" />
               </div>
+            </div>
+            <div class="form-row">
               <div class="form-group">
                 <label for="room-capacity">Max Occupancy</label>
                 <input
@@ -236,6 +249,42 @@
                 placeholder="Room features, amenities, etc."
               ></textarea>
             </div>
+
+            <!-- Photo Upload Section -->
+            <div class="form-group">
+              <label>Room Photos</label>
+              <div class="photo-upload-area" id="photo-upload-area">
+                <input
+                  type="file"
+                  id="room-photos-input"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  style="display: none"
+                />
+                <div class="photo-upload-placeholder" id="photo-upload-placeholder">
+                  <img
+                    src="../../../assets/svg/camera.svg"
+                    alt=""
+                    width="32"
+                    height="32"
+                    style="opacity: 0.4"
+                  />
+                  <p>Click to add photos or drag &amp; drop</p>
+                  <span>JPG, PNG, WEBP · Max 5 MB each</span>
+                </div>
+                <div class="photo-preview-grid" id="photo-preview-grid"></div>
+                <button
+                  type="button"
+                  class="photo-add-more-btn"
+                  id="photo-add-more-btn"
+                  style="display: none"
+                >
+                  + Add More Photos
+                </button>
+              </div>
+              <p class="photo-upload-hint" id="photo-upload-hint" style="display: none"></p>
+            </div>
+
             <div id="tenant-section" style="display: none">
               <h3>Current Tenant Information</h3>
               <div class="form-row">

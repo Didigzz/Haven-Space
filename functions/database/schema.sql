@@ -211,6 +211,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     landlord_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    deposit DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT 'Security deposit amount in PHP',
     size DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Room size in square meters',
     description TEXT NOT NULL,
     status VARCHAR(32) DEFAULT 'available',
