@@ -4,73 +4,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const teamCards = Array.from(teamGrid.querySelectorAll('.team-card'));
   let expandedCard = null;
-  let isAnimating = false;
-
-  // Pre-warm GPU layers on first interaction
-  teamGrid.addEventListener(
-    'pointerenter',
-    () => {
-      teamCards.forEach(c => (c.style.willChange = 'flex'));
-    },
-    { once: true }
-  );
 
   function collapseAll() {
     expandedCard = null;
-    teamCards.forEach(c => {
-      c.classList.remove('expanded', 'collapsed');
-      c.style.willChange = '';
-    });
+    teamCards.forEach(c => c.classList.remove('expanded', 'collapsed'));
   }
 
   function expandCard(card) {
-    if (isAnimating) return;
-    isAnimating = true;
-
-    // Batch all DOM writes in one rAF to avoid layout thrash
-    requestAnimationFrame(() => {
-      teamCards.forEach(c => {
-        if (c === card) {
-          c.classList.add('expanded');
-          c.classList.remove('collapsed');
-        } else {
-          c.classList.remove('expanded');
-          c.classList.add('collapsed');
-          c.style.willChange = '';
-        }
-      });
-      expandedCard = card;
-
-      // Clear willChange after transition ends to free GPU memory
-      card.addEventListener(
-        'transitionend',
-        () => {
-          card.style.willChange = '';
-          isAnimating = false;
-        },
-        { once: true }
-      );
+    teamCards.forEach(c => {
+      if (c === card) {
+        c.classList.add('expanded');
+        c.classList.remove('collapsed');
+      } else {
+        c.classList.remove('expanded');
+        c.classList.add('collapsed');
+      }
     });
+    expandedCard = card;
   }
 
   function collapseCard(card) {
-    if (isAnimating) return;
-    isAnimating = true;
-
-    requestAnimationFrame(() => {
-      card.classList.remove('expanded');
-      teamCards.forEach(c => c.classList.remove('collapsed'));
-      expandedCard = null;
-
-      card.addEventListener(
-        'transitionend',
-        () => {
-          card.style.willChange = '';
-          isAnimating = false;
-        },
-        { once: true }
-      );
-    });
+    card.classList.remove('expanded');
+    teamCards.forEach(c => c.classList.remove('collapsed'));
+    expandedCard = null;
   }
 
   // Single delegated listener on the grid — no per-card listeners
@@ -88,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (card.classList.contains('expanded')) {
       collapseCard(card);
     } else {
-      card.style.willChange = 'flex';
       expandCard(card);
     }
   });

@@ -5,16 +5,6 @@
   position: relative;
 }
 
-.team-grid {
-  display: flex;
-  gap: 16px;
-  align-items: stretch;
-  width: 100%;
-  height: 380px;
-  position: relative;
-  z-index: 1;
-}
-
 .team-header {
   margin-bottom: 60px;
   position: relative;
@@ -48,6 +38,7 @@
   align-items: stretch;
   width: 100%;
   height: 380px;
+  will-change: contents;
 }
 
 .team-card {
@@ -63,9 +54,6 @@
   flex-direction: row;
   background: #ffffff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  /* Promote each card to its own compositor layer to prevent repaint bleed */
-  contain: layout style;
-  transform: translateZ(0);
 }
 
 .team-card[data-member='1'] {
