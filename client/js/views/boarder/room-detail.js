@@ -280,33 +280,67 @@ function populateRoomData(room) {
       .join('');
   }
 
-  // Update booking section with room types
+  // Update booking section with room types - grouped by type
   if (room.rooms && room.rooms.length > 0) {
     const roomTypeOptions = document.querySelector('.booking-room-type-options');
     if (roomTypeOptions) {
-      const availableRooms = room.rooms.filter(r => r.status === 'available');
+      // Group rooms by type
+      const roomsByType = {};
+      room.rooms.forEach(r => {
+        const type = r.roomType || 'Other';
+        if (!roomsByType[type]) {
+          roomsByType[type] = [];
+        }
+        roomsByType[type].push(r);
+      });
 
-      if (availableRooms.length > 0) {
-        roomTypeOptions.innerHTML = availableRooms
-          .map(
-            (r, index) => `
-              <label class="booking-room-option">
-                <input type="radio" name="room-type" value="${r.roomType}" ${
-              index === 0 ? 'checked' : ''
-            } />
+      // Get all unique room types (show all, not just available)
+      const allTypes = Object.keys(roomsByType);
+
+      if (allTypes.length > 0) {
+        roomTypeOptions.innerHTML = allTypes
+          .map((type, index) => {
+            const roomsOfType = roomsByType[type];
+            const availableCount = roomsOfType.filter(r => r.status === 'available').length;
+            const occupiedCount = roomsOfType.filter(r => r.status === 'occupied').length;
+            const totalCount = roomsOfType.length;
+            const minPrice = Math.min(...roomsOfType.map(r => r.price));
+            const maxPrice = Math.max(...roomsOfType.map(r => r.price));
+            const priceDisplay =
+              minPrice === maxPrice
+                ? `₱${minPrice.toLocaleString()}/mo`
+                : `₱${minPrice.toLocaleString()} - ₱${maxPrice.toLocaleString()}/mo`;
+
+            // Determine icon based on type
+            const icon = type.toLowerCase().includes('single')
+              ? 'user'
+              : type.toLowerCase().includes('shared')
+              ? 'users'
+              : type.toLowerCase().includes('private')
+              ? 'home'
+              : 'home';
+
+            return `
+              <button class="booking-room-option booking-room-type-btn" data-room-type="${type}" type="button">
                 <div class="booking-room-type-content">
                   <div class="booking-room-type-info">
-                    <span data-icon="${
-                      r.capacity > 1 ? 'users' : 'user'
-                    }" data-icon-width="18" data-icon-height="18"></span>
-                    <span class="booking-room-type-label">${r.roomType}</span>
+                    <span data-icon="${icon}" data-icon-width="18" data-icon-height="18"></span>
+                    <span class="booking-room-type-label">${capitalizeFirstLetter(type)}</span>
                   </div>
-                  <span class="booking-room-type-price">₱${r.price.toLocaleString()}/mo</span>
+                  <span class="booking-room-type-price">${priceDisplay}</span>
                 </div>
-              </label>
-            `
-          )
+              </button>
+            `;
+          })
           .join('');
+
+        // Add click handlers to show modal
+        document.querySelectorAll('.booking-room-type-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const roomType = btn.dataset.roomType;
+            showRoomTypeModal(roomType, roomsByType[roomType], room);
+          });
+        });
       } else {
         roomTypeOptions.innerHTML = `
           <div style="padding: 1rem; text-align: center; color: #6b7280;">
@@ -791,25 +825,25 @@ function loadAvailableRooms(property) {
       const roomSize = room.size ? `${room.size} sqm` : null;
       const furnishing =
         room.furnishing && room.furnishing !== 'Not specified' ? room.furnishing : null;
-      // Prefer roomType (the actual name) over roomNumber which may be "N/A"
-      const roomName =
-        room.roomType && room.roomType !== 'N/A'
-          ? room.roomType
-          : room.roomNumber && room.roomNumber !== 'N/A'
-          ? room.roomNumber
-          : 'Room';
+      // Use roomType for display (Shared, Single, Private, etc.)
+      const roomType =
+        room.roomType && room.roomType !== 'N/A' ? capitalizeFirstLetter(room.roomType) : 'Room';
+      // Use roomNumber for identification if available
+      const roomNumber = room.roomNumber && room.roomNumber !== 'N/A' ? room.roomNumber : null;
+      // Display format: "Room Type" or "Room Type (Room Number)" if room number exists
+      const displayName = roomNumber ? `${roomType} (${roomNumber})` : roomType;
 
       return `
         <div class="available-room-card" data-room-id="${room.id}" data-room='${JSON.stringify(
         room
       ).replace(/'/g, '&apos;')}'>
           <div class="available-room-image-wrapper">
-            <img src="${roomImage}" alt="${roomName}" class="available-room-image" />
+            <img src="${roomImage}" alt="${displayName}" class="available-room-image" />
             <span class="available-room-status-badge ${statusClass}">${statusText}</span>
           </div>
           <div class="available-room-content">
             <div class="available-room-header">
-              <h3 class="available-room-type">${roomName}</h3>
+              <h3 class="available-room-type">${roomType}</h3>
               <div class="available-room-price">
                 <span class="available-room-price-amount">₱${room.price.toLocaleString()}</span>
                 <span class="available-room-price-period">/mo</span>
@@ -863,6 +897,211 @@ function loadAvailableRooms(property) {
     card.addEventListener('click', () => {
       const roomData = JSON.parse(card.dataset.room);
       showRoomDetailModal(roomData, property);
+    });
+  });
+}
+
+/**
+ * Capitalize the first letter of a string
+ */
+function capitalizeFirstLetter(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Show room type modal with detailed room information
+ */
+function showRoomTypeModal(roomType, rooms, property) {
+  const modal = document.getElementById('room-detail-modal');
+  if (!modal) return;
+
+  // Calculate statistics
+  const availableCount = rooms.filter(r => r.status === 'available').length;
+  const occupiedCount = rooms.filter(r => r.status === 'occupied').length;
+  const totalCount = rooms.length;
+
+  // Update modal title with room type and statistics - capitalize room type
+  const modalTitle = document.getElementById('modal-room-title');
+  if (modalTitle) {
+    const capitalizedRoomType = capitalizeFirstLetter(roomType);
+    modalTitle.textContent = `${capitalizedRoomType} Rooms (${availableCount} Available, ${occupiedCount} Occupied)`;
+  }
+
+  // Build room list HTML
+  const roomListHTML = rooms
+    .map((room, index) => {
+      const statusClass = room.status === 'available' ? 'available' : 'occupied';
+      const statusText =
+        room.status === 'available'
+          ? 'Available'
+          : room.status === 'occupied'
+          ? 'Occupied'
+          : 'Unavailable';
+      const roomImage =
+        room.images && room.images.length > 0 ? getImageUrl(room.images[0]) : getImageUrl(null);
+      // Generate room name with proper numbering based on index
+      let roomName =
+        room.roomNumber && room.roomNumber !== 'N/A'
+          ? room.roomNumber
+          : `${roomType} Room ${index + 1}`;
+      // If roomNumber exists but doesn't have a number, append the index
+      if (roomName === roomType || roomName === `${roomType} Room`) {
+        roomName = `${roomType} Room ${index + 1}`;
+      }
+
+      return `
+      <div class="room-type-modal-item ${statusClass}" data-room-id="${room.id}">
+        <div class="room-type-modal-image">
+          <img src="${roomImage}" alt="${roomName}" />
+          <span class="room-type-modal-status ${statusClass}">${statusText}</span>
+        </div>
+        <div class="room-type-modal-info">
+          <h4 class="room-type-modal-room-name">${roomName}</h4>
+          <div class="room-type-modal-details">
+            <div class="room-type-modal-detail">
+              <span data-icon="users" data-icon-width="16" data-icon-height="16"></span>
+              <span>Capacity: ${room.capacity} ${room.capacity > 1 ? 'persons' : 'person'}</span>
+            </div>
+            ${
+              room.size
+                ? `
+            <div class="room-type-modal-detail">
+              <span data-icon="square" data-icon-width="16" data-icon-height="16"></span>
+              <span>Size: ${room.size} sqm</span>
+            </div>
+            `
+                : ''
+            }
+            <div class="room-type-modal-detail">
+              <span data-icon="currencyDollar" data-icon-width="16" data-icon-height="16"></span>
+              <span>₱${room.price.toLocaleString()}/mo</span>
+            </div>
+            ${
+              room.deposit > 0
+                ? `
+            <div class="room-type-modal-detail">
+              <span data-icon="banknotes" data-icon-width="16" data-icon-height="16"></span>
+              <span>Deposit: ₱${room.deposit.toLocaleString()}</span>
+            </div>
+            `
+                : ''
+            }
+          </div>
+          ${
+            room.description
+              ? `
+          <p class="room-type-modal-description">${room.description}</p>
+          `
+              : ''
+          }
+          ${
+            room.status === 'available'
+              ? `
+          <button class="room-type-modal-apply-btn" data-room-id="${room.id}" data-room-type="${roomType}" data-room-price="${room.price}" data-room-number="${roomName}">
+            <span data-icon="application" data-icon-width="16" data-icon-height="16"></span>
+            Apply for this room
+          </button>
+          `
+              : `
+          <div class="room-type-modal-occupied-notice">
+            <span data-icon="info" data-icon-width="16" data-icon-height="16"></span>
+            <span>This room is currently occupied</span>
+          </div>
+          `
+          }
+        </div>
+      </div>
+    `;
+    })
+    .join('');
+
+  // Update modal body
+  const modalBody = modal.querySelector('.room-detail-modal-body');
+  if (modalBody) {
+    modalBody.innerHTML = `
+      <div class="room-type-modal-summary">
+        <div class="room-type-modal-summary-item">
+          <span class="room-type-modal-summary-label">Total:</span>
+          <span class="room-type-modal-summary-value">${totalCount}</span>
+        </div>
+        <div class="room-type-modal-summary-item available">
+          <span class="room-type-modal-summary-label">Available:</span>
+          <span class="room-type-modal-summary-value">${availableCount}</span>
+        </div>
+        <div class="room-type-modal-summary-item occupied">
+          <span class="room-type-modal-summary-label">Occupied:</span>
+          <span class="room-type-modal-summary-value">${occupiedCount}</span>
+        </div>
+      </div>
+      <div class="room-type-modal-list">
+        ${roomListHTML}
+      </div>
+    `;
+  }
+
+  // Initialize icons
+  initIconElements();
+
+  // Show modal
+  modal.classList.add('active');
+
+  // Setup modal event listeners
+  setupRoomTypeModalListeners(property, modal);
+}
+
+/**
+ * Setup room type modal event listeners
+ */
+function setupRoomTypeModalListeners(property, modal) {
+  // Close button
+  const closeBtn = document.getElementById('close-room-modal');
+  if (closeBtn) {
+    const closeHandler = () => {
+      modal.classList.remove('active');
+    };
+    closeBtn.removeEventListener('click', closeHandler);
+    closeBtn.addEventListener('click', closeHandler);
+  }
+
+  // Close on overlay click
+  const overlayHandler = e => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  };
+  modal.removeEventListener('click', overlayHandler);
+  modal.addEventListener('click', overlayHandler);
+
+  // Apply buttons
+  document.querySelectorAll('.room-type-modal-apply-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const roomId = btn.dataset.roomId;
+      const roomType = btn.dataset.roomType;
+      const roomPrice = btn.dataset.roomPrice;
+      const roomNumber = btn.dataset.roomNumber;
+
+      // Check if user is logged in
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user || !user.id || user.role !== 'boarder') {
+        const redirectUrl = encodeURIComponent(window.location.href);
+        window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
+        return;
+      }
+
+      // Redirect to confirm-booking page
+      const params = new URLSearchParams({
+        id: property.id || state.roomId,
+        roomId: roomId,
+        title: property.title || 'Property',
+        price: roomPrice,
+        address: property.address || '',
+        landlordName: property.landlord?.name || 'Property Owner',
+        roomType: roomType,
+        roomNumber: roomNumber || roomType,
+      });
+
+      window.location.href = `../confirm-booking/index.html?${params.toString()}`;
     });
   });
 }

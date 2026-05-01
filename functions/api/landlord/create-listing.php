@@ -193,8 +193,10 @@ try {
             $roomCapacity = isset($roomData['capacity']) ? intval($roomData['capacity']) : 1;
             $roomPrice = floatval($input['propertyPrice']);
             
-            // Determine room type based on capacity
-            $roomType = $roomCapacity === 1 ? 'single' : 'shared';
+            // Get room type from frontend, or determine based on capacity as fallback
+            $roomType = isset($roomData['roomType']) && !empty($roomData['roomType']) 
+                ? $roomData['roomType'] 
+                : ($roomCapacity === 1 ? 'single' : 'shared');
             
             $roomStmt->execute([
                 $propertyId,
