@@ -17,7 +17,7 @@ require_once __DIR__ . '/../config/app.php';
 $isAppwriteContext = defined('APPWRITE_FUNCTION_CONTEXT');
 
 // 1. Get allowed origins from environment variable (comma-separated)
-$allowedOriginsStr = env('ALLOWED_ORIGINS', 'http://localhost:3000');
+$allowedOriginsStr = env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000');
 $allowed_origins = array_map('trim', explode(',', $allowedOriginsStr));
 
 // Add default localhost origins if not already present
@@ -25,19 +25,18 @@ $defaultOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://localhost',
-    'http://127.0.0.1'
+    'http://127.0.0.1',
+    'https://haven-space.appwrite.network'
 ];
 $allowed_origins = array_unique(array_merge($allowed_origins, $defaultOrigins));
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-if (!$isAppwriteContext) {
-    // Remove any existing CORS headers to avoid duplicates
-    header_remove('Access-Control-Allow-Origin');
-    header_remove('Access-Control-Allow-Methods');
-    header_remove('Access-Control-Allow-Headers');
-    header_remove('Access-Control-Allow-Credentials');
-}
+// Always remove existing CORS headers to avoid duplicates
+header_remove('Access-Control-Allow-Origin');
+header_remove('Access-Control-Allow-Methods');
+header_remove('Access-Control-Allow-Headers');
+header_remove('Access-Control-Allow-Credentials');
 
 // Normalize origin for comparison (remove port for localhost)
 $normalizedOrigin = $origin;
@@ -47,7 +46,7 @@ if (strpos($origin, 'http://localhost:') === 0) {
 
 // Allow requests without Origin header (direct browser navigation)
 if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin === 'http://localhost') {
-    if ($origin !== '' && !$isAppwriteContext) {
+    if ($origin !== '') {
         header("Access-Control-Allow-Origin: $origin");
     }
 } else {
@@ -58,6 +57,7 @@ if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin =
 
     // Return 403 for unauthorized origin
     http_response_code(403);
+    header('Content-Type: application/json');
     $body = json_encode([
         'error' => 'Unauthorized origin',
         'message' => isDebugMode() ? "Origin '$origin' is not allowed" : 'CORS policy violation',
@@ -66,22 +66,17 @@ if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin =
     if ($isAppwriteContext) {
         throw new ResponseSentException(403, $body);
     }
-    if (!$isAppwriteContext) {
-        header('Content-Type: application/json');
-    }
     exit;
 }
 
-if (!$isAppwriteContext) {
-    // Mandatory CORS Headers
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Id');
-    header('Access-Control-Allow-Credentials: true');
-    header('Access-Control-Max-Age: 86400');
+// Always set CORS headers (even in Appwrite context for direct endpoint calls)
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Id');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Max-Age: 86400');
 
-    // Handle OPTIONS Preflight
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
-        exit;
-    }
+// Handle OPTIONS Preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
 }

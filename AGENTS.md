@@ -172,3 +172,7 @@ alistairybaez574@gmail.com
 Kenjigwapo_123
 
 When making multi-file string replacements that would fail with shell regex escaping (e.g., PHP $variable['key'] patterns), write a temporary Python script to a file, run it with python <file>, verify the output, then delete the script. Use str.replace() for exact matches and raw strings (r'...') for Windows paths.
+
+## Appwrite CLI Usage
+
+Always use `.kiro/skills/appwrite-cli/SKILL.md` when initiating tasks about Appwrite.
