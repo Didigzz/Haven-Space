@@ -159,35 +159,145 @@ function getUserLocation() {
 }
 
 /**
- * Initialize saved searches toggle functionality
+ * Initialize saved searches (bookmarked properties) functionality
  */
 function initializeSavedSearches() {
-  const searchToggles = document.querySelectorAll('.boarder-toggle input[type="checkbox"]');
+  // Load saved listings from API
+  loadSavedListings();
+}
 
-  searchToggles.forEach(toggle => {
-    // Ensure toggle has accessible label
-    const toggleLabel = toggle.closest('.boarder-toggle');
-    if (toggleLabel && !toggleLabel.querySelector('.visually-hidden')) {
-      const hiddenLabel = document.createElement('span');
-      hiddenLabel.className = 'visually-hidden';
-      const alertName =
-        toggle.closest('.boarder-search-alert')?.querySelector('.boarder-search-alert-name')
-          ?.textContent || 'search alert';
-      hiddenLabel.textContent = `Toggle ${alertName} alerts`;
-      toggleLabel.appendChild(hiddenLabel);
+/**
+ * Load saved listings from API
+ */
+async function loadSavedListings() {
+  try {
+    const userId = getCurrentUserId();
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    toggle.addEventListener('change', e => {
-      const isEnabled = e.target.checked;
-
-      // In production, this would call an API to update notification preferences
-      showNotification(
-        isEnabled ? 'Search alerts enabled' : 'Search alerts disabled',
-        isEnabled ? 'success' : 'info'
-      );
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/saved-listings`, {
+      method: 'GET',
+      headers: headers,
+      credentials: 'include',
     });
-  });
+
+    if (response.ok) {
+      const data = await response.json();
+      dashboardState.savedSearches = data.data || [];
+      renderSavedListings(dashboardState.savedSearches);
+    } else {
+      console.error('Failed to load saved listings:', response.status);
+      renderSavedListings([]);
+    }
+  } catch (error) {
+    console.error('Error loading saved listings:', error);
+    renderSavedListings([]);
+  }
 }
+
+/**
+ * Render saved listings in the dashboard
+ */
+function renderSavedListings(listings) {
+  const container = document.querySelector('.boarder-saved-searches');
+  if (!container) return;
+
+  if (!listings || listings.length === 0) {
+    container.innerHTML = `
+      <div class="boarder-empty-state" style="text-align: center; padding: 40px 20px; color: #6b7280;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px; opacity: 0.5;" aria-hidden="true" focusable="false">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <p style="margin: 0; font-size: 14px; font-weight: 500;">No saved properties yet</p>
+        <p style="margin: 8px 0 0 0; font-size: 13px;">Bookmark properties you like to see them here</p>
+      </div>
+    `;
+    announceToScreenReader('No saved properties available.');
+    return;
+  }
+
+  container.innerHTML = listings
+    .slice(0, 3)
+    .map(listing => {
+      const property = listing.property;
+      const room = listing.room;
+      const price = room ? room.price : property.price;
+
+      // Extract location info from address
+      const addressParts = property.address.split(',');
+      const area = addressParts[addressParts.length - 1]?.trim() || property.address;
+
+      // Format price range
+      const priceFormatted = `₱${formatCurrency(price)}`;
+
+      return `
+        <div class="boarder-search-alert" data-listing-id="${listing.id}" data-property-id="${
+        property.id
+      }">
+          <div class="boarder-search-alert-header">
+            <h4 class="boarder-search-alert-name">${escapeHtml(property.title)}</h4>
+            <button class="boarder-btn-icon" onclick="removeSavedListing(${listing.id}, ${
+        property.id
+      })" aria-label="Remove from saved">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"></path>
+              </svg>
+            </button>
+          </div>
+          <p class="boarder-search-alert-criteria">${area} • ${priceFormatted}</p>
+          <div class="boarder-search-alert-stats">
+            <a href="../rooms/room-details.html?id=${
+              property.id
+            }" class="boarder-btn-text" style="font-size: 13px;">View Property</a>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  announceToScreenReader(`${listings.length} saved properties loaded.`);
+}
+
+/**
+ * Remove a saved listing
+ */
+window.removeSavedListing = async function (listingId, propertyId) {
+  try {
+    const userId = getCurrentUserId();
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/saved-listings`, {
+      method: 'DELETE',
+      headers: headers,
+      credentials: 'include',
+      body: JSON.stringify({ property_id: propertyId }),
+    });
+
+    if (response.ok) {
+      showNotification('Property removed from saved listings', 'success');
+      // Reload saved listings
+      loadSavedListings();
+    } else {
+      showNotification('Failed to remove property', 'error');
+    }
+  } catch (error) {
+    console.error('Error removing saved listing:', error);
+    showNotification('Failed to remove property', 'error');
+  }
+};
 
 /**
  * Initialize application tracker interactions
