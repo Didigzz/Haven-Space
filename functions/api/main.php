@@ -142,10 +142,16 @@ return function ($context) {
                 }
                 
                 // Forward to register.php logic
-                // For now, return a placeholder - we'll implement the full logic
+                // For now, return a placeholder with debug info
                 return $context->res->json(generateResponse([
-                    'message' => 'Registration endpoint - implementation pending'
-                ], 501, 'Not implemented yet'), 501, $headers);
+                    'message' => 'Registration endpoint - implementation pending',
+                    'debug' => [
+                        'path' => $path,
+                        'method' => $method,
+                        'origin' => $origin,
+                        'body' => $requestData
+                    ]
+                ], 200, 'Debug response'), 200, $headers);
 
             // Google OAuth endpoints
             case preg_match('#^/auth/google/authorize\.php$#', $path):

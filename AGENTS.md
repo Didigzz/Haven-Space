@@ -19,6 +19,7 @@
 - Build deployable frontend: `bun run build`
 - Run backend tests when available: `composer test --working-dir functions`
 - Run database migrations: `bun run db:setup`
+- Deploy analyze_dependencies function: `appwrite push function api-function`
 
 ## Universal Conventions
 
