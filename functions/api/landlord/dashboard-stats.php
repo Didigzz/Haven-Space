@@ -81,8 +81,8 @@ try {
     $revenueTrend = 8;
 
     // 3. Calculate Upcoming Renewals
-    // Count applications/leases expiring within next 30 days
-    // TODO: Create leases/contracts table with end_date
+    // Count applications/tenancies expiring within next 30 days
+    // TODO: Create tenancies/contracts table with end_date
     // For now, count approved applications (placeholder)
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as upcoming_renewals

@@ -263,8 +263,8 @@ function openEditModal(roomId) {
     showTenantSection();
     setVal('tenant-name', room.tenant.name ?? '');
     setVal('tenant-contact', room.tenant.phone ?? '');
-    setVal('lease-start', room.tenant.lease_start ?? '');
-    setVal('lease-end', room.tenant.lease_end ?? '');
+    setVal('tenancy-start', room.tenant.tenancy_start ?? '');
+    setVal('tenancy-end', room.tenant.tenancy_end ?? '');
   } else {
     hideTenantSection();
   }

@@ -1,6 +1,6 @@
 /**
- * Boarder Lease Page
- * Handles lease details, documents, payment history, and maintenance history
+ * Boarder Tenancy Page
+ * Handles tenancy details, documents, payment history, and maintenance history
  */
 
 import CONFIG from '../../config.js';
@@ -26,8 +26,8 @@ function initialsFrom(user) {
 }
 
 /**
- * Initialize Lease Page
- * Sets up sidebar, navbar, and lease page functionality
+ * Initialize Tenancy Page
+ * Sets up sidebar, navbar, and tenancy page functionality
  */
 export async function initLeasePage() {
   // Check access control first
@@ -35,9 +35,9 @@ export async function initLeasePage() {
 
   if (!accessResult.hasAccess) {
     const leaseContainer =
-      document.querySelector('.lease-container') || document.querySelector('main');
+      document.querySelector('.tenancy-container') || document.querySelector('main');
     if (leaseContainer) {
-      showProtectedEmptyState(leaseContainer, 'lease');
+      showProtectedEmptyState(leaseContainer, 'tenancy');
     }
     return;
   }
@@ -97,15 +97,15 @@ export async function initLeasePage() {
     });
   }
 
-  // Initialize lease page functionality
+  // Initialize tenancy page functionality
   setupLeasePage();
 }
 
 /**
- * Setup lease page functionality
+ * Setup tenancy page functionality
  */
 function setupLeasePage() {
-  // Fetch lease data from backend
+  // Fetch tenancy data from backend
   fetchLeaseData();
 
   // Fetch payment history from backend
@@ -115,7 +115,7 @@ function setupLeasePage() {
 }
 
 /**
- * Fetch lease data from backend
+ * Fetch tenancy data from backend
  */
 async function fetchLeaseData() {
   try {
@@ -133,7 +133,7 @@ async function fetchLeaseData() {
       headers['X-User-Id'] = userId;
     }
 
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/lease`, {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/tenancy`, {
       method: 'GET',
       headers,
       credentials: 'include',
@@ -141,7 +141,7 @@ async function fetchLeaseData() {
 
     if (!response.ok) {
       await response.text();
-      throw new Error(`Failed to fetch lease data: ${response.status}`);
+      throw new Error(`Failed to fetch tenancy data: ${response.status}`);
     }
 
     const result = await response.json();
@@ -157,18 +157,18 @@ async function fetchLeaseData() {
 }
 
 /**
- * Show no lease state
+ * Show no tenancy state
  */
 function showNoLeaseState() {
-  const content = document.querySelector('.lease-page-content');
+  const content = document.querySelector('.tenancy-page-content');
   if (content) {
     content.innerHTML = `
       <div style="text-align: center; padding: 80px 20px; color: #6b7280;">
         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 24px; opacity: 0.5;">
           <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
-        <h2 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 600; color: #111827;">No Active Lease</h2>
-        <p style="margin: 0 0 24px 0; font-size: 16px;">You don't have an active lease yet. Apply for a room to get started!</p>
+        <h2 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 600; color: #111827;">No Active Tenancy</h2>
+        <p style="margin: 0 0 24px 0; font-size: 16px;">You don't have an active tenancy yet. Apply for a room to get started!</p>
         <a href="../find-a-room/index.html" style="display: inline-block; padding: 12px 24px; background: #16a34a; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Find a Room</a>
       </div>
     `;
@@ -176,46 +176,46 @@ function showNoLeaseState() {
 }
 
 /**
- * Render lease details
- * @param {Object} lease - Lease data from backend
+ * Render tenancy details
+ * @param {Object} tenancy - Tenancy data from backend
  */
 function renderLeaseDetails(lease) {
   // Update property badge and title
-  const propertyBadge = document.querySelector('.lease-property-badge span:last-child');
+  const propertyBadge = document.querySelector('.tenancy-property-badge span:last-child');
   if (propertyBadge) {
     propertyBadge.textContent = lease.property_name;
   }
 
-  const propertyTitle = document.querySelector('.lease-property-title');
+  const propertyTitle = document.querySelector('.tenancy-property-title');
   if (propertyTitle) {
     propertyTitle.textContent = `Room ${lease.room_number} • ${lease.property_name}`;
   }
 
-  const propertySubtitle = document.querySelector('.lease-property-subtitle');
+  const propertySubtitle = document.querySelector('.tenancy-property-subtitle');
   if (propertySubtitle) {
-    const startDate = new Date(lease.lease_start_date);
+    const startDate = new Date(lease.tenancy_start_date);
     const formattedDate = startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     propertySubtitle.textContent = `Your home away from home since ${formattedDate}`;
   }
 
-  // Update lease progress
+  // Update tenancy progress
   const progressPercentage = (lease.current_month / lease.total_months) * 100;
-  const progressFill = document.querySelector('.lease-progress-fill');
+  const progressFill = document.querySelector('.tenancy-progress-fill');
   if (progressFill) {
     progressFill.style.width = `${progressPercentage}%`;
   }
 
-  const progressText = document.querySelector('.lease-progress-percentage');
+  const progressText = document.querySelector('.tenancy-progress-percentage');
   if (progressText) {
     progressText.textContent = `Month ${lease.current_month} of ${lease.total_months}`;
   }
 
-  const daysLeftValue = document.querySelector('.lease-progress-stat-value');
+  const daysLeftValue = document.querySelector('.tenancy-progress-stat-value');
   if (daysLeftValue) {
     daysLeftValue.textContent = lease.days_until_end;
   }
 
-  const leaseEndsValue = document.querySelectorAll('.lease-progress-stat-value')[1];
+  const leaseEndsValue = document.querySelectorAll('.tenancy-progress-stat-value')[1];
   if (leaseEndsValue) {
     const endDate = new Date(lease.end_date);
     leaseEndsValue.textContent = endDate.toLocaleDateString('en-US', {
@@ -226,24 +226,26 @@ function renderLeaseDetails(lease) {
   }
 
   // Update key information cards
-  const monthlyRentValue = document.querySelector('.lease-key-card-primary .lease-key-card-value');
+  const monthlyRentValue = document.querySelector(
+    '.tenancy-key-card-primary .tenancy-key-card-value'
+  );
   if (monthlyRentValue) {
     monthlyRentValue.textContent = `₱${formatCurrency(lease.monthly_rent)}`;
   }
 
-  const securityDepositValue = document.querySelectorAll('.lease-key-card-value')[1];
+  const securityDepositValue = document.querySelectorAll('.tenancy-key-card-value')[1];
   if (securityDepositValue) {
     securityDepositValue.textContent = `₱${formatCurrency(lease.monthly_rent * 2)}`;
   }
 
-  const leaseDurationValue = document.querySelectorAll('.lease-key-card-value')[2];
+  const leaseDurationValue = document.querySelectorAll('.tenancy-key-card-value')[2];
   if (leaseDurationValue) {
     leaseDurationValue.textContent = `${lease.total_months} Months`;
   }
 
-  const leaseDurationNote = document.querySelectorAll('.lease-key-card-note')[2];
+  const leaseDurationNote = document.querySelectorAll('.tenancy-key-card-note')[2];
   if (leaseDurationNote) {
-    const startDate = new Date(lease.lease_start_date);
+    const startDate = new Date(lease.tenancy_start_date);
     const endDate = new Date(lease.end_date);
     const formattedStart = startDate.toLocaleDateString('en-US', {
       month: 'short',
@@ -258,30 +260,30 @@ function renderLeaseDetails(lease) {
     leaseDurationNote.textContent = `${formattedStart} - ${formattedEnd}`;
   }
 
-  // Update lease information section
+  // Update tenancy information section
   updateLeaseInformationSection(lease);
 }
 
 /**
- * Update lease information section
+ * Update tenancy information section
  */
 function updateLeaseInformationSection(lease) {
   // Property Address
-  const propertyAddressValue = document.querySelector('[data-lease-info="property-address"]');
+  const propertyAddressValue = document.querySelector('[data-tenancy-info="property-address"]');
   if (propertyAddressValue) {
     propertyAddressValue.textContent = lease.address;
   }
 
   // Lease Type
-  const leaseTypeValue = document.querySelector('[data-lease-info="lease-type"]');
+  const leaseTypeValue = document.querySelector('[data-tenancy-info="lease-type"]');
   if (leaseTypeValue) {
     leaseTypeValue.textContent = `${lease.total_months}-month contract`;
   }
 
-  // Lease Period
-  const leasePeriodValue = document.querySelector('[data-lease-info="lease-period"]');
+  // Tenancy Period
+  const leasePeriodValue = document.querySelector('[data-tenancy-info="lease-period"]');
   if (leasePeriodValue) {
-    const startDate = new Date(lease.lease_start_date);
+    const startDate = new Date(lease.tenancy_start_date);
     const endDate = new Date(lease.end_date);
     const formattedStart = startDate.toLocaleDateString('en-US', {
       month: 'long',
@@ -297,17 +299,17 @@ function updateLeaseInformationSection(lease) {
   }
 
   // Payment Details
-  const monthlyRentDetail = document.querySelector('[data-lease-info="monthly-rent"]');
+  const monthlyRentDetail = document.querySelector('[data-tenancy-info="monthly-rent"]');
   if (monthlyRentDetail) {
     monthlyRentDetail.textContent = `Monthly: ₱${formatCurrency(lease.monthly_rent)}`;
   }
 
-  const securityDepositDetail = document.querySelector('[data-lease-info="security-deposit"]');
+  const securityDepositDetail = document.querySelector('[data-tenancy-info="security-deposit"]');
   if (securityDepositDetail) {
     securityDepositDetail.textContent = `Security: ₱${formatCurrency(lease.monthly_rent * 2)}`;
   }
 
-  const dueDate = document.querySelector('[data-lease-info="due-date"]');
+  const dueDate = document.querySelector('[data-tenancy-info="due-date"]');
   if (dueDate) {
     dueDate.textContent = 'Due on 1st of each month';
   }
@@ -366,7 +368,7 @@ async function fetchPaymentHistory() {
  * @param {Array} payments - Array of payment objects
  */
 function renderPaymentHistory(payments) {
-  const tbody = document.querySelector('.lease-table-body');
+  const tbody = document.querySelector('.tenancy-table-body');
   if (!tbody) return;
 
   if (!payments || payments.length === 0) {
@@ -394,19 +396,20 @@ function renderPaymentHistory(payments) {
 
       const period = dueDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-      const statusClass = payment.status === 'paid' ? 'lease-status-paid' : 'lease-status-pending';
+      const statusClass =
+        payment.status === 'paid' ? 'tenancy-status-paid' : 'tenancy-status-pending';
       const statusText = payment.status === 'paid' ? 'Paid' : 'Pending';
 
       return `
-      <div class="lease-table-row">
-        <span class="lease-table-cell">${period}</span>
-        <span class="lease-table-cell lease-table-cell-bold">₱${formatCurrency(
+      <div class="tenancy-table-row">
+        <span class="tenancy-table-cell">${period}</span>
+        <span class="tenancy-table-cell tenancy-table-cell-bold">₱${formatCurrency(
           payment.amount
         )}</span>
-        <span class="lease-table-cell">${formattedDueDate}</span>
-        <span class="lease-table-cell">${formattedPaidDate}</span>
-        <span class="lease-table-cell">
-          <span class="lease-status-badge ${statusClass}">${statusText}</span>
+        <span class="tenancy-table-cell">${formattedDueDate}</span>
+        <span class="tenancy-table-cell">${formattedPaidDate}</span>
+        <span class="tenancy-table-cell">
+          <span class="tenancy-status-badge ${statusClass}">${statusText}</span>
         </span>
       </div>
     `;
@@ -418,7 +421,7 @@ function renderPaymentHistory(payments) {
  * Setup document download button handlers
  */
 function setupDocumentDownloadHandlers() {
-  const downloadButtons = document.querySelectorAll('.boarder-lease-doc-btn');
+  const downloadButtons = document.querySelectorAll('.boarder-tenancy-doc-btn');
 
   downloadButtons.forEach(button => {
     button.addEventListener('click', async () => {

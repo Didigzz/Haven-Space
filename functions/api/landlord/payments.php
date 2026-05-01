@@ -70,9 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $paymentId = intval($input['payment_id']);
         $paymentData = [
             'paid_date' => $input['paid_date'] ?? date('Y-m-d'),
-            'payment_method' => $input['payment_method'] ?? null,
-            'reference_number' => $input['reference_number'] ?? null,
-            'notes' => $input['notes'] ?? null,
+            'payment_method' => $input['payment_method'] ?? '',
+            'reference_number' => $input['reference_number'] ?? '',
+            'notes' => $input['notes'] ?? '',
         ];
 
         $updatedPayment = $paymentService->recordPayment($paymentId, $landlordId, $paymentData);

@@ -1,7 +1,7 @@
 /**
  * Landlord Calendar
  * Renders a monthly calendar with real events fetched from the API.
- * Event types: payment (green/red), lease (blue), maintenance (orange/red)
+ * Event types: payment (green/red), tenancy (blue), maintenance (orange/red)
  */
 
 import CONFIG from '../../config.js';
@@ -540,7 +540,7 @@ function initEventListeners() {
     const type = activeEvent.type;
     if (type === 'payment') {
       window.location.href = '../payments/index.html';
-    } else if (type === 'lease') {
+    } else if (type === 'tenancy') {
       window.location.href = '../applications/index.html';
     }
   });

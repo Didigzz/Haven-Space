@@ -153,16 +153,27 @@ function updateNavigationForAuthenticatedUser() {
   // Replace login/signup buttons with user avatar dropdown
   // Determine dropdown content based on user role
   const isBoarder = user.role === 'boarder';
+  const isLandlord = user.role === 'landlord';
 
   const boarderMenuItems = isBoarder
     ? `
     <a href="../boarder/applications/index.html" class="nav-user-menu-item">
-      <span data-icon="documentText" data-icon-width="18" data-icon-height="18"></span>
+      <img src="../../assets/svg/document.svg" alt="" width="18" height="18" />
       My Applications
     </a>
     <a href="../boarder/payments/index.html" class="nav-user-menu-item">
-      <span data-icon="creditCard" data-icon-width="18" data-icon-height="18"></span>
+      <img src="../../assets/svg/creditCard.svg" alt="" width="18" height="18" />
       Payments
+    </a>
+    <div class="nav-user-divider"></div>
+  `
+    : '';
+
+  const landlordMenuItems = isLandlord
+    ? `
+    <a href="../landlord/index.html" class="nav-user-menu-item">
+      <img src="../../assets/svg/home.svg" alt="" width="18" height="18" />
+      Go to Dashboard
     </a>
     <div class="nav-user-divider"></div>
   `
@@ -173,7 +184,7 @@ function updateNavigationForAuthenticatedUser() {
       <button class="nav-user-button" id="nav-user-btn" aria-label="User menu">
         <div class="nav-user-avatar">${initials}</div>
         <span class="nav-user-name">${userName.split(' ')[0]}</span>
-        <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16" data-icon-stroke-width="2" class="nav-chevron"></span>
+        <img src="../../assets/svg/chevron-down.svg" alt="" width="16" height="16" class="nav-chevron" />
       </button>
       <div class="nav-user-dropdown" id="nav-user-dropdown">
         <div class="nav-user-info">
@@ -182,26 +193,15 @@ function updateNavigationForAuthenticatedUser() {
           <div class="nav-user-info-role">${user.role || 'Boarder'}</div>
         </div>
         <div class="nav-user-divider"></div>
+        ${landlordMenuItems}
         ${boarderMenuItems}
         <button class="nav-user-menu-item nav-user-logout" id="nav-logout-btn">
-          <span data-icon="arrowRightOnRectangle" data-icon-width="18" data-icon-height="18"></span>
+          <img src="../../assets/svg/logout.svg" alt="" width="18" height="18" />
           Logout
         </button>
       </div>
     </div>
   `;
-
-  // Inject icons
-  navActions.querySelectorAll('[data-icon]').forEach(iconElement => {
-    const iconName = iconElement.dataset.icon;
-    const options = {
-      width: parseInt(iconElement.dataset.iconWidth) || 24,
-      height: parseInt(iconElement.dataset.iconHeight) || 24,
-      strokeWidth: parseInt(iconElement.dataset.iconStrokeWidth) || 1.5,
-      className: iconElement.className,
-    };
-    iconElement.outerHTML = getIcon(iconName, options);
-  });
 
   // Setup dropdown toggle
   const userBtn = document.getElementById('nav-user-btn');

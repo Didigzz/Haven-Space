@@ -298,7 +298,7 @@ export function isFeatureReadonly(feature) {
     'payments',
     'messages',
     'announcements',
-    'lease',
+    'tenancy',
     'documents',
     'maintenance',
     'house-rules',

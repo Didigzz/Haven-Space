@@ -338,7 +338,7 @@ function formatRoom(array $room): array {
                 'display_order' => intval($p['display_order'])
             ];
         }, $photos),
-        'tenant'      => null, // No tenant info for now since leases table doesn't exist
+        'tenant'      => null, // No tenant info for now since tenancies table doesn't exist
         'created_at'  => $room['created_at'] ?? null,
         'updated_at'  => $room['updated_at'] ?? null,
     ];

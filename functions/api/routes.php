@@ -348,10 +348,10 @@ Router::get('/api/boarder/dashboard/stats', function() {
 });
 
 // ============================================
-// LEASE ROUTES - BOARDER
+// TENANCY ROUTES - BOARDER
 // ============================================
-Router::get('/api/boarder/lease', function() {
-    require_once __DIR__ . '/boarder/lease.php';
+Router::get('/api/boarder/tenancy', function() {
+    require_once __DIR__ . '/boarder/tenancy.php';
 });
 
 // ============================================

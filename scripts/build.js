@@ -323,7 +323,7 @@ console.log('    havenspace.com/boarder/payments/ → Payments');
 console.log('    havenspace.com/boarder/profile/ → Profile');
 console.log('    havenspace.com/boarder/rooms/ → Rooms');
 console.log('    havenspace.com/boarder/find-a-room/ → Find a Room');
-console.log('    havenspace.com/boarder/lease/ → Lease');
+console.log('    havenspace.com/boarder/tenancy/ → Tenancy');
 console.log('\n  Landlord:');
 console.log('    havenspace.com/landlord/ → Dashboard');
 console.log('    havenspace.com/landlord/maps/ → Map view');

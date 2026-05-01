@@ -163,8 +163,8 @@ try {
     // Extract user information
     $googleId = $googleUser['sub'] ?? null;
     $email = $googleUser['email'] ?? null;
-    $firstName = $googleUser['given_name'] ?? null;
-    $lastName = $googleUser['family_name'] ?? null;
+    $firstName = $googleUser['given_name'] ?? '';
+    $lastName = $googleUser['family_name'] ?? '';
     $avatarUrl = $googleUser['picture'] ?? null;
     $emailVerified = $googleUser['email_verified'] ?? false;
 
@@ -365,23 +365,19 @@ try {
     $stmtVerified = $pdo->prepare('
         SELECT u.is_verified, acs.status_name as account_status
         FROM users u
-        JOIN account_statuses acs ON u.account_status_id = acs.id        WHERE u.id = ?
-        ORDER BY 
-            CASE vs.status_name
-                WHEN "approved" THEN 1
-                WHEN "pending" THEN 2
-                WHEN "rejected" THEN 3
-                ELSE 4
-            END,
-            vr.reviewed_at DESC,
-            vr.submitted_at DESC
-        LIMIT 1
+        JOIN account_statuses acs ON u.account_status_id = acs.id
+        WHERE u.id = ?
     ');
     $stmtVerified->execute([$userId]);
     $verifiedRow = $stmtVerified->fetch();
     $isVerified = $verifiedRow ? (bool) $verifiedRow['is_verified'] : false;
     $accountStatus = $verifiedRow['account_status'] ?? 'active';
-    $verificationStatus = $verifiedRow['verification_status'] ?? null;
+    
+    // Derive verification status for landlords from is_verified flag
+    $verificationStatus = null;
+    if ($userRole === 'landlord') {
+        $verificationStatus = $isVerified ? 'approved' : 'pending';
+    }
 
     if ($accountStatus !== 'active' && !($accountStatus === 'pending_verification' && $userRole === 'landlord')) {
         header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=' . urlencode('Your account is not active. Contact support.')));
@@ -468,6 +464,17 @@ try {
     // Ensure we're using the correct base URL
     $finalRedirectUrl = buildRedirectUrl($baseUrl, $redirectPath);
     
+    // Fetch avatar URL from database
+    $avatarStmt = $pdo->prepare('
+        SELECT f.file_url as avatar_url
+        FROM users u
+        LEFT JOIN files f ON u.avatar_file_id = f.id
+        WHERE u.id = ?
+    ');
+    $avatarStmt->execute([$userId]);
+    $avatarRow = $avatarStmt->fetch();
+    $userAvatarUrl = $avatarRow ? $avatarRow['avatar_url'] : null;
+    
     // Create user data for client-side storage
     $userData = [
         'id' => $userId,
@@ -475,6 +482,7 @@ try {
         'last_name' => $lastName,
         'email' => $email,
         'role' => $userRole,
+        'avatar_url' => $userAvatarUrl,
         'access_token' => $jwtAccessToken,
         'refresh_token' => $jwtRefreshToken,
     ];

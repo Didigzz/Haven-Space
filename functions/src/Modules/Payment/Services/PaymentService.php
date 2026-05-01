@@ -125,9 +125,9 @@ class PaymentService
         $updateData = [
             'status' => 'paid',
             'paid_date' => $data['paid_date'] ?? date('Y-m-d'),
-            'payment_method' => $data['payment_method'] ?? null,
-            'reference_number' => $data['reference_number'] ?? null,
-            'notes' => $data['notes'] ?? null,
+            'payment_method' => $data['payment_method'] ?? '',
+            'reference_number' => $data['reference_number'] ?? '',
+            'notes' => $data['notes'] ?? '',
         ];
 
         $this->repository->update($paymentId, $updateData);

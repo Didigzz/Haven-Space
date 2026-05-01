@@ -41,9 +41,9 @@ class PaymentRepository
             $data['late_fee'] ?? 0,
             $data['due_date'],
             $data['status'] ?? 'pending',
-            $data['payment_method'] ?? null,
-            $data['reference_number'] ?? null,
-            $data['notes'] ?? null,
+            $data['payment_method'] ?? '',
+            $data['reference_number'] ?? '',
+            $data['notes'] ?? '',
         ]);
 
         return (int) $this->pdo->lastInsertId();

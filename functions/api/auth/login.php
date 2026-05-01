@@ -82,10 +82,12 @@ try {
 
     $stmt = $pdo->prepare('
         SELECT u.id, u.first_name, u.last_name, u.email, u.password_hash, u.google_id,
-               ur.role_name as role, u.is_verified, acs.status_name as account_status
+               ur.role_name as role, u.is_verified, acs.status_name as account_status,
+               f.file_url as avatar_url
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
         JOIN account_statuses acs ON u.account_status_id = acs.id
+        LEFT JOIN files f ON u.avatar_file_id = f.id
         WHERE u.email = ? AND u.deleted_at IS NULL
     ');
     $stmt->execute([$email]);
@@ -143,6 +145,7 @@ try {
                 'role' => $user['role'],
                 'is_verified' => (bool) $user['is_verified'],
                 'account_status' => $accountStatus,
+                'avatar_url' => $user['avatar_url'],
             ];
 
             // Add boarder status if applicable

@@ -378,9 +378,22 @@ function renderPaymentHistory(payments) {
       const monthYear = payment.due_date ? formatDate(payment.due_date, 'long') : 'Payment';
       const title = `${monthYear} Rent`;
 
+      // Check if this payment includes deposit
+      const includesDeposit = payment.includes_deposit && payment.deposit > 0;
+      const depositAmount = includesDeposit ? payment.deposit : 0;
+
       // Add notes if this is a move-in payment
-      const isFirstPayment = payment.notes && payment.notes.includes('deposit');
-      const notesHtml = payment.notes
+      const isFirstPayment =
+        includesDeposit || (payment.notes && payment.notes.includes('deposit'));
+      const notesHtml = includesDeposit
+        ? `
+          <div class="timeline-details-note">
+            <span class="timeline-note">Includes security deposit: ₱${formatCurrency(
+              depositAmount
+            )}</span>
+          </div>
+        `
+        : payment.notes
         ? `
           <div class="timeline-details-note">
             <span class="timeline-note">${payment.notes}</span>

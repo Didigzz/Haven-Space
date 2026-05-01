@@ -10,7 +10,7 @@ import { initNavbar } from '../../components/navbar.js';
 import { loadDashboardData } from './dashboard.js';
 import { initMessages } from './messages.js';
 import { initBoarderFindARoom } from './boarder-find-a-room-auth.js';
-import { initLeasePage } from './lease.js';
+import { initLeasePage } from './tenancy.js';
 import { initPaymentPage } from './boarder-payment-process.js';
 import { initSettingsPage } from './settings.js';
 import { initAnnouncements } from './announcements.js';
@@ -157,7 +157,7 @@ export async function initBoarderDashboard() {
     initMessages();
   }
 
-  if (currentPath.includes('lease')) {
+  if (currentPath.includes('tenancy')) {
     initLeasePage();
   }
 

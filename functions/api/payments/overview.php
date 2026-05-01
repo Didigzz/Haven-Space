@@ -31,7 +31,7 @@ if ($method === 'GET') {
         error_log("Database connection established");
         
         if ($userRole === 'boarder') {
-            // Get active application/lease
+            // Get active application/tenancy
             $appStmt = $pdo->prepare("
                 SELECT 
                     a.id,

@@ -132,6 +132,128 @@
 
 Whenever a recurring bug appears across prompts, and a fix has been identified and implemented, the fix should be documented in AGENTS.md. This ensures that when a similar issue arises in the future, the solution is already recorded, helping to avoid repeating the same mistake.
 
+### Fixed: Boarder Lease Endpoint Referencing Non-Existent average_rating Column (2026-05-01)
+
+**Problem**: The boarder lease endpoint was failing with "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'lp.average_rating' in 'field list'" error, preventing boarders from viewing their active lease information even after being accepted.
+
+**Root Cause**: The query in `functions/api/boarder/lease.php` was trying to select `lp.average_rating` from the `landlord_profiles` table, but this column doesn't exist in the schema. The rating system was never implemented.
+
+**Evidence**:
+
+- Error: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'lp.average_rating' in 'field list'`
+- `landlord_profiles` table schema only has: `id`, `user_id`, `boarding_house_name`, `boarding_house_description`, `property_type`, `total_rooms`, `available_rooms`, `welcome_message`, `house_rules_file_id`, `created_at`, `updated_at`
+- No rating system exists in the database or codebase
+- Query was LEFT JOINing `landlord_profiles` and selecting non-existent column
+
+**Solution**:
+
+- Updated `functions/api/boarder/lease.php` to remove `lp.average_rating as landlord_rating` from SELECT clause
+- Updated response mapping to set `rating: 0` with comment "Rating system not yet implemented"
+- Removed the LEFT JOIN to `landlord_profiles` since no columns from it were being used
+
+**Current Pattern**: Landlord information in lease responses includes:
+
+- `id`, `name`, `is_verified` from `users` table
+- `rating` hardcoded to 0 until rating system is implemented
+
+**Prevention**: Before querying columns, verify they exist in the database schema. Don't assume features like ratings exist without checking `functions/database/schema.sql`. If a feature isn't implemented, use placeholder values with clear comments rather than querying non-existent columns.
+
+### Fixed: Google OAuth Failing Due to NULL last_name (2026-05-01)
+
+**Problem**: Google authentication was failing with "SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'last_name' cannot be null" error when users signed in with Google accounts that don't have a last name.
+
+**Root Cause**: The Google callback code was extracting `family_name` from Google's user data and defaulting to `null` when not provided. However, the `users` table has `last_name VARCHAR(100) NOT NULL`, which rejects NULL values.
+
+**Evidence**:
+
+- Error: `SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'last_name' cannot be null`
+- Google's `family_name` field is optional and not always provided
+- Code was using `$lastName = $googleUser['family_name'] ?? null;`
+- Users table schema: `last_name VARCHAR(100) NOT NULL`
+
+**Solution**:
+
+- Updated `functions/api/auth/google/callback.php` line 186-187 to default to empty string instead of null:
+  ```php
+  $firstName = $googleUser['given_name'] ?? '';
+  $lastName = $googleUser['family_name'] ?? '';
+  ```
+
+**Current Pattern**: When extracting optional data from OAuth providers that maps to NOT NULL database columns, always provide appropriate default values (empty string for VARCHAR, 0 for numbers, etc.) instead of null.
+
+**Prevention**: When integrating with external APIs, check the API documentation to understand which fields are optional. For optional fields that map to NOT NULL database columns, always provide sensible defaults in the extraction logic.
+
+### Fixed: Google Profile Picture Not Displaying (2026-05-01)
+
+**Problem**: After logging in with Google, the user's Google profile picture wasn't displaying in the UI. Instead, users saw generated avatar initials or default avatars.
+
+**Root Cause**: The Google callback was correctly saving the avatar URL to the database (in the `files` table), but it wasn't including the `avatar_url` in the user data passed to the frontend during the redirect. Similarly, the regular login endpoint wasn't fetching or returning the avatar URL.
+
+**Evidence**:
+
+- Google avatar URLs were being inserted into `files` table correctly
+- `functions/api/auth/google/callback.php` created `$userData` array without `avatar_url` field
+- `functions/api/auth/login.php` query didn't LEFT JOIN the `files` table
+- Frontend `profile-utils.js` was looking for `user.avatar_url` but it was undefined
+- `/api/auth/me` and `/api/users/profile` endpoints correctly returned `avatar_url`, but initial login data didn't
+
+**Solution**:
+
+- Updated `functions/api/auth/google/callback.php` to fetch avatar URL from database and include it in `$userData`:
+
+  ```php
+  // Fetch avatar URL from database
+  $avatarStmt = $pdo->prepare('
+      SELECT f.file_url as avatar_url
+      FROM users u
+      LEFT JOIN files f ON u.avatar_file_id = f.id
+      WHERE u.id = ?
+  ');
+  $avatarStmt->execute([$userId]);
+  $avatarRow = $avatarStmt->fetch();
+  $userAvatarUrl = $avatarRow ? $avatarRow['avatar_url'] : null;
+
+  $userData = [
+      // ... other fields
+      'avatar_url' => $userAvatarUrl,
+  ];
+  ```
+
+- Updated `functions/api/auth/login.php` to:
+  - Add LEFT JOIN to files table in the user query
+  - Include `avatar_url` in the `$userResponse` array
+
+**Current Pattern**: All authentication endpoints (login, Google callback, /api/auth/me) should return `avatar_url` by LEFT JOINing the `files` table on `u.avatar_file_id = f.id` and selecting `f.file_url as avatar_url`.
+
+**Prevention**: When adding new authentication methods or modifying auth endpoints, ensure the user data returned includes all fields that the frontend expects, especially `avatar_url`. Test the complete login flow to verify profile pictures display correctly.
+
+### Fixed: Google OAuth Referencing Removed Verification Tables (2026-05-01)
+
+**Problem**: Google OAuth callback was failing with "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'vs.status_name' in 'order clause'" error.
+
+**Root Cause**: The Google callback had a query that was still referencing the removed `verification_records` (vr) and `verification_statuses` (vs) tables that were dropped in migration 030. The query was trying to ORDER BY and fetch verification_status from these non-existent tables.
+
+**Evidence**:
+
+- Error: `Unknown column 'vs.status_name' in 'order clause'`
+- Query had `ORDER BY CASE vs.status_name` and references to `vr.reviewed_at`, `vr.submitted_at`
+- Migration 030 dropped `verification_records`, `verification_log`, and `verification_statuses` tables
+- System now uses simple `users.is_verified` boolean flag instead
+
+**Solution**:
+
+- Updated `functions/api/auth/google/callback.php` to remove verification table JOINs and ORDER BY clause
+- Simplified query to just fetch `u.is_verified` and `acs.status_name` from users and account_statuses tables
+- Derive `verification_status` from `is_verified` flag for landlords: `$verificationStatus = $isVerified ? 'approved' : 'pending';`
+
+**Current Pattern**: Verification status is derived from `users.is_verified` boolean:
+
+- For landlords: `verification_status = is_verified ? 'approved' : 'pending'`
+- For boarders: No verification status needed
+- No complex verification tables or audit trails
+
+**Prevention**: After removing database tables via migration, search the entire codebase for references to those table names (including aliases like `vr`, `vs`, `vl`). Use `rg "verification_records|verification_statuses|verification_log"` to find all references.
+
 ### Fixed: Duplicate Applications Allowed (2026-05-01)
 
 **Problem**: Boarders could accidentally submit multiple applications to the same room by clicking the apply button multiple times or navigating back and resubmitting. This created duplicate records in the database and confused landlords viewing applications.

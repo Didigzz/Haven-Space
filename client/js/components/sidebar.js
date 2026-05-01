@@ -75,12 +75,7 @@ const NAV_CONFIG = {
       group: 'Main',
       items: [
         { label: 'Dashboard', href: '../boarder/index.html', icon: 'home' },
-        {
-          label: 'My Applications',
-          href: '../boarder/applications/index.html',
-          icon: 'clipboardList',
-        },
-        { label: 'My Lease', href: '../boarder/lease/index.html', icon: 'document' },
+        { label: 'My Tenancy', href: '../boarder/tenancy/index.html', icon: 'document' },
       ],
     },
     {
@@ -287,7 +282,7 @@ function resolveBasePath() {
 
 /**
  * Resolve navigation href based on base path
- * Converts relative paths like '../boarder/lease/index.html' to absolute paths
+ * Converts relative paths like '../boarder/tenancy/index.html' to absolute paths
  * @param {string} href - Navigation href
  * @param {string} basePath - Base path from resolveBasePath()
  * @returns {string} Resolved href

@@ -15,9 +15,9 @@ const dashboardState = {
   payments: [],
   savedSearches: [],
   documents: [],
-  lease: null,
+  tenancy: null,
   // Track user's contract status
-  contractStatus: 'application', // 'application' | 'contract' | 'active-lease'
+  contractStatus: 'application', // 'application' | 'contract' | 'active-tenancy'
 };
 
 /**
@@ -519,7 +519,7 @@ async function loadDashboardData() {
       console.error('Error loading maintenance:', error);
     }
 
-    // Fetch lease information
+    // Fetch tenancy information
     try {
       const token = localStorage.getItem('token');
       const headers = {
@@ -530,21 +530,21 @@ async function loadDashboardData() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const leaseResponse = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/lease`, {
+      const leaseResponse = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/tenancy`, {
         method: 'GET',
         headers: headers,
         credentials: 'include',
       });
 
       if (leaseResponse.ok) {
-        const leaseData = await leaseResponse.json();
-        dashboardState.lease = leaseData.data || null;
-        renderLeaseInfo(dashboardState.lease);
+        const tenancyData = await leaseResponse.json();
+        dashboardState.tenancy = tenancyData.data || null;
+        renderLeaseInfo(dashboardState.tenancy);
 
-        renderImportantInformation(dashboardState.lease);
+        renderImportantInformation(dashboardState.tenancy);
       }
     } catch (error) {
-      console.error('Error loading lease info:', error);
+      console.error('Error loading tenancy info:', error);
     }
 
     // Fetch payment history for dashboard preview
@@ -599,11 +599,11 @@ function getCurrentUserId() {
 }
 
 /**
- * Render lease information in dashboard
+ * Render tenancy information in dashboard
  */
 function renderLeaseInfo(lease) {
   if (!lease) {
-    // Show default state when no lease data
+    // Show default state when no tenancy data
     const greeting = document.querySelector('[data-greeting]');
     if (greeting) {
       greeting.textContent = 'Welcome home';
@@ -621,13 +621,13 @@ function renderLeaseInfo(lease) {
       utilitiesValue.textContent = '₱0.00';
     }
     if (utilitiesDesc) {
-      utilitiesDesc.textContent = 'No active lease';
+      utilitiesDesc.textContent = 'No active tenancy';
     }
 
-    const leasePeriodValue = document.querySelector('[data-lease-period]');
-    const leasePeriodDesc = document.querySelector('[data-lease-renewal]');
+    const leasePeriodValue = document.querySelector('[data-tenancy-period]');
+    const leasePeriodDesc = document.querySelector('[data-tenancy-renewal]');
     if (leasePeriodValue) {
-      leasePeriodValue.textContent = 'No Lease';
+      leasePeriodValue.textContent = 'No Tenancy';
     }
     if (leasePeriodDesc) {
       leasePeriodDesc.textContent = 'Apply for a room to start';
@@ -651,9 +651,9 @@ function renderLeaseInfo(lease) {
     greeting.textContent = `Welcome home to ${lease.property_name}, Room ${lease.room_number}`;
   }
 
-  // Update lease period stat
-  const leasePeriodValue = document.querySelector('[data-lease-period]');
-  const leasePeriodDesc = document.querySelector('[data-lease-renewal]');
+  // Update tenancy period stat
+  const leasePeriodValue = document.querySelector('[data-tenancy-period]');
+  const leasePeriodDesc = document.querySelector('[data-tenancy-renewal]');
 
   if (leasePeriodValue && lease.current_month && lease.total_months) {
     leasePeriodValue.textContent = `Month ${lease.current_month} / ${lease.total_months}`;
@@ -747,6 +747,11 @@ function renderDashboardPayments(payments) {
         const daysLeft = Math.ceil(
           (new Date(payment.due_date) - new Date()) / (1000 * 60 * 60 * 24)
         );
+
+        // Check if this payment includes deposit
+        const includesDeposit = payment.includes_deposit && payment.deposit > 0;
+        const depositAmount = includesDeposit ? payment.deposit : 0;
+
         return `
         <div class="boarder-payment-simple-card current">
           <div class="boarder-payment-simple-header">
@@ -758,6 +763,16 @@ function renderDashboardPayments(payments) {
               <span class="boarder-payment-label">Amount</span>
               <span class="boarder-payment-value">₱${formatCurrency(payment.amount)}</span>
             </div>
+            ${
+              includesDeposit
+                ? `
+            <div class="boarder-payment-row" style="font-size: 12px; color: #6b7280;">
+              <span class="boarder-payment-label">Includes Deposit</span>
+              <span class="boarder-payment-value">₱${formatCurrency(depositAmount)}</span>
+            </div>
+            `
+                : ''
+            }
             <div class="boarder-payment-row">
               <span class="boarder-payment-label">Due Date</span>
               <span class="boarder-payment-value">${formattedDate}</span>
@@ -985,7 +1000,7 @@ function updateUtilitiesCard(card) {
 function updateDynamicCards() {
   const utilitiesCard = document.querySelector('[data-dynamic-card="utilities"]');
   const maintenanceCard = document.querySelector('[data-dynamic-card="maintenance"]');
-  const leaseCard = document.querySelector('[data-dynamic-card="lease"]');
+  const leaseCard = document.querySelector('[data-dynamic-card="tenancy"]');
 
   const isPostContract =
     dashboardState.contractStatus === 'contract' ||
@@ -1010,7 +1025,7 @@ function updateDynamicCards() {
     updateMaintenanceCard(maintenanceCard);
     updateLeaseCard(leaseCard);
   } else {
-    // Show Application Progress and Lease Start info
+    // Show Application Progress and Tenancy Start info
     updateApplicationProgressCard(maintenanceCard);
     updateLeaseTimelineCard(leaseCard);
   }
@@ -1095,7 +1110,7 @@ function updateApplicationProgressCard(card) {
 }
 
 /**
- * Update card to show Lease Start Timeline (pre-contract)
+ * Update card to show Tenancy Start Timeline (pre-contract)
  */
 function updateLeaseTimelineCard(card) {
   const label = card.querySelector('.boarder-stat-label');

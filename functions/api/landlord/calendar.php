@@ -2,7 +2,7 @@
 
 /**
  * Landlord Calendar API
- * GET /api/landlord/calendar - Get calendar events (payments, leases, maintenance)
+ * GET /api/landlord/calendar - Get calendar events (payments, tenancies, maintenance)
  *
  * Query params:
  *   start_date  YYYY-MM-DD  (default: first day of current month)
@@ -96,7 +96,7 @@ try {
     }
 
     // ----------------------------------------------------------------
-    // 2. Lease events (accepted applications = lease start)
+    // 2. Tenancy events (accepted applications = tenancy start)
     // ----------------------------------------------------------------
     $stmt = $pdo->prepare("
         SELECT
@@ -121,18 +121,18 @@ try {
         'start_date'  => $startDate,
         'end_date'    => $endDate,
     ]);
-    $leases = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $tenancies = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    foreach ($leases as $lease) {
+    foreach ($tenancies as $tenancy) {
         $events[] = [
-            'id'          => 'lease_' . $lease['id'],
-            'title'       => 'Lease Start - ' . $lease['boarder_name'],
-            'date'        => date('Y-m-d', strtotime($lease['event_date'])),
-            'type'        => 'lease',
+            'id'          => 'tenancy_' . $tenancy['id'],
+            'title'       => 'Tenancy Start - ' . $tenancy['boarder_name'],
+            'date'        => date('Y-m-d', strtotime($tenancy['event_date'])),
+            'type'        => 'tenancy',
             'color'       => 'blue',
-            'description' => 'Lease agreement begins for ' . $lease['property_name'] . ' - ' . $lease['room_name'],
-            'tenant'      => $lease['boarder_name'],
-            'property'    => $lease['property_name'] . ' - ' . $lease['room_name'],
+            'description' => 'Tenancy begins for ' . $tenancy['property_name'] . ' - ' . $tenancy['room_name'],
+            'tenant'      => $tenancy['boarder_name'],
+            'property'    => $tenancy['property_name'] . ' - ' . $tenancy['room_name'],
             'action'      => 'Application accepted',
         ];
     }

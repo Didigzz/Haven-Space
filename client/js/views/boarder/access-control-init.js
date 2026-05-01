@@ -22,7 +22,7 @@ const PROTECTED_FEATURES = {
   payments: ['payments', 'payment-process'],
   messages: ['messages'],
   announcements: ['announcements'],
-  lease: ['lease'],
+  lease: ['tenancy'],
   documents: ['documents'],
   maintenance: ['maintenance', 'boarder-maintenance'],
   houseRules: ['house-rules'],
@@ -98,7 +98,7 @@ export function showProtectedEmptyState(container, feature) {
       icon: 'megaphone',
     },
     lease: {
-      title: 'No Active Lease',
+      title: 'No Active Tenancy',
       description: 'Your lease information will be available once your application is accepted.',
       icon: 'document',
     },

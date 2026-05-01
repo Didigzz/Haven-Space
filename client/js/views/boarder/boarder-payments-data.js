@@ -73,7 +73,7 @@ export async function fetchPaymentHistory() {
 export async function fetchLeaseInfo() {
   try {
     const userId = getCurrentUserId();
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/lease`, {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/tenancy`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -293,6 +293,11 @@ export function renderDashboardPayments(payments) {
         const daysLeft = Math.ceil(
           (new Date(payment.due_date) - new Date()) / (1000 * 60 * 60 * 24)
         );
+
+        // Check if this payment includes deposit
+        const includesDeposit = payment.includes_deposit && payment.deposit > 0;
+        const depositAmount = includesDeposit ? payment.deposit : 0;
+
         return `
         <div class="boarder-payment-simple-card current">
           <div class="boarder-payment-simple-header">
@@ -304,6 +309,16 @@ export function renderDashboardPayments(payments) {
               <span class="boarder-payment-label">Amount</span>
               <span class="boarder-payment-value">₱${formatCurrency(payment.amount)}</span>
             </div>
+            ${
+              includesDeposit
+                ? `
+            <div class="boarder-payment-row" style="font-size: 12px; color: #6b7280;">
+              <span class="boarder-payment-label">Includes Deposit</span>
+              <span class="boarder-payment-value">₱${formatCurrency(depositAmount)}</span>
+            </div>
+            `
+                : ''
+            }
             <div class="boarder-payment-row">
               <span class="boarder-payment-label">Due Date</span>
               <span class="boarder-payment-value">${formattedDate}</span>

@@ -52,7 +52,9 @@ try {
                     p.created_at,
                     prop.title as property_name,
                     r.title as room_title,
-                    r.room_number
+                    r.room_number,
+                    r.deposit,
+                    r.price as room_price
                 FROM payments p
                 LEFT JOIN rooms r ON p.room_id = r.id
                 LEFT JOIN properties prop ON r.property_id = prop.id
@@ -74,6 +76,7 @@ try {
                     SELECT 
                         a.id,
                         r.price,
+                        r.deposit,
                         r.title as room_title,
                         r.room_number,
                         p.title as property_name
@@ -89,7 +92,10 @@ try {
                 if ($application) {
                     // Generate only current month payment (no previous months for newly accepted boarders)
                     $payments = [];
-                    $amount = floatval($application['price']);
+                    // For first month, include deposit + monthly rent
+                    $monthlyRent = floatval($application['price']);
+                    $deposit = floatval($application['deposit']);
+                    $amount = $monthlyRent + $deposit;
                     $dueDate = date('Y-m-d', strtotime("first day of this month"));
                     
                     $payments[] = [
@@ -104,16 +110,40 @@ try {
                         'created_at' => $dueDate,
                         'property_name' => $application['property_name'],
                         'room_title' => $application['room_title'],
-                        'room_number' => $application['room_number']
+                        'room_number' => $application['room_number'],
+                        'deposit' => $deposit,
+                        'room_price' => $monthlyRent
                     ];
                 }
             }
 
+            // Check if this is the first payment (no previous paid payments)
+            $paidPaymentsStmt = $pdo->prepare("
+                SELECT COUNT(*) as paid_count
+                FROM payments
+                WHERE boarder_id = ? AND status = 'paid'
+            ");
+            $paidPaymentsStmt->execute([$userId]);
+            $paidCount = intval($paidPaymentsStmt->fetchColumn());
+            $isFirstPayment = ($paidCount === 0);
+
             // Transform data
-            $transformedPayments = array_map(function($payment) {
+            $transformedPayments = array_map(function($payment) use ($isFirstPayment) {
+                $amount = floatval($payment['amount']);
+                $deposit = floatval($payment['deposit'] ?? 0);
+                $roomPrice = floatval($payment['room_price'] ?? 0);
+                
+                // For the first unpaid payment, add deposit to the amount
+                if ($isFirstPayment && $payment['status'] === 'pending' && $deposit > 0) {
+                    // If amount is just the room price, add deposit
+                    if ($amount == $roomPrice) {
+                        $amount = $roomPrice + $deposit;
+                    }
+                }
+                
                 return [
                     'id' => $payment['id'],
-                    'amount' => floatval($payment['amount']),
+                    'amount' => $amount,
                     'payment_date' => $payment['paid_date'] ?? $payment['payment_date'] ?? null,
                     'due_date' => $payment['due_date'],
                     'status' => $payment['status'],
@@ -123,7 +153,9 @@ try {
                     'property_name' => htmlspecialchars($payment['property_name'] ?? ''),
                     'room_title' => htmlspecialchars($payment['room_title'] ?? ''),
                     'room_number' => $payment['room_number'],
-                    'created_at' => $payment['created_at']
+                    'created_at' => $payment['created_at'],
+                    'deposit' => $deposit,
+                    'includes_deposit' => ($isFirstPayment && $payment['status'] === 'pending' && $deposit > 0)
                 ];
             }, $payments);
 

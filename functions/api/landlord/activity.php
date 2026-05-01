@@ -9,7 +9,7 @@
  * - New applications
  * - Payment reminders sent
  * - Maintenance requests
- * - Lease renewals
+ * - Tenancy renewals
  */
 
 // CORS headers must be set before any output
@@ -107,10 +107,10 @@ try {
     $reminders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $activities = array_merge($activities, $reminders);
 
-    // 4. Get recent lease renewals (approved applications with recent status update)
+    // 4. Get recent tenancy renewals (approved applications with recent status update)
     $stmt = $pdo->prepare("
         SELECT 
-            'lease_renewal' as type,
+            'tenancy_renewal' as type,
             a.id,
             a.updated_at as activity_date,
             CONCAT(u.first_name, ' ', u.last_name) as entity_name,
@@ -192,10 +192,10 @@ function formatActivity($activity) {
             $description = "<strong>Payment reminder</strong> sent to {$entityName}";
             break;
             
-        case 'lease_renewal':
+        case 'tenancy_renewal':
             $icon = 'checkCircle';
             $color = 'purple';
-            $description = "<strong>Lease renewed</strong> for {$propertyName}" . ($roomName ? " - {$roomName}" : "");
+            $description = "<strong>Tenancy renewed</strong> for {$propertyName}" . ($roomName ? " - {$roomName}" : "");
             break;
             
         default:
