@@ -10,6 +10,9 @@
 
   function isDashboardPage() {
     const body = document.body;
+    if (!body) {
+      return false; // Body not loaded yet, assume not dashboard
+    }
     return (
       body.hasAttribute('data-dashboard-type') ||
       body.getAttribute('data-view') === 'boarder' ||

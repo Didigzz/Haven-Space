@@ -197,7 +197,7 @@ const NAV_CONFIG = {
           icon: 'shieldCheck',
         },
         { label: 'Users', href: '../admin/index.html#users', icon: 'users' },
-        { label: 'Properties', href: '../admin/index.html#properties', icon: 'buildingOffice' },
+        { label: 'Property', href: '../admin/index.html#properties', icon: 'buildingOffice' },
         { label: 'Applications', href: '../admin/index.html#applications', icon: 'application' },
         { label: 'Analytics', href: '../admin/index.html#analytics', icon: 'chartBar' },
         { label: 'Reports & disputes', href: '../admin/index.html#reports', icon: 'flag' },
