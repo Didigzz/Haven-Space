@@ -165,6 +165,8 @@ try {
     // Check if custom rooms data is provided from frontend
     $customRooms = isset($input['rooms']) && is_array($input['rooms']) ? $input['rooms'] : [];
     
+    $createdRoomIds = []; // Track created room IDs
+    
     if (!empty($customRooms)) {
         // Use custom room data from frontend
         $roomStmt = $pdo->prepare("
@@ -207,6 +209,8 @@ try {
                 $roomType,
                 $roomCapacity
             ]);
+            
+            $createdRoomIds[] = intval($pdo->lastInsertId());
         }
     } else {
         // Fallback to old behavior if no custom rooms data provided
@@ -250,6 +254,8 @@ try {
                     $roomType,
                     $roomCapacity
                 ]);
+                
+                $createdRoomIds[] = intval($pdo->lastInsertId());
             }
         }
     }
@@ -263,6 +269,7 @@ try {
             'id' => $propertyId,
             'title' => $propertyName,
             'status' => 'available',
+            'room_ids' => $createdRoomIds, // Return created room IDs
         ],
     ]);
 } catch (PDOException $e) {

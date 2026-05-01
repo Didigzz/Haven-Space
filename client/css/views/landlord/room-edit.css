@@ -312,6 +312,7 @@
   object-fit: cover;
 }
 
+/* Only show placeholder icon when using background-image with placeholder */
 .room-card-image::after {
   content: '';
   display: block;
@@ -325,6 +326,12 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Hide the placeholder icon when there's an actual photo (background-size: cover indicates real photo) */
+.room-card-image[style*='background-size: cover']::after {
+  display: none;
 }
 
 .room-status {

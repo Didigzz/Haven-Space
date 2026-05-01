@@ -587,7 +587,7 @@ async function handleFormSubmit(e) {
     amenities: [...formData.getAll('amenities'), ...customAmenities],
     rooms: roomsData.map(room => ({
       name: room.name,
-      capacity: parseInt(room.capacity),
+      capacity: parseInt(room.capacity) || 1, // Default to 1 if not specified
       roomType: room.roomType,
       description: room.description,
       photoCount: room.photos.length,
@@ -643,6 +643,7 @@ async function handleFormSubmit(e) {
     }
 
     const propertyId = result.data?.id;
+    const roomIds = result.data?.room_ids || [];
 
     // Upload property photos
     if (uploadedPhotos.length > 0 && propertyId) {
@@ -656,9 +657,9 @@ async function handleFormSubmit(e) {
     }
 
     // Upload room photos
-    if (roomsData.length > 0 && propertyId) {
+    if (roomsData.length > 0 && propertyId && roomIds.length > 0) {
       try {
-        await uploadRoomPhotos(propertyId);
+        await uploadRoomPhotos(propertyId, roomIds);
       } catch (roomPhotoError) {
         // console.error('Room photo upload failed:', roomPhotoError);
         showError(
@@ -711,12 +712,19 @@ async function uploadPhotos(propertyId) {
 /**
  * Upload room photos to the server
  */
-async function uploadRoomPhotos(propertyId) {
+async function uploadRoomPhotos(propertyId, roomIds) {
   // console.log('Starting room photos upload for property:', propertyId);
 
   for (let i = 0; i < roomsData.length; i++) {
     const room = roomsData[i];
     if (room.photos.length === 0) continue;
+
+    // Get the corresponding room ID from the backend response
+    const roomId = roomIds[i];
+    if (!roomId) {
+      console.warn(`No room ID found for room index ${i}, skipping photo upload`);
+      continue;
+    }
 
     const roomPhotoFormData = new FormData();
     room.photos.forEach(photo => {
@@ -724,19 +732,12 @@ async function uploadRoomPhotos(propertyId) {
       roomPhotoFormData.append('roomPhotos[]', photo.file);
     });
 
-    // Add room identifier
-    roomPhotoFormData.append('roomIndex', i);
-    roomPhotoFormData.append('roomName', room.name);
-
-    const response = await fetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}/room-photos`,
-      {
-        method: 'POST',
-        headers: getAuthHeadersOnly(),
-        body: roomPhotoFormData,
-        credentials: 'include',
-      }
-    );
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/rooms/${roomId}/photos`, {
+      method: 'POST',
+      headers: getAuthHeadersOnly(),
+      body: roomPhotoFormData,
+      credentials: 'include',
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -1154,9 +1155,9 @@ function createRoomCard(room, index) {
       </div>
       
       <div class="room-form-row">
-        <div class="room-form-group">
+        <div class="room-form-group" id="room-capacity-group-${index}" style="display: none;">
           <label for="room-capacity-${index}">Person Capacity *</label>
-          <select id="room-capacity-${index}" name="rooms[${index}][capacity]" required>
+          <select id="room-capacity-${index}" name="rooms[${index}][capacity]">
             <option value="">Select capacity</option>
             <option value="1" ${room.capacity === '1' ? 'selected' : ''}>1 person</option>
             <option value="2" ${room.capacity === '2' ? 'selected' : ''}>2 persons</option>
@@ -1236,7 +1237,29 @@ function setupRoomCardEventListeners(card, index) {
   if (roomTypeSelect) {
     roomTypeSelect.addEventListener('change', e => {
       roomsData[index].roomType = e.target.value;
+
+      // Show/hide capacity field based on room type
+      const capacityGroup = card.querySelector(`#room-capacity-group-${index}`);
+      const capacitySelect = card.querySelector(`#room-capacity-${index}`);
+
+      if (e.target.value === 'shared') {
+        // Show capacity field for shared rooms
+        if (capacityGroup) capacityGroup.style.display = 'block';
+        if (capacitySelect) capacitySelect.required = true;
+      } else {
+        // Hide capacity field for non-shared rooms
+        if (capacityGroup) capacityGroup.style.display = 'none';
+        if (capacitySelect) {
+          capacitySelect.required = false;
+          capacitySelect.value = '1'; // Default to 1 person for non-shared rooms
+          roomsData[index].capacity = '1';
+        }
+      }
     });
+
+    // Trigger change event on load to set initial state
+    const changeEvent = new Event('change');
+    roomTypeSelect.dispatchEvent(changeEvent);
   }
 
   // Room capacity select
@@ -1536,8 +1559,8 @@ function validateRoomConfiguration() {
   for (let i = 0; i < roomsData.length; i++) {
     const room = roomsData[i];
 
-    // Check capacity
-    if (!room.capacity) {
+    // Check capacity only for shared rooms
+    if (room.roomType === 'shared' && !room.capacity) {
       return { valid: false, message: `Please select capacity for ${room.name}.` };
     }
 

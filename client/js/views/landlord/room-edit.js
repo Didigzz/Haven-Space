@@ -163,7 +163,15 @@ function buildRoomCard(room) {
     : '';
 
   // Use cover_photo if available, otherwise use placeholder
-  const imageUrl = room.cover_photo || '../../../assets/images/placeholder-room.svg';
+  let imageUrl = room.cover_photo || '../../../assets/images/placeholder-room.svg';
+  // Prefix server photos with API base URL if they're relative paths
+  if (
+    room.cover_photo &&
+    !room.cover_photo.startsWith('http') &&
+    !room.cover_photo.startsWith('../')
+  ) {
+    imageUrl = `${CONFIG.API_BASE_URL}${room.cover_photo}`;
+  }
   const imageStyle = room.cover_photo
     ? `background-image: url('${escHtml(
         imageUrl

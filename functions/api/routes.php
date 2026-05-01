@@ -281,6 +281,20 @@ Router::delete('/api/landlord/boarders.php', function() {
 // ============================================
 // ROOM ROUTES - LANDLORD
 // ============================================
+// Room photo management - MUST come before general room routes for proper matching
+Router::post('/api/landlord/rooms/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/room-photo-upload.php';
+});
+
+Router::patch('/api/landlord/rooms/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/room-photo-upload.php';
+});
+
+Router::delete('/api/landlord/rooms/{id}/photos', function($id) {
+    require_once __DIR__ . '/landlord/room-photo-upload.php';
+});
+
+// General room CRUD routes
 Router::get('/api/landlord/rooms', function() {
     require_once __DIR__ . '/landlord/rooms.php';
 });
@@ -295,19 +309,6 @@ Router::put('/api/landlord/rooms', function() {
 
 Router::delete('/api/landlord/rooms', function() {
     require_once __DIR__ . '/landlord/rooms.php';
-});
-
-// Room photo management
-Router::post('/api/landlord/rooms/{id}/photos', function($id) {
-    require_once __DIR__ . '/landlord/room-photo-upload.php';
-});
-
-Router::patch('/api/landlord/rooms/{id}/photos', function($id) {
-    require_once __DIR__ . '/landlord/room-photo-upload.php';
-});
-
-Router::delete('/api/landlord/rooms/{id}/photos', function($id) {
-    require_once __DIR__ . '/landlord/room-photo-upload.php';
 });
 
 // ============================================
