@@ -26,13 +26,15 @@ try {
     $pdo = Connection::getInstance()->getPdo();
     
     // Search users by name, matching the target role, and excluding self
-    $sql = "SELECT id, first_name, last_name, email, role, avatar_url 
-            FROM users 
-            WHERE (first_name LIKE :q OR last_name LIKE :q OR email LIKE :q)
-            AND id != :current_id";
+    $sql = "SELECT u.id, u.first_name, u.last_name, u.email, ur.role_name as role, f.file_url as avatar_url 
+            FROM users u
+            JOIN user_roles ur ON u.role_id = ur.id
+            LEFT JOIN files f ON u.avatar_file_id = f.id
+            WHERE (u.first_name LIKE :q OR u.last_name LIKE :q OR u.email LIKE :q)
+            AND u.id != :current_id";
     
     if ($targetRole) {
-        $sql .= " AND role = :role";
+        $sql .= " AND ur.role_name = :role";
     }
     
     $sql .= " LIMIT 10";

@@ -84,15 +84,17 @@ class ApplicationRepository
                        prop.description as property_description, addr.latitude, addr.longitude,
                        r.property_id,
                        ub.first_name as boarder_first_name, ub.last_name as boarder_last_name,
-                       ub.email as boarder_email, ub.avatar_url as boarder_avatar,
+                       ub.email as boarder_email, fb.file_url as boarder_avatar,
                        ul.first_name as landlord_first_name, ul.last_name as landlord_last_name,
-                       ul.email as landlord_email, ul.avatar_url as landlord_avatar
+                       ul.email as landlord_email, fl.file_url as landlord_avatar
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
                 JOIN properties prop ON r.property_id = prop.id
                 JOIN addresses addr ON prop.address_id = addr.id
                 JOIN users ub ON a.boarder_id = ub.id
                 JOIN users ul ON a.landlord_id = ul.id
+                LEFT JOIN files fb ON ub.avatar_file_id = fb.id
+                LEFT JOIN files fl ON ul.avatar_file_id = fl.id
                 WHERE a.id = ? AND a.deleted_at IS NULL';
 
         $stmt = $this->pdo->prepare($sql);
@@ -114,20 +116,14 @@ class ApplicationRepository
         if (!$room) {
             throw new \InvalidArgumentException('Invalid room_id: Room does not exist');
         }
-        
-        // If property_id is not provided, get it from the room
-        if (empty($data['property_id'])) {
-            $data['property_id'] = $room['property_id'];
-        }
 
-        $sql = 'INSERT INTO applications (boarder_id, landlord_id, room_id, property_id, message, status)
-                VALUES (?, ?, ?, ?, ?, ?)';
+        $sql = 'INSERT INTO applications (boarder_id, landlord_id, room_id, message, status)
+                VALUES (?, ?, ?, ?, ?)';
 
         $this->pdo->prepare($sql)->execute([
             $data['boarder_id'],
             $data['landlord_id'],
             $data['room_id'],
-            $data['property_id'],
             $data['message'],
             $data['status'] ?? 'pending',
         ]);

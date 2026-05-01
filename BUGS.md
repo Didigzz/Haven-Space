@@ -1,136 +1,8 @@
-# Haven Space
+# Haven Space — Bug Fix Documentation
 
-## Project Snapshot
+This file records recurring bugs, their root causes, and proven fixes. **Read this before implementing changes** to avoid repeating known mistakes. New entries go here, not in AGENTS.md.
 
-- Single-repo boarding house platform deployed on Appwrite, with a vanilla frontend in `client/` and PHP backend/runtime code in `functions/`.
-- Root tooling uses Bun for package tasks and formatting; PHP dependencies live under `functions/` and `functions/api/`.
-- The frontend is served from `http://localhost`; the PHP API server is expected at `http://localhost:8000` and is already running in this environment.
-- The production/debug URL for browser verification is `https://haven-space.appwrite.network`.
-- This root file stays lightweight. Use the nearest guide before editing inside `client/`, `functions/`, or `functions/database/`.
-
-## Root Setup Commands
-
-- Install JS deps: `bun install`
-- Install backend deps: `composer install --working-dir functions`
-- Install Appwrite function deps: `composer install --working-dir functions/api`
-- Format repo: `bun run format`
-- Check formatting: `bun run format:check`
-- Lint frontend JS: `bun run lint`
-- Build deployable frontend: `bun run build`
-- Run backend tests when available: `composer test --working-dir functions`
-- Run database migrations: `bun run db:setup`
-
-## Universal Conventions
-
-- **Database Normalization**: We are now normalizing the database by removing duplicate tables and consolidating them into unified general tables. As much as possible, eliminate redundant tables that serve the same purpose and merge them into single, well-structured tables.
-- Use Bun commands for root package management and task running.
-- Do not start `bun run server`; investigate logs or routing if `localhost:8000` is unhealthy.
-- Keep frontend changes aligned with [DESIGN.md](/C:/Users/Qwenzy/Desktop/haven-space/DESIGN.md) and `/.agents/skills/frontend-design/SKILL.md`.
-- Preserve the current split: static client assets in `client/`, request handling and business logic in `functions/`.
-- Match existing naming and file placement before introducing new folders or abstractions.
-- After feature work, add a small `.php` verification script only if needed for backend validation, then remove it once confirmed.
-- Do not commit secrets, `.env` values, Appwrite API keys, or production-only identifiers.
-- Push repo changes after finishing, because Appwrite deployment tracks the repository.
-- **Icon System**: New icons should be added as SVG files in `client/assets/svg/` directory. The system now prioritizes SVG files over path data for better maintainability. icons.js is depricated remove whats referencing it.
-- **Direct SVG Usage**: For simple icons, you can directly include SVG files in HTML using `<img src="../../../assets/svg/icon-name.svg">` or inline SVG, similar to the pattern used in sidebar components, icons.js is depricated remove whats referencing it. dont create new svgs, instead notify users if he needs to download that svg before proceeding
-
-## JIT Index
-
-### Package Structure
-
-- Frontend app: `client/` -> [see client/AGENTS.md](/C:/Users/Qwenzy/Desktop/haven-space/client/AGENTS.md)
-- Backend and API runtime: `functions/` -> [see functions/AGENTS.md](/C:/Users/Qwenzy/Desktop/haven-space/functions/AGENTS.md)
-- SQL and Appwrite migrations: `functions/database/` -> [see functions/database/AGENTS.md](/C:/Users/Qwenzy/Desktop/haven-space/functions/database/AGENTS.md)
-
-### Quick Find Commands
-
-- Find a frontend view initializer: `rg -n "init[A-Z]" client/js/views client/js/components`
-- Find a page by body view key: `rg -n "data-view" client/views`
-- Find API routes: `rg -n "Router::(get|post|put|patch|delete)" functions/api/routes.php`
-- Find a PHP controller/service pair: `rg -n "class .*Controller|class .*Service" functions/src`
-- Find migrations or seeds: `rg --files functions/database | rg "(migrations|seeds|appwrite-migrations)"`
-
-## Definition of Done
-
-- Relevant lint, format, build, or PHP checks pass for the touched area, or any gap is called out explicitly.
-- Changes work for localhost and do not obviously break the Appwrite-hosted production path.
-- New work follows the closest AGENTS guide and uses existing repo patterns rather than parallel ones.
-- Any temporary debug or test scripts created during implementation are removed before handoff.
-
-### Removed: Maintenance Request System (2026-05-01)
-
-**Problem**: The maintenance request system (`maintenance_requests` table and all related functionality) was a complete feature that added complexity without being actively used or required for the core boarding house management functionality.
-
-**Root Cause**: Feature creep. The maintenance system was built as a nice-to-have feature but wasn't essential to the platform's core value proposition of connecting landlords with boarders.
-
-**Evidence**:
-
-- `maintenance_requests` table existed with full CRUD operations
-- Complete backend module: `MaintenanceController`, `MaintenanceService`, `MaintenanceRepository`
-- Frontend views for both landlord and boarder maintenance management
-- API routes for creating, viewing, updating, and deleting maintenance requests
-- Notification system integration for maintenance updates
-- Calendar integration showing maintenance events
-- Activity feed integration showing maintenance requests
-
-**Solution**:
-
-- Created migration `035_drop_maintenance_system.sql` to drop the `maintenance_requests` table
-- Deleted backend code:
-  - `functions/src/Modules/Maintenance/Controllers/MaintenanceController.php`
-  - `functions/src/Modules/Maintenance/Services/MaintenanceService.php`
-  - `functions/src/Modules/Maintenance/Repositories/MaintenanceRepository.php`
-- Deleted frontend code:
-  - `client/js/views/boarder/boarder-maintenance.js`
-  - `client/css/views/boarder/boarder-maintenance.css`
-  - `client/css/views/boarder/boarder-maintenance-detail.css`
-  - `client/css/views/boarder/boarder-maintenance-create.css`
-  - `client/css/views/landlord/landlord-maintenance.css`
-  - `client/css/views/landlord/landlord-maintenance-detail.css`
-  - `client/assets/images/icons/maintenance_request.png`
-- Removed API routes from `functions/api/routes.php`:
-  - All `/api/landlord/maintenance/*` routes (7 routes)
-  - All `/api/boarder/maintenance/*` routes (5 routes)
-  - `/api/maintenance/stats` route
-- Updated code references:
-  - `functions/api/routes.php` - Removed MaintenanceController import and all maintenance routes
-  - `functions/src/Modules/Notification/Services/NotificationService.php` - Removed `notifyMaintenanceRequest()` and `notifyMaintenanceStatusChange()` methods, removed maintenance notification type filters
-  - `functions/api/landlord/calendar.php` - Removed maintenance events query and display
-  - `functions/api/landlord/activity.php` - Removed maintenance activity query and formatting
-  - `client/js/views/landlord/landlord-calendar.js` - Removed maintenance event navigation
-  - `client/js/views/landlord/activity.js` - Removed maintenance activity type
-  - `client/js/views/landlord/room-edit.js` - Removed 'maintenance' room status option
-  - `client/js/views/boarder/dashboard.js` - Removed maintenance icon mapping
-  - `client/js/views/boarder/announcements.js` - Removed maintenance icon mapping
-  - `client/views/landlord/index.html` - Removed maintenance quick action button
-  - `client/views/landlord/calendar/index.html` - Removed maintenance from subtitle and legend
-  - `client/views/landlord/activity/index.html` - Removed maintenance filter option
-  - `client/views/landlord/announcements/index.html` - Removed maintenance category option
-  - `client/views/landlord/listings/room-edit.html` - Removed maintenance status options (2 instances)
-  - `client/views/landlord/settings/index.html` - Removed maintenance notification setting
-  - `client/views/boarder/index.html` - Removed maintenance from greeting text and quick action button
-  - `client/views/boarder/announcements/index.html` - Removed maintenance filter tab
-  - `client/views/boarder/settings/index.html` - Removed maintenance notification setting
-  - `client/views/boarder/house-rules/index.html` - Removed maintenance navigation card and entire maintenance section
-  - `client/views/public/for-landlords.html` - Removed maintenance benefit card
-  - `client/css/views/landlord/landlord.css` - Removed maintenance CSS variables
-  - `client/css/views/landlord/room-edit.css` - Removed maintenance status styling
-- Updated `functions/database/migrations/033_convert_all_nulls_to_not_null.sql` to remove maintenance_requests references
-- Updated `functions/database/schema.sql` to remove maintenance_requests table definition
-
-**Current Pattern**: The platform focuses on core boarding house management features:
-
-- Property listings and room management
-- Application and booking workflow
-- Payment tracking
-- Messaging between landlords and boarders
-- Announcements and notifications
-
-**Prevention**: Before building new features, validate that they're essential to the core value proposition. Nice-to-have features should be deferred until the core features are solid and there's demonstrated user demand. If a feature isn't being used after initial development, remove it to reduce technical debt and maintenance burden.
-
-## Bug Fix Documentation
-
-Whenever a recurring bug appears across prompts, and a fix has been identified and implemented, the fix should be documented in AGENTS.md. This ensures that when a similar issue arises in the future, the solution is already recorded, helping to avoid repeating the same mistake.
+---
 
 ### Fixed: Missing Authorization Headers in API Requests (2026-04-27)
 
@@ -162,36 +34,6 @@ const response = await fetch(url, {
 ```
 
 **Prevention**: When adding new API calls, always check existing files like `landlord-boarders.js` or `my-properties.js` for the correct authentication pattern.
-
-### Fixed: update-listing.php Using Non-Existent address Column (2026-05-01)
-
-**Problem**: The `update-listing.php` endpoint was trying to update non-existent columns (`address`, `latitude`, `longitude`) directly in the `properties` table, causing SQL error "Unknown column 'address' in 'field list'".
-
-**Root Cause**: Schema mismatch. The `properties` table uses `address_id` as a foreign key to the normalized `addresses` table, but the update endpoint was trying to update address fields directly in the properties table instead of updating the related addresses record.
-
-**Evidence**:
-
-- Error: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'address' in 'field list'`
-- `properties` table has `address_id` FK, not `address`, `latitude`, `longitude` columns
-- `addresses` table contains: `address_line_1`, `city`, `province`, `latitude`, `longitude`
-- `create-listing.php` correctly inserts into `addresses` first, then uses `address_id` in `properties`
-- `update-listing.php` was trying to update address fields directly in `properties` table
-
-**Solution**:
-
-- Updated `functions/api/landlord/update-listing.php` to:
-  - Fetch `address_id` from the property record
-  - Update the `addresses` table separately with address-related fields
-  - Update only property-specific fields (`title`, `description`, `price`, `status`) in `properties` table
-  - Preserve existing values when fields are not provided in the update request
-
-**Current Pattern**: Property updates follow the normalized schema:
-
-- Address changes: UPDATE `addresses` table using the `address_id` from the property
-- Property changes: UPDATE `properties` table with property-specific fields only
-- Both operations wrapped in a transaction for consistency
-
-**Prevention**: When writing update endpoints, always check the actual database schema to ensure column names match. Follow the pattern used in create endpoints for consistency. Use normalized tables correctly - update the related table via foreign key, don't try to update FK fields directly in the parent table.
 
 ### Removed: Redundant document_types and documents Tables (2026-04-30)
 
@@ -531,83 +373,45 @@ const response = await fetch(url, {
 - Use NULL only for optional foreign keys and timestamps representing "not yet occurred" events
 - Empty string ('') for missing text, 0 for missing numbers, empty JSON for missing structured data
 
-**Prevention**: When creating new columns, default to NOT NULL with appropriate defaults. Only use NULL for optional foreign keys or timestamps that represent future/conditional events. This makes data validation simpler and queries more predictable.
+**Prevention**: When creating new columns, default to NOT NULL with appropriate defaults. Only use NULL for optional foreign keys or timestamps that represent "not yet occurred" events. This makes data validation simpler and queries more predictable.
 
-### Removed: Redundant User Profile Columns (2026-05-01)
+### Fixed: update-listing.php Missing Fields (2026-05-01)
 
-**Problem**: The `users` table had several redundant columns that duplicated data or stored information that should be in normalized tables: `phone` (duplicate of `phone_number`), `alt_phone` (unused), `current_address` (should be in `addresses` table via properties), `date_of_birth` (not needed), `gender` (not needed), `bio` (should be in role-specific profile tables), `employment_status` (not needed), and `avatar_url` (duplicate of `avatar_file_id` FK).
+**Problem**: The `update-listing.php` endpoint only updated a subset of property fields (title, description, price, status, address), but ignored other fields that users can edit in the form: deposit, min_stay, room capacity, and contact information.
 
-**Root Cause**: Migration `016_add_user_profile_fields.sql` added these columns without considering the existing normalized schema. The system already had `phone_number` for phone, `avatar_file_id` FK for avatars, and role-specific profile tables (`boarder_profiles`, `landlord_profiles`) for extended profile data.
-
-**Evidence**:
-
-- `phone` column: Redundant with existing `phone_number` column
-- `alt_phone` column: Never used in code, 0 references
-- `current_address` column: User addresses should be tracked via properties/applications, not stored directly in users table
-- `date_of_birth` column: Not required for the application, only used in profile completion checks
-- `gender` column: Not used anywhere in the application
-- `bio` column: Should be in `boarder_profiles.bio` or `landlord_profiles` tables, not in base users table
-- `employment_status` column: Not used anywhere in the application
-- `avatar_url` column: Redundant with `avatar_file_id` FK to `files` table
-
-**Solution**:
-
-- Created migration `034_drop_redundant_user_columns.sql` to drop all 8 columns
-- Updated code references:
-  - `functions/api/users/profile.php` - Removed `date_of_birth`, `current_address` from queries and allowed update fields
-  - `functions/api/landlord/boarders.php` - Removed `current_address`, `date_of_birth` from queries and response mapping
-  - `functions/api/boarder/dashboard-stats.php` - Removed `current_address`, `date_of_birth`, `avatar_url` from profile completion checks
-
-**Current Pattern**: User profile data is managed through:
-
-- Basic contact: `users.phone_number` (single phone field)
-- Avatar: `users.avatar_file_id` FK to `files` table
-- Extended profile: Role-specific tables (`boarder_profiles`, `landlord_profiles`)
-- Addresses: Tracked via `addresses` table linked through properties/applications
-
-**Prevention**: Before adding columns to the `users` table, check if the data belongs in role-specific profile tables or normalized reference tables. Keep the base `users` table minimal with only authentication and core identity fields. Don't duplicate data that's already available through foreign keys.
-
-### Fixed: applications Table Using Removed property_id Column (2026-05-01)
-
-**Problem**: The application creation endpoint was failing with "Unknown column 'property_id' in 'field list'" error. Migration 021 had removed the `property_id` column from the `applications` table as redundant, but the schema.sql and repository code still referenced it.
-
-**Root Cause**: Migration `021_remove_redundant_columns.sql` correctly removed `property_id` from `applications` table because it can be derived from `room_id -> rooms.property_id`. However, the schema.sql file and ApplicationRepository.php were never updated to reflect this change.
+**Root Cause**: The endpoint was initially created with minimal field support and never expanded to handle all editable fields. Additionally, the schema.sql file was outdated and didn't reflect the actual database structure.
 
 **Evidence**:
 
-- Error: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'property_id' in 'field list'`
-- Migration 021 dropped the column: `ALTER TABLE applications DROP COLUMN IF EXISTS property_id;`
-- `functions/database/schema.sql` still defined `property_id INT NULL` in applications table
-- `ApplicationRepository::create()` was still trying to INSERT into property_id column
-- Frontend was sending property_id in request body
+- Frontend sent: `deposit`, `total_rooms`, `capacity`, `min_stay`, contact fields (person, number, email, hours)
+- Backend only updated: `title`, `description`, `price`, `status` in properties table, and address fields in addresses table
+- `deposit` and `min_stay` columns exist in properties table but weren't being updated
+- Contact information fields don't exist in any table - they're UI-only
+- Room capacity/count: The actual database had `room_number`, `room_type`, `capacity` columns but schema.sql was outdated
 
-**Solution**:
+**Solution Applied**:
 
-- Updated `functions/database/schema.sql` to remove `property_id` column and FK constraint from applications table definition
-- Updated `ApplicationRepository::create()` to remove property_id from INSERT statement
-- Updated migration `033_convert_all_nulls_to_not_null.sql` comments to note property_id was removed
-- Property ID can still be retrieved via JOIN: `SELECT r.property_id FROM applications a JOIN rooms r ON a.room_id = r.id`
+1. Updated `update-listing.php` to include `deposit` and `min_stay` in the UPDATE query with proper format mapping
+2. Added room update logic to handle:
+   - Adding new rooms when `total_rooms` increases
+   - Soft-deleting excess rooms when `total_rooms` decreases
+   - Updating capacity and room_type for all existing rooms when capacity changes
+3. Updated `create-listing.php` to include `description` field in room INSERT statements
+4. Updated `schema.sql` to reflect actual database structure with `room_number`, `room_type`, `capacity` columns
+5. Removed Contact Information section from edit property form (should be in landlord settings instead)
 
-**Current Pattern**: Applications table structure:
+**Current Pattern**: Property updates now handle:
 
-- `room_id` FK to rooms table (required)
-- Property ID derived via: `room_id -> rooms.property_id`
-- No redundant property_id column stored directly
+- Basic info: `title`, `description`, `price`, `status`
+- Financial: `deposit`, `min_stay`
+- Location: All address fields via `addresses` table
+- Rooms: Dynamic room count and capacity updates with soft delete for removed rooms
+- Photos and amenities: Already working
 
-**Prevention**: When migrations remove columns, immediately update schema.sql and search the codebase for all references to that column. Use `rg "property_id.*applications"` to find all code that references the removed column. Keep schema.sql synchronized with applied migrations.
+**Prevention**:
 
-**Related Issue**: The same migration 034 that removed `avatar_url` also affected `ApplicationRepository::findById()` and `functions/api/users/search.php`, which were selecting `avatar_url` directly from the users table. These were fixed to use `LEFT JOIN files f ON u.avatar_file_id = f.id` and select `f.file_url as avatar_url` instead.
-
-## landlord credentials
-
-qwenzy23062@gmail.com
-Kenjigwapo_123
-
-Boarder Credentials
-
-alistairybaez574@gmail.com
-Kenjigwapo_123
-
-When making multi-file string replacements that would fail with shell regex escaping (e.g., PHP $variable['key'] patterns), write a temporary Python script to a file, run it
-
-with python <file>, verify the output, then delete the script. Use str.replace() for exact matches and raw strings (r'...') for Windows paths.
+- Keep schema.sql in sync with actual database structure
+- Verify all form fields have corresponding backend handling
+- Keep create and update endpoints in sync - if create accepts a field, update should too
+- Document which fields are UI-only vs database-backed
+- Fix schema mismatches before building features that depend on those columns

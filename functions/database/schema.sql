@@ -224,12 +224,12 @@ CREATE TABLE IF NOT EXISTS rooms (
 );
 
 -- Applications Table (normalized)
+-- Note: property_id removed as it can be derived from room_id -> rooms.property_id (see migration 021)
 CREATE TABLE IF NOT EXISTS applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     boarder_id INT NOT NULL,
     landlord_id INT NOT NULL,
     room_id INT NOT NULL,
-    property_id INT NULL,
     message TEXT NOT NULL,
     status VARCHAR(32) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -238,7 +238,6 @@ CREATE TABLE IF NOT EXISTS applications (
     FOREIGN KEY (boarder_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
-    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE SET NULL,
     INDEX idx_boarder (boarder_id),
     INDEX idx_landlord (landlord_id),
     INDEX idx_status (status)

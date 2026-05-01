@@ -73,7 +73,7 @@ UPDATE notifications SET metadata = JSON_OBJECT() WHERE metadata IS NULL;
 -- room_id will remain nullable as it's an optional FK
 
 -- applications table
--- property_id will remain nullable as it's an optional FK
+-- Note: property_id was removed in migration 021 (redundant with room_id -> rooms.property_id)
 UPDATE applications SET message = '' WHERE message IS NULL;
 
 -- user_roles table
@@ -181,7 +181,7 @@ ALTER TABLE notifications
 -- applications table
 ALTER TABLE applications 
     MODIFY COLUMN message TEXT NOT NULL;
--- property_id remains nullable (optional FK)
+-- Note: property_id was removed in migration 021
 
 -- user_roles table
 ALTER TABLE user_roles 
@@ -229,7 +229,7 @@ ALTER TABLE rooms
 -- disputes.related_property_id - Optional property reference
 -- conversations.property_id - Optional property context
 -- saved_listings.room_id - Optional specific room reference
--- applications.property_id - Optional property reference
+-- Note: applications.property_id was removed in migration 021 (redundant)
 -- payments.paid_date - Nullable until payment is made
 -- payments.reminder_sent_at - Nullable until reminder is sent
 -- All deleted_at columns (soft delete pattern)
