@@ -64,7 +64,7 @@ try {
     // Check user profile fields completion
     $stmt = $pdo->prepare("
         SELECT 
-            first_name, last_name, email, phone_number, current_address, date_of_birth, avatar_url
+            first_name, last_name, email, phone_number, avatar_file_id
         FROM users 
         WHERE id = ?
     ");
@@ -76,9 +76,7 @@ try {
         'name' => !empty($userProfile['first_name']) && !empty($userProfile['last_name']),
         'email' => !empty($userProfile['email']),
         'phone' => !empty($userProfile['phone_number']),
-        'address' => !empty($userProfile['current_address']),
-        'date_of_birth' => !empty($userProfile['date_of_birth']),
-        'avatar_url' => !empty($userProfile['avatar_url']),
+        'avatar' => !empty($userProfile['avatar_file_id']),
     ];
 
     $completedFields = array_sum($profileFields);
@@ -93,14 +91,9 @@ try {
             'completed' => $profileFields['name'] && $profileFields['email'] && $profileFields['phone']
         ],
         [
-            'field' => 'personal_details',
-            'label' => 'Personal Details',
-            'completed' => $profileFields['date_of_birth'] && $profileFields['address']
-        ],
-        [
             'field' => 'profile_photo',
             'label' => 'Profile Photo',
-            'completed' => $profileFields['avatar_url']
+            'completed' => $profileFields['avatar']
         ]
     ];
 

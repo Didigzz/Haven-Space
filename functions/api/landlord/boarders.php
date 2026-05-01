@@ -61,9 +61,7 @@ if ($method === 'GET') {
                 u.last_name,
                 u.email,
                 u.phone_number,
-                u.current_address,
-                u.date_of_birth,
-                u.avatar_url,
+                f.file_url      AS avatar_url,
                 a.room_id,
                 r.title         AS room_title,
                 r.price         AS rent,
@@ -77,6 +75,7 @@ if ($method === 'GET') {
             FROM applications a
             JOIN users u  ON a.boarder_id  = u.id
             LEFT JOIN rooms r ON a.room_id = r.id
+            LEFT JOIN files f ON u.avatar_file_id = f.id
             WHERE a.property_id = ?
               AND a.landlord_id = ?
               AND a.status      = 'accepted'
@@ -95,8 +94,6 @@ if ($method === 'GET') {
                 'last_name'        => $row['last_name'],
                 'email'            => $row['email'],
                 'phone'            => $row['phone_number'] ?? null,
-                'current_address'  => $row['current_address'] ?? null,
-                'date_of_birth'    => $row['date_of_birth'] ?? null,
                 'avatar_url'       => $row['avatar_url'] ?? null,
                 'room_id'          => $row['room_id'] ? (int) $row['room_id'] : null,
                 'room_title'       => $row['room_title'] ?? null,

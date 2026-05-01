@@ -43,14 +43,50 @@ try {
     // Begin transaction
     $pdo->beginTransaction();
 
-    // Verify property belongs to landlord
-    $checkStmt = $pdo->prepare("SELECT id FROM properties WHERE id = ? AND landlord_id = ?");
+    // Verify property belongs to landlord and get address_id
+    $checkStmt = $pdo->prepare("SELECT id, address_id FROM properties WHERE id = ? AND landlord_id = ?");
     $checkStmt->execute([$propertyId, $landlordId]);
-    if (!$checkStmt->fetch()) {
+    $property = $checkStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$property) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
         json_response(403, ['error' => 'Property not found or access denied']);
+    }
+
+    $addressId = $property['address_id'];
+
+    // Update address table if address fields are provided
+    if (isset($input['address']) || isset($input['propertyAddress']) || 
+        isset($input['latitude']) || isset($input['propertyLatitude']) ||
+        isset($input['longitude']) || isset($input['propertyLongitude']) ||
+        isset($input['city']) || isset($input['propertyCity']) ||
+        isset($input['province']) || isset($input['propertyProvince'])) {
+        
+        $addressStmt = $pdo->prepare("
+            UPDATE addresses 
+            SET address_line_1 = ?,
+                city = ?,
+                province = ?,
+                latitude = ?,
+                longitude = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        ");
+
+        // Get current address data first
+        $currentAddressStmt = $pdo->prepare("SELECT address_line_1, city, province, latitude, longitude FROM addresses WHERE id = ?");
+        $currentAddressStmt->execute([$addressId]);
+        $currentAddress = $currentAddressStmt->fetch(PDO::FETCH_ASSOC);
+
+        $addressStmt->execute([
+            $input['address'] ?? $input['propertyAddress'] ?? $currentAddress['address_line_1'],
+            $input['city'] ?? $input['propertyCity'] ?? $currentAddress['city'],
+            $input['province'] ?? $input['propertyProvince'] ?? $currentAddress['province'],
+            !empty($input['latitude']) ? floatval($input['latitude']) : (!empty($input['propertyLatitude']) ? floatval($input['propertyLatitude']) : $currentAddress['latitude']),
+            !empty($input['longitude']) ? floatval($input['longitude']) : (!empty($input['propertyLongitude']) ? floatval($input['propertyLongitude']) : $currentAddress['longitude']),
+            $addressId,
+        ]);
     }
 
     // Update main property table
@@ -58,10 +94,9 @@ try {
         UPDATE properties 
         SET title = ?,
             description = ?,
-            address = ?,
-            latitude = ?,
-            longitude = ?,
             price = ?,
+            deposit = ?,
+            min_stay = ?,
             status = ?,
             updated_at = NOW()
         WHERE id = ? AND landlord_id = ?
@@ -75,13 +110,30 @@ try {
         $status = 'hidden';
     }
 
+    // Get current property data for fallback values
+    $currentPropStmt = $pdo->prepare("SELECT title, description, price, deposit, min_stay FROM properties WHERE id = ?");
+    $currentPropStmt->execute([$propertyId]);
+    $currentProp = $currentPropStmt->fetch(PDO::FETCH_ASSOC);
+
+    // Map min_stay from frontend format to database format
+    $minStay = $currentProp['min_stay'];
+    if (isset($input['min_stay'])) {
+        $minStayMap = [
+            'no-minimum' => 'No minimum',
+            '1-month' => '1 month',
+            '3-months' => '3 months',
+            '6-months' => '6 months',
+            '1-year' => '1 year',
+        ];
+        $minStay = $minStayMap[$input['min_stay']] ?? $input['min_stay'];
+    }
+
     $stmt->execute([
-        $input['name'] ?? $input['propertyName'],
-        $input['description'] ?? $input['propertyDescription'] ?? '',
-        $input['address'] ?? $input['propertyAddress'],
-        !empty($input['latitude']) ? floatval($input['latitude']) : (!empty($input['propertyLatitude']) ? floatval($input['propertyLatitude']) : null),
-        !empty($input['longitude']) ? floatval($input['longitude']) : (!empty($input['propertyLongitude']) ? floatval($input['propertyLongitude']) : null),
-        floatval($input['price'] ?? $input['propertyPrice']),
+        $input['name'] ?? $input['propertyName'] ?? $currentProp['title'],
+        $input['description'] ?? $input['propertyDescription'] ?? $currentProp['description'],
+        floatval($input['price'] ?? $input['propertyPrice'] ?? $currentProp['price']),
+        isset($input['deposit']) ? strval($input['deposit']) : $currentProp['deposit'],
+        $minStay,
         $status,
         $propertyId,
         $landlordId,
@@ -107,6 +159,97 @@ try {
             }
         }
     }
+
+    // Update rooms if total_rooms or capacity is provided
+    if (isset($input['total_rooms']) || isset($input['capacity'])) {
+        // Get current room count
+        $currentRoomsStmt = $pdo->prepare("SELECT COUNT(*) as count FROM rooms WHERE property_id = ? AND deleted_at IS NULL");
+        $currentRoomsStmt->execute([$propertyId]);
+        $currentRoomCount = intval($currentRoomsStmt->fetchColumn());
+
+        $newRoomCount = isset($input['total_rooms']) ? intval($input['total_rooms']) : $currentRoomCount;
+        $roomCapacity = isset($input['capacity']) ? intval($input['capacity']) : null;
+        $roomPrice = floatval($input['price'] ?? $input['propertyPrice'] ?? $currentProp['price']);
+
+        // Determine room type based on capacity
+        $roomType = ($roomCapacity === 1) ? 'single' : 'shared';
+
+        if ($newRoomCount > $currentRoomCount) {
+            // Add new rooms
+            $roomStmt = $pdo->prepare("
+                INSERT INTO rooms (
+                    property_id,
+                    landlord_id,
+                    title,
+                    price,
+                    description,
+                    status,
+                    room_number,
+                    room_type,
+                    capacity,
+                    created_at,
+                    updated_at
+                ) VALUES (
+                    ?, ?, ?, ?, '', 'available', ?, ?, ?, NOW(), NOW()
+                )
+            ");
+
+            for ($i = $currentRoomCount + 1; $i <= $newRoomCount; $i++) {
+                $roomNumber = "Room {$i}";
+                $roomTitle = $roomCapacity ? 
+                    ($roomCapacity === 1 ? "Single Room - {$roomNumber}" : "Shared Room ({$roomCapacity} persons) - {$roomNumber}") :
+                    $roomNumber;
+                
+                $roomStmt->execute([
+                    $propertyId,
+                    $landlordId,
+                    $roomTitle,
+                    $roomPrice,
+                    $roomNumber,
+                    $roomType,
+                    $roomCapacity ?? 1
+                ]);
+            }
+        } elseif ($newRoomCount < $currentRoomCount) {
+            // Soft delete excess rooms (mark as deleted instead of hard delete to preserve history)
+            $getRoomsStmt = $pdo->prepare("
+                SELECT id FROM rooms 
+                WHERE property_id = ? AND deleted_at IS NULL 
+                ORDER BY id DESC 
+                LIMIT ?
+            ");
+            $getRoomsStmt->execute([$propertyId, $currentRoomCount - $newRoomCount]);
+            $roomsToDelete = $getRoomsStmt->fetchAll(PDO::FETCH_COLUMN);
+
+            if (!empty($roomsToDelete)) {
+                $deleteRoomsStmt = $pdo->prepare("
+                    UPDATE rooms 
+                    SET deleted_at = NOW() 
+                    WHERE id IN (" . implode(',', array_fill(0, count($roomsToDelete), '?')) . ")
+                ");
+                $deleteRoomsStmt->execute($roomsToDelete);
+            }
+        }
+
+        // Update capacity and room type for all existing rooms if capacity changed
+        if ($roomCapacity !== null) {
+            $updateRoomsStmt = $pdo->prepare("
+                UPDATE rooms 
+                SET capacity = ?,
+                    room_type = ?,
+                    price = ?,
+                    updated_at = NOW()
+                WHERE property_id = ? AND deleted_at IS NULL
+            ");
+            $updateRoomsStmt->execute([
+                $roomCapacity,
+                $roomType,
+                $roomPrice,
+                $propertyId
+            ]);
+        }
+    }
+
 
     // Handle photos
     if (isset($input['photos']) && is_array($input['photos'])) {

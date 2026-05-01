@@ -74,16 +74,23 @@ function uploadAvatar($userId) {
             return;
         }
         
-        // Update user avatar URL in database
+        // Update user avatar in database by creating a file record
         $db = Database::getInstance();
         $avatarUrl = '/uploads/avatars/' . $filename;
         
-        $stmt = $db->prepare("UPDATE users SET avatar_url = ?, updated_at = NOW() WHERE id = ?");
-        $result = $stmt->execute([$avatarUrl, $userId]);
+        // Create file record
+        $stmt = $db->prepare("INSERT INTO files (file_url, file_name, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$avatarUrl, $filename, $file['size'], $mimeType, $userId]);
+        $fileId = $db->lastInsertId();
+        
+        // Update user's avatar_file_id
+        $stmt = $db->prepare("UPDATE users SET avatar_file_id = ?, updated_at = NOW() WHERE id = ?");
+        $result = $stmt->execute([$fileId, $userId]);
         
         if (!$result) {
-            // Clean up uploaded file if database update fails
+            // Clean up uploaded file and file record if database update fails
             unlink($filepath);
+            $db->prepare("DELETE FROM files WHERE id = ?")->execute([$fileId]);
             json_response(500, ['error' => 'Failed to update avatar']);
             return;
         }

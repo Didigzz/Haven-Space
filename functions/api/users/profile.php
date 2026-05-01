@@ -44,9 +44,8 @@ function getUserProfile($db, $userId) {
         $stmt = $db->prepare("
             SELECT 
                 u.id, u.first_name, u.last_name, u.email, u.phone_number,
-                u.date_of_birth, u.current_address, u.avatar_url,
                 u.created_at, u.updated_at,
-                f.file_url as avatar_file_url
+                f.file_url as avatar_url
             FROM users u
             LEFT JOIN files f ON u.avatar_file_id = f.id
             WHERE u.id = ? AND u.deleted_at IS NULL
@@ -59,14 +58,6 @@ function getUserProfile($db, $userId) {
             json_response(404, ['error' => 'User not found']);
             return;
         }
-        
-        // Use avatar_file_url if available, otherwise use avatar_url
-        if ($user['avatar_file_url']) {
-            $user['avatar_url'] = $user['avatar_file_url'];
-        }
-        
-        // Remove the temporary field
-        unset($user['avatar_file_url']);
         
         json_response(200, ['user' => $user]);
         
@@ -90,8 +81,7 @@ function updateUserProfile($db, $userId) {
         
         // Define allowed fields for update
         $allowedFields = [
-            'first_name', 'last_name', 'phone_number',
-            'date_of_birth', 'current_address'
+            'first_name', 'last_name', 'phone_number'
         ];
         
         // Build dynamic update query
@@ -128,9 +118,8 @@ function updateUserProfile($db, $userId) {
         $stmt = $db->prepare("
             SELECT 
                 u.id, u.first_name, u.last_name, u.email, u.phone_number,
-                u.date_of_birth, u.current_address, u.avatar_url,
                 u.created_at, u.updated_at,
-                f.file_url as avatar_file_url
+                f.file_url as avatar_url
             FROM users u
             LEFT JOIN files f ON u.avatar_file_id = f.id
             WHERE u.id = ? AND u.deleted_at IS NULL
@@ -138,14 +127,6 @@ function updateUserProfile($db, $userId) {
         
         $stmt->execute([$userId]);
         $updatedUser = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Use avatar_file_url if available, otherwise use avatar_url
-        if ($updatedUser['avatar_file_url']) {
-            $updatedUser['avatar_url'] = $updatedUser['avatar_file_url'];
-        }
-        
-        // Remove the temporary field
-        unset($updatedUser['avatar_file_url']);
         
         json_response(200, [
             'message' => 'Profile updated successfully',

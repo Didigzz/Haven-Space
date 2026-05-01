@@ -115,11 +115,17 @@ try {
             description,
             address_id,
             price,
+            deposit,
+            min_stay,
+            house_rules,
             status,
             listing_moderation_status,
             created_at,
             updated_at
         ) VALUES (
+            ?,
+            ?,
+            ?,
             ?,
             ?,
             ?,
@@ -135,6 +141,9 @@ try {
     $propertyName = trim($input['propertyName']);
     $propertyDescription = trim($input['propertyDescription']);
     $price = floatval($input['propertyPrice']);
+    $deposit = isset($input['propertyDeposit']) ? strval($input['propertyDeposit']) : '0';
+    $minStay = isset($input['propertyMinStay']) ? strval($input['propertyMinStay']) : '1 month';
+    $houseRules = json_encode([]); // Default empty JSON array
 
     $stmt->execute([
         $landlordId,
@@ -142,6 +151,9 @@ try {
         $propertyDescription,
         $addressId,
         $price,
+        $deposit,
+        $minStay,
+        $houseRules,
     ]);
 
     $propertyId = $pdo->lastInsertId();
@@ -161,6 +173,7 @@ try {
                 landlord_id,
                 title,
                 price,
+                description,
                 status,
                 room_number,
                 room_type,
@@ -168,7 +181,7 @@ try {
                 created_at,
                 updated_at
             ) VALUES (
-                ?, ?, ?, ?, 'available', ?, ?, ?, NOW(), NOW()
+                ?, ?, ?, ?, '', 'available', ?, ?, ?, NOW(), NOW()
             )
         ");
 
@@ -210,6 +223,7 @@ try {
                     landlord_id,
                     title,
                     price,
+                    description,
                     status,
                     room_number,
                     room_type,
@@ -217,7 +231,7 @@ try {
                     created_at,
                     updated_at
                 ) VALUES (
-                    ?, ?, ?, ?, 'available', ?, ?, ?, NOW(), NOW()
+                    ?, ?, ?, ?, '', 'available', ?, ?, ?, NOW(), NOW()
                 )
             ");
 

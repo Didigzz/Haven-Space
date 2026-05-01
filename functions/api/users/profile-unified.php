@@ -54,7 +54,7 @@ function getUserProfile($db, $userId) {
     try {
         // Using unified interface - works with both MySQL and Appwrite
         $users = $db->select('users', ['id' => $userId], [
-            'fields' => ['id', 'name', 'email', 'phone_number', 'avatar_url', 'created_at', 'updated_at']
+            'fields' => ['id', 'name', 'email', 'phone_number', 'avatar_file_id', 'created_at', 'updated_at']
         ]);
         
         if (empty($users)) {
@@ -74,7 +74,7 @@ function getUserProfile($db, $userId) {
             'name' => $user['name'],
             'email' => $user['email'],
             'phone' => $user['phone_number'] ?? null,
-            'avatar_url' => $user['avatar_url'] ?? null,
+            'avatar_file_id' => $user['avatar_file_id'] ?? null,
             'created_at' => $user['created_at'],
             'updated_at' => $user['updated_at'],
             'profile' => $profile
@@ -105,7 +105,7 @@ function updateUserProfile($db, $userId) {
         }
         
         // Validate and sanitize input
-        $allowedFields = ['name', 'phone_number', 'avatar_url'];
+        $allowedFields = ['name', 'phone_number', 'avatar_file_id'];
         $updateData = [];
         
         foreach ($allowedFields as $field) {
@@ -132,7 +132,7 @@ function updateUserProfile($db, $userId) {
         
         // Get updated user data
         $users = $db->select('users', ['id' => $userId], [
-            'fields' => ['id', 'name', 'email', 'phone_number', 'avatar_url', 'updated_at']
+            'fields' => ['id', 'name', 'email', 'phone_number', 'avatar_file_id', 'updated_at']
         ]);
         
         json_response(200, [
