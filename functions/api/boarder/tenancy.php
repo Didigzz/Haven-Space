@@ -35,24 +35,18 @@ if ($method === 'GET') {
             SELECT 
                 a.id as application_id,
                 a.created_at as tenancy_start_date,
-                DATE_ADD(a.created_at, INTERVAL 12 MONTH) as end_date,
-                TIMESTAMPDIFF(MONTH, a.created_at, NOW()) as current_month,
-                12 as total_months,
-                DATEDIFF(DATE_ADD(a.created_at, INTERVAL 12 MONTH), NOW()) as days_until_end,
+                TIMESTAMPDIFF(DAY, a.created_at, NOW()) as days_since_move_in,
+                TIMESTAMPDIFF(MONTH, a.created_at, NOW()) as months_since_move_in,
                 p.id as property_id,
                 p.title as property_name,
                 addr.address_line_1 as address,
+                addr.city,
+                addr.province,
                 r.id as room_id,
                 r.title as room_title,
                 r.room_number,
                 r.price as monthly_rent,
-                0 as outstanding_balance,
-                0 as current_utilities,
-                0 as electricity_cost,
-                0 as water_cost,
-                r.price as next_payment_amount,
-                DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY) as next_payment_date,
-                DATEDIFF(DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY), NOW()) as days_until_payment,
+                r.deposit,
                 p.house_rules,
                 p.electricity_cost as property_electricity_cost,
                 p.water_cost as property_water_cost,
@@ -60,6 +54,8 @@ if ($method === 'GET') {
                 p.landlord_id,
                 u.first_name as landlord_first_name,
                 u.last_name as landlord_last_name,
+                u.email as landlord_email,
+                u.phone_number as landlord_phone,
                 u.is_verified as landlord_is_verified
             FROM applications a
             JOIN rooms r ON a.room_id = r.id
@@ -100,22 +96,16 @@ if ($method === 'GET') {
             'property_id' => intval($tenancy['property_id']),
             'property_name' => htmlspecialchars($tenancy['property_name']),
             'address' => htmlspecialchars($tenancy['address']),
+            'city' => htmlspecialchars($tenancy['city']),
+            'province' => htmlspecialchars($tenancy['province']),
             'room_id' => intval($tenancy['room_id']),
             'room_title' => htmlspecialchars($tenancy['room_title']),
             'room_number' => $tenancy['room_number'],
             'tenancy_start_date' => $tenancy['tenancy_start_date'],
-            'end_date' => $tenancy['end_date'],
-            'current_month' => intval($tenancy['current_month']) + 1, // Add 1 because we're in the current month
-            'total_months' => intval($tenancy['total_months']),
-            'days_until_end' => intval($tenancy['days_until_end']),
+            'days_since_move_in' => intval($tenancy['days_since_move_in']),
+            'months_since_move_in' => intval($tenancy['months_since_move_in']),
             'monthly_rent' => floatval($tenancy['monthly_rent']),
-            'outstanding_balance' => floatval($tenancy['outstanding_balance']),
-            'current_utilities' => floatval($tenancy['current_utilities']),
-            'electricity_cost' => floatval($tenancy['electricity_cost']),
-            'water_cost' => floatval($tenancy['water_cost']),
-            'next_payment_amount' => floatval($tenancy['next_payment_amount']),
-            'next_payment_date' => $tenancy['next_payment_date'],
-            'days_until_payment' => intval($tenancy['days_until_payment']),
+            'deposit' => floatval($tenancy['deposit']),
             // Property information
             'house_rules' => $houseRules,
             'property_electricity_cost' => floatval($tenancy['property_electricity_cost'] ?? 0),
@@ -125,8 +115,9 @@ if ($method === 'GET') {
             'landlord' => [
                 'id' => intval($tenancy['landlord_id']),
                 'name' => htmlspecialchars(trim($tenancy['landlord_first_name'] . ' ' . $tenancy['landlord_last_name'])),
-                'is_verified' => (bool)$tenancy['landlord_is_verified'],
-                'rating' => 0 // Rating system not yet implemented
+                'email' => htmlspecialchars($tenancy['landlord_email']),
+                'phone' => htmlspecialchars($tenancy['landlord_phone']),
+                'is_verified' => (bool)$tenancy['landlord_is_verified']
             ]
         ];
 

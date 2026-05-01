@@ -179,46 +179,54 @@ function showNoLeaseState() {
  * Render tenancy details
  * @param {Object} tenancy - Tenancy data from backend
  */
-function renderLeaseDetails(lease) {
+function renderLeaseDetails(tenancy) {
   // Update property badge and title
   const propertyBadge = document.querySelector('.tenancy-property-badge span:last-child');
   if (propertyBadge) {
-    propertyBadge.textContent = lease.property_name;
+    propertyBadge.textContent = tenancy.property_name;
   }
 
   const propertyTitle = document.querySelector('.tenancy-property-title');
   if (propertyTitle) {
-    propertyTitle.textContent = `Room ${lease.room_number} • ${lease.property_name}`;
+    propertyTitle.textContent = `Room ${tenancy.room_number} • ${tenancy.property_name}`;
   }
 
   const propertySubtitle = document.querySelector('.tenancy-property-subtitle');
   if (propertySubtitle) {
-    const startDate = new Date(lease.tenancy_start_date);
-    const formattedDate = startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    propertySubtitle.textContent = `Your home away from home since ${formattedDate}`;
+    const startDate = new Date(tenancy.tenancy_start_date);
+    const formattedDate = startDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    propertySubtitle.textContent = `Living here since ${formattedDate}`;
   }
 
-  // Update tenancy progress
-  const progressPercentage = (lease.current_month / lease.total_months) * 100;
-  const progressFill = document.querySelector('.tenancy-progress-fill');
-  if (progressFill) {
-    progressFill.style.width = `${progressPercentage}%`;
+  // Update duration banner
+  const durationValue = document.getElementById('tenancy-duration-value');
+  if (durationValue) {
+    const months = tenancy.months_since_move_in;
+    const days = tenancy.days_since_move_in;
+
+    let durationStr = '';
+    if (months > 0) {
+      durationStr = `${months} month${months !== 1 ? 's' : ''}`;
+      const remainingDays = days - months * 30;
+      if (remainingDays > 0) {
+        durationStr += `, ${remainingDays} day${remainingDays !== 1 ? 's' : ''}`;
+      }
+    } else {
+      durationStr = `${days} day${days !== 1 ? 's' : ''}`;
+    }
+
+    durationValue.textContent = durationStr;
   }
 
-  const progressText = document.querySelector('.tenancy-progress-percentage');
-  if (progressText) {
-    progressText.textContent = `Month ${lease.current_month} of ${lease.total_months}`;
-  }
-
-  const daysLeftValue = document.querySelector('.tenancy-progress-stat-value');
-  if (daysLeftValue) {
-    daysLeftValue.textContent = lease.days_until_end;
-  }
-
-  const leaseEndsValue = document.querySelectorAll('.tenancy-progress-stat-value')[1];
-  if (leaseEndsValue) {
-    const endDate = new Date(lease.end_date);
-    leaseEndsValue.textContent = endDate.toLocaleDateString('en-US', {
+  // Update move-in date in banner
+  const moveInDateDisplay = document.getElementById('tenancy-move-in-date-display');
+  if (moveInDateDisplay) {
+    const startDate = new Date(tenancy.tenancy_start_date);
+    moveInDateDisplay.textContent = startDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -230,88 +238,131 @@ function renderLeaseDetails(lease) {
     '.tenancy-key-card-primary .tenancy-key-card-value'
   );
   if (monthlyRentValue) {
-    monthlyRentValue.textContent = `₱${formatCurrency(lease.monthly_rent)}`;
+    monthlyRentValue.textContent = `₱${formatCurrency(tenancy.monthly_rent)}`;
   }
 
   const securityDepositValue = document.querySelectorAll('.tenancy-key-card-value')[1];
   if (securityDepositValue) {
-    securityDepositValue.textContent = `₱${formatCurrency(lease.monthly_rent * 2)}`;
+    securityDepositValue.textContent = `₱${formatCurrency(tenancy.deposit)}`;
   }
 
-  const leaseDurationValue = document.querySelectorAll('.tenancy-key-card-value')[2];
-  if (leaseDurationValue) {
-    leaseDurationValue.textContent = `${lease.total_months} Months`;
+  // Update duration card
+  const durationCard = document.getElementById('tenancy-duration-card');
+  if (durationCard) {
+    const months = tenancy.months_since_move_in;
+    const days = tenancy.days_since_move_in;
+
+    let durationStr = '';
+    if (months > 0) {
+      durationStr = `${months} month${months !== 1 ? 's' : ''}`;
+    } else {
+      durationStr = `${days} day${days !== 1 ? 's' : ''}`;
+    }
+
+    durationCard.textContent = durationStr;
   }
 
-  const leaseDurationNote = document.querySelectorAll('.tenancy-key-card-note')[2];
-  if (leaseDurationNote) {
-    const startDate = new Date(lease.tenancy_start_date);
-    const endDate = new Date(lease.end_date);
-    const formattedStart = startDate.toLocaleDateString('en-US', {
+  // Update move-in note
+  const moveInNote = document.getElementById('tenancy-move-in-note');
+  if (moveInNote) {
+    const startDate = new Date(tenancy.tenancy_start_date);
+    moveInNote.textContent = `Since ${startDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-    });
-    const formattedEnd = endDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-    leaseDurationNote.textContent = `${formattedStart} - ${formattedEnd}`;
+    })}`;
   }
 
   // Update tenancy information section
-  updateLeaseInformationSection(lease);
+  updateLeaseInformationSection(tenancy);
 }
 
 /**
  * Update tenancy information section
  */
-function updateLeaseInformationSection(lease) {
+function updateLeaseInformationSection(tenancy) {
   // Property Address
   const propertyAddressValue = document.querySelector('[data-tenancy-info="property-address"]');
   if (propertyAddressValue) {
-    propertyAddressValue.textContent = lease.address;
+    propertyAddressValue.textContent = `${tenancy.address}, ${tenancy.city}, ${tenancy.province}`;
   }
 
-  // Lease Type
-  const leaseTypeValue = document.querySelector('[data-tenancy-info="lease-type"]');
-  if (leaseTypeValue) {
-    leaseTypeValue.textContent = `${lease.total_months}-month contract`;
-  }
-
-  // Tenancy Period
-  const leasePeriodValue = document.querySelector('[data-tenancy-info="lease-period"]');
-  if (leasePeriodValue) {
-    const startDate = new Date(lease.tenancy_start_date);
-    const endDate = new Date(lease.end_date);
-    const formattedStart = startDate.toLocaleDateString('en-US', {
+  // Move-in Date
+  const moveInDateDetail = document.getElementById('tenancy-move-in-date-detail');
+  if (moveInDateDetail) {
+    const startDate = new Date(tenancy.tenancy_start_date);
+    moveInDateDetail.textContent = startDate.toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
     });
-    const formattedEnd = endDate.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-    leasePeriodValue.textContent = `${formattedStart} - ${formattedEnd}`;
+  }
+
+  // Duration of Stay
+  const durationDetail = document.getElementById('tenancy-duration-detail');
+  if (durationDetail) {
+    const months = tenancy.months_since_move_in;
+    const days = tenancy.days_since_move_in;
+
+    let durationStr = '';
+    if (months > 0) {
+      durationStr = `${months} month${months !== 1 ? 's' : ''}`;
+      const remainingDays = days - months * 30;
+      if (remainingDays > 0) {
+        durationStr += `, ${remainingDays} day${remainingDays !== 1 ? 's' : ''}`;
+      }
+    } else {
+      durationStr = `${days} day${days !== 1 ? 's' : ''}`;
+    }
+
+    durationDetail.textContent = durationStr;
   }
 
   // Payment Details
-  const monthlyRentDetail = document.querySelector('[data-tenancy-info="monthly-rent"]');
+  const monthlyRentDetail = document.getElementById('tenancy-monthly-rent-detail');
   if (monthlyRentDetail) {
-    monthlyRentDetail.textContent = `Monthly: ₱${formatCurrency(lease.monthly_rent)}`;
+    monthlyRentDetail.innerHTML = `Monthly: <strong>₱${formatCurrency(
+      tenancy.monthly_rent
+    )}</strong>`;
   }
 
-  const securityDepositDetail = document.querySelector('[data-tenancy-info="security-deposit"]');
+  const securityDepositDetail = document.getElementById('tenancy-security-deposit-detail');
   if (securityDepositDetail) {
-    securityDepositDetail.textContent = `Security: ₱${formatCurrency(lease.monthly_rent * 2)}`;
+    securityDepositDetail.innerHTML = `Security: <strong>₱${formatCurrency(
+      tenancy.deposit
+    )}</strong>`;
   }
 
-  const dueDate = document.querySelector('[data-tenancy-info="due-date"]');
-  if (dueDate) {
-    dueDate.textContent = 'Due on 1st of each month';
+  // Landlord Contact Info
+  const landlordName = document.getElementById('tenancy-landlord-name');
+  if (landlordName) {
+    landlordName.textContent = tenancy.landlord.name;
+  }
+
+  const landlordAvatar = document.getElementById('tenancy-landlord-avatar');
+  if (landlordAvatar) {
+    const initials = tenancy.landlord.name
+      .split(' ')
+      .map(n => n.charAt(0))
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+    landlordAvatar.querySelector('span').textContent = initials;
+  }
+
+  const landlordEmail = document.getElementById('tenancy-landlord-email');
+  const landlordEmailLink = document.getElementById('tenancy-landlord-email-link');
+  if (landlordEmail && landlordEmailLink) {
+    landlordEmail.textContent = tenancy.landlord.email;
+    landlordEmailLink.href = `mailto:${tenancy.landlord.email}`;
+  }
+
+  const landlordPhone = document.getElementById('tenancy-landlord-phone');
+  const landlordPhoneLink = document.getElementById('tenancy-landlord-phone-link');
+  if (landlordPhone && landlordPhoneLink && tenancy.landlord.phone) {
+    landlordPhone.textContent = tenancy.landlord.phone;
+    landlordPhoneLink.href = `tel:${tenancy.landlord.phone}`;
+    landlordPhoneLink.style.display = 'inline-flex';
   }
 }
 
@@ -368,7 +419,7 @@ async function fetchPaymentHistory() {
  * @param {Array} payments - Array of payment objects
  */
 function renderPaymentHistory(payments) {
-  const tbody = document.querySelector('.tenancy-table-body');
+  const tbody = document.querySelector('.lease-table-body');
   if (!tbody) return;
 
   if (!payments || payments.length === 0) {
@@ -396,20 +447,19 @@ function renderPaymentHistory(payments) {
 
       const period = dueDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-      const statusClass =
-        payment.status === 'paid' ? 'tenancy-status-paid' : 'tenancy-status-pending';
+      const statusClass = payment.status === 'paid' ? 'lease-status-paid' : 'lease-status-pending';
       const statusText = payment.status === 'paid' ? 'Paid' : 'Pending';
 
       return `
-      <div class="tenancy-table-row">
-        <span class="tenancy-table-cell">${period}</span>
-        <span class="tenancy-table-cell tenancy-table-cell-bold">₱${formatCurrency(
+      <div class="lease-table-row">
+        <span class="lease-table-cell">${period}</span>
+        <span class="lease-table-cell lease-table-cell-bold">₱${formatCurrency(
           payment.amount
         )}</span>
-        <span class="tenancy-table-cell">${formattedDueDate}</span>
-        <span class="tenancy-table-cell">${formattedPaidDate}</span>
-        <span class="tenancy-table-cell">
-          <span class="tenancy-status-badge ${statusClass}">${statusText}</span>
+        <span class="lease-table-cell">${formattedDueDate}</span>
+        <span class="lease-table-cell">${formattedPaidDate}</span>
+        <span class="lease-table-cell">
+          <span class="lease-status-badge ${statusClass}">${statusText}</span>
         </span>
       </div>
     `;
