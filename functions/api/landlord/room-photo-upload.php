@@ -92,9 +92,19 @@ if ($method === 'POST') {
                 continue;
             }
 
-            if (!in_array($files['type'][$i], $allowedTypes)) {
-                $errors[] = "File {$files['name'][$i]}: unsupported type";
+            // Validate file extension (more reliable than MIME type)
+            $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+            
+            if (!in_array($ext, $allowedExtensions)) {
+                $errors[] = "File {$files['name'][$i]}: unsupported type (allowed: jpg, png, webp)";
                 continue;
+            }
+
+            // Also check MIME type as secondary validation
+            if (!in_array($files['type'][$i], $allowedTypes)) {
+                // Log for debugging but don't fail - browser MIME types can be inconsistent
+                error_log("Room photo MIME type mismatch for {$files['name'][$i]}: got {$files['type'][$i]}, expected one of " . implode(', ', $allowedTypes));
             }
 
             if ($files['size'][$i] > $maxSize) {
@@ -102,7 +112,6 @@ if ($method === 'POST') {
                 continue;
             }
 
-            $ext      = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
             $newName  = 'room_' . $roomId . '_' . uniqid() . '.' . $ext;
             $destPath = $uploadDir . $newName;
 
