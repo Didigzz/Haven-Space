@@ -57,6 +57,77 @@
 - New work follows the closest AGENTS guide and uses existing repo patterns rather than parallel ones.
 - Any temporary debug or test scripts created during implementation are removed before handoff.
 
+### Removed: Maintenance Request System (2026-05-01)
+
+**Problem**: The maintenance request system (`maintenance_requests` table and all related functionality) was a complete feature that added complexity without being actively used or required for the core boarding house management functionality.
+
+**Root Cause**: Feature creep. The maintenance system was built as a nice-to-have feature but wasn't essential to the platform's core value proposition of connecting landlords with boarders.
+
+**Evidence**:
+
+- `maintenance_requests` table existed with full CRUD operations
+- Complete backend module: `MaintenanceController`, `MaintenanceService`, `MaintenanceRepository`
+- Frontend views for both landlord and boarder maintenance management
+- API routes for creating, viewing, updating, and deleting maintenance requests
+- Notification system integration for maintenance updates
+- Calendar integration showing maintenance events
+- Activity feed integration showing maintenance requests
+
+**Solution**:
+
+- Created migration `035_drop_maintenance_system.sql` to drop the `maintenance_requests` table
+- Deleted backend code:
+  - `functions/src/Modules/Maintenance/Controllers/MaintenanceController.php`
+  - `functions/src/Modules/Maintenance/Services/MaintenanceService.php`
+  - `functions/src/Modules/Maintenance/Repositories/MaintenanceRepository.php`
+- Deleted frontend code:
+  - `client/js/views/boarder/boarder-maintenance.js`
+  - `client/css/views/boarder/boarder-maintenance.css`
+  - `client/css/views/boarder/boarder-maintenance-detail.css`
+  - `client/css/views/boarder/boarder-maintenance-create.css`
+  - `client/css/views/landlord/landlord-maintenance.css`
+  - `client/css/views/landlord/landlord-maintenance-detail.css`
+  - `client/assets/images/icons/maintenance_request.png`
+- Removed API routes from `functions/api/routes.php`:
+  - All `/api/landlord/maintenance/*` routes (7 routes)
+  - All `/api/boarder/maintenance/*` routes (5 routes)
+  - `/api/maintenance/stats` route
+- Updated code references:
+  - `functions/api/routes.php` - Removed MaintenanceController import and all maintenance routes
+  - `functions/src/Modules/Notification/Services/NotificationService.php` - Removed `notifyMaintenanceRequest()` and `notifyMaintenanceStatusChange()` methods, removed maintenance notification type filters
+  - `functions/api/landlord/calendar.php` - Removed maintenance events query and display
+  - `functions/api/landlord/activity.php` - Removed maintenance activity query and formatting
+  - `client/js/views/landlord/landlord-calendar.js` - Removed maintenance event navigation
+  - `client/js/views/landlord/activity.js` - Removed maintenance activity type
+  - `client/js/views/landlord/room-edit.js` - Removed 'maintenance' room status option
+  - `client/js/views/boarder/dashboard.js` - Removed maintenance icon mapping
+  - `client/js/views/boarder/announcements.js` - Removed maintenance icon mapping
+  - `client/views/landlord/index.html` - Removed maintenance quick action button
+  - `client/views/landlord/calendar/index.html` - Removed maintenance from subtitle and legend
+  - `client/views/landlord/activity/index.html` - Removed maintenance filter option
+  - `client/views/landlord/announcements/index.html` - Removed maintenance category option
+  - `client/views/landlord/listings/room-edit.html` - Removed maintenance status options (2 instances)
+  - `client/views/landlord/settings/index.html` - Removed maintenance notification setting
+  - `client/views/boarder/index.html` - Removed maintenance from greeting text and quick action button
+  - `client/views/boarder/announcements/index.html` - Removed maintenance filter tab
+  - `client/views/boarder/settings/index.html` - Removed maintenance notification setting
+  - `client/views/boarder/house-rules/index.html` - Removed maintenance navigation card and entire maintenance section
+  - `client/views/public/for-landlords.html` - Removed maintenance benefit card
+  - `client/css/views/landlord/landlord.css` - Removed maintenance CSS variables
+  - `client/css/views/landlord/room-edit.css` - Removed maintenance status styling
+- Updated `functions/database/migrations/033_convert_all_nulls_to_not_null.sql` to remove maintenance_requests references
+- Updated `functions/database/schema.sql` to remove maintenance_requests table definition
+
+**Current Pattern**: The platform focuses on core boarding house management features:
+
+- Property listings and room management
+- Application and booking workflow
+- Payment tracking
+- Messaging between landlords and boarders
+- Announcements and notifications
+
+**Prevention**: Before building new features, validate that they're essential to the core value proposition. Nice-to-have features should be deferred until the core features are solid and there's demonstrated user demand. If a feature isn't being used after initial development, remove it to reduce technical debt and maintenance burden.
+
 ## Bug Fix Documentation
 
 Whenever a recurring bug appears across prompts, and a fix has been identified and implemented, the fix should be documented in AGENTS.md. This ensures that when a similar issue arises in the future, the solution is already recorded, helping to avoid repeating the same mistake.
@@ -91,6 +162,36 @@ const response = await fetch(url, {
 ```
 
 **Prevention**: When adding new API calls, always check existing files like `landlord-boarders.js` or `my-properties.js` for the correct authentication pattern.
+
+### Fixed: update-listing.php Using Non-Existent address Column (2026-05-01)
+
+**Problem**: The `update-listing.php` endpoint was trying to update non-existent columns (`address`, `latitude`, `longitude`) directly in the `properties` table, causing SQL error "Unknown column 'address' in 'field list'".
+
+**Root Cause**: Schema mismatch. The `properties` table uses `address_id` as a foreign key to the normalized `addresses` table, but the update endpoint was trying to update address fields directly in the properties table instead of updating the related addresses record.
+
+**Evidence**:
+
+- Error: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'address' in 'field list'`
+- `properties` table has `address_id` FK, not `address`, `latitude`, `longitude` columns
+- `addresses` table contains: `address_line_1`, `city`, `province`, `latitude`, `longitude`
+- `create-listing.php` correctly inserts into `addresses` first, then uses `address_id` in `properties`
+- `update-listing.php` was trying to update address fields directly in `properties` table
+
+**Solution**:
+
+- Updated `functions/api/landlord/update-listing.php` to:
+  - Fetch `address_id` from the property record
+  - Update the `addresses` table separately with address-related fields
+  - Update only property-specific fields (`title`, `description`, `price`, `status`) in `properties` table
+  - Preserve existing values when fields are not provided in the update request
+
+**Current Pattern**: Property updates follow the normalized schema:
+
+- Address changes: UPDATE `addresses` table using the `address_id` from the property
+- Property changes: UPDATE `properties` table with property-specific fields only
+- Both operations wrapped in a transaction for consistency
+
+**Prevention**: When writing update endpoints, always check the actual database schema to ensure column names match. Follow the pattern used in create endpoints for consistency. Use normalized tables correctly - update the related table via foreign key, don't try to update FK fields directly in the parent table.
 
 ### Removed: Redundant document_types and documents Tables (2026-04-30)
 
@@ -186,6 +287,73 @@ const response = await fetch(url, {
 - Default: 'Single unit' for new landlord registrations
 
 **Prevention**: Use lookup tables only when the data is truly dynamic and managed through the application. For stable, limited value sets, VARCHAR is simpler and more maintainable.
+
+### Removed: payment_method_types Lookup Table (2026-05-01)
+
+**Problem**: The `payment_method_types` lookup table added unnecessary complexity for a simple field with a stable set of values. The code was already using VARCHAR strings directly, creating a complete mismatch with the database schema.
+
+**Root Cause**: Over-normalization combined with implementation mismatch. The `payment_methods` table had `payment_method_type_id` FK column, but the API code (`functions/api/landlord/payment-methods.php`) was inserting/querying `method_type` VARCHAR values directly.
+
+**Evidence**:
+
+- `payment_method_types` table: 6 seed records, never queried by code
+- `payment_methods` table: 0 records, schema had FK column but code used VARCHAR
+- API validation hardcoded: `['GCash', 'PayMaya', 'Bank Transfer', 'PayPal', 'GrabPay', 'Other']`
+- Complete schema/code mismatch prevented any payment methods from being saved
+- Payment method types are stable values that don't require dynamic management
+
+**Solution**:
+
+- Created migration `032_convert_payment_method_type_to_varchar.sql` to:
+  - Drop FK constraint `payment_methods_ibfk_2`
+  - Drop `payment_method_type_id` column
+  - Add `method_type VARCHAR(100) NOT NULL` column
+  - Drop `payment_method_types` lookup table
+- Updated `functions/database/schema.sql` to reflect VARCHAR approach
+
+**Current Pattern**: Payment method types are managed as:
+
+- Storage: VARCHAR(100) NOT NULL in `payment_methods.method_type`
+- Common values: 'GCash', 'PayMaya', 'Bank Transfer', 'PayPal', 'GrabPay', 'Other'
+- Validation: Hardcoded array in API endpoint for consistency
+
+**Prevention**: Before creating lookup tables, verify the implementation actually uses FK relationships. If the code hardcodes values as strings, use VARCHAR directly. Don't create schema/code mismatches that prevent features from working.
+
+### Removed: Verification System Tables (2026-05-01)
+
+**Problem**: The `verification_records`, `verification_log`, and `verification_statuses` tables were designed for a complex verification workflow but were never used in production (0 records in all tables).
+
+**Root Cause**: Over-engineered solution. The system only needed a simple boolean flag (`users.is_verified`) to track landlord verification status, not a multi-table entity-agnostic verification system with audit trails.
+
+**Evidence**:
+
+- `verification_records`: 0 records, never used
+- `verification_log`: 0 records, never used
+- `verification_statuses`: 3 lookup values (pending, approved, rejected), never referenced
+- All verification queries used complex LEFT JOINs that returned NULL for every user
+- Middleware and auth endpoints had to fall back to `users.is_verified` anyway
+
+**Solution**:
+
+- Created migration `030_drop_verification_system.sql` to drop all three tables
+- Updated 8 PHP files to remove verification LEFT JOINs:
+  - `functions/api/middleware.php` - Removed verification JOINs, use `u.is_verified`
+  - `functions/api/auth/me.php` - Simplified verification status derivation
+  - `functions/api/auth/register.php` - Removed verification_records INSERT
+  - `functions/api/auth/google/callback.php` - Removed verification_records INSERT
+  - `functions/api/admin/landlords.php` - Removed verification_log queries, simplified approve/reject
+  - `functions/api/admin/test_landlords.php` - Removed verification JOINs
+- Updated `functions/database/schema.sql` to remove table definitions
+
+**Current Pattern**: Landlord verification is managed through:
+
+- `users.is_verified` BOOLEAN - Simple flag set by admin approval
+- `users.account_status_id` FK to `account_statuses` - Controls login access (active/suspended/banned/pending_verification)
+- Admin approval: `UPDATE users SET is_verified = 1, account_status_id = 1 WHERE id = ?`
+
+**Why account_statuses was kept**: Unlike the verification tables, `account_statuses` is actively used and has behavioral logic (`is_active` flag) that middleware depends on to block suspended/banned users. It follows the same pattern as `user_roles` for consistency.
+
+**Prevention**: Don't build complex multi-table systems for simple boolean state. If a feature requires more than 2 tables and has 0 records after initial development, it's probably over-engineered. Start simple, add complexity only when actually needed.
 
 ### Removed: schema_migrations Tracking Table (2026-04-30)
 
@@ -328,6 +496,76 @@ const response = await fetch(url, {
 - Display logic: "All Properties" if no junction records, property name if one record, "X Properties" if multiple
 
 **Prevention**: Don't create both a single FK column and a junction table for the same relationship. If you need many-to-many capability, use only the junction table - it can handle all scenarios (zero, one, or many). A NULL FK column + junction table pattern creates confusion and redundancy.
+
+### Converted: All NULL Columns to NOT NULL (2026-05-01)
+
+**Problem**: Nullable columns throughout the database created ambiguity between "no value provided" and "intentionally empty", making data validation inconsistent and queries more complex.
+
+**Root Cause**: Initial schema design allowed NULL for many optional fields without considering whether empty string or zero would be more appropriate defaults.
+
+**Solution**:
+
+- Created migration `033_convert_all_nulls_to_not_null.sql` to:
+  - Update all existing NULL values to appropriate defaults (empty string, 0, default date, empty JSON)
+  - Alter column definitions to NOT NULL with DEFAULT values
+  - Preserve nullable columns only where semantically correct (optional FKs, timestamps that represent "not yet occurred")
+
+**Columns Converted** (40+ columns across 20+ tables):
+
+- Text fields: `description`, `message`, `bio`, `notes`, etc. → NOT NULL DEFAULT '' or NOT NULL (for TEXT)
+- Numeric fields: `budget_min`, `budget_max`, `latitude`, `longitude`, `size` → NOT NULL DEFAULT 0
+- Date/DateTime fields: `move_in_date`, `email_verification_expires`, `last_read_at` → NOT NULL DEFAULT '1970-01-01' or '1970-01-01 00:00:00'
+- JSON fields: `house_rules`, `metadata` → NOT NULL (empty JSON array/object)
+- VARCHAR fields: `phone_number`, `google_id`, `postal_code`, `bank_name`, etc. → NOT NULL DEFAULT ''
+
+**Columns That Remain Nullable** (semantically correct):
+
+- Optional Foreign Keys: `avatar_file_id`, `house_rules_file_id`, `related_user_id`, `related_property_id`, `property_id`, `room_id`, `boarder_id`
+- UNIQUE Constraint Fields: `google_id` (NULL for non-Google users to avoid duplicate empty strings)
+- Event Timestamps: `paid_date`, `reminder_sent_at`, `completed_at`, `read_at`, `last_read_at`, `used_at`
+- Soft Delete: All `deleted_at` columns
+
+**Current Pattern**:
+
+- Use NOT NULL with appropriate defaults for all required data fields
+- Use NULL only for optional foreign keys and timestamps representing "not yet occurred" events
+- Empty string ('') for missing text, 0 for missing numbers, empty JSON for missing structured data
+
+**Prevention**: When creating new columns, default to NOT NULL with appropriate defaults. Only use NULL for optional foreign keys or timestamps that represent future/conditional events. This makes data validation simpler and queries more predictable.
+
+### Removed: Redundant User Profile Columns (2026-05-01)
+
+**Problem**: The `users` table had several redundant columns that duplicated data or stored information that should be in normalized tables: `phone` (duplicate of `phone_number`), `alt_phone` (unused), `current_address` (should be in `addresses` table via properties), `date_of_birth` (not needed), `gender` (not needed), `bio` (should be in role-specific profile tables), `employment_status` (not needed), and `avatar_url` (duplicate of `avatar_file_id` FK).
+
+**Root Cause**: Migration `016_add_user_profile_fields.sql` added these columns without considering the existing normalized schema. The system already had `phone_number` for phone, `avatar_file_id` FK for avatars, and role-specific profile tables (`boarder_profiles`, `landlord_profiles`) for extended profile data.
+
+**Evidence**:
+
+- `phone` column: Redundant with existing `phone_number` column
+- `alt_phone` column: Never used in code, 0 references
+- `current_address` column: User addresses should be tracked via properties/applications, not stored directly in users table
+- `date_of_birth` column: Not required for the application, only used in profile completion checks
+- `gender` column: Not used anywhere in the application
+- `bio` column: Should be in `boarder_profiles.bio` or `landlord_profiles` tables, not in base users table
+- `employment_status` column: Not used anywhere in the application
+- `avatar_url` column: Redundant with `avatar_file_id` FK to `files` table
+
+**Solution**:
+
+- Created migration `034_drop_redundant_user_columns.sql` to drop all 8 columns
+- Updated code references:
+  - `functions/api/users/profile.php` - Removed `date_of_birth`, `current_address` from queries and allowed update fields
+  - `functions/api/landlord/boarders.php` - Removed `current_address`, `date_of_birth` from queries and response mapping
+  - `functions/api/boarder/dashboard-stats.php` - Removed `current_address`, `date_of_birth`, `avatar_url` from profile completion checks
+
+**Current Pattern**: User profile data is managed through:
+
+- Basic contact: `users.phone_number` (single phone field)
+- Avatar: `users.avatar_file_id` FK to `files` table
+- Extended profile: Role-specific tables (`boarder_profiles`, `landlord_profiles`)
+- Addresses: Tracked via `addresses` table linked through properties/applications
+
+**Prevention**: Before adding columns to the `users` table, check if the data belongs in role-specific profile tables or normalized reference tables. Keep the base `users` table minimal with only authentication and core identity fields. Don't duplicate data that's already available through foreign keys.
 
 ## landlord credentials
 
