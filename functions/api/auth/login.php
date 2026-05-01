@@ -158,7 +158,7 @@ try {
         } else {
             RateLimiter::registerFailure($ip);
             http_response_code(401);
-            echo json_encode(['error' => 'Account does not exist', 'message' => 'This account does not exist. Please sign up first.']);
+            echo json_encode(['error' => 'Wrong password', 'message' => 'The password you entered is incorrect. Please try again.']);
         }
     } else {
         RateLimiter::registerFailure($ip);
