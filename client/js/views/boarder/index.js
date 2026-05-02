@@ -23,7 +23,6 @@ import { updateNavbarNotifications } from '../../components/navbar.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
 import { ensureAuth } from '../../shared/auth-sync.js';
 import { initOAuthHandler } from '../../shared/oauth-handler.js';
-import onboardingChecklist from '../../components/onboarding-checklist.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -124,12 +123,18 @@ export async function initBoarderDashboard() {
       const sidebarName = document.getElementById('sidebar-profile-name');
       if (updated.avatar_url && avatarImg && avatarInitials) {
         avatarImg.src = updated.avatar_url;
-        avatarImg.style.cssText = 'display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;';
+        avatarImg.style.cssText =
+          'display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;';
         avatarInitials.style.display = 'none';
-        avatarImg.onerror = () => { avatarImg.style.display = 'none'; avatarInitials.style.display = 'flex'; };
+        avatarImg.onerror = () => {
+          avatarImg.style.display = 'none';
+          avatarInitials.style.display = 'flex';
+        };
       }
       if ((updated.first_name || updated.last_name) && sidebarName) {
-        sidebarName.textContent = `${updated.first_name || ''} ${updated.last_name || ''}`.trim() || sidebarName.textContent;
+        sidebarName.textContent =
+          `${updated.first_name || ''} ${updated.last_name || ''}`.trim() ||
+          sidebarName.textContent;
       }
     });
   }

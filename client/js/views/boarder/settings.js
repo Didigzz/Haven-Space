@@ -57,7 +57,7 @@ function populateProfileForm(user) {
   if (!user) return;
   const set = (id, val) => {
     const el = document.getElementById(id);
-    if (el && val != null) el.value = val;
+    if (el && val !== null) el.value = val;
   };
   set('first-name', user.first_name);
   set('last-name', user.last_name);
@@ -181,7 +181,9 @@ function initAvatarUpload() {
         existing.avatar_url = data.avatar_url;
         localStorage.setItem('user', JSON.stringify(existing));
         // Notify other components (sidebar, navbar) to update the avatar
-        window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: { avatar_url: data.avatar_url } }));
+        window.dispatchEvent(
+          new CustomEvent('userProfileUpdated', { detail: { avatar_url: data.avatar_url } })
+        );
         showToast('Profile photo updated', 'success');
       } else {
         showToast(data.error || 'Failed to upload photo', 'error');
@@ -341,5 +343,3 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
-
-
