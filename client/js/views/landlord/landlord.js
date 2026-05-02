@@ -387,15 +387,37 @@ function renderActivities(activities, container) {
       const itemClass = isNewApplication
         ? 'landlord-activity-item clickable'
         : 'landlord-activity-item';
+
+      // Determine if we should show avatar or icon
+      const showAvatar =
+        activity.avatar_path &&
+        (activity.type === 'new_application' ||
+          activity.type === 'payment_received' ||
+          activity.type === 'payment_reminder' ||
+          activity.type === 'tenancy_renewal');
+      const avatarUrl = activity.avatar_path ? getImageUrl(activity.avatar_path) : null;
+
+      const iconHtml =
+        showAvatar && avatarUrl
+          ? `<img src="${avatarUrl}" alt="User avatar" class="landlord-activity-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+           <span
+             data-icon="${activity.icon}"
+             data-icon-width="20"
+             data-icon-height="20"
+             data-icon-stroke-width="2"
+             style="display: none;"
+           ></span>`
+          : `<span
+             data-icon="${activity.icon}"
+             data-icon-width="20"
+             data-icon-height="20"
+             data-icon-stroke-width="2"
+           ></span>`;
+
       const itemContent = isNewApplication
         ? `<a href="applications/index.html" class="landlord-activity-link">
             <div class="landlord-activity-icon ${activity.color}">
-              <span
-                data-icon="${activity.icon}"
-                data-icon-width="20"
-                data-icon-height="20"
-                data-icon-stroke-width="2"
-              ></span>
+              ${iconHtml}
             </div>
             <div class="landlord-activity-content">
               <p class="landlord-activity-text">${activity.description}</p>
@@ -404,12 +426,7 @@ function renderActivities(activities, container) {
           </a>`
         : `
             <div class="landlord-activity-icon ${activity.color}">
-              <span
-                data-icon="${activity.icon}"
-                data-icon-width="20"
-                data-icon-height="20"
-                data-icon-stroke-width="2"
-              ></span>
+              ${iconHtml}
             </div>
             <div class="landlord-activity-content">
               <p class="landlord-activity-text">${activity.description}</p>

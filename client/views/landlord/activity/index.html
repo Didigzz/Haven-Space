@@ -35,12 +35,7 @@
           <div class="activity-page-header">
             <div class="activity-page-title">
               <h1>
-                <span
-                  data-icon="activity"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
+                <img src="../../../assets/svg/notification.svg" width="24" height="24" alt="" aria-hidden="true" class="activity-header-icon">
                 Recent Activity
               </h1>
               <p>Track all activity from your boarders and properties</p>
@@ -68,18 +63,27 @@
             <div class="activity-stat-card">
               <div class="activity-stat-header">
                 <span class="activity-stat-label">Total Activities</span>
+                <div class="activity-stat-icon blue">
+                  <img src="../../../assets/svg/analytics.svg" width="20" height="20" alt="" aria-hidden="true">
+                </div>
               </div>
               <div class="activity-stat-value" id="total-activities">--</div>
             </div>
             <div class="activity-stat-card">
               <div class="activity-stat-header">
                 <span class="activity-stat-label">This Week</span>
+                <div class="activity-stat-icon green">
+                  <img src="../../../assets/svg/calendar.svg" width="20" height="20" alt="" aria-hidden="true">
+                </div>
               </div>
               <div class="activity-stat-value" id="week-activities">--</div>
             </div>
             <div class="activity-stat-card">
               <div class="activity-stat-header">
                 <span class="activity-stat-label">Pending Actions</span>
+                <div class="activity-stat-icon yellow">
+                  <img src="../../../assets/svg/alert.svg" width="20" height="20" alt="" aria-hidden="true">
+                </div>
               </div>
               <div class="activity-stat-value" id="pending-actions">--</div>
             </div>
@@ -88,36 +92,25 @@
           <!-- Activity List -->
           <div class="activity-list-container">
             <div class="activity-list" id="activity-list">
-              <!-- Activities will be loaded dynamically from backend -->
               <div class="activity-loading">
                 <p class="activity-loading-text">Loading activities...</p>
               </div>
             </div>
-          </div>
 
-          <!-- Pagination -->
-          <div class="activity-pagination" id="pagination">
-            <button type="button" class="activity-pagination-btn" id="prev-page" disabled>
-              <span
-                data-icon="chevronLeft"
-                data-icon-width="20"
-                data-icon-height="20"
-                data-icon-stroke-width="2"
-              ></span>
-              Previous
-            </button>
-            <div class="activity-pagination-info">
-              <span id="page-info">Page 1 of 1</span>
+            <!-- Pagination -->
+            <div class="activity-pagination" id="pagination">
+              <button type="button" class="activity-pagination-btn" id="prev-page" disabled>
+                <img src="../../../assets/svg/chevron-left.svg" width="18" height="18" alt="" aria-hidden="true">
+                Previous
+              </button>
+              <div class="activity-pagination-info">
+                <span id="page-info">Page 1 of 1</span>
+              </div>
+              <button type="button" class="activity-pagination-btn" id="next-page" disabled>
+                Next
+                <img src="../../../assets/svg/chevron-right.svg" width="18" height="18" alt="" aria-hidden="true">
+              </button>
             </div>
-            <button type="button" class="activity-pagination-btn" id="next-page" disabled>
-              Next
-              <span
-                data-icon="chevronRight"
-                data-icon-width="20"
-                data-icon-height="20"
-                data-icon-stroke-width="2"
-              ></span>
-            </button>
           </div>
         </div>
       </main>

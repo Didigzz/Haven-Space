@@ -422,6 +422,12 @@
   fill: none;
 }
 
+.navbar-notification-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
 .navbar-notification-icon.success {
   background: #dcfce7;
   color: #16a34a;

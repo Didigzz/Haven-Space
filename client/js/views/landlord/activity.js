@@ -1,5 +1,20 @@
 import CONFIG from '../../config.js';
-import { getIcon } from '../../shared/icons.js';
+
+const SVG_BASE = '../../../assets/svg';
+
+// Map activity type/icon name → SVG filename
+const ACTIVITY_ICON_MAP = {
+  payment: 'currencyDollar',
+  payment_received: 'currencyDollar',
+  application: 'application',
+  new_application: 'application',
+  message: 'chat',
+  messages: 'chat',
+  maintenance: 'alert',
+  general: 'notification',
+  activity: 'notification',
+  bell: 'notification',
+};
 
 let currentPage = 1;
 const itemsPerPage = 20;
@@ -7,22 +22,17 @@ let totalActivities = 0;
 let currentFilter = 'all';
 let currentDateFilter = 'all';
 
-function injectIcons() {
-  const iconElements = document.querySelectorAll('[data-icon]');
-  iconElements.forEach(element => {
-    const iconName = element.dataset.icon;
-    const options = {
-      width: element.dataset.iconWidth || 24,
-      height: element.dataset.iconHeight || 24,
-      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
-      className: element.dataset.iconClass || '',
-    };
-    element.innerHTML = getIcon(iconName, options);
-  });
+function svgImg(name, size = 20, cls = '') {
+  return `<img src="${SVG_BASE}/${name}.svg" width="${size}" height="${size}" alt="" aria-hidden="true"${cls ? ` class="${cls}"` : ''}>`;
+}
+
+function getActivitySvg(activity) {
+  const raw = activity.icon || activity.type || 'general';
+  const name = ACTIVITY_ICON_MAP[raw] || ACTIVITY_ICON_MAP[activity.type] || 'notification';
+  return svgImg(name, 20);
 }
 
 export function initActivity() {
-  injectIcons();
   loadActivities();
   initFilters();
   initPagination();
@@ -72,6 +82,15 @@ async function loadActivities() {
   }
 }
 
+function sanitizeDescription(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  const escaped = div.innerHTML;
+  // Restore safe inline tags only
+  return escaped.replace(/&lt;(\/?(strong|em|b|i|span)[^&]*)&gt;/gi, '<$1>');
+}
+
 function renderActivities(activities, container) {
   if (!activities || activities.length === 0) {
     renderEmptyState(container);
@@ -81,77 +100,38 @@ function renderActivities(activities, container) {
   const html = activities
     .map(
       activity => `
-    <div class="activity-card" data-activity-id="${activity.id}" data-activity-type="${
-        activity.type
-      }">
+    <div class="activity-card" data-activity-id="${activity.id}" data-activity-type="${activity.type}">
       <div class="activity-card-icon ${activity.color || 'blue'}">
-        <span
-          data-icon="${activity.icon || 'activity'}"
-          data-icon-width="20"
-          data-icon-height="20"
-          data-icon-stroke-width="2"
-        ></span>
+        ${getActivitySvg(activity)}
       </div>
       <div class="activity-card-content">
         <div class="activity-card-header">
           <h3 class="activity-card-title">${escapeHtml(activity.title || 'Activity')}</h3>
-          <span class="activity-card-badge ${activity.type}">${formatType(activity.type)}</span>
+          <span class="activity-card-badge ${getBadgeClass(activity.type)}">${formatType(activity.type)}</span>
         </div>
-        <p class="activity-card-text">${escapeHtml(activity.description)}</p>
+        <p class="activity-card-text">${sanitizeDescription(activity.description)}</p>
         <div class="activity-card-meta">
           <span class="activity-card-time">
-            <span
-              data-icon="clock"
-              data-icon-width="16"
-              data-icon-height="16"
-              data-icon-stroke-width="2"
-            ></span>
-            ${activity.time_ago}
+            ${svgImg('clock', 14)}
+            ${escapeHtml(activity.time_ago)}
           </span>
-          ${
-            activity.property
-              ? `
+          ${activity.property ? `
           <span class="activity-card-property">
-            <span
-              data-icon="building"
-              data-icon-width="16"
-              data-icon-height="16"
-              data-icon-stroke-width="2"
-            ></span>
+            ${svgImg('building', 14)}
             ${escapeHtml(activity.property)}
-          </span>
-          `
-              : ''
-          }
-          ${
-            activity.user
-              ? `
+          </span>` : ''}
+          ${activity.user ? `
           <span class="activity-card-user">
-            <span
-              data-icon="user"
-              data-icon-width="16"
-              data-icon-height="16"
-              data-icon-stroke-width="2"
-            ></span>
+            ${svgImg('user', 14)}
             ${escapeHtml(activity.user)}
-          </span>
-          `
-              : ''
-          }
+          </span>` : ''}
         </div>
       </div>
       <div class="activity-card-actions">
-        ${
-          activity.action_url
-            ? `
-        <a href="${escapeHtml(
-          activity.action_url
-        )}" class="landlord-btn landlord-btn-outline landlord-btn-sm">
+        ${activity.action_url ? `
+        <a href="${escapeHtml(activity.action_url)}" class="landlord-btn landlord-btn-outline landlord-btn-sm">
           View Details
-        </a>
-        `
-            : ''
-        }
+        </a>` : ''}
       </div>
     </div>
   `
@@ -159,52 +139,34 @@ function renderActivities(activities, container) {
     .join('');
 
   container.innerHTML = html;
-  injectIcons();
 }
 
 function renderEmptyState(container) {
   container.innerHTML = `
     <div class="activity-empty">
       <div class="activity-empty-icon">
-        <span
-          data-icon="inbox"
-          data-icon-width="48"
-          data-icon-height="48"
-          data-icon-stroke-width="1.5"
-        ></span>
+        ${svgImg('history', 40)}
       </div>
       <p class="activity-empty-text">No activities found</p>
       <p class="activity-empty-subtext">Activities will appear here as boarders interact with your properties.</p>
     </div>
   `;
-  injectIcons();
 }
 
 function renderErrorState(container) {
   container.innerHTML = `
     <div class="activity-error">
       <div class="activity-error-icon">
-        <span
-          data-icon="exclamationCircle"
-          data-icon-width="48"
-          data-icon-height="48"
-          data-icon-stroke-width="1.5"
-        ></span>
+        ${svgImg('alert', 40)}
       </div>
       <p class="activity-error-text">Unable to load activities</p>
       <p class="activity-error-subtext">Please try again later.</p>
       <button type="button" class="landlord-btn landlord-btn-primary" id="retry-btn">
-        <span
-          data-icon="arrowPath"
-          data-icon-width="20"
-          data-icon-height="20"
-          data-icon-stroke-width="2"
-        ></span>
+        ${svgImg('report', 18)}
         Retry
       </button>
     </div>
   `;
-  injectIcons();
 
   document.getElementById('retry-btn')?.addEventListener('click', () => loadActivities());
 }
@@ -269,11 +231,29 @@ function initPagination() {
 function formatType(type) {
   const types = {
     payment: 'Payment',
+    payment_received: 'Payment',
     application: 'Application',
+    new_application: 'Application',
     message: 'Message',
+    maintenance: 'Maintenance',
     general: 'General',
   };
-  return types[type] || type || 'Activity';
+  if (types[type]) return types[type];
+  if (type) return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return 'Activity';
+}
+
+function getBadgeClass(type) {
+  const map = {
+    payment: 'payment',
+    payment_received: 'payment',
+    application: 'application',
+    new_application: 'application',
+    message: 'message',
+    maintenance: 'maintenance',
+    general: 'general',
+  };
+  return map[type] || 'general';
 }
 
 function escapeHtml(text) {

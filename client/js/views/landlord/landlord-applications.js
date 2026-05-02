@@ -178,26 +178,19 @@ function createApplicationCard(application) {
 function renderApplications(applications) {
   const container = document.getElementById('applicationQueueContainer');
   if (!container) {
+    console.error('Application queue container not found');
     return;
   }
 
-  const queueHeader = container.querySelector('.landlord-application-queue');
-  if (!queueHeader) {
-    return;
-  }
-
-  // Clear existing cards (keep header)
-  const existingCards = container.querySelectorAll('.landlord-application-card');
-  existingCards.forEach(card => card.remove());
+  // Clear existing content
+  container.innerHTML = '';
 
   // Store applications in localStorage for modal access
   localStorage.setItem('landlordApplications', JSON.stringify(applications));
 
   if (!applications || applications.length === 0) {
-    const emptyState = document.createElement('div');
-    emptyState.className = 'landlord-application-card';
-    emptyState.innerHTML = `
-      <div style="text-align: center; padding: 2.5rem 2rem; color: var(--text-gray);">
+    container.innerHTML = `
+      <div class="landlord-application-card" style="text-align: center; padding: 2.5rem 2rem; color: var(--text-gray);">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.4;">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
@@ -205,15 +198,14 @@ function renderApplications(applications) {
         <p style="font-size: 0.875rem; opacity: 0.7;">Applications from boarders will appear here</p>
       </div>
     `;
-    queueHeader.appendChild(emptyState);
     return;
   }
 
   // Render each application
   applications.forEach(app => {
-    const card = document.createElement('div');
-    card.innerHTML = createApplicationCard(app);
-    queueHeader.appendChild(card.firstElementChild);
+    const cardWrapper = document.createElement('div');
+    cardWrapper.innerHTML = createApplicationCard(app);
+    container.appendChild(cardWrapper.firstElementChild);
   });
 
   // Re-initialize icons for new content

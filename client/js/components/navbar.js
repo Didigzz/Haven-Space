@@ -245,9 +245,11 @@ function renderNotifications(notifications) {
       notification => `
     <div class="navbar-notification-item ${notification.unread ? 'unread' : ''}" data-id="${
         notification.id
-      }">
+      }" data-type="${notification.type}" style="cursor: pointer;">
       <div class="navbar-notification-icon ${notification.type}">
-        <span data-notification-icon="${notification.icon}"></span>
+        <img src="../../../assets/svg/${notification.icon}.svg" alt="${
+        notification.icon
+      }" style="width: 20px; height: 20px;" />
       </div>
       <div class="navbar-notification-content">
         <div class="navbar-notification-title">${notification.title}</div>
@@ -259,19 +261,11 @@ function renderNotifications(notifications) {
     )
     .join('');
 
-  // Inject icons into notification items
-  list.querySelectorAll('[data-notification-icon]').forEach(placeholder => {
-    const iconName = placeholder.dataset.notificationIcon;
-    if (iconName) {
-      // Replace with a simple text-based icon or remove entirely
-      placeholder.textContent = iconName;
-    }
-  });
-
   // Setup click handlers for notification items
   list.querySelectorAll('.navbar-notification-item').forEach(item => {
     item.addEventListener('click', async () => {
       const notificationId = parseInt(item.dataset.id);
+      const notificationType = item.dataset.type;
 
       // Get the notification to check its type
       const notification = notifications.find(n => n.id === notificationId);
@@ -298,14 +292,9 @@ function renderNotifications(notifications) {
       }
 
       // If this is a new application notification, navigate to applications page
-      if (notification && notification.type === 'new_application') {
-        const currentPath = window.location.pathname;
-        const basePath = currentPath.includes('github.io')
-          ? '/Haven-Space/client/views/'
-          : currentPath.includes('/views/')
-          ? ''
-          : '/views/';
-        window.location.href = `${basePath}landlord/applications/index.html`;
+      const type = notification?.type || notificationType;
+      if (type === 'new_application') {
+        window.location.href = '/views/landlord/applications/index.html';
       }
 
       // If this is an application status notification, sync user data
@@ -621,6 +610,7 @@ export async function updateNavbarNotifications() {
  */
 function getNotificationType(type) {
   const map = {
+    new_application: 'info',
     application_accepted: 'success',
     application_rejected: 'warning',
     maintenance_status_change: 'info',
@@ -632,19 +622,19 @@ function getNotificationType(type) {
 }
 
 /**
- * Map notification type to icon name
+ * Map notification type to icon name (SVG filename without extension)
  */
 function getNotificationIcon(type) {
   const map = {
-    new_application: 'user',
-    application_accepted: 'checkCircle',
-    application_rejected: 'xCircle',
-    maintenance_status_change: 'wrench',
-    maintenance_new_request: 'exclamationTriangle',
-    maintenance_comment: 'chatBubble',
-    system: 'informationCircle',
+    new_application: 'application',
+    application_accepted: 'check',
+    application_rejected: 'close',
+    maintenance_status_change: 'settings',
+    maintenance_new_request: 'alert',
+    maintenance_comment: 'chat',
+    system: 'notification',
   };
-  return map[type] || 'bell';
+  return map[type] || 'notification';
 }
 
 /**

@@ -48,10 +48,13 @@ try {
             CONCAT(u.first_name, ' ', u.last_name) as entity_name,
             pr.title as property_name,
             NULL as room_name,
-            p.amount
+            p.amount,
+            u.avatar_file_id,
+            f.file_url as avatar_path
         FROM payments p
         INNER JOIN users u ON p.boarder_id = u.id
         INNER JOIN properties pr ON p.property_id = pr.id
+        LEFT JOIN files f ON u.avatar_file_id = f.id
         WHERE p.landlord_id = ? 
             AND p.status = 'paid'
             AND p.paid_date IS NOT NULL
@@ -71,11 +74,14 @@ try {
             CONCAT(u.first_name, ' ', u.last_name) as entity_name,
             pr.title as property_name,
             r.title as room_name,
-            NULL as amount
+            NULL as amount,
+            u.avatar_file_id,
+            f.file_url as avatar_path
         FROM applications a
         INNER JOIN users u ON a.boarder_id = u.id
         INNER JOIN rooms r ON a.room_id = r.id
         INNER JOIN properties pr ON r.property_id = pr.id
+        LEFT JOIN files f ON u.avatar_file_id = f.id
         WHERE a.landlord_id = ? 
             AND a.status = 'pending'
         ORDER BY a.created_at DESC
@@ -94,10 +100,13 @@ try {
             CONCAT(u.first_name, ' ', u.last_name) as entity_name,
             pr.title as property_name,
             NULL as room_name,
-            p.amount
+            p.amount,
+            u.avatar_file_id,
+            f.file_url as avatar_path
         FROM payments p
         INNER JOIN users u ON p.boarder_id = u.id
         INNER JOIN properties pr ON p.property_id = pr.id
+        LEFT JOIN files f ON u.avatar_file_id = f.id
         WHERE p.landlord_id = ? 
             AND p.reminder_sent_at IS NOT NULL
         ORDER BY p.reminder_sent_at DESC
@@ -116,11 +125,14 @@ try {
             CONCAT(u.first_name, ' ', u.last_name) as entity_name,
             pr.title as property_name,
             r.title as room_name,
-            NULL as amount
+            NULL as amount,
+            u.avatar_file_id,
+            f.file_url as avatar_path
         FROM applications a
         INNER JOIN users u ON a.boarder_id = u.id
         INNER JOIN rooms r ON a.room_id = r.id
         INNER JOIN properties pr ON r.property_id = pr.id
+        LEFT JOIN files f ON u.avatar_file_id = f.id
         WHERE a.landlord_id = ? 
             AND a.status = 'approved'
             AND a.updated_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
@@ -167,6 +179,7 @@ function formatActivity($activity) {
     $propertyName = $activity['property_name'] ?? '';
     $roomName = $activity['room_name'] ?? '';
     $activityDate = $activity['activity_date'];
+    $avatarPath = $activity['avatar_path'] ?? null;
     
     $icon = 'clock';
     $color = 'gray';
@@ -210,6 +223,7 @@ function formatActivity($activity) {
         'description' => $description,
         'time_ago' => $timeAgo,
         'date' => $activityDate,
+        'avatar_path' => $avatarPath,
     ];
 }
 
