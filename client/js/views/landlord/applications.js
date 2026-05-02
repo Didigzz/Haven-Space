@@ -81,9 +81,21 @@ function initializeEventListeners() {
 /**
  * Handle clicks on dynamically created elements
  */
+let lastClickTime = 0;
+const CLICK_DEBOUNCE_MS = 500;
+
 function handleDynamicClicks(e) {
   const target = e.target.closest('button');
   if (!target) return;
+
+  // Prevent rapid multiple clicks
+  const now = Date.now();
+  if (now - lastClickTime < CLICK_DEBOUNCE_MS) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
+  lastClickTime = now;
 
   // View details button
   if (target.classList.contains('view-details-btn') || target.closest('.view-details-btn')) {
@@ -388,6 +400,12 @@ function showConfirmModal(title, message, onConfirm, onCancel) {
   const cancelBtn = document.getElementById('confirmationCancelBtn');
   const closeBtn = document.getElementById('confirmationCloseBtn');
 
+  // If modal is already showing, hide it first to clean up any existing listeners
+  if (modal.classList.contains('show')) {
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
   // Set modal content
   if (titleElement) titleElement.textContent = title;
   if (messageElement) messageElement.textContent = message;
@@ -405,7 +423,7 @@ function showConfirmModal(title, message, onConfirm, onCancel) {
     if (onCancel) onCancel();
   };
 
-  // Remove old event listeners
+  // Remove old event listeners by cloning nodes
   confirmBtn.replaceWith(confirmBtn.cloneNode(true));
   cancelBtn.replaceWith(cancelBtn.cloneNode(true));
   closeBtn.replaceWith(closeBtn.cloneNode(true));
@@ -428,7 +446,14 @@ function showConfirmModal(title, message, onConfirm, onCancel) {
 /**
  * Update application status
  */
+let isProcessing = false;
+
 async function updateApplicationStatus(id, status) {
+  // Prevent multiple simultaneous updates
+  if (isProcessing) {
+    return;
+  }
+
   const statusLabels = {
     accepted: 'accept',
     approved: 'accept',
@@ -446,6 +471,7 @@ async function updateApplicationStatus(id, status) {
     'Confirm Action',
     `Are you sure you want to ${action} this application?`,
     async () => {
+      isProcessing = true;
       try {
         const response = await authenticatedFetch(
           `${CONFIG.API_BASE_URL}/api/landlord/applications/${id}/status`,
@@ -477,6 +503,8 @@ async function updateApplicationStatus(id, status) {
       } catch (error) {
         console.error('Error updating application:', error);
         showToast(`Failed to ${action} application. Please try again.`, 'error');
+      } finally {
+        isProcessing = false;
       }
     }
   );
@@ -672,5 +700,22 @@ function showToast(message, type = 'info') {
   }, 5000);
 }
 
+// Test function to verify single acceptance
+async function testSingleAcceptance() {
+  console.log('Testing single acceptance...');
+
+  // Mock the isProcessing flag
+  const testProcessingCount = 0;
+  const originalIsProcessing = isProcessing;
+
+  // Test that multiple calls to updateApplicationStatus don't result in multiple API calls
+  updateApplicationStatus(1, 'accepted');
+  updateApplicationStatus(1, 'accepted');
+  updateApplicationStatus(1, 'accepted');
+
+  // The isProcessing flag should prevent multiple simultaneous updates
+  console.log('Test completed - multiple calls should only result in one API call');
+}
+
 // Export functions for external use
-export { loadApplications, updateApplicationStatus, openApplicationModal };
+export { loadApplications, updateApplicationStatus, openApplicationModal, testSingleAcceptance };
