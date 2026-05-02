@@ -11,7 +11,7 @@ header('Content-Type: application/json');
 try {
     // Check authentication - only landlords can generate descriptions
     $user = Middleware::authenticate();
-    
+
     if ($user['role'] !== 'landlord') {
         json_response(403, ['error' => 'Only landlords can generate property descriptions']);
         exit;
@@ -19,7 +19,7 @@ try {
 
     // Get request data
     $input = json_decode(file_get_contents('php://input'), true);
-    
+
     if (empty($input['property_details'])) {
         json_response(400, ['error' => 'Property details are required']);
         exit;
@@ -27,7 +27,7 @@ try {
 
     // Initialize Groq service
     $groqService = new GroqService();
-    
+
     if (!$groqService->isConfigured()) {
         json_response(503, ['error' => 'AI service not configured']);
         exit;
@@ -35,7 +35,7 @@ try {
 
     // Prepare prompt for AI
     $propertyDetails = $input['property_details'];
-    
+
     $messages = [
         [
             'role' => 'system',
@@ -51,17 +51,24 @@ try {
     ];
 
     // Call Groq API
-    $response = $groqService->chatCompletion($messages);
-    
-    // Extract and return the generated description
-    $description = $response['choices'][0]['message']['content'] ?? '';
-    
-    json_response(200, [
-        'success' => true,
-        'description' => trim($description),
-        'model_used' => $response['model'] ?? 'unknown',
-        'usage' => $response['usage'] ?? null
-    ]);
+    try {
+        $response = $groqService->chatCompletion($messages);
+
+        // Extract and return the generated description
+        $description = $response['choices'][0]['message']['content'] ?? '';
+
+        json_response(200, [
+            'success' => true,
+            'description' => trim($description),
+            'model_used' => $response['model'] ?? 'unknown',
+            'usage' => $response['usage'] ?? null
+        ]);
+    } catch (\Exception $e) {
+        json_response(500, [
+            'error' => 'AI service error: ' . $e->getMessage(),
+            'success' => false
+        ]);
+    }
 
 } catch (\Throwable $e) {
     json_response(500, [

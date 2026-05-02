@@ -17,7 +17,7 @@ require_once __DIR__ . '/../config/app.php';
 $isAppwriteContext = defined('APPWRITE_FUNCTION_CONTEXT');
 
 // 1. Get allowed origins from environment variable (comma-separated)
-$allowedOriginsStr = env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000');
+$allowedOriginsStr = env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000,http://localhost:8000');
 $allowed_origins = array_map('trim', explode(',', $allowedOriginsStr));
 
 // Add default localhost origins if not already present

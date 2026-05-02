@@ -28,7 +28,7 @@ class GroqService
     public function chatCompletion(array $messages, string $model = null, float $temperature = 0.7, int $maxTokens = 1024): array
     {
         $url = $this->baseUrl . '/chat/completions';
-        
+
         $data = [
             'model' => $model ?? $this->defaultModel,
             'messages' => $messages,
@@ -91,7 +91,7 @@ class GroqService
         }
 
         $decoded = json_decode($response, true);
-        
+
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Invalid API response: ' . $response);
         }

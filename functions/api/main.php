@@ -20,11 +20,11 @@ return function ($context) {
         $data = json_decode($body, true);
         return $data ?: [];
     }
-    
+
     // Parse query parameters from URL
     function parseQueryParams($context) {
         $params = [];
-        
+
         // Try to get query parameters from different sources
         if (isset($context->req->query) && is_array($context->req->query)) {
             // Appwrite might provide query params directly
@@ -39,10 +39,10 @@ return function ($context) {
             // Fallback to $_GET
             $params = $_GET;
         }
-        
+
         return $params;
     }
-    
+
     // Environment variable helper function
     function env($key, $default = null) {
         return $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?? $default;
@@ -53,27 +53,27 @@ return function ($context) {
     $path = $context->req->path ?? '/';
     $body = $context->req->body ?? '';
     $headers_in = $context->req->headers ?? [];
-    
+
     // Parse request body to get path and method for function executions
     $requestData = parseJsonBody($body);
     $queryParams = parseQueryParams($context);
-    
+
     if (!empty($requestData['path'])) {
         $path = $requestData['path'];
     }
     if (!empty($requestData['method'])) {
         $method = $requestData['method'];
     }
-    
+
     // Enhanced CORS headers
     $origin = $context->req->headers['origin'] ?? $context->req->headers['Origin'] ?? '*';
-    
+
     // Load allowed origins from environment
-    $allowedOrigins = explode(',', env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000'));
-    
+    $allowedOrigins = explode(',', env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000,http://localhost:8000'));
+
     // Check if origin is allowed, otherwise use first allowed origin or wildcard
     $corsOrigin = in_array($origin, $allowedOrigins) ? $origin : ($allowedOrigins[0] ?? '*');
-    
+
     $headers = [
         'Access-Control-Allow-Origin' => $corsOrigin,
         'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
@@ -140,7 +140,7 @@ return function ($context) {
                 if ($method !== 'POST') {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
-                
+
                 // Forward to register.php logic
                 // For now, return a placeholder with debug info
                 return $context->res->json(generateResponse([
@@ -158,20 +158,20 @@ return function ($context) {
                 // Handle both GET and POST requests
                 $action = $requestData['action'] ?? $queryParams['action'] ?? 'login';
                 $role = $requestData['role'] ?? $queryParams['role'] ?? null;
-                
+
                 $validActions = ['login', 'signup', 'link'];
                 if (!in_array($action, $validActions)) {
                     return $context->res->json(generateResponse(null, 400, 'Invalid action parameter'), 400, $headers);
                 }
-                
+
                 // Generate state token for CSRF protection
                 $state = bin2hex(random_bytes(32));
-                
+
                 // Build Google OAuth URL
                 $clientId = env('GOOGLE_CLIENT_ID');
                 $redirectUri = env('GOOGLE_REDIRECT_URI');
                 $scope = 'openid email profile';
-                
+
                 $authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
                     'client_id' => $clientId,
                     'redirect_uri' => $redirectUri,
@@ -181,7 +181,7 @@ return function ($context) {
                     'access_type' => 'offline',
                     'prompt' => 'consent'
                 ]);
-                
+
                 // For browser requests (GET with query params), redirect directly to Google
                 // For API requests (POST with JSON), return JSON with redirect URL
                 if ($method === 'GET' && !empty($queryParams)) {
@@ -202,7 +202,7 @@ return function ($context) {
             default:
                 return $context->res->json(generateResponse(null, 404, 'Route not found: ' . $path), 404, $headers);
         }
-        
+
     } catch (Exception $e) {
         return $context->res->json(generateResponse(null, 500, 'Server error: ' . $e->getMessage()), 500, $headers);
     } catch (Throwable $e) {
