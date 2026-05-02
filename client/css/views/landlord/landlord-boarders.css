@@ -89,9 +89,11 @@
 }
 
 .boarders-header .back-link svg,
+.boarders-header .back-link img,
 .boarders-header .back-link [data-icon] {
   width: 18px;
   height: 18px;
+  opacity: 0.7;
 }
 
 .boarders-header h1 {
@@ -142,30 +144,32 @@
 }
 
 .property-stats-bar .stat-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .property-stats-bar .stat-icon.blue {
-  color: #333;
+  background-color: #eff6ff;
 }
 
 .property-stats-bar .stat-icon.green {
-  color: #333;
+  background-color: var(--bg-green);
 }
 
 .property-stats-bar .stat-icon.orange {
-  color: #333;
+  background-color: #fff7ed;
 }
 
 .property-stats-bar .stat-icon.purple {
-  color: #333;
+  background-color: #f5f3ff;
 }
 
+.property-stats-bar .stat-icon img,
 .property-stats-bar .stat-icon svg {
   width: 20px;
   height: 20px;
@@ -237,11 +241,13 @@
 }
 
 .filter-bar .search-input svg,
+.filter-bar .search-input img,
 .filter-bar .search-input [data-icon] {
   width: 18px;
   height: 18px;
   color: var(--text-gray);
   flex-shrink: 0;
+  opacity: 0.6;
 }
 
 .filter-bar .search-input input {
@@ -410,7 +416,8 @@
   color: #ef4444;
 }
 
-.boarder-card-actions svg {
+.boarder-card-actions svg,
+.boarder-card-actions img {
   width: 16px;
   height: 16px;
 }
@@ -423,6 +430,24 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-green);
+  border-radius: var(--radius-xl);
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+}
+
+.empty-state-icon img {
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
 }
 
 .empty-state svg {
@@ -548,6 +573,11 @@
   background-color: #f3f4f6;
 }
 
+.modal-close img {
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
 .modal-body {
   flex: 1;
   overflow-y: auto;
@@ -658,6 +688,11 @@
   background-color: var(--dark-green);
 }
 
+.btn-primary img {
+  filter: brightness(0) invert(1);
+  flex-shrink: 0;
+}
+
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -676,6 +711,11 @@
 
 .btn-secondary:hover {
   background-color: var(--bg-green);
+}
+
+.btn-secondary img {
+  opacity: 0.75;
+  flex-shrink: 0;
 }
 
 .btn-outline {
@@ -830,7 +870,12 @@
   margin: 0 auto 1.5rem;
   background-color: #fee2e2;
   border-radius: 50%;
-  color: #ef4444;
+}
+
+.remove-icon img {
+  width: 32px;
+  height: 32px;
+  filter: invert(27%) sepia(90%) saturate(1500%) hue-rotate(340deg) brightness(90%) contrast(110%);
 }
 
 .remove-modal-content h3 {

@@ -37,7 +37,7 @@
               <!-- Search Messages -->
               <div class="messages-search">
                 <div class="messages-search-input-wrapper">
-                  <span class="icon-placeholder messages-search-icon" data-icon="search"></span>
+                  <img src="../../../assets/svg/search.svg" alt="search" width="20" height="20" />
                   <input
                     type="text"
                     class="messages-search-input"
@@ -79,7 +79,12 @@
               <!-- Chat Input -->
               <div class="chat-input-container">
                 <button class="chat-input-btn chat-attach-btn" aria-label="Attach file">
-                  <span class="icon-placeholder" data-icon="paperClip"></span>
+                  <img
+                    src="../../../assets/svg/document.svg"
+                    alt="paperClip"
+                    width="20"
+                    height="20"
+                  />
                 </button>
                 <div class="chat-input-wrapper">
                   <input
@@ -90,7 +95,12 @@
                     autocomplete="off"
                   />
                   <button class="chat-input-btn chat-emoji-btn" aria-label="Emoji">
-                    <span class="icon-placeholder" data-icon="magnifyingGlassPlus"></span>
+                    <img
+                      src="../../../assets/svg/magnifier.svg"
+                      alt="magnifyingGlassPlus"
+                      width="20"
+                      height="20"
+                    />
                   </button>
                 </div>
                 <button
@@ -98,7 +108,12 @@
                   id="chat-send-btn"
                   aria-label="Send message"
                 >
-                  <span class="icon-placeholder" data-icon="arrowRightSimple"></span>
+                  <img
+                    src="../../../assets/svg/chevron-right.svg"
+                    alt="arrowRightSimple"
+                    width="20"
+                    height="20"
+                  />
                 </button>
               </div>
             </div>
@@ -110,17 +125,5 @@
     <!-- Scripts -->
     <script type="module" src="../../../js/main.js?v=1777136032299"></script>
     <script type="module" src="../../../js/views/boarder/messages.js?v=1777136032299"></script>
-    <script type="module">
-      import { getIcon } from '../../../js/shared/icons.js';
-
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.icon-placeholder').forEach(el => {
-          const iconName = el.dataset.icon;
-          const className = el.className.replace('icon-placeholder', '').trim();
-          const iconHtml = getIcon(iconName, { className });
-          el.outerHTML = iconHtml;
-        });
-      });
-    </script>
   </body>
 </html>

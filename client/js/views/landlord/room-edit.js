@@ -549,15 +549,14 @@ function bindUI() {
     .getElementById('delete-cancel')
     ?.addEventListener('click', () => closeModal('delete-room-modal'));
 
-  // Close on overlay click
+  // Close on backdrop click (clicking the overlay itself, not the modal content)
   ['room-modal', 'delete-room-modal'].forEach(id => {
-    document
-      .getElementById(id)
-      ?.querySelector('.modal-overlay')
-      ?.addEventListener('click', () => {
+    document.getElementById(id)?.addEventListener('click', e => {
+      if (e.target === document.getElementById(id)) {
         if (id === 'room-modal') resetPhotoUI();
         closeModal(id);
-      });
+      }
+    });
   });
 
   // Escape key

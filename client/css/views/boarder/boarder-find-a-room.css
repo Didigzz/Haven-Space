@@ -449,7 +449,7 @@
 .find-room-map-control-btn svg {
   width: 20px;
   height: 20px;
-  color: #333333;
+  color: var(--text-dark);
 }
 
 .find-room-results-section {

@@ -290,23 +290,23 @@
 }
 
 .boarder-stat-icon.blue {
-  color: var(--theme-text-secondary);
+  background-color: var(--dashboard-blue-light);
 }
 
 .boarder-stat-icon.pink {
-  color: var(--theme-text-secondary);
+  background-color: rgba(236, 72, 153, 0.12);
 }
 
 .boarder-stat-icon.green {
-  color: var(--theme-text-secondary);
+  background-color: var(--dashboard-green-light);
 }
 
 .boarder-stat-icon.purple {
-  color: var(--theme-text-secondary);
+  background-color: rgba(139, 92, 246, 0.12);
 }
 
 .boarder-stat-icon.orange {
-  color: var(--theme-text-secondary);
+  background-color: var(--dashboard-yellow-light);
 }
 
 /* Dark mode - make icons white */

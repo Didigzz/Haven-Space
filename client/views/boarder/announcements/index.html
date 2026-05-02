@@ -35,7 +35,12 @@
           <div class="boarder-page-header">
             <div class="boarder-page-title">
               <h1>
-                <span class="icon-placeholder" data-icon="bellAlert"></span>
+                <img
+                  src="../../../assets/svg/notification.svg"
+                  alt="bellAlert"
+                  width="20"
+                  height="20"
+                />
                 Announcements
               </h1>
               <p>Stay updated with important announcements from your landlord</p>
@@ -45,19 +50,29 @@
           <!-- Filter Tabs -->
           <div class="announcement-filter-tabs">
             <button class="announcement-filter-tab active" data-filter="all">
-              <span class="icon-placeholder" data-icon="grid2x2"></span>
+              <img src="../../../assets/svg/grid2x2.svg" alt="grid2x2" width="20" height="20" />
               All
             </button>
             <button class="announcement-filter-tab" data-filter="unread">
-              <span class="icon-placeholder" data-icon="eye"></span>
+              <img src="../../../assets/svg/eye.svg" alt="eye" width="20" height="20" />
               Unread
             </button>
             <button class="announcement-filter-tab" data-filter="urgent">
-              <span class="icon-placeholder" data-icon="exclamationTriangle"></span>
+              <img
+                src="../../../assets/svg/alert.svg"
+                alt="exclamationTriangle"
+                width="20"
+                height="20"
+              />
               Urgent
             </button>
             <button class="announcement-filter-tab" data-filter="general">
-              <span class="icon-placeholder" data-icon="clipboard"></span>
+              <img
+                src="../../../assets/svg/clipboardList.svg"
+                alt="clipboard"
+                width="20"
+                height="20"
+              />
               General
             </button>
           </div>
@@ -72,17 +87,5 @@
 
     <script type="module" src="../../../js/main.js?v=1777136032299"></script>
     <script type="module" src="../../../js/views/boarder/announcements.js?v=1777136032299"></script>
-    <script type="module">
-      import { getIcon } from '../../../js/shared/icons.js';
-
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.icon-placeholder').forEach(el => {
-          const iconName = el.dataset.icon;
-          const className = el.className.replace('icon-placeholder', '').trim();
-          const iconHtml = getIcon(iconName, { className });
-          el.outerHTML = iconHtml;
-        });
-      });
-    </script>
   </body>
 </html>

@@ -51,18 +51,28 @@
             <!-- Status Dropdown -->
             <div class="find-room-header-dropdown" id="status-dropdown">
               <button class="find-room-header-dropdown-btn" id="status-dropdown-btn">
-                <span data-icon="clipboard" data-icon-width="18" data-icon-height="18"></span>
+                <img
+                  src="../../../assets/svg/clipboardList.svg"
+                  alt="clipboard"
+                  width="20"
+                  height="20"
+                />
                 <span>Status</span>
                 <span class="find-room-status-badge" id="status-badge" style="display: none"
                   >0</span
                 >
-                <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+                <img
+                  src="../../../assets/svg/chevron-down.svg"
+                  alt="chevronDown"
+                  width="20"
+                  height="20"
+                />
               </button>
               <div class="find-room-header-dropdown-menu" id="status-dropdown-menu">
                 <div class="find-room-status-header">
                   <h4>My Applications</h4>
                   <button class="find-room-status-close" id="find-room-status-close">
-                    <span data-icon="close" data-icon-width="18" data-icon-height="18"></span>
+                    <img src="../../../assets/svg/close.svg" alt="close" width="20" height="20" />
                   </button>
                 </div>
                 <div class="find-room-status-tabs">
@@ -137,7 +147,7 @@
         <div class="find-room-modal-header">
           <h3>Choose Your Boarding House</h3>
           <button class="find-room-modal-close" id="confirmation-modal-close">
-            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+            <img src="../../../assets/svg/close.svg" alt="close" width="20" height="20" />
           </button>
         </div>
         <div class="find-room-modal-body">
@@ -158,7 +168,7 @@
         <div class="find-room-modal-header">
           <h3>Why are you rejecting this option?</h3>
           <button class="find-room-modal-close" id="rejection-modal-close">
-            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+            <img src="../../../assets/svg/close.svg" alt="close" width="20" height="20" />
           </button>
         </div>
         <div class="find-room-modal-body">
@@ -216,7 +226,7 @@
         <div class="find-room-modal-header">
           <h3 id="room-detail-title">Room Details</h3>
           <button class="find-room-modal-close" id="room-detail-modal-close">
-            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+            <img src="../../../assets/svg/close.svg" alt="close" width="20" height="20" />
           </button>
         </div>
         <div class="find-room-modal-body">
@@ -239,11 +249,16 @@
 
             <div class="find-room-room-details">
               <div class="find-room-room-detail-item">
-                <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
+                <img src="../../../assets/svg/user.svg" alt="userCircle" width="20" height="20" />
                 <span>Capacity: <strong id="room-capacity">1 person</strong></span>
               </div>
               <div class="find-room-room-detail-item">
-                <span data-icon="currencyDollar" data-icon-width="20" data-icon-height="20"></span>
+                <img
+                  src="../../../assets/svg/currencyDollar.svg"
+                  alt="currencyDollar"
+                  width="20"
+                  height="20"
+                />
                 <span>Price: <strong id="room-price">₱0/month</strong></span>
               </div>
             </div>
@@ -256,11 +271,12 @@
             <div class="find-room-room-actions">
               <button class="find-room-btn find-room-btn-primary" id="apply-room-btn">
                 Apply for This Room
-                <span
-                  data-icon="arrowRightSimple"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                ></span>
+                <img
+                  src="../../../assets/svg/chevron-right.svg"
+                  alt="arrowRightSimple"
+                  width="20"
+                  height="20"
+                />
               </button>
             </div>
           </div>
@@ -287,7 +303,7 @@
             <!-- Main Search Bar -->
             <div class="find-room-search-wrapper">
               <div class="find-room-search-box">
-                <span data-icon="search" class="find-room-search-icon"></span>
+                <img src="../../../assets/svg/search.svg" alt="search" width="20" height="20" />
                 <input
                   type="text"
                   class="find-room-search-input"
@@ -296,11 +312,12 @@
                 />
                 <button class="find-room-search-btn" id="main-search-btn">
                   Search
-                  <span
-                    data-icon="arrowRightSimple"
-                    data-icon-width="20"
-                    data-icon-height="20"
-                  ></span>
+                  <img
+                    src="../../../assets/svg/chevron-right.svg"
+                    alt="arrowRightSimple"
+                    width="20"
+                    height="20"
+                  />
                 </button>
                 <!-- Map View Button -->
                 <a
@@ -309,7 +326,7 @@
                   id="map-view-btn-hero"
                   title="View Map"
                 >
-                  <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+                  <img src="../../../assets/svg/maps.svg" alt="map" width="20" height="20" />
                   <span class="find-room-map-toggle-label">Map</span>
                 </a>
               </div>
@@ -427,7 +444,7 @@
 
             <!-- Reset Filters -->
             <button class="find-room-reset-btn" id="reset-filters-btn">
-              <span data-icon="history" data-icon-width="20" data-icon-height="20"></span>
+              <img src="../../../assets/svg/history.svg" alt="history" width="20" height="20" />
               Reset
             </button>
           </div>
@@ -452,10 +469,10 @@
               data-view="grid"
               title="Grid View"
             >
-              <span data-icon="grid2x2" data-icon-width="24" data-icon-height="24"></span>
+              <img src="../../../assets/svg/grid2x2.svg" alt="grid2x2" width="20" height="20" />
             </button>
             <button class="find-room-view-btn data-grid-list" data-view="list" title="List View">
-              <span data-icon="list" data-icon-width="24" data-icon-height="24"></span>
+              <img src="../../../assets/svg/clipboardList.svg" alt="list" width="20" height="20" />
             </button>
             <div class="find-room-sort-wrapper">
               <label class="find-room-sort-label">Sort by:</label>
@@ -479,7 +496,7 @@
         <!-- Load More -->
         <div class="find-room-load-more">
           <button class="find-room-load-more-btn" id="load-more-btn">
-            <span data-icon="history" data-icon-width="20" data-icon-height="20"></span>
+            <img src="../../../assets/svg/history.svg" alt="history" width="20" height="20" />
             Load More Properties
           </button>
         </div>
@@ -487,7 +504,12 @@
         <!-- No Results State -->
         <div class="find-room-no-results" id="no-results" style="display: none">
           <div class="find-room-no-results-content">
-            <span data-icon="exclamationCircle" data-icon-width="80" data-icon-height="80"></span>
+            <img
+              src="../../../assets/svg/alert.svg"
+              alt="exclamationCircle"
+              width="20"
+              height="20"
+            />
             <h3>No Properties Found</h3>
             <p>
               We couldn't find any properties matching your criteria. Try adjusting your filters or
@@ -512,7 +534,7 @@
                   class="find-room-detail-main-image"
                 />
                 <button class="find-room-detail-close-btn" id="detail-close-btn">
-                  <span data-icon="close" data-icon-width="24" data-icon-height="24"></span>
+                  <img src="../../../assets/svg/close.svg" alt="close" width="20" height="20" />
                 </button>
               </div>
             </div>
@@ -541,15 +563,20 @@
                 <!-- Property Details -->
                 <div class="find-room-detail-info">
                   <div class="find-room-detail-info-item">
-                    <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
+                    <img
+                      src="../../../assets/svg/location.svg"
+                      alt="location"
+                      width="20"
+                      height="20"
+                    />
                     <span id="detail-address"></span>
                   </div>
                   <div class="find-room-detail-info-item">
-                    <span data-icon="phone" data-icon-width="20" data-icon-height="20"></span>
+                    <img src="../../../assets/svg/contact.svg" alt="phone" width="20" height="20" />
                     <span id="detail-phone"></span>
                   </div>
                   <div class="find-room-detail-info-item">
-                    <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+                    <img src="../../../assets/svg/maps.svg" alt="map" width="20" height="20" />
                     <span id="detail-location-code"></span>
                   </div>
                 </div>
@@ -630,7 +657,12 @@
                     </div>
                   </div>
                   <button class="find-room-write-review-btn">
-                    <span data-icon="chatBubble" data-icon-width="20" data-icon-height="20"></span>
+                    <img
+                      src="../../../assets/svg/document.svg"
+                      alt="chatBubble"
+                      width="20"
+                      height="20"
+                    />
                     Write a review
                   </button>
                 </div>
@@ -641,10 +673,20 @@
                     <h3 class="find-room-reviews-title">Reviews</h3>
                     <div class="find-room-reviews-controls">
                       <button class="find-room-reviews-search-btn">
-                        <span data-icon="search" data-icon-width="18" data-icon-height="18"></span>
+                        <img
+                          src="../../../assets/svg/search.svg"
+                          alt="search"
+                          width="20"
+                          height="20"
+                        />
                       </button>
                       <button class="find-room-reviews-sort-btn">
-                        <span data-icon="list" data-icon-width="18" data-icon-height="18"></span>
+                        <img
+                          src="../../../assets/svg/clipboardList.svg"
+                          alt="list"
+                          width="20"
+                          height="20"
+                        />
                         <span>Sort</span>
                       </button>
                     </div>
@@ -653,7 +695,7 @@
                   <!-- Review Tags -->
                   <div class="find-room-review-tags">
                     <button class="find-room-review-tag active">
-                      <span data-icon="check" data-icon-width="16" data-icon-height="16"></span>
+                      <img src="../../../assets/svg/check.svg" alt="check" width="20" height="20" />
                       All
                     </button>
                     <button class="find-room-review-tag">customer service 2</button>
@@ -682,20 +724,10 @@
             <p class="footer-tagline">Your trusted boarding house platform.</p>
             <div class="footer-social">
               <a href="#linkedin" class="social-link" aria-label="LinkedIn">
-                <span
-                  data-icon="linkedin"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="1.5"
-                ></span>
+                <img src="../../../assets/svg/document.svg" alt="linkedin" width="20" height="20" />
               </a>
               <a href="#twitter" class="social-link" aria-label="Twitter">
-                <span
-                  data-icon="twitter"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="1.5"
-                ></span>
+                <img src="../../../assets/svg/document.svg" alt="twitter" width="20" height="20" />
               </a>
               <a href="#instagram" class="social-link" aria-label="Instagram">
                 <img src="../../../assets/images/instagram.png" alt="" width="20" height="20" />

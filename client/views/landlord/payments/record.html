@@ -35,17 +35,23 @@
           <!-- Payment Progress Steps -->
           <div class="payment-progress-bar">
             <div class="payment-progress-step completed">
-              <div class="payment-progress-indicator" data-icon="check"></div>
+              <div class="payment-progress-indicator">
+                <img src="../../../assets/svg/check.svg" alt="Check" width="20" height="20" />
+              </div>
               <span class="payment-progress-label">Select Payment</span>
             </div>
             <div class="payment-progress-line completed"></div>
             <div class="payment-progress-step active">
-              <div class="payment-progress-indicator" data-icon="check"></div>
+              <div class="payment-progress-indicator">
+                <img src="../../../assets/svg/check.svg" alt="Check" width="20" height="20" />
+              </div>
               <span class="payment-progress-label">Record Payment</span>
             </div>
             <div class="payment-progress-line completed"></div>
             <div class="payment-progress-step completed">
-              <div class="payment-progress-indicator" data-icon="check"></div>
+              <div class="payment-progress-indicator">
+                <img src="../../../assets/svg/check.svg" alt="Check" width="20" height="20" />
+              </div>
               <span class="payment-progress-label">Confirmation</span>
             </div>
           </div>
@@ -90,7 +96,7 @@
             <div class="payment-form-card">
               <div class="payment-form-card-header">
                 <div class="payment-form-card-title">
-                  <div data-icon="users" width="24" height="24"></div>
+                  <img src="../../../assets/svg/users.svg" alt="Users" width="24" height="24" />
                   <h3 class="payment-form-card-name">Select Boarder Payment</h3>
                 </div>
               </div>
@@ -133,7 +139,12 @@
             <div class="payment-form-card">
               <div class="payment-form-card-header">
                 <div class="payment-form-card-title">
-                  <div data-icon="creditCard" width="24" height="24"></div>
+                  <img
+                    src="../../../assets/svg/creditCard.svg"
+                    alt="Credit Card"
+                    width="24"
+                    height="24"
+                  />
                   <h3 class="payment-form-card-name">Payment Method Received</h3>
                 </div>
               </div>
@@ -157,7 +168,9 @@
                     <h4 class="payment-method-option-name">GCash</h4>
                     <p class="payment-method-option-desc">Received via GCash QR or transfer</p>
                   </div>
-                  <div class="payment-method-option-check" data-icon="check"></div>
+                  <div class="payment-method-option-check">
+                    <img src="../../../assets/svg/check.svg" alt="Check" width="14" height="14" />
+                  </div>
                 </div>
 
                 <!-- Bank Transfer Option -->
@@ -174,7 +187,9 @@
                     <h4 class="payment-method-option-name">Bank Transfer</h4>
                     <p class="payment-method-option-desc">BDO, BPI, Metrobank</p>
                   </div>
-                  <div class="payment-method-option-check" data-icon="check"></div>
+                  <div class="payment-method-option-check">
+                    <img src="../../../assets/svg/check.svg" alt="Check" width="14" height="14" />
+                  </div>
                 </div>
 
                 <!-- Credit Card Option -->
@@ -191,7 +206,9 @@
                     <h4 class="payment-method-option-name">Credit/Debit Card</h4>
                     <p class="payment-method-option-desc">Visa, Mastercard</p>
                   </div>
-                  <div class="payment-method-option-check" data-icon="check"></div>
+                  <div class="payment-method-option-check">
+                    <img src="../../../assets/svg/check.svg" alt="Check" width="14" height="14" />
+                  </div>
                 </div>
 
                 <!-- Cash Option -->
@@ -208,7 +225,9 @@
                     <h4 class="payment-method-option-name">Cash</h4>
                     <p class="payment-method-option-desc">Cash payment received in person</p>
                   </div>
-                  <div class="payment-method-option-check" data-icon="check"></div>
+                  <div class="payment-method-option-check">
+                    <img src="../../../assets/svg/check.svg" alt="Check" width="14" height="14" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -243,7 +262,12 @@
                   <div class="gcash-qr-code">
                     <!-- QR Code Placeholder -->
                     <div class="qr-code-placeholder">
-                      <div data-icon="grid2x2"></div>
+                      <img
+                        src="../../../assets/svg/grid2x2.svg"
+                        alt="QR Code"
+                        width="64"
+                        height="64"
+                      />
                       <span>Your QR Code</span>
                     </div>
                     <!-- Actual QR code will be generated here -->
@@ -252,7 +276,12 @@
 
                   <div class="gcash-qr-actions">
                     <button class="landlord-btn landlord-btn-outline" id="downloadQRBtn">
-                      <div data-icon="arrowDownTray" width="18" height="18"></div>
+                      <img
+                        src="../../../assets/svg/arrowDownTray.svg"
+                        alt="Download"
+                        width="18"
+                        height="18"
+                      />
                       Download QR
                     </button>
                   </div>
@@ -315,7 +344,12 @@
                       accept="image/*,.pdf"
                     />
                     <label for="gcashProofUpload" class="payment-file-label">
-                      <div data-icon="arrowDownTray" width="24" height="24"></div>
+                      <img
+                        src="../../../assets/svg/photo.svg"
+                        alt="Upload"
+                        width="48"
+                        height="48"
+                      />
                       <span>Click to upload or drag and drop</span>
                       <span class="payment-file-hint">PNG, JPG, or PDF (max 5MB)</span>
                     </label>
@@ -398,7 +432,12 @@
                       accept="image/*,.pdf"
                     />
                     <label for="bankProofUpload" class="payment-file-label">
-                      <div data-icon="arrowDownTray" width="24" height="24"></div>
+                      <img
+                        src="../../../assets/svg/photo.svg"
+                        alt="Upload"
+                        width="48"
+                        height="48"
+                      />
                       <span>Click to upload or drag and drop</span>
                       <span class="payment-file-hint">PNG, JPG, or PDF (max 5MB)</span>
                     </label>
@@ -476,7 +515,12 @@
                       accept="image/*,.pdf"
                     />
                     <label for="cardProofUpload" class="payment-file-label">
-                      <div data-icon="arrowDownTray" width="24" height="24"></div>
+                      <img
+                        src="../../../assets/svg/photo.svg"
+                        alt="Upload"
+                        width="48"
+                        height="48"
+                      />
                       <span>Click to upload or drag and drop</span>
                       <span class="payment-file-hint">PNG, JPG, or PDF (max 5MB)</span>
                     </label>
@@ -543,7 +587,12 @@
             <div class="payment-form-card">
               <div class="payment-form-card-header">
                 <div class="payment-form-card-title">
-                  <div data-icon="document" width="24" height="24"></div>
+                  <img
+                    src="../../../assets/svg/document.svg"
+                    alt="Document"
+                    width="24"
+                    height="24"
+                  />
                   <h3 class="payment-form-card-name">Additional Information</h3>
                 </div>
               </div>
@@ -604,12 +653,12 @@
                   class="landlord-btn landlord-btn-primary"
                   id="submitPaymentBtn"
                 >
-                  <span
-                    data-icon="checkSimple"
-                    data-icon-width="20"
-                    data-icon-height="20"
-                    data-icon-stroke-width="2"
-                  ></span>
+                  <img
+                    src="../../../assets/svg/checkSimple.svg"
+                    alt="Check"
+                    width="20"
+                    height="20"
+                  />
                   Record Payment
                 </button>
               </div>
@@ -624,12 +673,7 @@
       <div class="modal-content modal-success">
         <div class="modal-header">
           <div class="modal-success-icon">
-            <span
-              data-icon="shieldCheck"
-              data-icon-width="48"
-              data-icon-height="48"
-              data-icon-stroke-width="2"
-            ></span>
+            <img src="../../../assets/svg/shieldCheck.svg" alt="Success" width="48" height="48" />
           </div>
           <h3 class="modal-title">Payment Recorded Successfully!</h3>
         </div>
@@ -640,12 +684,7 @@
         </div>
         <div class="modal-footer">
           <button class="landlord-btn landlord-btn-outline" id="printReceiptBtn">
-            <span
-              data-icon="printer"
-              data-icon-width="18"
-              data-icon-height="18"
-              data-icon-stroke-width="2"
-            ></span>
+            <img src="../../../assets/svg/printer.svg" alt="Print" width="18" height="18" />
             Print Receipt
           </button>
           <button class="landlord-btn landlord-btn-primary" id="doneBtn">Done</button>

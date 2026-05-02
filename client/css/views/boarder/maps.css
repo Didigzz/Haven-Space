@@ -166,7 +166,7 @@
   border: 1px solid #e5e5e5;
   border-radius: 8px;
   background: #ffffff;
-  color: #333333;
+  color: var(--text-dark);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -409,7 +409,7 @@
 
 .amenity-checkbox span {
   font-size: 13px;
-  color: #333333;
+  color: var(--text-dark);
 }
 
 .amenity-checkbox:has(input:checked) {
@@ -675,7 +675,7 @@
   font-size: 20px;
   line-height: 36px;
   text-align: center;
-  color: #333333;
+  color: var(--text-dark);
   text-decoration: none;
   transition: background 0.2s, color 0.2s;
 }
@@ -721,7 +721,7 @@
 .map-control-btn svg {
   width: 20px;
   height: 20px;
-  color: #333333;
+  color: var(--text-dark);
 }
 
 /* Map Legend */
@@ -744,7 +744,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #333333;
+  color: var(--text-dark);
 }
 
 .legend-marker {

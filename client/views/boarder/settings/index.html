@@ -33,7 +33,7 @@
           <div class="page-header">
             <div class="page-header-left">
               <div class="page-icon-box">
-                <span class="icon-placeholder" data-icon="settings"></span>
+                <img src="../../../assets/svg/settings.svg" alt="settings" width="20" height="20" />
               </div>
               <div class="page-text-content">
                 <h1 class="page-title">Settings</h1>
@@ -45,19 +45,24 @@
           <!-- Settings Tabs -->
           <div class="settings-tabs">
             <button class="settings-tab active" data-tab="profile">
-              <span class="icon-placeholder" data-icon="user"></span>
+              <img src="../../../assets/svg/user.svg" alt="user" width="20" height="20" />
               Profile
             </button>
             <button class="settings-tab" data-tab="notifications">
-              <span class="icon-placeholder" data-icon="bell"></span>
+              <img src="../../../assets/svg/notification.svg" alt="bell" width="20" height="20" />
               Notifications
             </button>
             <button class="settings-tab" data-tab="privacy">
-              <span class="icon-placeholder" data-icon="shieldCheck"></span>
+              <img
+                src="../../../assets/svg/shieldCheck.svg"
+                alt="shieldCheck"
+                width="20"
+                height="20"
+              />
               Privacy & Security
             </button>
             <button class="settings-tab" data-tab="documents">
-              <span class="icon-placeholder" data-icon="document"></span>
+              <img src="../../../assets/svg/document.svg" alt="document" width="20" height="20" />
               Documents
             </button>
           </div>
@@ -433,7 +438,12 @@
 
                 <div class="two-factor-section">
                   <div class="two-factor-status">
-                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <img
+                      src="../../../assets/svg/check.svg"
+                      alt="checkCircle"
+                      width="20"
+                      height="20"
+                    />
                     <span>Two-factor authentication is currently disabled</span>
                   </div>
                   <button type="button" class="btn btn-outline" id="enable-2fa">Enable 2FA</button>
@@ -452,42 +462,72 @@
                 <div class="documents-list" id="boarder-documents-list">
                   <div class="document-item">
                     <div class="document-icon-box">
-                      <span class="icon-placeholder" data-icon="document"></span>
+                      <img
+                        src="../../../assets/svg/document.svg"
+                        alt="document"
+                        width="20"
+                        height="20"
+                      />
                     </div>
                     <div class="document-info">
                       <h4 class="document-title">House Rules</h4>
                       <p class="document-meta">Shared on Jan 15, 2025 • PDF</p>
                     </div>
                     <button class="btn btn-outline btn-sm document-download-btn">
-                      <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                      <img
+                        src="../../../assets/svg/arrowDownTray.svg"
+                        alt="arrowDownTray"
+                        width="20"
+                        height="20"
+                      />
                       Download
                     </button>
                   </div>
 
                   <div class="document-item">
                     <div class="document-icon-box">
-                      <span class="icon-placeholder" data-icon="document"></span>
+                      <img
+                        src="../../../assets/svg/document.svg"
+                        alt="document"
+                        width="20"
+                        height="20"
+                      />
                     </div>
                     <div class="document-info">
                       <h4 class="document-title">Tenancy Agreement</h4>
                       <p class="document-meta">Shared on Dec 1, 2024 • PDF</p>
                     </div>
                     <button class="btn btn-outline btn-sm document-download-btn">
-                      <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                      <img
+                        src="../../../assets/svg/arrowDownTray.svg"
+                        alt="arrowDownTray"
+                        width="20"
+                        height="20"
+                      />
                       Download
                     </button>
                   </div>
 
                   <div class="document-item">
                     <div class="document-icon-box">
-                      <span class="icon-placeholder" data-icon="document"></span>
+                      <img
+                        src="../../../assets/svg/document.svg"
+                        alt="document"
+                        width="20"
+                        height="20"
+                      />
                     </div>
                     <div class="document-info">
                       <h4 class="document-title">Emergency Contacts</h4>
                       <p class="document-meta">Shared on Nov 20, 2024 • PDF</p>
                     </div>
                     <button class="btn btn-outline btn-sm document-download-btn">
-                      <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                      <img
+                        src="../../../assets/svg/arrowDownTray.svg"
+                        alt="arrowDownTray"
+                        width="20"
+                        height="20"
+                      />
                       Download
                     </button>
                   </div>
@@ -501,17 +541,5 @@
 
     <script type="module" src="../../../js/main.js?v=1777136032299"></script>
     <script type="module" src="../../../js/views/boarder/settings.js?v=1777136032299"></script>
-    <script type="module">
-      import { getIcon } from '../../../js/shared/icons.js';
-
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.icon-placeholder').forEach(el => {
-          const iconName = el.dataset.icon;
-          const className = el.className.replace('icon-placeholder', '').trim();
-          const iconHtml = getIcon(iconName, { className });
-          el.outerHTML = iconHtml;
-        });
-      });
-    </script>
   </body>
 </html>

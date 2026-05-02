@@ -209,24 +209,24 @@
 }
 
 .landlord-stat-icon.green {
-  color: #333;
+  background-color: var(--dashboard-green-light);
 }
 
 .landlord-stat-icon.blue {
-  color: #333;
+  background-color: var(--dashboard-blue-light);
 }
 
 .landlord-stat-icon.purple {
-  color: #333;
+  background-color: rgba(139, 92, 246, 0.12);
 }
 
 .landlord-stat-icon.yellow {
-  color: #333;
+  background-color: var(--dashboard-yellow-light);
 }
 
-.landlord-stat-icon svg {
-  width: 20px;
-  height: 20px;
+.landlord-stat-icon img {
+  width: 22px;
+  height: 22px;
 }
 
 .landlord-stat-value {
@@ -614,22 +614,22 @@
 }
 
 .landlord-action-icon.green {
-  color: #333;
+  background-color: var(--dashboard-green-light);
 }
 
 .landlord-action-icon.blue {
-  color: #333;
+  background-color: var(--dashboard-blue-light);
 }
 
 .landlord-action-icon.purple {
-  color: #333;
+  background-color: rgba(139, 92, 246, 0.12);
 }
 
 .landlord-action-icon.orange {
-  color: #333;
+  background-color: rgba(249, 115, 22, 0.12);
 }
 
-.landlord-action-icon svg {
+.landlord-action-icon img {
   width: 24px;
   height: 24px;
 }

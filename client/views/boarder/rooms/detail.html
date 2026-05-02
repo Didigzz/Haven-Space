@@ -15,10 +15,6 @@
     <link rel="stylesheet" href="../../../css/components/sidebar.css?v=1777136032299" />
     <link rel="stylesheet" href="../../../css/components/navbar.css?v=1777136032299" />
     <link rel="stylesheet" href="../../../css/views/boarder/room-detail.css?v=1777136032299" />
-    <script type="module">
-      import { getIcon } from '../../../js/shared/icons.js';
-      window.getIcon = getIcon;
-    </script>
   </head>
   <body data-view="boarder" data-dashboard-type="boarder">
     <div class="room-detail-dashboard">
@@ -32,15 +28,15 @@
           <!-- Breadcrumb Navigation -->
           <nav class="room-detail-breadcrumb">
             <a href="../../public/find-a-room.html" class="breadcrumb-link">
-              <span data-icon="home" data-icon-width="16" data-icon-height="16"></span>
+              <img src="../../../assets/svg/home.svg" alt="home" width="20" height="20" />
               Find a Room
             </a>
-            <span
-              data-icon="chevronRight"
-              data-icon-width="16"
-              data-icon-height="16"
-              class="breadcrumb-separator"
-            ></span>
+            <img
+              src="../../../assets/svg/chevron-right.svg"
+              alt="chevronRight"
+              width="20"
+              height="20"
+            />
             <span class="breadcrumb-current" id="breadcrumb-title">Room Details</span>
           </nav>
 
@@ -54,13 +50,23 @@
                 class="gallery-main-image"
               />
               <button class="gallery-btn gallery-prev" id="gallery-prev">
-                <span data-icon="chevronLeft" data-icon-width="24" data-icon-height="24"></span>
+                <img
+                  src="../../../assets/svg/chevron-left.svg"
+                  alt="chevronLeft"
+                  width="20"
+                  height="20"
+                />
               </button>
               <button class="gallery-btn gallery-next" id="gallery-next">
-                <span data-icon="chevronRight" data-icon-width="24" data-icon-height="24"></span>
+                <img
+                  src="../../../assets/svg/chevron-right.svg"
+                  alt="chevronRight"
+                  width="20"
+                  height="20"
+                />
               </button>
               <button class="gallery-favorite-btn" id="gallery-favorite" data-favorite="false">
-                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
+                <img src="../../../assets/svg/bookmark.svg" alt="bookmark" width="20" height="20" />
               </button>
             </div>
             <div class="gallery-thumbnails" id="gallery-thumbnails">
@@ -106,29 +112,45 @@
                 <div class="room-detail-header-content">
                   <div class="room-detail-badges">
                     <span class="room-badge room-badge-verified">
-                      <span
-                        data-icon="badgeCheck"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                      ></span>
+                      <img
+                        src="../../../assets/svg/verified.svg"
+                        alt="badgeCheck"
+                        width="20"
+                        height="20"
+                      />
                       Verified Property
                     </span>
                     <span class="room-badge room-badge-new">New Listing</span>
                   </div>
                   <h1 class="room-detail-title" id="room-title">Loading...</h1>
                   <div class="room-detail-location">
-                    <span data-icon="location" data-icon-width="18" data-icon-height="18"></span>
+                    <img
+                      src="../../../assets/svg/location.svg"
+                      alt="location"
+                      width="20"
+                      height="20"
+                    />
                     <span id="room-address"></span>
                   </div>
                   <div class="room-detail-meta">
                     <div class="room-detail-rating">
-                      <span data-icon="starSolid" data-icon-width="18" data-icon-height="18"></span>
+                      <img
+                        src="../../../assets/svg/sparkles.svg"
+                        alt="starSolid"
+                        width="20"
+                        height="20"
+                      />
                       <span class="room-detail-rating-value" id="room-rating"></span>
                       <span class="room-detail-rating-count" id="room-reviews"></span>
                     </div>
                     <span class="room-detail-divider">•</span>
                     <div class="room-detail-distance">
-                      <span data-icon="target" data-icon-width="16" data-icon-height="16"></span>
+                      <img
+                        src="../../../assets/svg/LocationPin.svg"
+                        alt="target"
+                        width="20"
+                        height="20"
+                      />
                       <span id="room-distance">0.5 km from UP</span>
                     </div>
                   </div>
@@ -139,7 +161,12 @@
               <section class="room-detail-quick-info">
                 <div class="quick-info-card">
                   <div class="quick-info-icon">
-                    <span data-icon="userCircle" data-icon-width="24" data-icon-height="24"></span>
+                    <img
+                      src="../../../assets/svg/user.svg"
+                      alt="userCircle"
+                      width="20"
+                      height="20"
+                    />
                   </div>
                   <div class="quick-info-content">
                     <h3 class="quick-info-label">Room Types</h3>
@@ -148,7 +175,12 @@
                 </div>
                 <div class="quick-info-card">
                   <div class="quick-info-icon">
-                    <span data-icon="calendar" data-icon-width="24" data-icon-height="24"></span>
+                    <img
+                      src="../../../assets/svg/calendar.svg"
+                      alt="calendar"
+                      width="20"
+                      height="20"
+                    />
                   </div>
                   <div class="quick-info-content">
                     <h3 class="quick-info-label">Availability</h3>
@@ -157,7 +189,7 @@
                 </div>
                 <div class="quick-info-card">
                   <div class="quick-info-icon">
-                    <span data-icon="clock" data-icon-width="24" data-icon-height="24"></span>
+                    <img src="../../../assets/svg/clock.svg" alt="clock" width="20" height="20" />
                   </div>
                   <div class="quick-info-content">
                     <h3 class="quick-info-label">Min. Stay</h3>
@@ -185,28 +217,38 @@
                 <h2 class="room-detail-section-title">House Rules</h2>
                 <div class="room-detail-rules">
                   <div class="rule-item">
-                    <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
+                    <img src="../../../assets/svg/clock.svg" alt="clock" width="20" height="20" />
                     <div class="rule-content">
                       <h4>Curfew</h4>
                       <p>Building locks at 11:00 PM on weekdays, 12:00 AM on weekends</p>
                     </div>
                   </div>
                   <div class="rule-item">
-                    <span data-icon="noSmoking" data-icon-width="20" data-icon-height="20"></span>
+                    <img
+                      src="../../../assets/svg/close.svg"
+                      alt="noSmoking"
+                      width="20"
+                      height="20"
+                    />
                     <div class="rule-content">
                       <h4>No Smoking</h4>
                       <p>Smoking is not allowed inside the building</p>
                     </div>
                   </div>
                   <div class="rule-item">
-                    <span data-icon="noPets" data-icon-width="20" data-icon-height="20"></span>
+                    <img src="../../../assets/svg/close.svg" alt="noPets" width="20" height="20" />
                     <div class="rule-content">
                       <h4>No Pets</h4>
                       <p>Pets are not allowed on the premises</p>
                     </div>
                   </div>
                   <div class="rule-item">
-                    <span data-icon="userGroup" data-icon-width="20" data-icon-height="20"></span>
+                    <img
+                      src="../../../assets/svg/users.svg"
+                      alt="userGroup"
+                      width="20"
+                      height="20"
+                    />
                     <div class="rule-content">
                       <h4>Visitors</h4>
                       <p>Visitors allowed until 9:00 PM only</p>
@@ -272,41 +314,47 @@
                   <div class="review-card">
                     <div class="review-header">
                       <div class="reviewer-avatar">
-                        <span
-                          data-icon="userCircle"
-                          data-icon-width="40"
-                          data-icon-height="40"
-                        ></span>
+                        <img
+                          src="../../../assets/svg/user.svg"
+                          alt="userCircle"
+                          width="20"
+                          height="20"
+                        />
                       </div>
                       <div class="reviewer-info">
                         <h4 class="reviewer-name">Maria Santos</h4>
                         <div class="review-meta">
                           <div class="review-rating">
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
                           </div>
                           <span class="review-date">2 weeks ago</span>
                         </div>
@@ -321,41 +369,47 @@
                   <div class="review-card">
                     <div class="review-header">
                       <div class="reviewer-avatar">
-                        <span
-                          data-icon="userCircle"
-                          data-icon-width="40"
-                          data-icon-height="40"
-                        ></span>
+                        <img
+                          src="../../../assets/svg/user.svg"
+                          alt="userCircle"
+                          width="20"
+                          height="20"
+                        />
                       </div>
                       <div class="reviewer-info">
                         <h4 class="reviewer-name">John Cruz</h4>
                         <div class="review-meta">
                           <div class="review-rating">
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="star"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="star"
+                              width="20"
+                              height="20"
+                            />
                           </div>
                           <span class="review-date">1 month ago</span>
                         </div>
@@ -370,41 +424,47 @@
                   <div class="review-card">
                     <div class="review-header">
                       <div class="reviewer-avatar">
-                        <span
-                          data-icon="userCircle"
-                          data-icon-width="40"
-                          data-icon-height="40"
-                        ></span>
+                        <img
+                          src="../../../assets/svg/user.svg"
+                          alt="userCircle"
+                          width="20"
+                          height="20"
+                        />
                       </div>
                       <div class="reviewer-info">
                         <h4 class="reviewer-name">Anna Reyes</h4>
                         <div class="review-meta">
                           <div class="review-rating">
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
-                            <span
-                              data-icon="starSolid"
-                              data-icon-width="14"
-                              data-icon-height="14"
-                            ></span>
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
+                            <img
+                              src="../../../assets/svg/sparkles.svg"
+                              alt="starSolid"
+                              width="20"
+                              height="20"
+                            />
                           </div>
                           <span class="review-date">2 months ago</span>
                         </div>
@@ -429,15 +489,25 @@
 
                 <div class="booking-info-items">
                   <div class="booking-info-item">
-                    <span data-icon="calendar" data-icon-width="18" data-icon-height="18"></span>
+                    <img
+                      src="../../../assets/svg/calendar.svg"
+                      alt="calendar"
+                      width="20"
+                      height="20"
+                    />
                     <span>Available: <strong id="booking-availability">Now</strong></span>
                   </div>
                   <div class="booking-info-item">
-                    <span data-icon="clock" data-icon-width="18" data-icon-height="18"></span>
+                    <img src="../../../assets/svg/clock.svg" alt="clock" width="20" height="20" />
                     <span>Min. stay: <strong>6 months</strong></span>
                   </div>
                   <div class="booking-info-item">
-                    <span data-icon="banknotes" data-icon-width="18" data-icon-height="18"></span>
+                    <img
+                      src="../../../assets/svg/document.svg"
+                      alt="banknotes"
+                      width="20"
+                      height="20"
+                    />
                     <span>Deposit: <strong>2 months</strong></span>
                   </div>
                 </div>
@@ -451,7 +521,12 @@
                       <input type="radio" name="room-type" value="single" checked />
                       <div class="booking-room-type-content">
                         <div class="booking-room-type-info">
-                          <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
+                          <img
+                            src="../../../assets/svg/document.svg"
+                            alt="user"
+                            width="20"
+                            height="20"
+                          />
                           <span class="booking-room-type-label">Single Room</span>
                         </div>
                         <span class="booking-room-type-price">₱4,500/mo</span>
@@ -461,11 +536,12 @@
                       <input type="radio" name="room-type" value="shared" />
                       <div class="booking-room-type-content">
                         <div class="booking-room-type-info">
-                          <span
-                            data-icon="userGroup"
-                            data-icon-width="18"
-                            data-icon-height="18"
-                          ></span>
+                          <img
+                            src="../../../assets/svg/users.svg"
+                            alt="userGroup"
+                            width="20"
+                            height="20"
+                          />
                           <span class="booking-room-type-label">Shared Room</span>
                         </div>
                         <span class="booking-room-type-price">₱3,000/mo</span>
@@ -476,15 +552,21 @@
 
                 <div class="booking-actions">
                   <button class="booking-btn booking-btn-primary" id="apply-now-btn">
-                    <span data-icon="application" data-icon-width="20" data-icon-height="20"></span>
+                    <img
+                      src="../../../assets/svg/document.svg"
+                      alt="application"
+                      width="20"
+                      height="20"
+                    />
                     Apply Now
                   </button>
                   <button class="booking-btn booking-btn-secondary" id="schedule-tour-btn">
-                    <span
-                      data-icon="calendarDays"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                    ></span>
+                    <img
+                      src="../../../assets/svg/document.svg"
+                      alt="calendarDays"
+                      width="20"
+                      height="20"
+                    />
                     Schedule a Tour
                   </button>
                 </div>
@@ -492,7 +574,7 @@
                 <div class="booking-contact">
                   <p class="booking-contact-text">Questions about this property?</p>
                   <button class="booking-contact-btn" id="contact-landlord-btn">
-                    <span data-icon="chat" data-icon-width="18" data-icon-height="18"></span>
+                    <img src="../../../assets/svg/document.svg" alt="chat" width="20" height="20" />
                     Contact Landlord
                   </button>
                 </div>
@@ -503,7 +585,12 @@
                 <h4 class="landlord-info-title">Property Managed by</h4>
                 <div class="landlord-card">
                   <div class="landlord-avatar">
-                    <span data-icon="userCircle" data-icon-width="48" data-icon-height="48"></span>
+                    <img
+                      src="../../../assets/svg/user.svg"
+                      alt="userCircle"
+                      width="20"
+                      height="20"
+                    />
                   </div>
                   <div class="landlord-content">
                     <h5 class="landlord-name" id="landlord-name">Juan Dela Cruz</h5>
@@ -538,11 +625,12 @@
                   />
                   <div class="similar-property-badges">
                     <span class="similar-property-badge similar-property-badge-verified">
-                      <span
-                        data-icon="badgeCheck"
-                        data-icon-width="14"
-                        data-icon-height="14"
-                      ></span>
+                      <img
+                        src="../../../assets/svg/verified.svg"
+                        alt="badgeCheck"
+                        width="20"
+                        height="20"
+                      />
                       Verified
                     </span>
                   </div>
@@ -550,12 +638,22 @@
                 <div class="similar-property-content">
                   <h3 class="similar-property-title">Campus View Residences</h3>
                   <div class="similar-property-location">
-                    <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                    <img
+                      src="../../../assets/svg/location.svg"
+                      alt="location"
+                      width="20"
+                      height="20"
+                    />
                     <span>Loyola Heights, QC</span>
                   </div>
                   <div class="similar-property-meta">
                     <div class="similar-property-rating">
-                      <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                      <img
+                        src="../../../assets/svg/sparkles.svg"
+                        alt="starSolid"
+                        width="20"
+                        height="20"
+                      />
                       <span>4.6</span>
                       <span class="similar-property-rating-count">(18)</span>
                     </div>
@@ -582,12 +680,22 @@
                 <div class="similar-property-content">
                   <h3 class="similar-property-title">Greenfield Boarding House</h3>
                   <div class="similar-property-location">
-                    <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                    <img
+                      src="../../../assets/svg/location.svg"
+                      alt="location"
+                      width="20"
+                      height="20"
+                    />
                     <span>Commonwealth Ave, QC</span>
                   </div>
                   <div class="similar-property-meta">
                     <div class="similar-property-rating">
-                      <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                      <img
+                        src="../../../assets/svg/sparkles.svg"
+                        alt="starSolid"
+                        width="20"
+                        height="20"
+                      />
                       <span>4.5</span>
                       <span class="similar-property-rating-count">(32)</span>
                     </div>
@@ -609,11 +717,12 @@
                   />
                   <div class="similar-property-badges">
                     <span class="similar-property-badge similar-property-badge-verified">
-                      <span
-                        data-icon="badgeCheck"
-                        data-icon-width="14"
-                        data-icon-height="14"
-                      ></span>
+                      <img
+                        src="../../../assets/svg/verified.svg"
+                        alt="badgeCheck"
+                        width="20"
+                        height="20"
+                      />
                       Verified
                     </span>
                     <span class="similar-property-badge similar-property-badge-new">New</span>
@@ -622,12 +731,22 @@
                 <div class="similar-property-content">
                   <h3 class="similar-property-title">Metro Plaza Apartments</h3>
                   <div class="similar-property-location">
-                    <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                    <img
+                      src="../../../assets/svg/location.svg"
+                      alt="location"
+                      width="20"
+                      height="20"
+                    />
                     <span>Roxas Boulevard, QC</span>
                   </div>
                   <div class="similar-property-meta">
                     <div class="similar-property-rating">
-                      <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                      <img
+                        src="../../../assets/svg/sparkles.svg"
+                        alt="starSolid"
+                        width="20"
+                        height="20"
+                      />
                       <span>4.9</span>
                       <span class="similar-property-rating-count">(41)</span>
                     </div>

@@ -525,36 +525,39 @@
 /* ------------------------------------------------------------------ */
 /* Modal Styles                                                        */
 /* ------------------------------------------------------------------ */
+
+/* Overlay: fixed backdrop that fades in/out */
 .room-modal {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1000;
-  display: none;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .room-modal.active {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
 }
 
+/* Remove the inner overlay div — backdrop is now on .room-modal itself */
 .modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  cursor: pointer;
+  display: none;
 }
 
+/* Container: scales + slides up on enter, reverses on exit */
 .modal-content {
   position: relative;
-  margin: auto;
-  background: var(--white);
+  background: var(--dashboard-surface);
+  border: 1px solid var(--dashboard-border);
   border-radius: 16px;
   width: 90%;
   max-width: 650px;
@@ -562,8 +565,13 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  z-index: 1;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.room-modal.active .modal-content {
+  transform: scale(1) translateY(0);
 }
 
 .modal-header {
@@ -625,13 +633,13 @@
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 0.625rem 1rem;
-  border: 1px solid var(--border-color);
+  padding: 12px 16px;
+  border: 1px solid var(--dashboard-border);
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 14px;
   font-family: var(--font-main);
   color: var(--text-dark);
-  background-color: #f9fafb;
+  background-color: var(--bg-cream);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -641,7 +649,12 @@
   outline: none;
   border-color: var(--primary-green);
   box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
-  background-color: var(--white);
+  background-color: var(--bg-cream);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--dashboard-text-secondary);
 }
 
 .form-group textarea {
