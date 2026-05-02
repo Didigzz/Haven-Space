@@ -696,71 +696,90 @@ async function loadSimilarProperties(propertyId) {
     // Get the similar properties container
     const similarPropertiesContainer = document.getElementById('similar-properties');
 
-    if (similarPropertiesContainer && similarProperties.length > 0) {
-      similarPropertiesContainer.innerHTML = similarProperties
-        .map(
-          property => `
-          <div class="similar-property-card" data-property-id="${property.id}">
-            <div class="similar-property-image-wrapper">
-              <img
-                src="${property.coverImage || '/assets/images/placeholder-room.svg'}"
-                alt="${property.title}"
-                class="similar-property-image"
-              />
-              <div class="similar-property-badges">
-                ${
-                  property.rating >= 4.5
-                    ? `
-                  <span class="similar-property-badge similar-property-badge-verified">
-                    <span data-icon="badgeCheck" data-icon-width="14" data-icon-height="14"></span>
-                    Verified
-                  </span>
-                `
-                    : ''
-                }
-              </div>
-            </div>
-            <div class="similar-property-content">
-              <h3 class="similar-property-title">${property.title}</h3>
-              <div class="similar-property-location">
-                <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
-                <span>${property.city || property.address || 'N/A'}</span>
-              </div>
-              <div class="similar-property-meta">
-                <div class="similar-property-rating">
-                  <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
-                  <span>${property.rating || 'New'}</span>
-                  <span class="similar-property-rating-count">(${property.reviewCount || 0})</span>
-                </div>
-                <div class="similar-property-price">
-                  <span class="similar-property-price-amount">₱${
-                    property.price ? property.price.toLocaleString() : 'N/A'
-                  }</span>
-                  <span class="similar-property-price-period">/mo</span>
+    if (similarPropertiesContainer) {
+      if (similarProperties.length > 0) {
+        similarPropertiesContainer.innerHTML = similarProperties
+          .map(
+            property => `
+            <div class="similar-property-card" data-property-id="${property.id}">
+              <div class="similar-property-image-wrapper">
+                <img
+                  src="${property.coverImage || '/assets/images/placeholder-room.svg'}"
+                  alt="${property.title}"
+                  class="similar-property-image"
+                />
+                <div class="similar-property-badges">
+                  ${
+                    property.rating >= 4.5
+                      ? `
+                    <span class="similar-property-badge similar-property-badge-verified">
+                      <span data-icon="badgeCheck" data-icon-width="14" data-icon-height="14"></span>
+                      Verified
+                    </span>
+                  `
+                      : ''
+                  }
                 </div>
               </div>
+              <div class="similar-property-content">
+                <h3 class="similar-property-title">${property.title}</h3>
+                <div class="similar-property-location">
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                  <span>${property.city || property.address || 'N/A'}</span>
+                </div>
+                <div class="similar-property-meta">
+                  <div class="similar-property-rating">
+                    <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                    <span>${property.rating || 'New'}</span>
+                    <span class="similar-property-rating-count">(${
+                      property.reviewCount || 0
+                    })</span>
+                  </div>
+                  <div class="similar-property-price">
+                    <span class="similar-property-price-amount">₱${
+                      property.price ? property.price.toLocaleString() : 'N/A'
+                    }</span>
+                    <span class="similar-property-price-period">/mo</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        `
-        )
-        .join('');
+          `
+          )
+          .join('');
 
-      // Add event listeners to the new cards
-      document.querySelectorAll('.similar-property-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const propertyId = card.dataset.propertyId;
-          if (propertyId) {
-            window.location.href = `detail.html?id=${propertyId}`;
-          }
+        // Add event listeners to the new cards
+        document.querySelectorAll('.similar-property-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const propertyId = card.dataset.propertyId;
+            if (propertyId) {
+              // Force a full page reload to ensure fresh data
+              window.location.href = `detail.html?id=${propertyId}`;
+            }
+          });
         });
-      });
 
-      // Initialize icons
-      initIconElements();
+        // Initialize icons
+        initIconElements();
+      } else {
+        // Show message when no similar properties are available
+        similarPropertiesContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-gray);">
+            <p>No similar properties found at this time.</p>
+          </div>
+        `;
+      }
     }
   } catch (error) {
     console.error('Error loading similar properties:', error);
-    // If there's an error, keep the hardcoded properties or show nothing
+    const similarPropertiesContainer = document.getElementById('similar-properties');
+    if (similarPropertiesContainer) {
+      similarPropertiesContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-gray);">
+          <p>Unable to load similar properties.</p>
+        </div>
+      `;
+    }
   }
 }
 

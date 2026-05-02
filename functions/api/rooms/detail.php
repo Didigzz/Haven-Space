@@ -38,6 +38,7 @@ try {
             p.id,
             p.title,
             p.description,
+            p.property_type,
             a.address_line_1 as address,
             a.latitude,
             a.longitude,
@@ -110,18 +111,9 @@ try {
     }
     $genderPreference = $property['gender_preference'] ?? 'any';
     $propertyRules = $property['property_rules'] ?? '';
-    $city = $property['city'] ?? '';
-    $province = $property['province'] ?? '';
-    $propertyType = '';
-    $deposit = $property['deposit'] ?? '';
-    $minStay = $property['min_stay'] ?? '';
-    $capacity = '';
-    $availabilityStatus = '';
-    $propertyTotalRooms = 0;
-    $houseRules = [];
-    if (!empty($property['house_rules'])) {
-        $houseRules = json_decode($property['house_rules'], true) ?: [];
-    }
+    
+    // Get property type from properties table
+    $propertyType = $property['property_type'] ?? 'boarding-house';
     
     // Get gender preference and property rules
     try {
