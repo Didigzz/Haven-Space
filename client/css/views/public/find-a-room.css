@@ -1487,10 +1487,11 @@
   padding: 2rem;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.find-room-modal-overlay.show {
+.find-room-modal-overlay.show,
+.find-room-modal-overlay.active {
   opacity: 1;
   visibility: visible;
 }
@@ -1503,12 +1504,13 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  transform: scale(0.95);
-  transition: transform 0.3s ease;
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.find-room-modal-overlay.show .find-room-modal {
-  transform: scale(1);
+.find-room-modal-overlay.show .find-room-modal,
+.find-room-modal-overlay.active .find-room-modal {
+  transform: scale(1) translateY(0);
 }
 
 .find-room-modal-header {
