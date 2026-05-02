@@ -141,6 +141,16 @@
                   </div>
 
                   <div class="form-group">
+                    <label for="gender-preference">Gender Preference *</label>
+                    <select id="gender-preference" name="genderPreference" required>
+                      <option value="">Select preference</option>
+                      <option value="male">Male Only</option>
+                      <option value="female">Female Only</option>
+                      <option value="any">Mix</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
                     <label for="property-description">Description *</label>
                     <div class="description-with-ai">
                       <textarea
@@ -225,6 +235,65 @@
                         ></span>
                       </button>
                     </div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- Right Column -->
+              <div class="form-column">
+                <!-- Location Section -->
+                <section class="form-section">
+                  <h2 class="section-title">Location</h2>
+
+                  <div class="form-group">
+                    <label for="property-address">Complete Address *</label>
+                    <textarea
+                      id="property-address"
+                      name="propertyAddress"
+                      rows="2"
+                      placeholder="Street, Barangay, City, Province"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="property-city">City *</label>
+                    <input
+                      type="text"
+                      id="property-city"
+                      name="propertyCity"
+                      placeholder="e.g. Manila"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="property-province">Province *</label>
+                    <input
+                      type="text"
+                      id="property-province"
+                      name="propertyProvince"
+                      placeholder="e.g. Metro Manila"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label>Map Location</label>
+                    <button type="button" id="set-location-btn" class="btn-set-location">
+                      <span
+                        data-icon="target"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span id="location-btn-text">Set Location on Map</span>
+                    </button>
+                    <input type="hidden" id="property-latitude" name="propertyLatitude" />
+                    <input type="hidden" id="property-longitude" name="propertyLongitude" />
+                    <p class="field-hint" id="coordinates-display">
+                      Click button to set coordinates
+                    </p>
                   </div>
                 </section>
 
@@ -386,63 +455,22 @@
                     ></div>
                   </div>
                 </section>
-              </div>
 
-              <!-- Right Column -->
-              <div class="form-column">
-                <!-- Location Section -->
+                <!-- Property Rules Section -->
                 <section class="form-section">
-                  <h2 class="section-title">Location</h2>
+                  <h2 class="section-title">Property Rules</h2>
+                  <p class="section-description">
+                    Set house rules and guidelines for your property.
+                  </p>
 
                   <div class="form-group">
-                    <label for="property-address">Complete Address *</label>
                     <textarea
-                      id="property-address"
-                      name="propertyAddress"
-                      rows="2"
-                      placeholder="Street, Barangay, City, Province"
-                      required
+                      id="property-rules"
+                      name="propertyRules"
+                      rows="6"
+                      placeholder="Enter house rules (e.g., No smoking, No pets, Curfew at 10 PM, etc.)&#10;&#10;• One rule per line&#10;• Be clear and specific&#10;• Keep rules reasonable"
                     ></textarea>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="property-city">City *</label>
-                    <input
-                      type="text"
-                      id="property-city"
-                      name="propertyCity"
-                      placeholder="e.g. Manila"
-                      required
-                    />
-                  </div>
-
-                  <div class="form-group">
-                    <label for="property-province">Province *</label>
-                    <input
-                      type="text"
-                      id="property-province"
-                      name="propertyProvince"
-                      placeholder="e.g. Metro Manila"
-                      required
-                    />
-                  </div>
-
-                  <div class="form-group">
-                    <label>Map Location</label>
-                    <button type="button" id="set-location-btn" class="btn-set-location">
-                      <span
-                        data-icon="target"
-                        data-icon-width="20"
-                        data-icon-height="20"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span id="location-btn-text">Set Location on Map</span>
-                    </button>
-                    <input type="hidden" id="property-latitude" name="propertyLatitude" />
-                    <input type="hidden" id="property-longitude" name="propertyLongitude" />
-                    <p class="field-hint" id="coordinates-display">
-                      Click button to set coordinates
-                    </p>
+                    <p class="field-hint">Optional: Add specific rules that boarders must follow</p>
                   </div>
                 </section>
               </div>

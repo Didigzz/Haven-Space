@@ -687,6 +687,7 @@ async function handleFormSubmit(e) {
   const data = {
     propertyName: formData.get('propertyName'),
     propertyType: propertyType,
+    genderPreference: formData.get('genderPreference'),
     propertyDescription: formData.get('propertyDescription'),
     propertyPrice: parseFloat(formData.get('propertyPrice')),
     propertyDeposit: parseFloat(formData.get('propertyDeposit')),
@@ -697,6 +698,7 @@ async function handleFormSubmit(e) {
     propertyProvince: formData.get('propertyProvince'),
     propertyLatitude: formData.get('propertyLatitude') || '14.5995',
     propertyLongitude: formData.get('propertyLongitude') || '120.9842',
+    propertyRules: formData.get('propertyRules'),
     amenities: [...formData.getAll('amenities'), ...customAmenities],
     rooms: roomsData.map(room => ({
       name: room.name,

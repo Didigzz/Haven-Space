@@ -129,6 +129,8 @@ CREATE TABLE IF NOT EXISTS properties (
     deposit VARCHAR(100) NOT NULL DEFAULT '0',
     min_stay VARCHAR(100) NOT NULL DEFAULT '1 month',
     house_rules JSON NOT NULL,
+    gender_preference ENUM('male', 'female', 'any') NOT NULL DEFAULT 'any',
+    property_rules TEXT NULL,
     electricity_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     water_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     internet_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
@@ -146,6 +148,7 @@ CREATE TABLE IF NOT EXISTS properties (
     INDEX idx_price (price),
     INDEX idx_deposit (deposit),
     INDEX idx_min_stay (min_stay),
+    INDEX idx_gender_preference (gender_preference),
     INDEX idx_utility_costs (electricity_cost, water_cost, internet_cost)
 );
 

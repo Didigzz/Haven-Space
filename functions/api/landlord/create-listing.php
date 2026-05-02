@@ -39,6 +39,7 @@ if (!$input) {
 $requiredFields = [
     'propertyName',
     'propertyType',
+    'genderPreference',
     'propertyDescription',
     'propertyPrice',
     'propertyDeposit',
@@ -118,11 +119,15 @@ try {
             deposit,
             min_stay,
             house_rules,
+            gender_preference,
+            property_rules,
             status,
             listing_moderation_status,
             created_at,
             updated_at
         ) VALUES (
+            ?,
+            ?,
             ?,
             ?,
             ?,
@@ -144,6 +149,8 @@ try {
     $deposit = isset($input['propertyDeposit']) ? strval($input['propertyDeposit']) : '0';
     $minStay = isset($input['propertyMinStay']) ? strval($input['propertyMinStay']) : '1 month';
     $houseRules = json_encode([]); // Default empty JSON array
+    $genderPreference = isset($input['genderPreference']) ? trim($input['genderPreference']) : 'any';
+    $propertyRules = isset($input['propertyRules']) ? trim($input['propertyRules']) : null;
 
     $stmt->execute([
         $landlordId,
@@ -154,6 +161,8 @@ try {
         $deposit,
         $minStay,
         $houseRules,
+        $genderPreference,
+        $propertyRules,
     ]);
 
     $propertyId = $pdo->lastInsertId();
