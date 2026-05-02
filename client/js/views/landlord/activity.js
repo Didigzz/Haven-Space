@@ -2,18 +2,24 @@ import CONFIG from '../../config.js';
 
 const SVG_BASE = '../../../assets/svg';
 
-// Map activity type/icon name → SVG filename
+// Map backend icon names + activity types → SVG filenames in /assets/svg/
 const ACTIVITY_ICON_MAP = {
-  payment: 'currencyDollar',
-  payment_received: 'currencyDollar',
+  // backend icon field values
+  currencyDollar: 'currencyDollar',
   application: 'application',
+  user: 'user',
+  exclamation: 'alert',
+  checkCircle: 'check',
+  clock: 'clock',
+  renewal: 'renewal',
+  // activity type fallbacks
+  payment_received: 'currencyDollar',
   new_application: 'application',
+  payment_reminder: 'alert',
+  tenancy_renewal: 'renewal',
   message: 'chat',
-  messages: 'chat',
   maintenance: 'alert',
   general: 'notification',
-  activity: 'notification',
-  bell: 'notification',
 };
 
 let currentPage = 1;
@@ -23,13 +29,31 @@ let currentFilter = 'all';
 let currentDateFilter = 'all';
 
 function svgImg(name, size = 20, cls = '') {
-  return `<img src="${SVG_BASE}/${name}.svg" width="${size}" height="${size}" alt="" aria-hidden="true"${cls ? ` class="${cls}"` : ''}>`;
+  return `<img src="${SVG_BASE}/${name}.svg" width="${size}" height="${size}" alt="" aria-hidden="true"${
+    cls ? ` class="${cls}"` : ''
+  }>`;
 }
 
 function getActivitySvg(activity) {
-  const raw = activity.icon || activity.type || 'general';
-  const name = ACTIVITY_ICON_MAP[raw] || ACTIVITY_ICON_MAP[activity.type] || 'notification';
+  // Prefer backend icon field, then type, then default
+  const name =
+    ACTIVITY_ICON_MAP[activity.icon] || ACTIVITY_ICON_MAP[activity.type] || 'notification';
   return svgImg(name, 20);
+}
+
+function getTitleFromType(type) {
+  const titles = {
+    payment_received: 'Payment Received',
+    new_application: 'New Application',
+    payment_reminder: 'Payment Reminder',
+    tenancy_renewal: 'Tenancy Renewed',
+    message: 'Message',
+    maintenance: 'Maintenance',
+    general: 'Activity',
+  };
+  if (titles[type]) return titles[type];
+  if (type) return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return 'Activity';
 }
 
 export function initActivity() {
@@ -100,14 +124,22 @@ function renderActivities(activities, container) {
   const html = activities
     .map(
       activity => `
-    <div class="activity-card" data-activity-id="${activity.id}" data-activity-type="${activity.type}">
+    <div class="activity-card" data-activity-id="${activity.id}" data-activity-type="${
+        activity.type
+      }">
       <div class="activity-card-icon ${activity.color || 'blue'}">
         ${getActivitySvg(activity)}
       </div>
       <div class="activity-card-content">
         <div class="activity-card-header">
-          <h3 class="activity-card-title">${escapeHtml(activity.title || 'Activity')}</h3>
-          <span class="activity-card-badge ${getBadgeClass(activity.type)}">${formatType(activity.type)}</span>
+          <h3 class="activity-card-title">${escapeHtml(
+            activity.title && activity.title !== 'Activity'
+              ? activity.title
+              : getTitleFromType(activity.type)
+          )}</h3>
+          <span class="activity-card-badge ${getBadgeClass(activity.type)}">${formatType(
+        activity.type
+      )}</span>
         </div>
         <p class="activity-card-text">${sanitizeDescription(activity.description)}</p>
         <div class="activity-card-meta">
@@ -115,23 +147,37 @@ function renderActivities(activities, container) {
             ${svgImg('clock', 14)}
             ${escapeHtml(activity.time_ago)}
           </span>
-          ${activity.property ? `
+          ${
+            activity.property
+              ? `
           <span class="activity-card-property">
             ${svgImg('building', 14)}
             ${escapeHtml(activity.property)}
-          </span>` : ''}
-          ${activity.user ? `
+          </span>`
+              : ''
+          }
+          ${
+            activity.user
+              ? `
           <span class="activity-card-user">
             ${svgImg('user', 14)}
             ${escapeHtml(activity.user)}
-          </span>` : ''}
+          </span>`
+              : ''
+          }
         </div>
       </div>
       <div class="activity-card-actions">
-        ${activity.action_url ? `
-        <a href="${escapeHtml(activity.action_url)}" class="landlord-btn landlord-btn-outline landlord-btn-sm">
+        ${
+          activity.action_url
+            ? `
+        <a href="${escapeHtml(
+          activity.action_url
+        )}" class="landlord-btn landlord-btn-outline landlord-btn-sm">
           View Details
-        </a>` : ''}
+        </a>`
+            : ''
+        }
       </div>
     </div>
   `

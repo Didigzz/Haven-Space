@@ -163,11 +163,9 @@ if ($userRow) {
         exit;
     }
 
-    // Derive verification_status for landlords from is_verified flag
-    $verificationStatus = null;
-    if ($userRow['role'] === 'landlord') {
-        $verificationStatus = $userRow['is_verified'] ? 'approved' : 'pending';
-    }
+    // For landlords, verification_status determines write access
+    // is_verified is for email verification, verification_status is for admin approval
+    $verificationStatus = $userRow['role'] === 'landlord' ? ($userRow['is_verified'] ? 'approved' : 'pending') : null;
 
     $user = [
         'id' => (int) $userRow['id'],

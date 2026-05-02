@@ -66,6 +66,10 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
 
+    // For landlords, is_verified should be false (pending) initially
+    // For boarders, is_verified can be true if email is verified
+    $isVerified = ($role === 'landlord') ? 0 : ($pendingUser['email_verified'] ? 1 : 0);
+
     $stmt->execute([
         $pendingUser['first_name'],
         $pendingUser['last_name'],
@@ -75,7 +79,7 @@ try {
         $pendingUser['refresh_token'],
         $avatarFileId,
         $role,
-        $pendingUser['email_verified'] ? 1 : 0,
+        $isVerified,
         $country,
     ]);
 

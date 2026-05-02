@@ -1,7 +1,7 @@
 <?php
 /**
  * Google OAuth Complete Registration Endpoint
- * 
+ *
  * Completes the Google OAuth registration process by creating a user account
  * with the selected role from the choose page.
  */
@@ -14,7 +14,7 @@ use App\Core\Database\Connection;
 
 /**
  * Determine boarder status based on applications
- * 
+ *
  * @param \PDO $pdo Database connection
  * @param int $boarderId Boarder user ID
  * @return string Boarder status
@@ -24,30 +24,30 @@ function determineBoarderStatus($pdo, $boarderId) {
     $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $acceptedStmt->execute([$boarderId, 'accepted']);
     $acceptedCount = $acceptedStmt->fetchColumn();
-    
+
     if ($acceptedCount > 0) {
         return 'accepted';
     }
-    
+
     // Check for pending applications
     $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $pendingStmt->execute([$boarderId, 'pending']);
     $pendingCount = $pendingStmt->fetchColumn();
-    
+
     if ($pendingCount > 0) {
         return 'applied_pending';
     }
-    
+
     // Check for any applications (rejected/cancelled)
     $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
     $anyStmt->execute([$boarderId]);
     $anyCount = $anyStmt->fetchColumn();
-    
+
     if ($anyCount > 0) {
         // Has applications but none are pending or accepted (likely rejected)
         return 'rejected';
     }
-    
+
     // No applications at all
     return 'new';
 }
@@ -125,7 +125,7 @@ if (!$googleUser) {
 // Debug: Log the Google user data being processed
 error_log('Google OAuth complete-registration: Processing user data - ' . json_encode([
     'google_id' => $googleUser['google_id'] ?? 'missing',
-    'email' => $googleUser['email'] ?? 'missing', 
+    'email' => $googleUser['email'] ?? 'missing',
     'first_name' => $googleUser['first_name'] ?? 'missing',
     'last_name' => $googleUser['last_name'] ?? 'null/missing',
     'has_token' => !empty($pendingToken) ? 'yes' : 'no'
@@ -161,7 +161,7 @@ try {
 
     // Check if user already exists by Google ID or email
     $stmt = $pdo->prepare('
-        SELECT u.id, u.first_name, u.last_name, u.email, 
+        SELECT u.id, u.first_name, u.last_name, u.email,
                ur.role_name as role, u.is_verified, acs.status_name as account_status
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
@@ -175,7 +175,7 @@ try {
         // User already exists, just log them in
         $userId = $existingUser['id'];
         $userRole = $existingUser['role'];
-        
+
         // Debug: Log existing user role
         error_log('Google OAuth complete-registration: Existing user found with role = ' . $userRole);
     } else {
@@ -185,13 +185,13 @@ try {
         $stmt->execute([$selectedRole]);
         $roleRow = $stmt->fetch(\PDO::FETCH_ASSOC);
         $roleId = $roleRow ? $roleRow['id'] : 1; // Default to first role if not found
-        
+
         // Debug: Log the role lookup result
         error_log('Google OAuth complete-registration: Role lookup for "' . $selectedRole . '" returned id = ' . $roleId);
 
         // Determine initial account status based on role (same logic as regular registration)
         $accountStatusName = ($selectedRole === 'landlord') ? 'pending_verification' : 'active';
-        
+
         $stmt = $pdo->prepare('SELECT id FROM account_statuses WHERE status_name = ?');
         $stmt->execute([$accountStatusName]);
         $statusRow = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -206,9 +206,13 @@ try {
         }
 
         $stmt = $pdo->prepare('
-            INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role_id, is_verified, account_status_id) 
+            INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role_id, is_verified, account_status_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
+
+        // For landlords, is_verified should be false (pending) initially
+        // For boarders, is_verified can be true if email is verified
+        $isVerified = ($selectedRole === 'landlord') ? 0 : ($googleUser['email_verified'] ? 1 : 0);
 
         $stmt->execute([
             $googleUser['first_name'],
@@ -219,20 +223,20 @@ try {
             $googleUser['refresh_token'],
             $avatarFileId,
             $roleId,
-            $googleUser['email_verified'] ? 1 : 0,
+            $isVerified,
             $accountStatusId
         ]);
 
         $userId = $pdo->lastInsertId();
-        
+
         // Update the file record with the correct user_id
         if ($avatarFileId) {
             $stmt = $pdo->prepare('UPDATE files SET uploaded_by = ? WHERE id = ?');
             $stmt->execute([$userId, $avatarFileId]);
         }
-        
+
         $userRole = $selectedRole;
-        
+
         // Debug: Log the final user role
         error_log('Google OAuth complete-registration: Final user role = ' . $userRole);
     }
@@ -260,7 +264,7 @@ try {
     if ($userRole === 'boarder') {
         $boarderStatus = determineBoarderStatus($pdo, $userId);
     }
-    
+
     // Generate JWT tokens
     $payload = [
         'user_id' => $userId,
@@ -272,7 +276,7 @@ try {
         'account_status' => $accountStatus,
         'google_id' => $googleUser['google_id'],
     ];
-    
+
     if ($boarderStatus) {
         $payload['boarder_status'] = $boarderStatus;
     }
@@ -305,13 +309,13 @@ try {
         'email' => $googleUser['email'],
         'role' => $userRole,
     ];
-    
+
     // Add boarder status if available
     if (isset($boarderStatus)) {
         $userData['boarder_status'] = $boarderStatus;
         $userData['boarderStatus'] = $boarderStatus; // Keep both for compatibility
     }
-    
+
     // Determine redirect path based on role/status
     if ($userRole === 'admin') {
         $redirectPath = '/views/admin/index.html';
@@ -330,6 +334,10 @@ try {
                 break;
         }
     }
+
+    // Add tokens to user data for frontend storage
+    $userData['access_token'] = $jwtAccessToken;
+    $userData['refresh_token'] = $jwtRefreshToken;
 
     echo json_encode([
         'success' => true,

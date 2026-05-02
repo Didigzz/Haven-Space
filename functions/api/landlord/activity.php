@@ -194,7 +194,7 @@ function formatActivity($activity) {
             break;
             
         case 'new_application':
-            $icon = 'user';
+            $icon = 'application';
             $color = 'blue';
             $description = "<strong>New application</strong> from {$entityName}" . ($roomName ? " for {$roomName}" : "");
             break;
@@ -218,6 +218,7 @@ function formatActivity($activity) {
     return [
         'id' => $activity['id'],
         'type' => $type,
+        'title' => getTitleForType($type),
         'icon' => $icon,
         'color' => $color,
         'description' => $description,
@@ -225,6 +226,19 @@ function formatActivity($activity) {
         'date' => $activityDate,
         'avatar_path' => $avatarPath,
     ];
+}
+
+/**
+ * Get a human-readable title for an activity type
+ */
+function getTitleForType($type) {
+    $titles = [
+        'payment_received'  => 'Payment Received',
+        'new_application'   => 'New Application',
+        'payment_reminder'  => 'Payment Reminder',
+        'tenancy_renewal'   => 'Tenancy Renewed',
+    ];
+    return $titles[$type] ?? ucwords(str_replace('_', ' ', $type));
 }
 
 /**

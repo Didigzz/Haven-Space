@@ -25,7 +25,9 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 
 .activity-header-icon {
   flex-shrink: 0;
-  filter: invert(35%) sepia(60%) saturate(600%) hue-rotate(65deg) brightness(90%);
+  /* Convert #464646 → primary green #4a7c23 */
+  filter: brightness(0) saturate(100%) invert(38%) sepia(55%) saturate(550%) hue-rotate(63deg)
+    brightness(85%);
 }
 
 .activity-page-title p {
@@ -82,6 +84,7 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-xl);
+  align-items: start;
 }
 
 /* ===== Activity Stat Card ===== */
@@ -92,9 +95,11 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
   padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   box-shadow: var(--shadow-xs);
   transition: box-shadow var(--transition-fast) var(--ease-in-out);
+  /* Don't stretch to fill grid row height */
+  align-self: start;
 }
 
 .activity-stat-card:hover {
@@ -141,15 +146,21 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 
 /* Tint SVG imgs inside stat icons */
 .activity-stat-icon.green img {
-  filter: invert(40%) sepia(80%) saturate(400%) hue-rotate(95deg) brightness(90%);
+  /* dark fill → green #388e3c */
+  filter: brightness(0) saturate(100%) invert(40%) sepia(60%) saturate(500%) hue-rotate(95deg)
+    brightness(85%);
 }
 
 .activity-stat-icon.blue img {
-  filter: invert(35%) sepia(90%) saturate(500%) hue-rotate(195deg) brightness(95%);
+  /* dark fill → blue #1976d2 */
+  filter: brightness(0) saturate(100%) invert(30%) sepia(90%) saturate(600%) hue-rotate(195deg)
+    brightness(90%);
 }
 
 .activity-stat-icon.yellow img {
-  filter: invert(60%) sepia(80%) saturate(600%) hue-rotate(5deg) brightness(100%);
+  /* dark fill → warning #f59e0b */
+  filter: brightness(0) saturate(100%) invert(65%) sepia(90%) saturate(700%) hue-rotate(5deg)
+    brightness(100%);
 }
 
 .activity-stat-value {
@@ -209,7 +220,8 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 }
 
 .activity-card-icon.green img {
-  filter: invert(40%) sepia(80%) saturate(400%) hue-rotate(95deg) brightness(90%);
+  filter: brightness(0) saturate(100%) invert(40%) sepia(60%) saturate(500%) hue-rotate(95deg)
+    brightness(85%);
 }
 
 .activity-card-icon.blue {
@@ -218,7 +230,8 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 }
 
 .activity-card-icon.blue img {
-  filter: invert(35%) sepia(90%) saturate(500%) hue-rotate(195deg) brightness(95%);
+  filter: brightness(0) saturate(100%) invert(30%) sepia(90%) saturate(600%) hue-rotate(195deg)
+    brightness(90%);
 }
 
 .activity-card-icon.purple {
@@ -227,7 +240,8 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 }
 
 .activity-card-icon.purple img {
-  filter: invert(35%) sepia(80%) saturate(600%) hue-rotate(240deg) brightness(90%);
+  filter: brightness(0) saturate(100%) invert(35%) sepia(80%) saturate(700%) hue-rotate(240deg)
+    brightness(90%);
 }
 
 .activity-card-icon.orange {
@@ -236,7 +250,8 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 }
 
 .activity-card-icon.orange img {
-  filter: invert(55%) sepia(80%) saturate(600%) hue-rotate(10deg) brightness(100%);
+  filter: brightness(0) saturate(100%) invert(55%) sepia(90%) saturate(700%) hue-rotate(10deg)
+    brightness(100%);
 }
 
 .activity-card-icon.red {
@@ -245,7 +260,8 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 }
 
 .activity-card-icon.red img {
-  filter: invert(35%) sepia(90%) saturate(700%) hue-rotate(330deg) brightness(90%);
+  filter: brightness(0) saturate(100%) invert(30%) sepia(90%) saturate(800%) hue-rotate(330deg)
+    brightness(90%);
 }
 
 .activity-card-icon.yellow {
@@ -254,15 +270,17 @@ body[data-view='landlord'][data-dashboard-type='landlord'] .landlord-content {
 }
 
 .activity-card-icon.yellow img {
-  filter: invert(60%) sepia(80%) saturate(600%) hue-rotate(5deg) brightness(100%);
+  filter: brightness(0) saturate(100%) invert(65%) sepia(90%) saturate(700%) hue-rotate(5deg)
+    brightness(100%);
 }
 
 /* Meta icons — muted gray */
 .activity-card-time img,
 .activity-card-property img,
 .activity-card-user img {
-  opacity: 0.55;
+  opacity: 0.45;
   flex-shrink: 0;
+  filter: brightness(0) saturate(0);
 }
 
 /* ===== Activity Card Content ===== */
