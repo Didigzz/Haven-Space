@@ -47,6 +47,7 @@ try {
             p.created_at,
             p.landlord_id,
             p.deposit,
+            p.advance,
             p.min_stay,
             p.house_rules,
             p.gender_preference,
@@ -104,6 +105,7 @@ try {
     $city = $property['city'] ?? '';
     $province = $property['province'] ?? '';
     $deposit = $property['deposit'] ?? '';
+    $advance = $property['advance'] ?? 'None'; // Default to None if not set
     $minStay = $property['min_stay'] ?? '';
     $houseRules = [];
     if (!empty($property['house_rules'])) {
@@ -359,6 +361,7 @@ try {
         'longitude' => $property['longitude'] ? floatval($property['longitude']) : null,
         'propertyType' => htmlspecialchars($propertyType),
         'deposit' => htmlspecialchars($deposit),
+        'advance' => htmlspecialchars($advance),
         'minStay' => htmlspecialchars($minStay),
         'capacity' => htmlspecialchars($capacity),
         'availabilityStatus' => htmlspecialchars($availabilityStatus),

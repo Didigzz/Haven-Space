@@ -418,8 +418,14 @@ function populateRoomData(room) {
   }
 
   const depositElements = document.querySelectorAll('.booking-info-item strong');
-  if (depositElements.length >= 3) {
-    depositElements[2].textContent = room.deposit || 'Contact for details';
+  if (depositElements.length >= 2) {
+    depositElements[1].textContent = room.deposit || 'Contact for details';
+  }
+
+  // Update advance field
+  const advanceElement = document.getElementById('booking-advance');
+  if (advanceElement) {
+    advanceElement.textContent = room.advance || '1 month';
   }
 
   // Update reviews

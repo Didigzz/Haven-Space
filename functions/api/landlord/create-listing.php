@@ -117,6 +117,7 @@ try {
             address_id,
             price,
             deposit,
+            advance,
             min_stay,
             house_rules,
             gender_preference,
@@ -126,6 +127,7 @@ try {
             created_at,
             updated_at
         ) VALUES (
+            ?,
             ?,
             ?,
             ?,
@@ -147,6 +149,7 @@ try {
     $propertyDescription = trim($input['propertyDescription']);
     $price = floatval($input['propertyPrice']);
     $deposit = isset($input['propertyDeposit']) ? strval($input['propertyDeposit']) : '0';
+    $advance = isset($input['propertyAdvance']) ? trim($input['propertyAdvance']) : '1 month';
     $minStay = isset($input['propertyMinStay']) ? strval($input['propertyMinStay']) : '1 month';
     $houseRules = json_encode([]); // Default empty JSON array
     $genderPreference = isset($input['genderPreference']) ? trim($input['genderPreference']) : 'any';
@@ -159,6 +162,7 @@ try {
         $addressId,
         $price,
         $deposit,
+        $advance,
         $minStay,
         $houseRules,
         $genderPreference,

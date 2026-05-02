@@ -688,6 +688,7 @@ async function handleFormSubmit(e) {
     propertyDescription: formData.get('propertyDescription'),
     propertyPrice: parseFloat(formData.get('propertyPrice')),
     propertyDeposit: parseFloat(formData.get('propertyDeposit')),
+    propertyAdvance: formData.get('propertyAdvance'),
     propertyRooms: parseInt(formData.get('propertyRooms')),
     propertyCapacity: propertyCapacity, // Add the missing field
     propertyAddress: formData.get('propertyAddress'),

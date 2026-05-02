@@ -180,7 +180,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         if ($propertyId) {
             // Get single property with full details
-            $stmt = $pdo->prepare("\n                SELECT \n                    p.id,\n                    p.title,\n                    p.description,\n                    p.property_type,\n                    a.address_line_1 as address,\n                    a.latitude,\n                    a.longitude,\n                    a.city,\n                    a.province,\n                    p.price,\n                    p.deposit,\n                    p.min_stay,\n                    p.property_rules,\n                    p.status,\n                    p.listing_moderation_status,\n                    p.created_at,\n                    COUNT(DISTINCT r.id) as rooms_count,\n                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms\n                FROM properties p\n                LEFT JOIN addresses a ON p.address_id = a.id\n                LEFT JOIN rooms r ON p.id = r.property_id\n                WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL\n                GROUP BY p.id, p.title, p.description, p.property_type, a.address_line_1, a.latitude, a.longitude, a.city, a.province, p.price, p.deposit, p.min_stay, p.property_rules, p.status, p.listing_moderation_status, p.created_at\n            ");
+            $stmt = $pdo->prepare("
+                SELECT 
+                    p.id,
+                    p.title,
+                    p.description,
+                    p.property_type,
+                    p.gender_preference,
+                    a.address_line_1 as address,
+                    a.latitude,
+                    a.longitude,
+                    a.city,
+                    a.province,
+                    p.price,
+                    p.deposit,
+                    p.advance,
+                    p.min_stay,
+                    p.property_rules,
+                    p.status,
+                    p.listing_moderation_status,
+                    p.created_at,
+                    COUNT(DISTINCT r.id) as rooms_count,
+                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
+                FROM properties p
+                LEFT JOIN addresses a ON p.address_id = a.id
+                LEFT JOIN rooms r ON p.id = r.property_id
+                WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL
+                GROUP BY p.id, p.title, p.description, p.property_type, p.gender_preference, a.address_line_1, a.latitude, a.longitude, a.city, a.province, p.price, p.deposit, p.advance, p.min_stay, p.property_rules, p.status, p.listing_moderation_status, p.created_at
+            ");
             $stmt->execute([$propertyId, $landlordId]);
             $property = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -237,6 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'id' => intval($property['id']),
                 'name' => $property['title'],
                 'type' => $type,
+                'gender_preference' => $property['gender_preference'] ?? 'any',
                 'description' => $property['description'] ?? '',
                 'address' => $property['address'],
                 'latitude' => $property['latitude'] ? floatval($property['latitude']) : '',
@@ -256,6 +284,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'amenities' => $amenities,
                 'photos' => $photos,
                 'rules' => $property['property_rules'] ?? '',
+                // Add payment terms fields for edit form
+                'monthlyPayment' => floatval($property['price']),
+                'monthlyDeposit' => $property['deposit'] ? floatval($property['deposit']) : 0,
+                'advancePayment' => $property['advance'] ?? 'None',
             ];
 
             json_response(200, ['data' => $transformedProperty]);

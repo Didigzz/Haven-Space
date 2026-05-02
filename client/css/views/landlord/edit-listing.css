@@ -239,6 +239,27 @@
   padding-left: 2.5rem;
 }
 
+/* Input with Prefix (for currency) */
+.input-with-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-gray);
+  font-weight: 500;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input-with-prefix input {
+  padding-left: 2.5rem;
+}
+
 /* Photo Upload Section */
 .photo-upload-container {
   display: flex;

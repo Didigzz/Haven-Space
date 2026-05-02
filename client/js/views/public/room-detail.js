@@ -376,15 +376,15 @@ function populateRoomData(room) {
     }
   }
 
-  // Update min stay and deposit
-  const minStayElement = document.querySelector('.quick-info-card:nth-child(3) .quick-info-value');
-  if (minStayElement) {
-    minStayElement.textContent = room.minStay || 'Contact for details';
+  const depositElements = document.querySelectorAll('.booking-info-item strong');
+  if (depositElements.length >= 2) {
+    depositElements[1].textContent = room.deposit || 'Contact for details';
   }
 
-  const depositElements = document.querySelectorAll('.booking-info-item strong');
-  if (depositElements.length >= 3) {
-    depositElements[2].textContent = room.deposit || 'Contact for details';
+  // Update advance field
+  const advanceElement = document.getElementById('booking-advance');
+  if (advanceElement) {
+    advanceElement.textContent = room.advance || '1 month';
   }
 
   // Update reviews

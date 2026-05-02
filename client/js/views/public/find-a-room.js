@@ -1220,20 +1220,21 @@ function initProfileDropdown() {
     dropdownMenu.classList.toggle('show');
   });
 
-  // Profile link - route to appropriate page based on status
+  // Profile link - route to appropriate page based on role
   const profileLink = document.getElementById('profile-menu-profile');
   if (profileLink) {
     profileLink.addEventListener('click', e => {
       e.preventDefault();
       dropdownMenu.classList.remove('show');
 
-      // Check if user is a boarder and get their status
+      // Get user and determine correct navigation path
       const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const basePath = window.location.pathname.includes('github.io')
+        ? '/Haven-Space/client/views/'
+        : '/views/';
+
       if (user.role === 'boarder') {
         const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
-        const basePath = window.location.pathname.includes('github.io')
-          ? '/Haven-Space/client/views/'
-          : '/views/';
 
         // Redirect based on boarder status
         if (boarderStatus === 'accepted') {
@@ -1243,9 +1244,15 @@ function initProfileDropdown() {
           // If not yet accepted, stay in applications dashboard
           window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
         }
+      } else if (user.role === 'landlord') {
+        // For landlords, navigate to landlord dashboard
+        window.location.href = `${basePath}landlord/index.html`;
+      } else if (user.role === 'admin') {
+        // For admins, navigate to admin dashboard
+        window.location.href = `${basePath}admin/index.html`;
       } else {
-        // For non-boarders, navigate to profile as before
-        window.location.href = profileLink.href;
+        // Fallback: redirect to login
+        window.location.href = `${basePath}public/auth/login.html`;
       }
     });
   }
