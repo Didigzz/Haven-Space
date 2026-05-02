@@ -366,7 +366,7 @@
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .modal-overlay.active {
@@ -381,12 +381,12 @@
   max-width: 500px;
   max-height: 90vh;
   overflow: hidden;
-  transform: scale(0.9);
-  transition: transform 0.2s ease;
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-overlay.active .modal {
-  transform: scale(1);
+  transform: scale(1) translateY(0);
 }
 
 .modal-header {

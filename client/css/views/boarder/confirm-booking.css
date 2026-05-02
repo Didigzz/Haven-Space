@@ -481,6 +481,14 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.confirm-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 .confirm-modal {
@@ -491,6 +499,12 @@
   width: 90%;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confirm-modal-overlay.active .confirm-modal {
+  transform: scale(1) translateY(0);
 }
 
 .confirm-modal-icon {
