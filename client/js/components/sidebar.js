@@ -3,6 +3,8 @@
  * Reusable sidebar with role-based navigation
  */
 
+import { getAvatarUrl } from '../shared/profile-utils.js';
+
 // Map icon names to SVG asset files
 const SIDEBAR_ICON_MAP = {
   home: 'dashboard.svg',
@@ -460,23 +462,31 @@ function updateUserInfo(user) {
   const roleEl = document.getElementById('sidebar-profile-role');
 
   if (avatar && avatarImg && avatarInitials) {
-    // Check if user has an avatar URL
-    if (user.avatar_url && user.avatar_url.trim()) {
-      // Show image, hide initials
-      avatarImg.src = user.avatar_url;
-      avatarImg.style.display = 'block';
-      avatarImg.style.width = '100%';
-      avatarImg.style.height = '100%';
-      avatarImg.style.borderRadius = '50%';
-      avatarImg.style.objectFit = 'cover';
-      avatarInitials.style.display = 'none';
+    // Check if user has an avatar file ID
+    if (user.avatar_file_id) {
+      // Fetch avatar URL from files table (handled by profile-utils.js)
+      const avatarUrl = getAvatarUrl(user);
+      if (avatarUrl) {
+        avatarImg.src = avatarUrl;
+        avatarImg.style.display = 'block';
+        avatarImg.style.width = '100%';
+        avatarImg.style.height = '100%';
+        avatarImg.style.borderRadius = '50%';
+        avatarImg.style.objectFit = 'cover';
+        avatarInitials.style.display = 'none';
 
-      // Handle image load error - fallback to initials
-      avatarImg.onerror = () => {
+        // Handle image load error - fallback to initials
+        avatarImg.onerror = () => {
+          avatarImg.style.display = 'none';
+          avatarInitials.style.display = 'flex';
+          avatarInitials.textContent = user.initials || 'JD';
+        };
+      } else {
+        // No avatar URL found, show initials
         avatarImg.style.display = 'none';
         avatarInitials.style.display = 'flex';
         avatarInitials.textContent = user.initials || 'JD';
-      };
+      }
     } else {
       // Show initials, hide image
       avatarImg.style.display = 'none';

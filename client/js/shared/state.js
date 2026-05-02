@@ -211,8 +211,7 @@ function updateProfileCompletion(user) {
     'first_name',
     'last_name',
     'email',
-    'phone',
-    'current_address',
+    'phone_number',
     'employment_status',
     'emergency_contact_name',
     'emergency_contact_phone',
@@ -249,7 +248,7 @@ function updateCompletionChecklist(user, completedFields) {
 
   const fieldMapping = {
     'Basic Information': ['first_name', 'last_name'],
-    'Contact Details': ['email', 'phone', 'current_address'],
+    'Contact Details': ['email', 'phone_number'],
     'Employment Info': ['employment_status'],
     'Emergency Contact': ['emergency_contact_name', 'emergency_contact_phone'],
   };
