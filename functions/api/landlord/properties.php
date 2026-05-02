@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'Apartment' => 'apartment',
                 'Dormitory' => 'dormitory',
             ];
-            $type = isset($typeMapping[$property['property_type']]) 
+            $type = isset($property['property_type']) && isset($typeMapping[$property['property_type']]) 
                 ? $typeMapping[$property['property_type']] 
                 : 'boarding-house';
 
