@@ -269,6 +269,27 @@ try {
         }
     }
 
+    // Insert amenities if provided
+    if (!empty($input['amenities']) && is_array($input['amenities'])) {
+        $amenityStmt = $pdo->prepare("
+            INSERT INTO amenities (property_id, amenity_name, created_at)
+            VALUES (?, ?, NOW())
+            ON DUPLICATE KEY UPDATE amenity_name = VALUES(amenity_name)
+        ");
+        
+        foreach ($input['amenities'] as $amenity) {
+            $amenityName = trim($amenity);
+            if (!empty($amenityName)) {
+                try {
+                    $amenityStmt->execute([$propertyId, $amenityName]);
+                } catch (PDOException $e) {
+                    // Log but don't fail the entire transaction for amenity errors
+                    error_log('Amenity insert error: ' . $e->getMessage());
+                }
+            }
+        }
+    }
+
     // Commit transaction
     $pdo->commit();
 
