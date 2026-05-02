@@ -334,13 +334,8 @@ function populateRoomData(room) {
           })
           .join('');
 
-        // Add click handlers to show modal
-        document.querySelectorAll('.booking-room-type-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const roomType = btn.dataset.roomType;
-            showRoomTypeModal(roomType, roomsByType[roomType], room);
-          });
-        });
+        // Note: Click handlers for scrolling are added in setupEventListeners()
+        // No modal handlers needed here - buttons only scroll to Available Rooms
       } else {
         roomTypeOptions.innerHTML = `
           <div style="padding: 1rem; text-align: center; color: #6b7280;">
@@ -616,10 +611,14 @@ function updateGalleryImage() {
  * Setup event listeners
  */
 function setupEventListeners(room) {
-  // Apply Now button
+  // Apply Now button - scroll to Available Rooms section first
   const applyBtn = document.getElementById('apply-now-btn');
   if (applyBtn) {
-    applyBtn.addEventListener('click', () => handleApplyNow(room));
+    applyBtn.addEventListener('click', () => {
+      scrollToAvailableRooms();
+      // Optional: Still handle apply after scroll if needed
+      // setTimeout(() => handleApplyNow(room), 500);
+    });
   }
 
   // Schedule Tour button
@@ -632,6 +631,28 @@ function setupEventListeners(room) {
   const contactLandlordBtn = document.getElementById('contact-landlord-btn');
   if (contactLandlordBtn) {
     contactLandlordBtn.addEventListener('click', () => handleContactLandlord(room));
+  }
+
+  // Room type options - scroll to Available Rooms section when clicked
+  const roomTypeOptions = document.querySelectorAll('.booking-room-option, .booking-room-type-btn');
+  roomTypeOptions.forEach(option => {
+    option.addEventListener('click', e => {
+      e.preventDefault();
+      scrollToAvailableRooms();
+    });
+  });
+}
+
+/**
+ * Scroll to Available Rooms section
+ */
+function scrollToAvailableRooms() {
+  const availableRoomsSection = document.querySelector('.available-rooms-section');
+  if (availableRoomsSection) {
+    availableRoomsSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
   }
 }
 
