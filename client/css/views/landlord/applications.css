@@ -502,21 +502,21 @@
   left: 0;
   right: 0;
   bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.applications-modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+.applications-modal.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 .applications-modal-content {
@@ -528,18 +528,12 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn 0.3s ease-out;
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.applications-modal.active .applications-modal-content {
+  transform: scale(1) translateY(0);
 }
 
 .applications-modal-header {
@@ -719,6 +713,8 @@
   left: 0;
   right: 0;
   bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   z-index: 3000;
   display: flex;
   align-items: center;
@@ -729,19 +725,10 @@
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.confirmation-modal.show {
+.confirmation-modal.show,
+.confirmation-modal.active {
   opacity: 1;
   visibility: visible;
-}
-
-.confirmation-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
 }
 
 .confirmation-modal-content {
@@ -751,8 +738,14 @@
   max-width: 400px;
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn 0.3s ease-out;
   z-index: 3001;
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confirmation-modal.show .confirmation-modal-content,
+.confirmation-modal.active .confirmation-modal-content {
+  transform: scale(1) translateY(0);
 }
 
 .confirmation-modal-header {

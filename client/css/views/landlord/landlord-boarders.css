@@ -507,25 +507,21 @@
   left: 0;
   width: 100%;
   height: 100%;
-  display: none;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .add-boarder-modal.active,
 .boarder-detail-modal.active,
 .remove-boarder-modal.active {
-  display: flex;
-}
-
-.modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Modal Content */
@@ -540,6 +536,17 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transform: scale(0.95) translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-boarder-modal.active .add-modal-content,
+.add-boarder-modal.active .detail-modal-content,
+.boarder-detail-modal.active .add-modal-content,
+.boarder-detail-modal.active .detail-modal-content,
+.remove-boarder-modal.active .add-modal-content,
+.remove-boarder-modal.active .detail-modal-content {
+  transform: scale(1) translateY(0);
 }
 
 .modal-header {
