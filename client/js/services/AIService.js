@@ -138,7 +138,26 @@ class AIService {
       }
     } catch (error) {
       console.error(`Function execution failed for ${path}:`, error);
-      throw error;
+
+      // Provide more detailed error message
+      const errorMessage = error.message || 'Unknown error';
+      const detailedError = {
+        message: errorMessage,
+        path: path,
+        method: method,
+        isNetworkError:
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('NetworkError') ||
+          (errorMessage.includes('TypeError') && errorMessage.includes('Failed to fetch')),
+        isAuthError:
+          errorMessage.includes('401') ||
+          errorMessage.includes('403') ||
+          errorMessage.includes('Unauthorized') ||
+          errorMessage.includes('Forbidden'),
+        isTimeout: errorMessage.includes('timeout') || errorMessage.includes('Timeout'),
+      };
+
+      throw new Error(`AI service request failed: ${JSON.stringify(detailedError)}`);
     }
   }
 
@@ -154,9 +173,22 @@ class AIService {
       });
     } catch (error) {
       console.error('AI description generation failed:', error);
+
+      // Extract detailed error information
+      let errorMessage = 'Failed to generate description. Please try again.';
+      try {
+        const errorObj = JSON.parse(error.message);
+        if (errorObj.message) {
+          errorMessage = errorObj.message;
+        }
+      } catch (e) {
+        // If not JSON, use the original message
+        errorMessage = error.message || errorMessage;
+      }
+
       return {
         success: false,
-        error: 'Failed to generate description. Please try again.',
+        error: errorMessage,
       };
     }
   }
@@ -313,10 +345,28 @@ class AIService {
                     ${suggestion}
                 </div>
                 <div class="ai-suggestion-actions">
-                    <button class="btn-accept" onclick="this.parentElement.parentElement.remove(); ${onAccept.toString()}">Use this</button>
-                    <button class="btn-dismiss" onclick="this.parentElement.parentElement.remove()">Dismiss</button>
+                    <button class="btn-accept">Use this</button>
+                    <button class="btn-dismiss">Dismiss</button>
                 </div>
             `;
+
+      // Add event listeners properly
+      const acceptBtn = suggestionElement.querySelector('.btn-accept');
+      const dismissBtn = suggestionElement.querySelector('.btn-dismiss');
+
+      if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+          suggestionElement.remove();
+          if (onAccept) onAccept();
+        });
+      }
+
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+          suggestionElement.remove();
+        });
+      }
+
       element.appendChild(suggestionElement);
     }
   }

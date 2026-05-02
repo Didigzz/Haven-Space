@@ -56,7 +56,7 @@ function createExportModal() {
                   <span>Custom Range</span>
                 </label>
               </div>
-              
+
               <!-- Custom Date Range (hidden by default) -->
               <div class="export-custom-dates" id="customDateRange" style="display: none;">
                 <div class="export-date-group">
@@ -99,7 +99,7 @@ function createExportModal() {
             <!-- Filter Options -->
             <div class="export-section">
               <h4 class="export-section-title">Filters</h4>
-              
+
               <div class="export-filter-group">
                 <label for="exportPropertyFilter">Property</label>
                 <select id="exportPropertyFilter" class="export-select">
@@ -436,7 +436,7 @@ async function generatePDFReport(data, params) {
   yPos += 6;
   doc.setFont(undefined, 'normal');
 
-  data.forEach((payment, index) => {
+  data.forEach(payment => {
     if (yPos > 270) {
       doc.addPage();
       yPos = 20;
@@ -464,7 +464,7 @@ async function generatePDFReport(data, params) {
 /**
  * Generate CSV report
  */
-function generateCSVReport(data, params) {
+function generateCSVReport(data) {
   // CSV headers
   const headers = [
     'Tenant Name',
@@ -548,7 +548,7 @@ function showPreviewReport(data, params) {
       <p><strong>Report Type:</strong> ${formatReportType(params.reportType)}</p>
       <p><strong>Time Range:</strong> ${formatTimeRange(params)}</p>
       <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-      
+
       <div class="summary">
         <h2>Summary</h2>
         <p><strong>Total Payments:</strong> ${summary.totalCount}</p>
@@ -561,9 +561,9 @@ function showPreviewReport(data, params) {
           summary.overdueCount
         } (₱${summary.overdueAmount.toLocaleString()})</p>
       </div>
-      
+
       <button class="no-print" onclick="window.print()">Print Report</button>
-      
+
       <table>
         <thead>
           <tr>

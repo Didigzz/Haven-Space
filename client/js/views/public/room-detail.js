@@ -480,8 +480,6 @@ function setupGalleryNavigation() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
-  const totalImages = room.images.length;
-
   // Thumbnails - add event listeners to newly created thumbnails
   document.querySelectorAll('.gallery-thumb').forEach(thumb => {
     thumb.addEventListener('click', () => {
@@ -498,8 +496,6 @@ function setupGallery() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
-  const totalImages = room.images.length;
-
   // Previous button
   const prevBtn = document.getElementById('gallery-prev');
   if (prevBtn) {
@@ -507,9 +503,8 @@ function setupGallery() {
     prevBtn.replaceWith(prevBtn.cloneNode(true));
     const newPrevBtn = document.getElementById('gallery-prev');
     newPrevBtn.addEventListener('click', () => {
-      console.log('Previous button clicked, current index:', state.currentImageIndex);
-      state.currentImageIndex = (state.currentImageIndex - 1 + totalImages) % totalImages;
-      console.log('New index:', state.currentImageIndex);
+      state.currentImageIndex =
+        (state.currentImageIndex - 1 + room.images.length) % room.images.length;
       updateGalleryImage();
     });
   }
@@ -521,9 +516,7 @@ function setupGallery() {
     nextBtn.replaceWith(nextBtn.cloneNode(true));
     const newNextBtn = document.getElementById('gallery-next');
     newNextBtn.addEventListener('click', () => {
-      console.log('Next button clicked, current index:', state.currentImageIndex);
-      state.currentImageIndex = (state.currentImageIndex + 1) % totalImages;
-      console.log('New index:', state.currentImageIndex);
+      state.currentImageIndex = (state.currentImageIndex + 1) % room.images.length;
       updateGalleryImage();
     });
   }
@@ -572,13 +565,9 @@ function updateGalleryImage() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
-  console.log('Updating gallery image to index:', state.currentImageIndex);
-  console.log('Available images:', room.images.length);
-
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
     const newImageUrl = getImageUrl(room.images[state.currentImageIndex]);
-    console.log('Setting image URL to:', newImageUrl);
     mainImage.src = newImageUrl;
     mainImage.onerror = function () {
       this.src = getImageUrl(null);
@@ -837,7 +826,7 @@ function loadAvailableRooms(property) {
   document.querySelectorAll('.available-room-card').forEach(card => {
     card.addEventListener('click', () => {
       const roomData = JSON.parse(card.dataset.room);
-      showRoomDetailModal(roomData, property);
+      showRoomDetailModal(roomData);
     });
   });
 }
@@ -853,7 +842,7 @@ function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function showRoomDetailModal(room, property) {
+function showRoomDetailModal(room) {
   const modal = document.getElementById('room-detail-modal');
   if (!modal) return;
 
@@ -924,10 +913,10 @@ function showRoomDetailModal(room, property) {
       thumbnailsContainer.innerHTML = roomImages
         .map(
           (img, index) => `
-          <img 
-            src="${getImageUrl(img)}" 
-            alt="Room ${index + 1}" 
-            class="room-modal-thumbnail ${index === 0 ? 'active' : ''}" 
+          <img
+            src="${getImageUrl(img)}"
+            alt="Room ${index + 1}"
+            class="room-modal-thumbnail ${index === 0 ? 'active' : ''}"
             data-index="${index}"
           />
         `
@@ -991,13 +980,13 @@ function showRoomDetailModal(room, property) {
   modal.classList.add('active');
 
   // Setup modal event listeners
-  setupRoomModalListeners(room, property, modal);
+  setupRoomModalListeners(room, modal);
 }
 
 /**
  * Setup room modal event listeners
  */
-function setupRoomModalListeners(room, property, _modal) {
+function setupRoomModalListeners(_room, _modal) {
   // Get the modal overlay
   const modalOverlay = document.getElementById('room-detail-modal');
 

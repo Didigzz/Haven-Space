@@ -1,3 +1,6 @@
+// Import CONFIG
+import CONFIG from '../../config.js';
+
 document.addEventListener('DOMContentLoaded', function () {
   const step1 = document.getElementById('step1');
   const step2 = document.getElementById('step2');
@@ -17,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     emailDisplay.textContent = email;
 
     // Send request to backend
-    fetch('http://localhost:8000/auth/forgot-password', {
+    fetch(`${CONFIG.API_BASE_URL}/auth/forgot-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -123,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const email = emailDisplay.textContent;
 
     // Send to backend to verify code
-    fetch('http://localhost:8000/auth/verify-reset-code', {
+    fetch(`${CONFIG.API_BASE_URL}/auth/verify-reset-code`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -166,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const email = emailDisplay.textContent;
 
     // Send to backend to resend code
-    fetch('http://localhost:8000/auth/resend-reset-code', {
+    fetch(`${CONFIG.API_BASE_URL}/auth/resend-reset-code`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -247,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
         align-items: center;
         z-index: 1000;
       }
-      
+
       .google-recovery-content {
         background: white;
         padding: 2rem;
@@ -256,57 +259,57 @@ document.addEventListener('DOMContentLoaded', function () {
         width: 90%;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       }
-      
+
       .google-recovery-content h3 {
         color: #1a202c;
         font-size: 1.5rem;
         margin-bottom: 1rem;
         font-weight: 600;
       }
-      
+
       .google-recovery-content p {
         color: #4a5568;
         margin-bottom: 1.5rem;
         line-height: 1.6;
       }
-      
+
       .recovery-options {
         margin-bottom: 1.5rem;
       }
-      
+
       .recovery-options h4 {
         color: #2d3748;
         font-size: 1.1rem;
         margin-bottom: 0.75rem;
         font-weight: 500;
       }
-      
+
       .recovery-options ul {
         list-style-type: none;
         padding-left: 0;
       }
-      
+
       .recovery-options li {
         margin-bottom: 0.5rem;
       }
-      
+
       .recovery-options a {
         color: #4285f4;
         text-decoration: none;
         font-weight: 500;
       }
-      
+
       .recovery-options a:hover {
         text-decoration: underline;
       }
-      
+
       .modal-actions {
         display: flex;
         gap: 1rem;
         justify-content: flex-end;
         margin-top: 1.5rem;
       }
-      
+
       .auth-btn-secondary {
         background-color: #e2e8f0;
         color: #4a5568;
@@ -317,11 +320,11 @@ document.addEventListener('DOMContentLoaded', function () {
         font-weight: 500;
         transition: background-color 0.2s;
       }
-      
+
       .auth-btn-secondary:hover {
         background-color: #cbd5e0;
       }
-      
+
       .auth-btn-primary {
         background-color: #4285f4;
         color: white;
@@ -332,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
         font-weight: 500;
         transition: background-color 0.2s;
       }
-      
+
       .auth-btn-primary:hover {
         background-color: #3367d6;
       }

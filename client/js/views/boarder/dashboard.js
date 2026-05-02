@@ -683,7 +683,6 @@ function renderLeaseInfo(lease) {
   const nextPaymentDesc = document.querySelector('[data-payment-details]');
 
   if (nextPaymentValue && nextPaymentDesc && lease.tenancy_start_date && lease.monthly_rent) {
-    const startDate = new Date(lease.tenancy_start_date);
     const today = new Date();
 
     // Calculate next payment date (1st of next month)

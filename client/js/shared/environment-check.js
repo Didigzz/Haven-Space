@@ -3,6 +3,9 @@
  * Displays warning when app is accessed incorrectly
  */
 
+// Import CONFIG
+import CONFIG from '../../config.js';
+
 /**
  * Check if the application is being accessed correctly
  * Shows a warning banner if not using the PHP built-in server
@@ -128,10 +131,10 @@ function showEnvironmentWarning() {
           Wrong Server! Images and API won't work correctly
         </div>
         <div class="env-warning-message">
-          You're accessing via <strong>${window.location.origin}</strong>. 
-          Please use <strong>http://localhost:8000/</strong> instead. 
-          Run <code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">npm run server</code> 
-          and access the app through port 8000.
+          You're accessing via <strong>${window.location.origin}</strong>.
+          Please use <strong>${CONFIG.API_BASE_URL}/</strong> instead.
+          Run <code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">bun run server</code>
+          and access the app through the correct port.
         </div>
       </div>
       <div>
@@ -151,7 +154,7 @@ function showEnvironmentWarning() {
     'background: #ff6b6b; color: white; padding: 8px 12px; font-size: 14px; font-weight: bold; border-radius: 4px;'
   );
   console.warn(
-    `Current URL: ${window.location.origin}\nCorrect URL: http://localhost:8000/\n\nRun: npm run server`
+    `Current URL: ${window.location.origin}\nCorrect URL: ${CONFIG.API_BASE_URL}/\n\nRun: bun run server`
   );
   console.warn('Images from /storage/ will fail to load!');
 }
@@ -161,7 +164,7 @@ function showEnvironmentWarning() {
  */
 export function getCorrectUrl() {
   const path = window.location.pathname + window.location.search + window.location.hash;
-  return `http://localhost:8000${path}`;
+  return `${CONFIG.API_BASE_URL}${path}`;
 }
 
 /**

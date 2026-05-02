@@ -131,6 +131,10 @@ function initProfileForm() {
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 
 function initAvatarUpload() {
+  // Flag to prevent duplicate event listeners
+  if (window.avatarUploadInitialized) return;
+  window.avatarUploadInitialized = true;
+
   const changeAvatarBtn = document.getElementById('change-avatar-btn');
   const avatarInput = document.getElementById('avatar-input');
   const avatarPreview = document.getElementById('profile-avatar-preview');

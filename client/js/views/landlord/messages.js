@@ -475,15 +475,6 @@ function showError(message) {
   setTimeout(() => errorDiv.remove(), 3000);
 }
 
-function showSuccess(message) {
-  const successDiv = document.createElement('div');
-  successDiv.className = 'toast-message toast-success';
-  successDiv.textContent = message;
-  document.body.appendChild(successDiv);
-
-  setTimeout(() => successDiv.remove(), 3000);
-}
-
 function scrollToBottom() {
   const chatMessages = document.getElementById('chat-messages');
   if (chatMessages) {

@@ -135,6 +135,10 @@ function initProfileForm() {
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 
 function initAvatarUpload() {
+  // Flag to prevent duplicate event listeners
+  if (window.avatarUploadInitialized) return;
+  window.avatarUploadInitialized = true;
+
   const changeAvatarBtn = document.getElementById('change-avatar-btn');
   const avatarInput = document.getElementById('avatar-input');
   const avatarPreview = document.getElementById('profile-avatar-preview');
@@ -185,6 +189,10 @@ function initAvatarUpload() {
         const existing = JSON.parse(localStorage.getItem('user') || '{}');
         existing.avatar_url = data.avatar_url;
         localStorage.setItem('user', JSON.stringify(existing));
+        // Notify other components (sidebar, navbar) to update the avatar
+        window.dispatchEvent(
+          new CustomEvent('userProfileUpdated', { detail: { avatar_url: data.avatar_url } })
+        );
         showToast('Profile photo updated', 'success');
       } else {
         showToast(data.error || 'Failed to upload photo', 'error');

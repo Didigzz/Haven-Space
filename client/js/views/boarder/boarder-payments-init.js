@@ -593,7 +593,6 @@ function showError(message) {
 
 function showSuccess(message) {
   // TODO: Implement proper toast notification
-  console.log(message);
   alert(message);
 }
 

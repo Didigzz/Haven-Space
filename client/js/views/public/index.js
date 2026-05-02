@@ -8,7 +8,7 @@
 import { initLogoCloud } from '../../components/logo-cloud.js';
 import { initPublicFindARoom } from './public-find-a-room.js';
 import { getState } from '../../shared/state.js';
-import { getIcon, initIconElements } from '../../shared/icons.js';
+import { initIconElements } from '../../shared/icons.js';
 import { setupAuthenticatedNavigation } from '../../shared/routing.js';
 import { showToast } from '../../shared/toast.js';
 

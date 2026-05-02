@@ -1,3 +1,6 @@
+// Import CONFIG
+import CONFIG from '../../config.js';
+
 document.addEventListener('DOMContentLoaded', function () {
   const resetPasswordForm = document.getElementById('resetPasswordForm');
 
@@ -26,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Send request to backend to reset password
-    fetch('http://localhost:8000/auth/reset-password', {
+    fetch(`${CONFIG.API_BASE_URL}/auth/reset-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

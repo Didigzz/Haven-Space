@@ -524,18 +524,6 @@ function showError(message) {
 }
 
 /**
- * Show success message
- */
-function showSuccess(message) {
-  const successDiv = document.createElement('div');
-  successDiv.className = 'toast-message toast-success';
-  successDiv.textContent = message;
-  document.body.appendChild(successDiv);
-
-  setTimeout(() => successDiv.remove(), 3000);
-}
-
-/**
  * Scroll chat to bottom
  */
 function scrollToBottom() {

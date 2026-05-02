@@ -42,13 +42,20 @@ function detectEnvironment() {
 }
 
 /**
- * Get API base URL based on detected environment
+ * Get API base URL based on detected environment and environment variables
  */
 function getApiBaseUrl() {
+  // Check for VITE_API_BASE_URL environment variable first (Vite/Bun)
+  const viteApiUrl = import.meta.env?.VITE_API_BASE_URL;
+
+  if (viteApiUrl && viteApiUrl.trim() !== '') {
+    return viteApiUrl.trim();
+  }
+
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://69eb0fbe001f297c8dab.fra.appwrite.run', // Appwrite function domain
+    production: 'https://haven-space.appwrite.network', // Production domain
     'local-dev': 'http://localhost:8000', // PHP built-in server
     'local-apache': 'http://localhost:8000', // Apache/XAMPP - still use port 8000 for API
   };

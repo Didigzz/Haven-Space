@@ -302,11 +302,8 @@ function populateRoomData(room) {
 
       if (allTypes.length > 0) {
         roomTypeOptions.innerHTML = allTypes
-          .map((type, index) => {
+          .map(type => {
             const roomsOfType = roomsByType[type];
-            const availableCount = roomsOfType.filter(r => r.status === 'available').length;
-            const occupiedCount = roomsOfType.filter(r => r.status === 'occupied').length;
-            const totalCount = roomsOfType.length;
             const minPrice = Math.min(...roomsOfType.map(r => r.price));
             const maxPrice = Math.max(...roomsOfType.map(r => r.price));
             const priceDisplay =
@@ -405,8 +402,6 @@ function setupGalleryNavigation() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
-  const totalImages = room.images.length;
-
   // Thumbnails - add event listeners to newly created thumbnails
   document.querySelectorAll('.gallery-thumb').forEach(thumb => {
     thumb.addEventListener('click', () => {
@@ -423,8 +418,6 @@ async function setupGallery() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
-  const totalImages = room.images.length;
-
   // Previous button
   const prevBtn = document.getElementById('gallery-prev');
   if (prevBtn) {
@@ -432,9 +425,8 @@ async function setupGallery() {
     prevBtn.replaceWith(prevBtn.cloneNode(true));
     const newPrevBtn = document.getElementById('gallery-prev');
     newPrevBtn.addEventListener('click', () => {
-      console.log('Previous button clicked, current index:', state.currentImageIndex);
-      state.currentImageIndex = (state.currentImageIndex - 1 + totalImages) % totalImages;
-      console.log('New index:', state.currentImageIndex);
+      state.currentImageIndex =
+        (state.currentImageIndex - 1 + room.images.length) % room.images.length;
       updateGalleryImage();
     });
   }
@@ -446,9 +438,7 @@ async function setupGallery() {
     nextBtn.replaceWith(nextBtn.cloneNode(true));
     const newNextBtn = document.getElementById('gallery-next');
     newNextBtn.addEventListener('click', () => {
-      console.log('Next button clicked, current index:', state.currentImageIndex);
-      state.currentImageIndex = (state.currentImageIndex + 1) % totalImages;
-      console.log('New index:', state.currentImageIndex);
+      state.currentImageIndex = (state.currentImageIndex + 1) % room.images.length;
       updateGalleryImage();
     });
   }
@@ -600,13 +590,9 @@ function updateGalleryImage() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
-  console.log('Updating gallery image to index:', state.currentImageIndex);
-  console.log('Available images:', room.images.length);
-
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
     const newImageUrl = getImageUrl(room.images[state.currentImageIndex]);
-    console.log('Setting image URL to:', newImageUrl);
     mainImage.src = newImageUrl;
     mainImage.onerror = function () {
       this.src = getImageUrl(null);
@@ -999,7 +985,7 @@ function showRoomTypeModal(roomType, rooms, property) {
         </div>
         <div class="room-type-modal-info">
           <h4 class="room-type-modal-room-name">${roomName}</h4>
-          
+
           <div class="room-type-modal-details-grid">
             <div class="room-type-modal-detail">
               <span class="room-type-modal-detail-label">Capacity:</span>
@@ -1032,7 +1018,7 @@ function showRoomTypeModal(roomType, rooms, property) {
                 : ''
             }
           </div>
-          
+
           ${
             room.description
               ? `
@@ -1042,7 +1028,7 @@ function showRoomTypeModal(roomType, rooms, property) {
           `
               : ''
           }
-          
+
           <div class="room-type-modal-action">
             ${
               room.status === 'available'
@@ -1223,10 +1209,10 @@ function showRoomDetailModal(room, property) {
       thumbnailsContainer.innerHTML = roomImages
         .map(
           (img, index) => `
-          <img 
-            src="${getImageUrl(img)}" 
-            alt="${roomName} ${index + 1}" 
-            class="room-modal-thumbnail ${index === 0 ? 'active' : ''}" 
+          <img
+            src="${getImageUrl(img)}"
+            alt="${roomName} ${index + 1}"
+            class="room-modal-thumbnail ${index === 0 ? 'active' : ''}"
             data-index="${index}"
           />
         `

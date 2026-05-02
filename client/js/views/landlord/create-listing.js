@@ -324,7 +324,7 @@ function renderPhotoGrid() {
       <img src="${photo.preview}" alt="Property photo ${index + 1}" />
       <div class="photo-overlay">
         ${index === 0 ? '<span class="photo-badge">Cover</span>' : '<span></span>'}
-        <button 
+        <button
           type="button"
           class="photo-remove-btn"
           data-photo-id="${photo.id}"
@@ -543,16 +543,19 @@ function initAIDescriptionGenerator() {
 
   if (aiGenerateBtn && descriptionTextarea) {
     aiGenerateBtn.addEventListener('click', async () => {
+      let descriptionContainer = null;
+
       try {
         // Disable button during processing
         aiGenerateBtn.disabled = true;
         aiGenerateBtn.textContent = '🤖 Generating...';
 
-        // Show loading state
-        AIService.showLoading(
-          descriptionTextarea.parentElement,
-          'AI is crafting your description...'
-        );
+        // Get the container element for AI feedback
+        descriptionContainer =
+          descriptionTextarea.closest('.description-with-ai') || descriptionTextarea.parentElement;
+        if (descriptionContainer) {
+          AIService.showLoading(descriptionContainer, 'AI is crafting your description...');
+        }
 
         // Gather property details from form
         const propertyDetails = {
@@ -576,28 +579,52 @@ function initAIDescriptionGenerator() {
         // Call AI service
         const result = await AIService.generateDescription(propertyDetails);
 
+        // Clear any existing error messages
+        if (descriptionContainer) {
+          const existingErrors = descriptionContainer.querySelectorAll('.ai-error');
+          existingErrors.forEach(el => el.remove());
+        }
+
         if (result.success && result.description) {
           // Set the generated description
           descriptionTextarea.value = result.description;
 
           // Show suggestion bubble with option to accept/revert
-          AIService.showSuggestion(descriptionTextarea.parentElement, result.description, () => {
-            // Already set, just focus the textarea
-            descriptionTextarea.focus();
-          });
+          if (descriptionContainer) {
+            AIService.showSuggestion(descriptionContainer, result.description, () => {
+              // Ensure description is set and focus the textarea
+              descriptionTextarea.value = result.description;
+              descriptionTextarea.focus();
+            });
+          }
         } else {
-          // Show error
+          // Show error with more details
           const errorElement = document.createElement('div');
           errorElement.className = 'ai-error';
-          errorElement.textContent = result.error || 'Failed to generate description.';
-          descriptionTextarea.parentElement.appendChild(errorElement);
+          errorElement.textContent =
+            result.error || 'Failed to generate description. Please try again.';
+
+          if (descriptionContainer) {
+            descriptionContainer.appendChild(errorElement);
+          }
+
+          // Also log to console for debugging
+          console.error('AI generation failed:', {
+            error: result.error,
+            success: result.success,
+            hasDescription: !!result.description,
+          });
         }
       } catch (error) {
-        // console.error('AI description generation error:', error);
+        console.error('AI description generation error:', error);
         const errorElement = document.createElement('div');
         errorElement.className = 'ai-error';
-        errorElement.textContent = 'AI service error: ' + error.message;
-        descriptionTextarea.parentElement.appendChild(errorElement);
+        errorElement.textContent =
+          'AI service error: ' + (error.message || 'Unknown error occurred');
+
+        if (descriptionContainer) {
+          descriptionContainer.appendChild(errorElement);
+        }
       } finally {
         // Re-enable button
         aiGenerateBtn.disabled = false;
@@ -605,8 +632,10 @@ function initAIDescriptionGenerator() {
 
         // Remove loading state after a short delay
         setTimeout(() => {
-          const loadingElements = descriptionTextarea.parentElement.querySelectorAll('.ai-loading');
-          loadingElements.forEach(el => el.remove());
+          if (descriptionContainer) {
+            const loadingElements = descriptionContainer.querySelectorAll('.ai-loading');
+            loadingElements.forEach(el => el.remove());
+          }
         }, 2000);
       }
     });
@@ -1210,7 +1239,7 @@ function createRoomCard(room, index) {
         <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
       </button>
     </div>
-    
+
     <div class="room-card-content">
       <div class="room-form-row">
         <div class="room-form-group">
@@ -1237,7 +1266,7 @@ function createRoomCard(room, index) {
           </select>
         </div>
       </div>
-      
+
       <div class="room-form-row">
         <div class="room-form-group" id="room-capacity-group-${index}" style="display: none;">
           <label for="room-capacity-${index}">Person Capacity *</label>
@@ -1252,7 +1281,7 @@ function createRoomCard(room, index) {
           </select>
         </div>
       </div>
-      
+
       <div class="room-form-group">
         <label for="room-description-${index}">Additional Info</label>
         <textarea
@@ -1262,7 +1291,7 @@ function createRoomCard(room, index) {
           rows="2"
         >${room.description}</textarea>
       </div>
-      
+
       <div class="room-photo-upload">
         <label>Room Photos</label>
         <div class="room-photo-upload-area" data-room-index="${index}">
@@ -1485,7 +1514,7 @@ function renderRoomPhotos(roomIndex) {
     item.innerHTML = `
       <img src="${photo.preview}" alt="Room photo" />
       <div class="photo-overlay">
-        <button 
+        <button
           type="button"
           class="room-photo-remove"
           data-photo-id="${photo.id}"

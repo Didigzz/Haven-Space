@@ -183,7 +183,10 @@ function updateUserUI(user) {
   // Update sidebar user avatar
   const sidebarAvatar = document.querySelector('.sidebar-user-avatar');
   if (sidebarAvatar && user.avatar_url) {
-    sidebarAvatar.src = user.avatar_url;
+    // Handle both direct file paths and API URLs
+    sidebarAvatar.src = user.avatar_url.startsWith('/uploads/avatars/')
+      ? user.avatar_url
+      : user.avatar_url;
   }
 
   // Update navbar user info
@@ -195,7 +198,10 @@ function updateUserUI(user) {
   // Update navbar user avatar
   const navbarAvatar = document.querySelector('.navbar-user-avatar');
   if (navbarAvatar && user.avatar_url) {
-    navbarAvatar.src = user.avatar_url;
+    // Handle both direct file paths and API URLs
+    navbarAvatar.src = user.avatar_url.startsWith('/uploads/avatars/')
+      ? user.avatar_url
+      : user.avatar_url;
   }
 
   // Update any profile completion indicators

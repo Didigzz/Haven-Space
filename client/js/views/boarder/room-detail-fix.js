@@ -3,8 +3,8 @@
  * This is a temporary fix for the module loading issue
  */
 
-// Configuration
-const API_BASE_URL = 'http://localhost:8000';
+// Import CONFIG
+import CONFIG from '../../../js/config.js';
 
 // Get room ID from URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -13,7 +13,7 @@ const roomId = parseInt(urlParams.get('id')) || 1;
 // Fetch room data and populate the page
 async function loadRoomData() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/rooms/detail?id=${roomId}`);
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/detail?id=${roomId}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -148,7 +148,7 @@ function populateRoomData(room) {
       // Convert relative path to full URL
       const imageUrl = room.images[0].startsWith('http')
         ? room.images[0]
-        : `${API_BASE_URL}${room.images[0]}`;
+        : `${CONFIG.API_BASE_URL}${room.images[0]}`;
 
       // Try to load the actual image, fallback to placeholder if it fails
       const img = new Image();
@@ -175,12 +175,12 @@ function populateRoomData(room) {
       // Create thumbnails with error handling
       const thumbnailsHTML = room.images
         .map((img, index) => {
-          const imageUrl = img.startsWith('http') ? img : `${API_BASE_URL}${img}`;
+          const imageUrl = img.startsWith('http') ? img : `${CONFIG.API_BASE_URL}${img}`;
           return `
           <button class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}">
-            <img src="../../../assets/images/placeholder-room.svg" 
-                 data-original-src="${imageUrl}" 
-                 alt="Thumbnail ${index + 1}" 
+            <img src="../../../assets/images/placeholder-room.svg"
+                 data-original-src="${imageUrl}"
+                 alt="Thumbnail ${index + 1}"
                  class="gallery-thumb-img" />
           </button>
         `;
@@ -387,7 +387,9 @@ function populateRoomData(room) {
 
   // Initialize gallery after room data is loaded
   function initializeGallery(images) {
-    galleryImages = images.map(img => (img.startsWith('http') ? img : `${API_BASE_URL}${img}`));
+    galleryImages = images.map(img =>
+      img.startsWith('http') ? img : `${CONFIG.API_BASE_URL}${img}`
+    );
     currentImageIndex = 0;
 
     // Add event listeners for gallery navigation
@@ -509,16 +511,19 @@ function populateRoomData(room) {
     try {
       if (!isFavorite) {
         // Save the property
-        const response = await authenticatedFetch(`${API_BASE_URL}/api/boarder/saved-listings`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            property_id: parseInt(propertyId),
-            room_id: roomId ? parseInt(roomId) : null,
-          }),
-        });
+        const response = await authenticatedFetch(
+          `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              property_id: parseInt(propertyId),
+              room_id: roomId ? parseInt(roomId) : null,
+            }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -528,15 +533,18 @@ function populateRoomData(room) {
         showToast('Property saved successfully!', 'success');
       } else {
         // Remove from saved
-        const response = await authenticatedFetch(`${API_BASE_URL}/api/boarder/saved-listings`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            property_id: parseInt(propertyId),
-          }),
-        });
+        const response = await authenticatedFetch(
+          `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              property_id: parseInt(propertyId),
+            }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -598,7 +606,7 @@ function populateRoomData(room) {
     try {
       // Check if property is saved using the correct endpoint
       const response = await authenticatedFetch(
-        `${API_BASE_URL}/api/boarder/saved-listings?property_id=${propertyId}`
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings?property_id=${propertyId}`
       );
 
       if (response.ok) {

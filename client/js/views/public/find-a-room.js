@@ -39,8 +39,8 @@ const API_BASE_URL = window.location.origin.includes('github.io')
   : window.location.origin.includes('localhost') ||
     window.location.origin.includes('127.0.0.1') ||
     window.location.hostname === 'localhost'
-  ? 'http://localhost:8000'
-  : '/server/api';
+  ? CONFIG.API_BASE_URL
+  : CONFIG.API_BASE_URL;
 
 /**
  * Fetch properties from backend API
@@ -2037,8 +2037,8 @@ function populateRoomModal(room, property) {
     thumbnailsEl.innerHTML = room.photos
       .map(
         (photo, index) => `
-      <img 
-        src="${getImageUrl(photo)}" 
+      <img
+        src="${getImageUrl(photo)}"
         alt="Room photo ${index + 1}"
         class="find-room-room-thumbnail ${index === 0 ? 'active' : ''}"
         onclick="selectRoomImage('${photo}')"

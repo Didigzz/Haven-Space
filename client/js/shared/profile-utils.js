@@ -81,19 +81,24 @@ export function getAvatarUrl(user, basePath = '') {
     return `${basePath}/assets/images/sample.png`;
   }
 
-  // Priority 1: avatar_file_id from database (fetch from files table)
+  // Priority 1: Direct avatar_url from avatar upload API (format: /uploads/avatars/filename.png)
+  if (user.avatar_url && user.avatar_url.includes('/uploads/avatars/')) {
+    return user.avatar_url;
+  }
+
+  // Priority 2: avatar_file_id from database (fetch from files table)
   if (user.avatar_file_id) {
     // In a real implementation, you would fetch the avatar URL from the files table via API
     // For now, return a placeholder or fetch it dynamically
     return `/api/files/${user.avatar_file_id}`;
   }
 
-  // Priority 2: avatarUrl from localStorage (legacy)
+  // Priority 3: avatarUrl from localStorage (legacy)
   if (user.avatarUrl && user.avatarUrl.trim()) {
     return user.avatarUrl;
   }
 
-  // Priority 3: Generate avatar from UI Avatars service using real name
+  // Priority 4: Generate avatar from UI Avatars service using real name
   const displayName = getDisplayName(user);
   if (displayName && displayName !== 'User') {
     const encodedName = encodeURIComponent(displayName);
