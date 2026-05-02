@@ -17,30 +17,30 @@ function determineBoarderStatus($pdo, $boarderId) {
     $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $acceptedStmt->execute([$boarderId, 'accepted']);
     $acceptedCount = $acceptedStmt->fetchColumn();
-    
+
     if ($acceptedCount > 0) {
         return 'accepted';
     }
-    
+
     // Check for pending applications
     $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $pendingStmt->execute([$boarderId, 'pending']);
     $pendingCount = $pendingStmt->fetchColumn();
-    
+
     if ($pendingCount > 0) {
         return 'applied_pending';
     }
-    
+
     // Check for any applications (rejected/cancelled)
     $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
     $anyStmt->execute([$boarderId]);
     $anyCount = $anyStmt->fetchColumn();
-    
+
     if ($anyCount > 0) {
         // Has applications but none are pending or accepted (likely rejected)
         return 'rejected';
     }
-    
+
     // No applications at all
     return 'new';
 }
@@ -86,8 +86,8 @@ try {
                f.file_url as avatar_url
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
-        JOIN account_statuses acs ON u.account_status_id = acs.id
         LEFT JOIN files f ON u.avatar_file_id = f.id
+        JOIN account_statuses acs ON u.account_status_id = acs.id
         WHERE u.email = ? AND u.deleted_at IS NULL
     ');
     $stmt->execute([$email]);
@@ -101,7 +101,7 @@ try {
             echo json_encode(['error' => 'This account was registered with Google. Please use Google login.']);
             exit;
         }
-        
+
         if (password_verify($password, $user['password_hash'])) {
             $accountStatus = $user['account_status'] ?? 'active';
             // Allow 'active' and 'pending_verification' (landlords waiting for verification)
