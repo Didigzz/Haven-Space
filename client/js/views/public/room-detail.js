@@ -379,6 +379,9 @@ function populateRoomData(room) {
   // Load available rooms
   loadAvailableRooms(room);
 
+  // Setup room filter dropdown
+  setupRoomFilter(room);
+
   // Load similar properties
   loadSimilarProperties(room.id);
 }
@@ -716,7 +719,7 @@ async function loadSimilarProperties(propertyId) {
 /**
  * Load available rooms for the property
  */
-function loadAvailableRooms(property) {
+function loadAvailableRooms(property, filter = 'all') {
   const roomsGrid = document.getElementById('available-rooms-grid');
   if (!roomsGrid) return;
 
@@ -730,8 +733,27 @@ function loadAvailableRooms(property) {
     return;
   }
 
+  // Filter rooms based on the selected filter
+  let filteredRooms = property.rooms;
+  if (filter !== 'all') {
+    filteredRooms = property.rooms.filter(room => {
+      const roomType = room.roomType ? room.roomType.toLowerCase() : '';
+      return roomType.includes(filter);
+    });
+  }
+
+  // Show message if no rooms match the filter
+  if (filteredRooms.length === 0) {
+    roomsGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-gray);">
+        <p>No rooms match the selected filter.</p>
+      </div>
+    `;
+    return;
+  }
+
   // Render room cards
-  roomsGrid.innerHTML = property.rooms
+  roomsGrid.innerHTML = filteredRooms
     .map(room => {
       const statusClass =
         room.status === 'available'
@@ -1057,6 +1079,51 @@ function showNotFound() {
       </div>
     `;
   }
+}
+
+/**
+ * Setup room filter dropdown functionality
+ */
+function setupRoomFilter(property) {
+  const filterBtn = document.getElementById('room-filter-btn');
+  const filterPanel = document.getElementById('room-filter-panel');
+
+  if (!filterBtn || !filterPanel) return;
+
+  // Toggle filter panel visibility
+  filterBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    filterBtn.classList.toggle('active');
+    filterPanel.classList.toggle('active');
+  });
+
+  // Close filter panel when clicking outside
+  document.addEventListener('click', () => {
+    filterBtn.classList.remove('active');
+    filterPanel.classList.remove('active');
+  });
+
+  // Prevent clicks inside panel from closing it
+  filterPanel.addEventListener('click', e => {
+    e.stopPropagation();
+  });
+
+  // Handle filter option selection
+  const filterOptions = document.querySelectorAll('.room-filter-option');
+  filterOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      const filterValue = option.dataset.filter;
+      loadAvailableRooms(property, filterValue);
+
+      // Update button text to show current filter
+      const filterText = option.querySelector('label').textContent;
+      filterBtn.querySelector('span:first-child').textContent = filterText;
+
+      // Close the panel
+      filterBtn.classList.remove('active');
+      filterPanel.classList.remove('active');
+    });
+  });
 }
 
 // Initialize on module load

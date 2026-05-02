@@ -9,6 +9,130 @@
   margin-top: 2rem;
 }
 
+.available-rooms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.room-filter-dropdown {
+  position: relative;
+}
+
+.room-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.938rem;
+  font-family: var(--font-main);
+  color: var(--text-dark);
+  min-width: 160px;
+  justify-content: space-between;
+}
+
+.room-filter-btn:hover {
+  border-color: var(--primary-green);
+  background: var(--bg-green);
+}
+
+.room-filter-btn.active {
+  border-color: var(--primary-green);
+  background: var(--bg-green);
+}
+
+.room-filter-btn .filter-icon {
+  transition: transform 0.2s ease;
+  color: var(--text-gray);
+}
+
+.room-filter-btn.active .filter-icon {
+  transform: rotate(180deg);
+}
+
+.room-filter-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.75rem;
+  min-width: 220px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.room-filter-panel.active {
+  display: flex;
+}
+
+.room-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 0.938rem;
+  color: var(--text-dark);
+}
+
+.room-filter-option:hover {
+  background: var(--bg-green);
+}
+
+.room-filter-option input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.room-filter-option label {
+  cursor: pointer;
+  flex: 1;
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+  .available-rooms-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .room-detail-section-title {
+    width: 100%;
+  }
+
+  .room-filter-dropdown {
+    width: 100%;
+  }
+
+  .room-filter-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .room-filter-panel {
+    right: auto;
+    left: 0;
+    width: 100%;
+  }
+}
+
 .available-rooms-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

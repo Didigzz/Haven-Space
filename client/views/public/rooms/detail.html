@@ -543,7 +543,33 @@
 
           <!-- Available Rooms Section -->
           <section class="room-detail-section available-rooms-section">
-            <h2 class="room-detail-section-title">Available Rooms</h2>
+            <div class="available-rooms-header">
+              <h2 class="room-detail-section-title">Available Rooms</h2>
+              <div class="room-filter-dropdown">
+                <button class="room-filter-btn" id="room-filter-btn">
+                  <span>Filter by Type</span>
+                  <span class="filter-icon">▼</span>
+                </button>
+                <div class="room-filter-panel" id="room-filter-panel">
+                  <div class="room-filter-option" data-filter="all">
+                    <input type="radio" name="room-filter" id="filter-all" value="all" checked />
+                    <label for="filter-all">All Rooms</label>
+                  </div>
+                  <div class="room-filter-option" data-filter="single">
+                    <input type="radio" name="room-filter" id="filter-single" value="single" />
+                    <label for="filter-single">Single Rooms</label>
+                  </div>
+                  <div class="room-filter-option" data-filter="shared">
+                    <input type="radio" name="room-filter" id="filter-shared" value="shared" />
+                    <label for="filter-shared">Shared Rooms</label>
+                  </div>
+                  <div class="room-filter-option" data-filter="private">
+                    <input type="radio" name="room-filter" id="filter-private" value="private" />
+                    <label for="filter-private">Private Rooms</label>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="available-rooms-grid" id="available-rooms-grid">
               <!-- Room cards will be loaded dynamically via JavaScript -->
             </div>

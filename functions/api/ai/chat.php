@@ -35,6 +35,23 @@ try {
     $properties = $propertyService->getActivePropertiesForAI();
     $propertyContext = $propertyService->formatPropertiesForAIContext($properties);
 
+    // Ensure the chatbot reads and displays the current listings before responding
+    if (strpos($userMessage, 'current listing') !== false) {
+        $propertyService = new PropertyService();
+        $properties = $propertyService->getActivePropertiesForAI();
+        if (!empty($properties)) {
+            $response = "Here are our current listings:\n";
+            foreach ($properties as $property) {
+                $response .= "- {$property['name']}: {$property['description']}\n";
+            }
+            $response .= "If you'd like more information about any of these listings, please let me know!";
+        } else {
+            $response = "I've checked our current listings, and unfortunately, we don't have any properties available at the moment. If you'd like, I can help you set up a search or notify you when new listings become available. What type of boarding house are you looking for?";
+        }
+        echo json_encode(['response' => $response]);
+        exit;
+    }
+
     $messages = [
         [
             'role' => 'system',
