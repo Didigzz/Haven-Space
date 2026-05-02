@@ -38,8 +38,8 @@ UPDATE landlord_profiles SET boarding_house_description = '' WHERE boarding_hous
 UPDATE landlord_profiles SET welcome_message = '' WHERE welcome_message IS NULL;
 -- house_rules_file_id will remain nullable as it's a valid optional FK
 
--- payment_methods table
-UPDATE payment_methods SET bank_name = '' WHERE bank_name IS NULL;
+-- payment_methods_landlord table
+UPDATE payment_methods_landlord SET bank_name = '' WHERE bank_name IS NULL;
 
 -- boarder_profiles table
 UPDATE boarder_profiles SET budget_min = 0.00 WHERE budget_min IS NULL;
@@ -100,19 +100,19 @@ UPDATE rooms SET description = '' WHERE description IS NULL;
 -- ============================================================================
 
 -- addresses table
-ALTER TABLE addresses 
+ALTER TABLE addresses
     MODIFY COLUMN address_line_2 VARCHAR(255) NOT NULL DEFAULT '',
     MODIFY COLUMN postal_code VARCHAR(20) NOT NULL DEFAULT '',
     MODIFY COLUMN latitude DECIMAL(10, 8) NOT NULL DEFAULT 0.0,
     MODIFY COLUMN longitude DECIMAL(11, 8) NOT NULL DEFAULT 0.0;
 
 -- files table
-ALTER TABLE files 
+ALTER TABLE files
     MODIFY COLUMN file_hash VARCHAR(64) NOT NULL DEFAULT '',
     MODIFY COLUMN uploaded_by INT NOT NULL DEFAULT 1;
 
 -- users table
-ALTER TABLE users 
+ALTER TABLE users
     MODIFY COLUMN phone_number VARCHAR(20) NOT NULL DEFAULT '',
     MODIFY COLUMN google_token TEXT NOT NULL,
     MODIFY COLUMN google_refresh_token TEXT NOT NULL,
@@ -123,24 +123,24 @@ ALTER TABLE users
 -- avatar_file_id remains nullable (optional FK)
 
 -- properties table
-ALTER TABLE properties 
+ALTER TABLE properties
     MODIFY COLUMN description TEXT NOT NULL,
     MODIFY COLUMN deposit VARCHAR(100) NOT NULL DEFAULT '0',
     MODIFY COLUMN min_stay VARCHAR(100) NOT NULL DEFAULT '1 month',
     MODIFY COLUMN house_rules JSON NOT NULL;
 
 -- landlord_profiles table
-ALTER TABLE landlord_profiles 
+ALTER TABLE landlord_profiles
     MODIFY COLUMN boarding_house_description TEXT NOT NULL,
     MODIFY COLUMN welcome_message TEXT NOT NULL;
 -- house_rules_file_id remains nullable (optional FK)
 
--- payment_methods table
-ALTER TABLE payment_methods 
+-- payment_methods_landlord table
+ALTER TABLE payment_methods_landlord
     MODIFY COLUMN bank_name VARCHAR(100) NOT NULL DEFAULT '';
 
 -- boarder_profiles table
-ALTER TABLE boarder_profiles 
+ALTER TABLE boarder_profiles
     MODIFY COLUMN budget_min DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     MODIFY COLUMN budget_max DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     MODIFY COLUMN preferred_location VARCHAR(255) NOT NULL DEFAULT '',
@@ -149,38 +149,38 @@ ALTER TABLE boarder_profiles
     MODIFY COLUMN bio TEXT NOT NULL;
 
 -- conversation_participants table
-ALTER TABLE conversation_participants 
+ALTER TABLE conversation_participants
     MODIFY COLUMN role VARCHAR(50) NOT NULL DEFAULT 'member',
     MODIFY COLUMN last_read_at DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00';
 
 -- messages table
-ALTER TABLE messages 
+ALTER TABLE messages
     MODIFY COLUMN message_text TEXT NOT NULL;
 
 -- notifications table
-ALTER TABLE notifications 
+ALTER TABLE notifications
     MODIFY COLUMN message TEXT NOT NULL,
     MODIFY COLUMN metadata JSON NOT NULL;
 
 -- applications table
-ALTER TABLE applications 
+ALTER TABLE applications
     MODIFY COLUMN message TEXT NOT NULL;
 -- Note: property_id was removed in migration 021
 
 -- user_roles table
-ALTER TABLE user_roles 
+ALTER TABLE user_roles
     MODIFY COLUMN description TEXT NOT NULL;
 
 -- account_statuses table
-ALTER TABLE account_statuses 
+ALTER TABLE account_statuses
     MODIFY COLUMN description TEXT NOT NULL;
 
 -- password_reset_requests table
-ALTER TABLE password_reset_requests 
+ALTER TABLE password_reset_requests
     MODIFY COLUMN used_at INT NOT NULL DEFAULT 0;
 
 -- oauth_pending_registrations table
-ALTER TABLE oauth_pending_registrations 
+ALTER TABLE oauth_pending_registrations
     MODIFY COLUMN first_name VARCHAR(100) NOT NULL DEFAULT '',
     MODIFY COLUMN last_name VARCHAR(100) NOT NULL DEFAULT '',
     MODIFY COLUMN avatar_url VARCHAR(500) NOT NULL DEFAULT '',
@@ -188,13 +188,13 @@ ALTER TABLE oauth_pending_registrations
     MODIFY COLUMN refresh_token TEXT NOT NULL;
 
 -- payments table
-ALTER TABLE payments 
+ALTER TABLE payments
     MODIFY COLUMN payment_method VARCHAR(50) NOT NULL DEFAULT '',
     MODIFY COLUMN reference_number VARCHAR(100) NOT NULL DEFAULT '',
     MODIFY COLUMN notes TEXT NOT NULL;
 
 -- rooms table (from migration 006)
-ALTER TABLE rooms 
+ALTER TABLE rooms
     MODIFY COLUMN size DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     MODIFY COLUMN description TEXT NOT NULL;
 

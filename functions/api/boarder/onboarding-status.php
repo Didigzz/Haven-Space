@@ -1,7 +1,7 @@
 <?php
 /**
  * Get boarder onboarding checklist status
- * 
+ *
  * Returns the current onboarding completion status for a boarder
  * after their application has been accepted by a landlord.
  */
@@ -20,7 +20,7 @@ $userId = $user['user_id'];
 
 try {
     $pdo = Connection::getInstance()->getPdo();
-    
+
     // Check if boarder has any accepted applications
     $acceptedAppStmt = $pdo->prepare('
         SELECT COUNT(*) as count
@@ -29,7 +29,7 @@ try {
     ');
     $acceptedAppStmt->execute([$userId]);
     $hasAcceptedApp = $acceptedAppStmt->fetch()['count'] > 0;
-    
+
     // If no accepted application, onboarding not needed
     if (!$hasAcceptedApp) {
         echo json_encode([
@@ -38,10 +38,10 @@ try {
         ]);
         exit;
     }
-    
+
     // Get onboarding status from boarder_profiles
     $stmt = $pdo->prepare('
-        SELECT 
+        SELECT
             onboarding_completed,
             onboarding_payment_method_added,
             onboarding_profile_completed,
@@ -52,24 +52,24 @@ try {
     ');
     $stmt->execute([$userId]);
     $profile = $stmt->fetch();
-    
+
     // If no profile exists, create one with default values
     if (!$profile) {
         $createStmt = $pdo->prepare('
             INSERT INTO boarder_profiles (
-                user_id, 
-                budget_min, 
-                budget_max, 
-                preferred_location, 
-                move_in_date, 
-                occupation, 
+                user_id,
+                budget_min,
+                budget_max,
+                preferred_location,
+                move_in_date,
+                occupation,
                 bio,
                 onboarding_completed
             )
             VALUES (?, 0, 0, "", "1970-01-01", "", "", FALSE)
         ');
         $createStmt->execute([$userId]);
-        
+
         $profile = [
             'onboarding_completed' => false,
             'onboarding_payment_method_added' => false,
@@ -78,20 +78,20 @@ try {
             'onboarding_dismissed_at' => null
         ];
     }
-    
+
     // Check if boarder has payment method
-    $paymentMethodStmt = $pdo->prepare('
+    $paymentMethodStmt = $pdo->prepare('\
         SELECT COUNT(*) as count
-        FROM payment_methods
-        WHERE user_id = ? AND deleted_at IS NULL
+        FROM payment_methods_boarder
+        WHERE user_id = ?
     ');
     $paymentMethodStmt->execute([$userId]);
     $hasPaymentMethod = $paymentMethodStmt->fetch()['count'] > 0;
-    
+
     // Check if profile is completed (has bio and occupation)
     $profileStmt = $pdo->prepare('
-        SELECT 
-            CASE 
+        SELECT
+            CASE
                 WHEN bp.bio != "" AND bp.occupation != "" THEN TRUE
                 ELSE FALSE
             END as is_completed
@@ -101,7 +101,7 @@ try {
     $profileStmt->execute([$userId]);
     $profileData = $profileStmt->fetch();
     $isProfileCompleted = $profileData ? (bool)$profileData['is_completed'] : false;
-    
+
     // Calculate checklist items
     $checklist = [
         'application_accepted' => true, // Always true if we got here
@@ -109,22 +109,22 @@ try {
         'profile_completed' => $isProfileCompleted || (bool)$profile['onboarding_profile_completed'],
         'house_rules_read' => (bool)$profile['onboarding_house_rules_read']
     ];
-    
+
     // Determine if onboarding should be shown
-    $allCompleted = $checklist['payment_method_added'] && 
+    $allCompleted = $checklist['payment_method_added'] &&
                     $checklist['house_rules_read'];
-    
-    $showOnboarding = !$allCompleted && 
+
+    $showOnboarding = !$allCompleted &&
                       !(bool)$profile['onboarding_completed'] &&
                       $profile['onboarding_dismissed_at'] === null;
-    
+
     echo json_encode([
         'show_onboarding' => $showOnboarding,
         'checklist' => $checklist,
         'onboarding_completed' => (bool)$profile['onboarding_completed'],
         'dismissed_at' => $profile['onboarding_dismissed_at']
     ]);
-    
+
 } catch (Exception $e) {
     error_log('Error fetching onboarding status: ' . $e->getMessage());
     http_response_code(500);

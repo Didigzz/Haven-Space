@@ -40,7 +40,7 @@ INSERT IGNORE INTO account_statuses (status_name, description, is_active) VALUES
 -- Property types are now stored as VARCHAR directly in landlord_profiles
 -- Common values: 'Single unit', 'Multi-unit', 'Apartment', 'Dormitory'
 
--- Payment method types are now stored as VARCHAR directly in payment_methods
+-- Payment method types are now stored as VARCHAR directly in payment_methods_landlord
 -- Common values: 'GCash', 'PayMaya', 'Bank Transfer', 'PayPal', 'GrabPay', 'Other'
 
 -- ============================================================================
@@ -176,8 +176,8 @@ CREATE TABLE IF NOT EXISTS landlord_profiles (
     UNIQUE KEY unique_user_landlord (user_id)
 );
 
--- Payment Methods Table (normalized)
-CREATE TABLE IF NOT EXISTS payment_methods (
+-- Payment Methods Table - Landlord (normalized)
+CREATE TABLE IF NOT EXISTS payment_methods_landlord (
     id INT AUTO_INCREMENT PRIMARY KEY,
     landlord_id INT NOT NULL,
     method_type VARCHAR(100) NOT NULL,
@@ -189,7 +189,23 @@ CREATE TABLE IF NOT EXISTS payment_methods (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (landlord_id) REFERENCES landlord_profiles(id) ON DELETE CASCADE,
-    INDEX idx_method_type (method_type)
+    INDEX idx_landlord_id (landlord_id),
+    INDEX idx_method_type (method_type),
+    INDEX idx_is_primary (is_primary)
+);
+
+-- Payment Methods Table - Boarder
+CREATE TABLE IF NOT EXISTS payment_methods_boarder (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    method_type VARCHAR(50) NOT NULL COMMENT 'gcash | bank | card',
+    name VARCHAR(255) NOT NULL COMMENT 'Display name e.g. GCash, BDO Bank Transfer',
+    last_four VARCHAR(10) NOT NULL DEFAULT '' COMMENT 'Last 4 digits of account/card/number',
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id)
 );
 
 -- Flat amenities table (property_id + amenity_name, no lookup/junction)

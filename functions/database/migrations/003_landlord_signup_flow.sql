@@ -42,9 +42,9 @@ CREATE TABLE IF NOT EXISTS property_locations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 3. Payment Methods Table
+-- 3. Payment Methods Table - Landlord
 -- ============================================
-CREATE TABLE IF NOT EXISTS payment_methods (
+CREATE TABLE IF NOT EXISTS payment_methods_landlord (
     id INT PRIMARY KEY AUTO_INCREMENT,
     landlord_id INT NOT NULL,
     method_type ENUM('GCash', 'PayMaya', 'Bank Transfer', 'PayPal', 'GrabPay', 'Other') NOT NULL,

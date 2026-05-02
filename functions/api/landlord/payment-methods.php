@@ -55,7 +55,7 @@ function authenticateLandlord($requestedUserId) {
 /**
  * POST /api/landlord/payment-methods.php
  * Add a new payment method for a landlord
- * 
+ *
  * Request Body:
  * {
  *   "userId": 123,
@@ -145,9 +145,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // If this is set as primary, unset other primary methods
         if ($isPrimary) {
-            $stmt = $db->prepare("
-                UPDATE payment_methods 
-                SET is_primary = 0 
+            $stmt = $db->prepare("\
+                UPDATE payment_methods_landlord
+                SET is_primary = 0
                 WHERE landlord_id = ?
             ");
             $stmt->execute([$landlordId]);
@@ -158,13 +158,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $encryptedAccountNumber = $accountNumber; // TODO: Implement encryption
 
         // Insert new payment method
-        $stmt = $db->prepare("
-            INSERT INTO payment_methods 
+        $stmt = $db->prepare("\
+            INSERT INTO payment_methods_landlord
             (landlord_id, method_type, account_number, account_name, bank_name, is_primary, is_verified)
             VALUES (?, ?, ?, ?, ?, ?, 0)
         ");
         $stmt->execute([
-            $landlordId, $methodType, $encryptedAccountNumber, 
+            $landlordId, $methodType, $encryptedAccountNumber,
             $accountName, $bankName, $isPrimary
         ]);
 
@@ -216,9 +216,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $db = getDB();
 
-        $stmt = $db->prepare("
-            SELECT pm.* 
-            FROM payment_methods pm
+        $stmt = $db->prepare("\
+            SELECT pm.*
+            FROM payment_methods_landlord pm
             INNER JOIN landlord_profiles lp ON pm.landlord_id = lp.id
             WHERE lp.user_id = ?
             ORDER BY pm.is_primary DESC, pm.created_at DESC
@@ -259,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 /**
  * PATCH /api/landlord/payment-methods.php
  * Update a payment method
- * 
+ *
  * Request Body:
  * {
  *   "userId": 123,
@@ -310,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         $landlordId = $landlordProfile['id'];
 
         // Verify payment method belongs to this landlord
-        $stmt = $db->prepare("SELECT id FROM payment_methods WHERE id = ? AND landlord_id = ?");
+        $stmt = $db->prepare("SELECT id FROM payment_methods_landlord WHERE id = ? AND landlord_id = ?");
         $stmt->execute([$paymentMethodId, $landlordId]);
         $paymentMethod = $stmt->fetch();
 
@@ -340,9 +340,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         if ($isPrimary !== null) {
             // If setting as primary, unset others first
             if ($isPrimary) {
-                $stmt = $db->prepare("
-                    UPDATE payment_methods 
-                    SET is_primary = 0 
+                $stmt = $db->prepare("\
+                    UPDATE payment_methods_landlord
+                    SET is_primary = 0
                     WHERE landlord_id = ? AND id != ?
                 ");
                 $stmt->execute([$landlordId, $paymentMethodId]);
@@ -362,7 +362,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         }
 
         $params[] = $paymentMethodId;
-        $sql = "UPDATE payment_methods SET " . implode(', ', $updates) . " WHERE id = ?";
+        $sql = "UPDATE payment_methods_landlord SET " . implode(', ', $updates) . " WHERE id = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
 
@@ -385,7 +385,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
 /**
  * DELETE /api/landlord/payment-methods.php
  * Delete a payment method
- * 
+ *
  * Request Body:
  * {
  *   "userId": 123,
@@ -430,7 +430,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         $landlordId = $landlordProfile['id'];
 
         // Verify payment method belongs to this landlord
-        $stmt = $db->prepare("SELECT id, is_primary FROM payment_methods WHERE id = ? AND landlord_id = ?");
+        $stmt = $db->prepare("SELECT id, is_primary FROM payment_methods_landlord WHERE id = ? AND landlord_id = ?");
         $stmt->execute([$paymentMethodId, $landlordId]);
         $paymentMethod = $stmt->fetch();
 
@@ -444,7 +444,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         }
 
         // Don't allow deleting if it's the only payment method
-        $stmt = $db->prepare("SELECT COUNT(*) as count FROM payment_methods WHERE landlord_id = ?");
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM payment_methods_landlord WHERE landlord_id = ?");
         $stmt->execute([$landlordId]);
         $count = $stmt->fetch()['count'];
 
@@ -459,9 +459,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
         // If deleting primary, set another as primary
         if ($paymentMethod['is_primary']) {
-            $stmt = $db->prepare("
-                UPDATE payment_methods 
-                SET is_primary = 1 
+            $stmt = $db->prepare("\
+                UPDATE payment_methods_landlord
+                SET is_primary = 1
                 WHERE landlord_id = ? AND id != ?
                 LIMIT 1
             ");
@@ -469,7 +469,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         }
 
         // Delete payment method
-        $stmt = $db->prepare("DELETE FROM payment_methods WHERE id = ? AND landlord_id = ?");
+        $stmt = $db->prepare("DELETE FROM payment_methods_landlord WHERE id = ? AND landlord_id = ?");
         $stmt->execute([$paymentMethodId, $landlordId]);
 
         http_response_code(200);

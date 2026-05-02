@@ -134,12 +134,12 @@ const response = await fetch(url, {
 
 **Problem**: The `payment_method_types` lookup table added unnecessary complexity for a simple field with a stable set of values. The code was already using VARCHAR strings directly, creating a complete mismatch with the database schema.
 
-**Root Cause**: Over-normalization combined with implementation mismatch. The `payment_methods` table had `payment_method_type_id` FK column, but the API code (`functions/api/landlord/payment-methods.php`) was inserting/querying `method_type` VARCHAR values directly.
+**Root Cause**: Over-normalization combined with implementation mismatch. The `payment_methods_landlord` table had `payment_method_type_id` FK column, but the API code (`functions/api/landlord/payment-methods.php`) was inserting/querying `method_type` VARCHAR values directly.
 
 **Evidence**:
 
 - `payment_method_types` table: 6 seed records, never queried by code
-- `payment_methods` table: 0 records, schema had FK column but code used VARCHAR
+- `payment_methods_landlord` table: 0 records, schema had FK column but code used VARCHAR
 - API validation hardcoded: `['GCash', 'PayMaya', 'Bank Transfer', 'PayPal', 'GrabPay', 'Other']`
 - Complete schema/code mismatch prevented any payment methods from being saved
 - Payment method types are stable values that don't require dynamic management
@@ -155,7 +155,7 @@ const response = await fetch(url, {
 
 **Current Pattern**: Payment method types are managed as:
 
-- Storage: VARCHAR(100) NOT NULL in `payment_methods.method_type`
+- Storage: VARCHAR(100) NOT NULL in `payment_methods_landlord.method_type`
 - Common values: 'GCash', 'PayMaya', 'Bank Transfer', 'PayPal', 'GrabPay', 'Other'
 - Validation: Hardcoded array in API endpoint for consistency
 

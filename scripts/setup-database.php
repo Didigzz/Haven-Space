@@ -115,19 +115,27 @@ try {
     // Switch to the database
     $pdo->exec("USE `{$dbName}`");
 
-    $schema = file_get_contents($schemaFile);
-    if ($schema === false) {
-        error('Failed to read schema file');
-        exit(1);
+    // Check if tables already exist
+    $existingTables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+
+    if (!empty($existingTables)) {
+        warning('Database already contains tables, skipping schema import');
+        info("Found " . count($existingTables) . " existing table(s): " . implode(', ', array_slice($existingTables, 0, 5)) . (count($existingTables) > 5 ? '...' : ''));
+    } else {
+        $schema = file_get_contents($schemaFile);
+        if ($schema === false) {
+            error('Failed to read schema file');
+            exit(1);
+        }
+
+        // Execute schema SQL
+        $pdo->exec($schema);
+        success('Schema imported successfully');
+
+        // Verify tables were created
+        $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+        info("Created " . count($tables) . " table(s): " . implode(', ', $tables));
     }
-
-    // Execute schema SQL
-    $pdo->exec($schema);
-    success('Schema imported successfully');
-
-    // Verify tables were created
-    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
-    info("Created " . count($tables) . " table(s): " . implode(', ', $tables));
 } catch (PDOException $e) {
     error('Failed to import schema');
     error($e->getMessage());

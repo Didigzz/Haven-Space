@@ -1,6 +1,7 @@
--- Migration: Create boarder_payment_methods table
+-- Migration: Create payment_methods_boarder table
 -- Date: 2026-06-01
 -- Reason: Store boarder payment methods (GCash, bank transfer, credit card) for real CRUD
+-- Note: This table was later renamed to payment_methods_boarder in migration 042
 
 CREATE TABLE IF NOT EXISTS boarder_payment_methods (
     id INT AUTO_INCREMENT PRIMARY KEY,

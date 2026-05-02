@@ -47,7 +47,7 @@ if ($method === 'GET') {
 
         $stmt = $pdo->prepare(
             'SELECT id, method_type, name, last_four, is_default, created_at
-               FROM boarder_payment_methods
+               FROM payment_methods_boarder
               WHERE user_id = :user_id
            ORDER BY is_default DESC, created_at ASC'
         );
@@ -94,13 +94,13 @@ if ($method === 'POST') {
         // If this new method is the default, clear all existing defaults first
         if ($isDefault) {
             $clear = $pdo->prepare(
-                'UPDATE boarder_payment_methods SET is_default = 0 WHERE user_id = :user_id'
+                'UPDATE payment_methods_boarder SET is_default = 0 WHERE user_id = :user_id'
             );
             $clear->execute([':user_id' => $userId]);
         }
 
         $insert = $pdo->prepare(
-            'INSERT INTO boarder_payment_methods (user_id, method_type, name, last_four, is_default)
+            'INSERT INTO payment_methods_boarder (user_id, method_type, name, last_four, is_default)
              VALUES (:user_id, :method_type, :name, :last_four, :is_default)'
         );
         $insert->execute([
@@ -155,13 +155,13 @@ if ($method === 'PATCH') {
 
             // Clear all defaults for this user
             $clear = $pdo->prepare(
-                'UPDATE boarder_payment_methods SET is_default = 0 WHERE user_id = :user_id'
+                'UPDATE payment_methods_boarder SET is_default = 0 WHERE user_id = :user_id'
             );
             $clear->execute([':user_id' => $userId]);
 
             // Set the requested method as default (must belong to this user)
             $set = $pdo->prepare(
-                'UPDATE boarder_payment_methods
+                'UPDATE payment_methods_boarder
                     SET is_default = 1
                   WHERE id = :id AND user_id = :user_id'
             );
@@ -196,7 +196,7 @@ if ($method === 'DELETE') {
         $pdo = Connection::getInstance()->getPdo();
 
         $stmt = $pdo->prepare(
-            'DELETE FROM boarder_payment_methods WHERE id = :id AND user_id = :user_id'
+            'DELETE FROM payment_methods_boarder WHERE id = :id AND user_id = :user_id'
         );
         $stmt->execute([':id' => $methodId, ':user_id' => $userId]);
 
