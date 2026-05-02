@@ -228,7 +228,7 @@ export function initSidebar(options = {}) {
   const basePath = resolveBasePath();
 
   // Load sidebar template
-  fetch(`${basePath}/components/sidebar.html`)
+  fetch(`${basePath}/components/sidebar.html?v=${Date.now()}`)
     .then(res => res.text())
     .then(html => {
       container.innerHTML = html;
@@ -454,12 +454,37 @@ function setupDropdownHandlers() {
  */
 function updateUserInfo(user) {
   const avatar = document.getElementById('sidebar-avatar');
+  const avatarImg = document.getElementById('sidebar-avatar-img');
+  const avatarInitials = document.getElementById('sidebar-avatar-initials');
   const name = document.getElementById('sidebar-profile-name');
   const roleEl = document.getElementById('sidebar-profile-role');
 
-  if (avatar) {
-    avatar.textContent = user.initials || 'JD';
+  if (avatar && avatarImg && avatarInitials) {
+    // Check if user has an avatar URL
+    if (user.avatar_url && user.avatar_url.trim()) {
+      // Show image, hide initials
+      avatarImg.src = user.avatar_url;
+      avatarImg.style.display = 'block';
+      avatarImg.style.width = '100%';
+      avatarImg.style.height = '100%';
+      avatarImg.style.borderRadius = '50%';
+      avatarImg.style.objectFit = 'cover';
+      avatarInitials.style.display = 'none';
+
+      // Handle image load error - fallback to initials
+      avatarImg.onerror = () => {
+        avatarImg.style.display = 'none';
+        avatarInitials.style.display = 'flex';
+        avatarInitials.textContent = user.initials || 'JD';
+      };
+    } else {
+      // Show initials, hide image
+      avatarImg.style.display = 'none';
+      avatarInitials.style.display = 'flex';
+      avatarInitials.textContent = user.initials || 'JD';
+    }
   }
+
   if (name) {
     name.textContent = user.name || 'Juan Dela Cruz';
   }

@@ -62,8 +62,8 @@
 
           <!-- Edit Form -->
           <form id="edit-listing-form" class="edit-listing-form" style="display: none">
-            <!-- Property Photos Section -->
-            <section class="form-section photo-section">
+            <!-- Property Photos Section (Full Width) -->
+            <section class="form-section photo-section full-width-section">
               <div class="section-header">
                 <div>
                   <h2 class="section-title">
@@ -119,261 +119,272 @@
               <div id="photo-error" class="photo-error"></div>
             </section>
 
-            <!-- Basic Information Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <span
-                    data-icon="home"
-                    data-icon-width="24"
-                    data-icon-height="24"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  Basic Information
-                </h2>
-                <p class="section-description">Essential details about your property</p>
-              </div>
-
-              <div class="form-grid">
-                <div class="form-group full-width">
-                  <label for="property-name">
-                    Property Name *
-                    <span class="label-hint">This will be the main title of your listing</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="property-name"
-                    name="propertyName"
-                    placeholder="e.g. Campus View Dormitory, Green Valley Boarding House"
-                    required
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="property-type">Property Type *</label>
-                  <select id="property-type" name="propertyType" required>
-                    <option value="">Select type</option>
-                    <option value="boarding-house">Boarding House</option>
-                    <option value="dormitory">Dormitory</option>
-                    <option value="apartment">Apartment</option>
-                    <option value="studio">Studio Unit</option>
-                    <option value="condominium">Condominium</option>
-                    <option value="bedspace">Bed Space</option>
-                    <option value="others">Others</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="property-status">Listing Status *</label>
-                  <select id="property-status" name="propertyStatus" required>
-                    <option value="active">Active - Visible to boarders</option>
-                    <option value="inactive">Inactive - Hidden from search</option>
-                    <option value="full">Fully Occupied - No vacancies</option>
-                  </select>
-                </div>
-
-                <div class="form-group full-width">
-                  <label for="property-description">
-                    Property Description *
-                    <span class="label-hint"
-                      >Describe your property, its features, and what makes it special</span
-                    >
-                  </label>
-                  <textarea
-                    id="property-description"
-                    name="propertyDescription"
-                    rows="5"
-                    placeholder="Example: Cozy boarding house perfect for students and young professionals. Located near universities, shopping centers, and public transportation. Features modern amenities, 24/7 security, and a friendly community atmosphere..."
-                    required
-                  ></textarea>
-                  <div class="character-count">
-                    <span id="description-count">0</span> / 1000 characters
+            <!-- Two Column Grid Container -->
+            <div class="form-sections-grid">
+              <!-- Left Column -->
+              <div class="form-column">
+                <!-- Basic Information Section -->
+                <section class="form-section">
+                  <div class="section-header">
+                    <h2 class="section-title">
+                      <span
+                        data-icon="home"
+                        data-icon-width="24"
+                        data-icon-height="24"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      Basic Information
+                    </h2>
+                    <p class="section-description">Essential details about your property</p>
                   </div>
-                </div>
-              </div>
-            </section>
 
-            <!-- Pricing & Capacity Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <span
-                    data-icon="currencyDollar"
-                    data-icon-width="24"
-                    data-icon-height="24"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  Pricing & Capacity
-                </h2>
-                <p class="section-description">Set your rental rates and room availability</p>
-              </div>
+                  <div class="form-grid">
+                    <div class="form-group full-width">
+                      <label for="property-name">
+                        Property Name *
+                        <span class="label-hint">This will be the main title of your listing</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="property-name"
+                        name="propertyName"
+                        placeholder="e.g. Campus View Dormitory, Green Valley Boarding House"
+                        required
+                      />
+                    </div>
 
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="property-price">
-                    Monthly Rent (₱) *
-                    <span class="label-hint">Base price per month</span>
-                  </label>
-                  <div class="input-with-icon">
-                    <span class="input-icon">₱</span>
-                    <input
-                      type="number"
-                      id="property-price"
-                      name="propertyPrice"
-                      placeholder="5000"
-                      min="0"
-                      step="100"
-                      required
-                    />
+                    <div class="form-group full-width">
+                      <label for="property-type">Property Type *</label>
+                      <select id="property-type" name="propertyType" required>
+                        <option value="">Select type</option>
+                        <option value="boarding-house">Boarding House</option>
+                        <option value="dormitory">Dormitory</option>
+                        <option value="apartment">Apartment</option>
+                        <option value="studio">Studio Unit</option>
+                        <option value="condominium">Condominium</option>
+                        <option value="bedspace">Bed Space</option>
+                        <option value="others">Others</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                      <label for="property-status">Listing Status *</label>
+                      <select id="property-status" name="propertyStatus" required>
+                        <option value="active">Active - Visible to boarders</option>
+                        <option value="inactive">Inactive - Hidden from search</option>
+                        <option value="full">Fully Occupied - No vacancies</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                      <label for="property-description">
+                        Property Description *
+                        <span class="label-hint"
+                          >Describe your property, its features, and what makes it special</span
+                        >
+                      </label>
+                      <textarea
+                        id="property-description"
+                        name="propertyDescription"
+                        rows="5"
+                        placeholder="Example: Cozy boarding house perfect for students and young professionals. Located near universities, shopping centers, and public transportation. Features modern amenities, 24/7 security, and a friendly community atmosphere..."
+                        required
+                      ></textarea>
+                      <div class="character-count">
+                        <span id="description-count">0</span> / 1000 characters
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </section>
 
-                <div class="form-group">
-                  <label for="property-deposit">
-                    Security Deposit (₱)
-                    <span class="label-hint">Usually 1-2 months rent</span>
-                  </label>
-                  <div class="input-with-icon">
-                    <span class="input-icon">₱</span>
-                    <input
-                      type="number"
-                      id="property-deposit"
-                      name="propertyDeposit"
-                      placeholder="10000"
-                      min="0"
-                      step="100"
-                    />
+                <!-- Pricing & Capacity Section -->
+                <section class="form-section">
+                  <div class="section-header">
+                    <h2 class="section-title">
+                      <span
+                        data-icon="currencyDollar"
+                        data-icon-width="24"
+                        data-icon-height="24"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      Pricing & Capacity
+                    </h2>
+                    <p class="section-description">Set your rental rates and room availability</p>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label for="property-rooms">
-                    Total Number of Rooms *
-                    <span class="label-hint">Available rooms in your property</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="property-rooms"
-                    name="propertyRooms"
-                    placeholder="10"
-                    min="1"
-                    max="100"
-                    required
-                  />
-                </div>
+                  <div class="form-grid">
+                    <div class="form-group full-width">
+                      <label for="property-price">
+                        Monthly Rent (₱) *
+                        <span class="label-hint">Base price per month</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="input-icon">₱</span>
+                        <input
+                          type="number"
+                          id="property-price"
+                          name="propertyPrice"
+                          placeholder="5000"
+                          min="0"
+                          step="100"
+                          required
+                        />
+                      </div>
+                    </div>
 
-                <div class="form-group">
-                  <label for="property-capacity">
-                    Capacity per Room
-                    <span class="label-hint">How many people per room</span>
-                  </label>
-                  <select id="property-capacity" name="propertyCapacity">
-                    <option value="">Select capacity</option>
-                    <option value="1">1 person (Single)</option>
-                    <option value="2">2 persons (Shared)</option>
-                    <option value="3">3 persons</option>
-                    <option value="4">4 persons</option>
-                    <option value="5+">5+ persons</option>
-                  </select>
-                </div>
+                    <div class="form-group full-width">
+                      <label for="property-deposit">
+                        Security Deposit (₱)
+                        <span class="label-hint">Usually 1-2 months rent</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="input-icon">₱</span>
+                        <input
+                          type="number"
+                          id="property-deposit"
+                          name="propertyDeposit"
+                          placeholder="10000"
+                          min="0"
+                          step="100"
+                        />
+                      </div>
+                    </div>
 
-                <div class="form-group">
-                  <label for="property-min-stay">
-                    Minimum Stay Period
-                    <span class="label-hint">Shortest rental duration</span>
-                  </label>
-                  <select id="property-min-stay" name="propertyMinStay">
-                    <option value="">No minimum</option>
-                    <option value="1-month">1 month</option>
-                    <option value="3-months">3 months</option>
-                    <option value="6-months">6 months</option>
-                    <option value="1-year">1 year</option>
-                  </select>
-                </div>
+                    <div class="form-group full-width">
+                      <label for="property-rooms">
+                        Total Number of Rooms *
+                        <span class="label-hint">Available rooms in your property</span>
+                      </label>
+                      <input
+                        type="number"
+                        id="property-rooms"
+                        name="propertyRooms"
+                        placeholder="10"
+                        min="1"
+                        max="100"
+                        required
+                      />
+                    </div>
 
-                <div class="form-group">
-                  <label for="property-availability">
-                    Availability Status
-                    <span class="label-hint">When can boarders move in</span>
-                  </label>
-                  <select id="property-availability" name="propertyAvailability">
-                    <option value="available-now">Available Now</option>
-                    <option value="available-soon">Available Soon</option>
-                    <option value="by-appointment">By Appointment</option>
-                  </select>
-                </div>
+                    <div class="form-group full-width">
+                      <label for="property-capacity">
+                        Capacity per Room
+                        <span class="label-hint">How many people per room</span>
+                      </label>
+                      <select id="property-capacity" name="propertyCapacity">
+                        <option value="">Select capacity</option>
+                        <option value="1">1 person (Single)</option>
+                        <option value="2">2 persons (Shared)</option>
+                        <option value="3">3 persons</option>
+                        <option value="4">4 persons</option>
+                        <option value="5+">5+ persons</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                      <label for="property-min-stay">
+                        Minimum Stay Period
+                        <span class="label-hint">Shortest rental duration</span>
+                      </label>
+                      <select id="property-min-stay" name="propertyMinStay">
+                        <option value="">No minimum</option>
+                        <option value="1-month">1 month</option>
+                        <option value="3-months">3 months</option>
+                        <option value="6-months">6 months</option>
+                        <option value="1-year">1 year</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                      <label for="property-availability">
+                        Availability Status
+                        <span class="label-hint">When can boarders move in</span>
+                      </label>
+                      <select id="property-availability" name="propertyAvailability">
+                        <option value="available-now">Available Now</option>
+                        <option value="available-soon">Available Soon</option>
+                        <option value="by-appointment">By Appointment</option>
+                      </select>
+                    </div>
+                  </div>
+                </section>
               </div>
-            </section>
 
-            <!-- Location Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <span
-                    data-icon="location"
-                    data-icon-width="24"
-                    data-icon-height="24"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  Location Details
-                </h2>
-                <p class="section-description">Help boarders find your property easily</p>
+              <!-- Right Column -->
+              <div class="form-column">
+                <!-- Location Section -->
+                <section class="form-section">
+                  <div class="section-header">
+                    <h2 class="section-title">
+                      <span
+                        data-icon="location"
+                        data-icon-width="24"
+                        data-icon-height="24"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      Location Details
+                    </h2>
+                    <p class="section-description">Help boarders find your property easily</p>
+                  </div>
+
+                  <div class="form-grid">
+                    <div class="form-group full-width">
+                      <label for="property-address">
+                        Complete Address *
+                        <span class="label-hint">Street, Barangay, Building number</span>
+                      </label>
+                      <textarea
+                        id="property-address"
+                        name="propertyAddress"
+                        rows="2"
+                        placeholder="e.g. 123 Katipunan Avenue, Barangay UP Campus, Diliman"
+                        required
+                      ></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                      <label for="property-city">City / Municipality *</label>
+                      <input
+                        type="text"
+                        id="property-city"
+                        name="propertyCity"
+                        placeholder="e.g. Quezon City"
+                        required
+                      />
+                    </div>
+
+                    <div class="form-group full-width">
+                      <label for="property-province">Province / Region *</label>
+                      <input
+                        type="text"
+                        id="property-province"
+                        name="propertyProvince"
+                        placeholder="e.g. Metro Manila"
+                        required
+                      />
+                    </div>
+
+                    <div class="form-group full-width">
+                      <label>Map Location</label>
+                      <button type="button" id="set-location-btn" class="btn-set-location">
+                        <span
+                          data-icon="target"
+                          data-icon-width="20"
+                          data-icon-height="20"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        <span id="location-btn-text">Set Location on Map</span>
+                      </button>
+                      <input type="hidden" id="property-latitude" name="propertyLatitude" />
+                      <input type="hidden" id="property-longitude" name="propertyLongitude" />
+                      <p class="field-hint" id="coordinates-display">
+                        Click button to set coordinates
+                      </p>
+                    </div>
+                  </div>
+                </section>
               </div>
-
-              <div class="form-grid">
-                <div class="form-group full-width">
-                  <label for="property-address">
-                    Complete Address *
-                    <span class="label-hint">Street, Barangay, Building number</span>
-                  </label>
-                  <textarea
-                    id="property-address"
-                    name="propertyAddress"
-                    rows="2"
-                    placeholder="e.g. 123 Katipunan Avenue, Barangay UP Campus, Diliman"
-                    required
-                  ></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label for="property-city">City / Municipality *</label>
-                  <input
-                    type="text"
-                    id="property-city"
-                    name="propertyCity"
-                    placeholder="e.g. Quezon City"
-                    required
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="property-province">Province / Region *</label>
-                  <input
-                    type="text"
-                    id="property-province"
-                    name="propertyProvince"
-                    placeholder="e.g. Metro Manila"
-                    required
-                  />
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Map Location</label>
-                  <button type="button" id="set-location-btn" class="btn-set-location">
-                    <span
-                      data-icon="target"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    <span id="location-btn-text">Set Location on Map</span>
-                  </button>
-                  <input type="hidden" id="property-latitude" name="propertyLatitude" />
-                  <input type="hidden" id="property-longitude" name="propertyLongitude" />
-                  <p class="field-hint" id="coordinates-display">Click button to set coordinates</p>
-                </div>
-              </div>
-            </section>
+            </div>
 
             <!-- Form Actions -->
             <div class="form-actions">

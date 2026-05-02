@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../src/Core/bootstrap.php';
 require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../middleware.php';
 
-use App\Core\Database;
+use App\Core\Database\Database;
 use App\Api\Middleware;
 
 // CORS is handled by cors.php middleware
@@ -48,23 +48,38 @@ function uploadAvatar($userId) {
         
         // Validate file type
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $file['tmp_name']);
-        finfo_close($finfo);
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         
+        // Get MIME type - use fileinfo if available, otherwise fall back to uploaded type
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+        } else {
+            // Fallback: use the uploaded MIME type and validate extension
+            $mimeType = $file['type'];
+        }
+        
+        // Validate extension
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($extension, $allowedExtensions)) {
+            json_response(400, ['error' => 'Invalid file extension. Only JPG, PNG, GIF, and WebP are allowed']);
+            return;
+        }
+        
+        // Validate MIME type
         if (!in_array($mimeType, $allowedTypes)) {
             json_response(400, ['error' => 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed']);
             return;
         }
         
-        // Create uploads directory if it doesn't exist
-        $uploadDir = __DIR__ . '/../../uploads/avatars/';
+        // Create uploads directory if it doesn't exist (in client folder for web access)
+        $uploadDir = __DIR__ . '/../../../client/uploads/avatars/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
         
         // Generate unique filename
-        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = 'avatar_' . $userId . '_' . time() . '.' . $extension;
         $filepath = $uploadDir . $filename;
         

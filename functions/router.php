@@ -72,6 +72,37 @@ if (strpos($uri, '/storage/') === 0) {
     exit;
 }
 
+// Uploads files - serve uploaded files from server/uploads
+if (strpos($uri, '/uploads/') === 0) {
+    $uploadFile = __DIR__ . $uri;
+    
+    if (file_exists($uploadFile) && is_file($uploadFile)) {
+        $ext = pathinfo($uploadFile, PATHINFO_EXTENSION);
+        $mimeTypes = [
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        
+        if (isset($mimeTypes[$ext])) {
+            header('Content-Type: ' . $mimeTypes[$ext]);
+        }
+        
+        readfile($uploadFile);
+        exit;
+    }
+    
+    http_response_code(404);
+    echo 'Upload file not found';
+    exit;
+}
+
 // Assets files - serve from client/assets directory
 if (strpos($uri, '/assets/') === 0) {
     $assetFile = __DIR__ . '/../client' . $uri;

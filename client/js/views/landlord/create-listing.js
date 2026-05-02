@@ -3,6 +3,8 @@ import AIService from '../../services/AIService.js';
 import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders, getAuthHeadersOnly } from '../../shared/auth-headers.js';
 import { requireAuth, isTokenExpired, logout } from '../../shared/auth-check.js';
+import { initSidebar } from '../../components/sidebar.js';
+import { initNavbar } from '../../components/navbar.js';
 import {
   initMap,
   setMarker,
@@ -74,6 +76,43 @@ export function initCreateListing() {
     return;
   }
 
+  // Get user data from localStorage
+  const userDataStr = localStorage.getItem('user');
+  let user = null;
+  if (userDataStr) {
+    try {
+      user = JSON.parse(userDataStr);
+    } catch (e) {
+      console.error('Failed to parse user data:', e);
+    }
+  }
+
+  // Initialize sidebar
+  const sidebarContainer = document.getElementById('sidebar-container');
+  if (sidebarContainer && user) {
+    initSidebar({
+      role: 'landlord',
+      user: {
+        name: user.full_name || user.name || 'Landlord',
+        initials: getInitials(user.full_name || user.name || 'L'),
+        role: 'landlord',
+      },
+    });
+  }
+
+  // Initialize navbar
+  const navbarContainer = document.getElementById('navbar-container');
+  if (navbarContainer && user) {
+    initNavbar({
+      role: 'landlord',
+      user: {
+        name: user.full_name || user.name || 'Landlord',
+        initials: getInitials(user.full_name || user.name || 'L'),
+        role: 'landlord',
+      },
+    });
+  }
+
   // Inject icons first
   injectIcons();
 
@@ -88,6 +127,18 @@ export function initCreateListing() {
   initCapacityToggle();
   initCustomAmenities();
   initRoomConfiguration();
+}
+
+/**
+ * Get initials from name
+ */
+function getInitials(name) {
+  if (!name) return 'L';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
 }
 
 /**

@@ -8,6 +8,7 @@
  */
 
 import CONFIG from '../../config.js';
+import { showExportModal } from './payment-export.js';
 
 // Payment data - loaded dynamically from API
 let paymentsData = [];
@@ -583,7 +584,7 @@ function initEventListeners() {
   const exportBtn = document.getElementById('exportBtn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-      alert('Export functionality would generate a CSV/PDF report of all payments.');
+      showExportModal();
     });
   }
 

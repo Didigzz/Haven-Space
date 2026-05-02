@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Avatar</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="100" height="100"></canvas>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Create a simple test image
+      ctx.fillStyle = '#6366f1';
+      ctx.fillRect(0, 0, 100, 100);
+      ctx.fillStyle = 'white';
+      ctx.font = '40px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('T', 50, 65);
+
+      // Convert to blob and download
+      canvas.toBlob(function (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'test-avatar.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    </script>
+  </body>
+</html>

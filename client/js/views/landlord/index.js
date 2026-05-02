@@ -180,8 +180,10 @@ export async function initLandlordDashboardEntry() {
       role: 'landlord',
       user: {
         name,
+        initials,
         role: 'Landlord',
         email: updatedUser.email || '',
+        avatar_url: updatedUser.avatar_url || '',
       },
     });
   }

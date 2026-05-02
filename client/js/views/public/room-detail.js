@@ -295,6 +295,9 @@ function populateRoomData(room) {
         `
       )
       .join('');
+
+    // Setup gallery navigation after thumbnails are created
+    setupGalleryNavigation();
   }
 
   // Update booking section with room types
@@ -471,6 +474,24 @@ function toggleView() {
 }
 
 /**
+ * Setup gallery navigation (called after thumbnails are created)
+ */
+function setupGalleryNavigation() {
+  const room = state.roomData;
+  if (!room || !room.images || room.images.length === 0) return;
+
+  const totalImages = room.images.length;
+
+  // Thumbnails - add event listeners to newly created thumbnails
+  document.querySelectorAll('.gallery-thumb').forEach(thumb => {
+    thumb.addEventListener('click', () => {
+      state.currentImageIndex = parseInt(thumb.dataset.index);
+      updateGalleryImage();
+    });
+  });
+}
+
+/**
  * Setup gallery functionality
  */
 function setupGallery() {
@@ -482,8 +503,13 @@ function setupGallery() {
   // Previous button
   const prevBtn = document.getElementById('gallery-prev');
   if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
+    // Remove any existing event listeners to prevent duplicates
+    prevBtn.replaceWith(prevBtn.cloneNode(true));
+    const newPrevBtn = document.getElementById('gallery-prev');
+    newPrevBtn.addEventListener('click', () => {
+      console.log('Previous button clicked, current index:', state.currentImageIndex);
       state.currentImageIndex = (state.currentImageIndex - 1 + totalImages) % totalImages;
+      console.log('New index:', state.currentImageIndex);
       updateGalleryImage();
     });
   }
@@ -491,19 +517,16 @@ function setupGallery() {
   // Next button
   const nextBtn = document.getElementById('gallery-next');
   if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
+    // Remove any existing event listeners to prevent duplicates
+    nextBtn.replaceWith(nextBtn.cloneNode(true));
+    const newNextBtn = document.getElementById('gallery-next');
+    newNextBtn.addEventListener('click', () => {
+      console.log('Next button clicked, current index:', state.currentImageIndex);
       state.currentImageIndex = (state.currentImageIndex + 1) % totalImages;
+      console.log('New index:', state.currentImageIndex);
       updateGalleryImage();
     });
   }
-
-  // Thumbnails
-  document.querySelectorAll('.gallery-thumb').forEach(thumb => {
-    thumb.addEventListener('click', () => {
-      state.currentImageIndex = parseInt(thumb.dataset.index);
-      updateGalleryImage();
-    });
-  });
 
   // Favorite button
   const favoriteBtn = document.getElementById('gallery-favorite');
@@ -549,9 +572,14 @@ function updateGalleryImage() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
+  console.log('Updating gallery image to index:', state.currentImageIndex);
+  console.log('Available images:', room.images.length);
+
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
-    mainImage.src = getImageUrl(room.images[state.currentImageIndex]);
+    const newImageUrl = getImageUrl(room.images[state.currentImageIndex]);
+    console.log('Setting image URL to:', newImageUrl);
+    mainImage.src = newImageUrl;
     mainImage.onerror = function () {
       this.src = getImageUrl(null);
     };

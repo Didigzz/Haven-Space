@@ -84,6 +84,26 @@
   margin-bottom: 1rem;
 }
 
+.available-room-name-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.available-room-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.available-room-type-label {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-gray);
+}
+
+/* Keep for backward compat but override weight */
 .available-room-type {
   font-size: 1.125rem;
   font-weight: 700;

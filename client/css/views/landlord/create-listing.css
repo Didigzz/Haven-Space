@@ -42,13 +42,19 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 0;
+  margin-left: 280px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landlord-dashboard.sidebar-collapsed .create-listing-main,
+.create-listing-page.sidebar-collapsed .create-listing-main {
+  margin-left: 80px;
 }
 
 .create-listing-content {
   flex: 1;
   padding: 2rem;
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
 }
@@ -101,11 +107,29 @@
   gap: 2rem;
 }
 
+/* Grid Layout for Form Sections */
+.form-sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .form-section {
   background: var(--white);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section.full-width-section {
+  margin-bottom: 0;
 }
 
 .section-title {
@@ -981,6 +1005,12 @@
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .form-sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .create-listing-main {
     margin-left: 0;

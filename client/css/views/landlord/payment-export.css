@@ -1,0 +1,210 @@
+/**
+ * Payment Export Modal Styles
+ */
+
+.export-modal-content {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.export-modal-body {
+  padding: 1.5rem;
+}
+
+/* Two-column layout */
+.export-modal-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.export-left-section,
+.export-right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.export-section {
+  margin-bottom: 0;
+}
+
+.export-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+  margin-bottom: 1rem;
+}
+
+/* Generate button in right section */
+.export-generate-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--dashboard-border);
+}
+
+.export-generate-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Radio Group */
+.export-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.export-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-radio-label:hover {
+  background-color: var(--dashboard-bg-secondary);
+  border-color: var(--dashboard-primary);
+}
+
+.export-radio-label input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--dashboard-primary);
+}
+
+.export-radio-label input[type='radio']:checked + span {
+  font-weight: 600;
+  color: var(--dashboard-primary);
+}
+
+.export-radio-label span {
+  font-size: 0.95rem;
+  color: var(--dashboard-text-primary);
+  transition: all 0.2s ease;
+}
+
+/* Custom Date Range */
+.export-custom-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--dashboard-bg-secondary);
+  border-radius: 8px;
+}
+
+.export-date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.export-date-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--dashboard-text-secondary);
+}
+
+.export-input {
+  padding: 0.625rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--dashboard-text-primary);
+  background-color: var(--dashboard-bg-primary);
+  transition: border-color 0.2s ease;
+}
+
+.export-input:focus {
+  outline: none;
+  border-color: var(--dashboard-primary);
+}
+
+/* Filter Group */
+.export-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.export-filter-group:last-child {
+  margin-bottom: 0;
+}
+
+.export-filter-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--dashboard-text-secondary);
+}
+
+.export-select {
+  padding: 0.625rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--dashboard-text-primary);
+  background-color: var(--dashboard-bg-primary);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.export-select:focus {
+  outline: none;
+  border-color: var(--dashboard-primary);
+}
+
+.export-select:hover {
+  border-color: var(--dashboard-primary);
+}
+
+/* Modal Footer */
+.export-modal-content .modal-footer {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--dashboard-border);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .export-modal-content {
+    max-width: 95%;
+    margin: 1rem;
+  }
+
+  .export-modal-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .export-custom-dates {
+    grid-template-columns: 1fr;
+  }
+
+  .export-radio-group {
+    gap: 0.5rem;
+  }
+
+  .export-radio-label {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .export-generate-btn {
+    font-size: 0.95rem;
+    padding: 0.75rem 1.25rem;
+  }
+}
