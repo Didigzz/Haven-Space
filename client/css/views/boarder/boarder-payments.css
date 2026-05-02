@@ -1,4 +1,4 @@
-/* Boarder Payments Page Styles - Unique Design */
+/* Boarder Payments Page Styles - Updated to match Design System */
 
 /* ===== CSS Variables for Payments Page ===== */
 :root {
@@ -67,11 +67,13 @@
   font-weight: 700;
   color: var(--payments-text-primary);
   margin-bottom: 8px;
+  line-height: 1.2;
 }
 
 .payments-subtitle {
   font-size: 15px;
   color: var(--payments-text-secondary);
+  line-height: 1.5;
 }
 
 .payments-header-actions {
@@ -97,7 +99,7 @@
   text-decoration: none;
 }
 
-.payments-btn svg {
+.payments-btn img {
   width: 18px;
   height: 18px;
 }
@@ -182,9 +184,9 @@
   flex-shrink: 0;
 }
 
-.financial-card-icon svg {
-  width: 24px;
-  height: 24px;
+.financial-card-icon img {
+  width: 20px;
+  height: 20px;
 }
 
 .financial-card-info {
@@ -287,7 +289,7 @@
   font-size: 12px;
 }
 
-.financial-card-gradient-3 .financial-card-alert-icon svg {
+.financial-card-gradient-3 .financial-card-alert-icon img {
   width: 16px;
   height: 16px;
 }
@@ -375,7 +377,7 @@
   color: var(--payments-text-primary);
 }
 
-.payments-section-title svg {
+.payments-section-title img {
   width: 22px;
   height: 22px;
   color: var(--payments-accent);
@@ -425,7 +427,7 @@
   justify-content: center;
 }
 
-.payment-method-icon svg {
+.payment-method-icon img {
   width: 22px;
   height: 22px;
 }
@@ -492,9 +494,9 @@
   transition: all 0.2s ease;
 }
 
-.payment-method-action-btn svg {
-  width: 18px;
-  height: 18px;
+.payment-method-action-btn img {
+  width: 16px;
+  height: 16px;
   color: var(--payments-text-secondary);
 }
 
@@ -644,9 +646,9 @@
   flex-shrink: 0;
 }
 
-.quick-pay-icon-wrapper svg {
-  width: 28px;
-  height: 28px;
+.quick-pay-icon-wrapper img {
+  width: 24px;
+  height: 24px;
   color: var(--white);
 }
 
@@ -825,7 +827,7 @@
   gap: 6px;
 }
 
-.current-bill-date-value svg {
+.current-bill-date-value img {
   width: 16px;
   height: 16px;
   color: var(--payments-orange);
@@ -910,9 +912,9 @@
   transition: all 0.3s ease;
 }
 
-.timeline-marker svg {
-  width: 20px;
-  height: 20px;
+.timeline-marker img {
+  width: 16px;
+  height: 16px;
   color: var(--payments-border);
 }
 
@@ -921,7 +923,7 @@
   background-color: var(--payments-green);
 }
 
-.timeline-marker.completed svg {
+.timeline-marker.completed img {
   color: var(--white);
 }
 
@@ -976,9 +978,9 @@
   color: var(--payments-text-secondary);
 }
 
-.timeline-detail svg {
-  width: 16px;
-  height: 16px;
+.timeline-detail img {
+  width: 14px;
+  height: 14px;
   color: var(--payments-text-secondary);
 }
 
@@ -994,9 +996,9 @@
   margin-top: 8px;
 }
 
-.timeline-status svg {
-  width: 14px;
-  height: 14px;
+.timeline-status img {
+  width: 12px;
+  height: 12px;
 }
 
 .timeline-status.paid {
@@ -1035,9 +1037,9 @@
   font-family: var(--font-main);
 }
 
-.timeline-action-btn svg {
-  width: 16px;
-  height: 16px;
+.timeline-action-btn img {
+  width: 14px;
+  height: 14px;
 }
 
 .timeline-action-btn:hover {
@@ -1108,27 +1110,25 @@
   }
 
   .timeline-actions {
-    flex-wrap: wrap;
+    width: 100%;
   }
 
   .quick-pay-actions {
-    flex-direction: column;
+    width: 100%;
   }
 
   .quick-pay-actions .payments-btn {
-    width: 100%;
-    justify-content: center;
+    flex: 1;
   }
 }
 
 @media (max-width: 480px) {
   .payments-title {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .financial-card {
     min-height: 140px;
-    padding: 20px;
   }
 
   .financial-card-value {
@@ -1141,182 +1141,5 @@
 
   .current-bill-row.current-bill-total .current-bill-value {
     font-size: 20px;
-  }
-}
-
-/* ===== Payment Status Color Classes ===== */
-.status-red {
-  --status-color: var(--payments-red);
-  --status-bg: rgba(239, 68, 68, 0.1);
-  --status-border: rgba(239, 68, 68, 0.3);
-}
-
-.status-orange {
-  --status-color: var(--payments-orange);
-  --status-bg: rgba(245, 158, 11, 0.1);
-  --status-border: rgba(245, 158, 11, 0.3);
-}
-
-.status-green {
-  --status-color: var(--payments-green);
-  --status-bg: rgba(34, 197, 94, 0.1);
-  --status-border: rgba(34, 197, 94, 0.3);
-}
-
-/* Specific status classes */
-.status-paid {
-  background-color: rgba(34, 197, 94, 0.1) !important;
-  color: var(--payments-green) !important;
-  border-color: var(--payments-green) !important;
-}
-
-.status-overdue {
-  background-color: rgba(239, 68, 68, 0.1) !important;
-  color: var(--payments-red) !important;
-  border-color: var(--payments-red) !important;
-}
-
-.status-due-today {
-  background-color: rgba(245, 158, 11, 0.15) !important;
-  color: var(--payments-orange) !important;
-  border-color: var(--payments-orange) !important;
-  font-weight: 700 !important;
-}
-
-.status-upcoming {
-  background-color: rgba(245, 158, 11, 0.1) !important;
-  color: var(--payments-orange) !important;
-  border-color: var(--payments-orange) !important;
-}
-
-.status-current {
-  background-color: rgba(34, 197, 94, 0.1) !important;
-  color: var(--payments-green) !important;
-  border-color: var(--payments-green) !important;
-}
-
-/* Status badge component */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-badge.status-red {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: var(--payments-red);
-}
-
-.status-badge.status-orange {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--payments-orange);
-}
-
-.status-badge.status-green {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--payments-green);
-}
-
-.status-badge svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* Timeline marker status colors */
-.timeline-marker.overdue {
-  border-color: var(--payments-red);
-  background-color: var(--payments-red);
-}
-
-.timeline-marker.overdue svg {
-  color: var(--white);
-}
-
-.timeline-marker.upcoming {
-  border-color: var(--payments-orange);
-  background-color: var(--payments-orange);
-}
-
-.timeline-marker.upcoming svg {
-  color: var(--white);
-}
-
-.timeline-marker.current {
-  border-color: var(--payments-green);
-  background-color: var(--payments-green);
-}
-
-.timeline-marker.current svg {
-  color: var(--white);
-}
-
-/* Financial card status borders */
-.financial-card.status-red {
-  border: 2px solid var(--payments-red);
-}
-
-.financial-card.status-orange {
-  border: 2px solid var(--payments-orange);
-}
-
-.financial-card.status-green {
-  border: 2px solid var(--payments-green);
-}
-
-/* Current bill card status variations */
-.payments-current-bill-card.status-red {
-  border-color: var(--payments-red);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
-}
-
-.payments-current-bill-card.status-orange {
-  border-color: var(--payments-orange);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-}
-
-.payments-current-bill-card.status-green {
-  border-color: var(--payments-green);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
-}
-
-/* Print Styles ===== */
-@media print {
-  #sidebar-container,
-  #navbar-container,
-  .payments-header-actions,
-  .payment-method-actions,
-  .timeline-actions,
-  .quick-pay-actions,
-  .auto-pay-toggle,
-  .payments-btn {
-    display: none !important;
-  }
-
-  .payments-main {
-    margin-left: 0 !important;
-  }
-
-  .payments-content {
-    padding: 0 !important;
-  }
-
-  .payments-section {
-    break-inside: avoid;
-    box-shadow: none !important;
-    border: 1px solid #ccc !important;
-  }
-
-  .financial-card {
-    break-inside: avoid;
-  }
-
-  .timeline-item {
-    break-inside: avoid;
   }
 }
