@@ -40,6 +40,7 @@ function getSavedListings(): void
                 a.longitude,
                 p.price as property_price,
                 p.status as property_status,
+                (SELECT photo_url FROM property_photos WHERE property_id = p.id AND is_cover = 1 LIMIT 1) as cover_image,
                 r.id as room_id,
                 r.title as room_title,
                 r.price as room_price,
@@ -77,6 +78,7 @@ function getSavedListings(): void
                     'longitude' => $listing['longitude'] ? (float)$listing['longitude'] : null,
                     'price' => (float)$listing['property_price'],
                     'status' => $listing['property_status'],
+                    'cover_image' => $listing['cover_image'] ?: null,
                     'landlord' => [
                         'name' => $listing['landlord_name'],
                         'email' => $listing['landlord_email']

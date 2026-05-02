@@ -608,10 +608,7 @@ async function loadSavedProperties() {
         return `
         <div class="saved-property-card" data-property-id="${property.id}">
           <div class="saved-property-image">
-            <img src="${
-              property.image ||
-              'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=300&q=80'
-            }" 
+            <img src="${property.cover_image || '../../../../assets/images/placeholder-room.svg'}" 
                  alt="${property.title}" />
             <button class="saved-property-remove" onclick="removeSavedProperty(${property.id})">
               <span class="icon-placeholder" data-icon="xMark"></span>
