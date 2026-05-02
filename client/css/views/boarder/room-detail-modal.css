@@ -610,7 +610,7 @@
 .room-type-modal-info {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   justify-content: space-between;
 }
 
@@ -618,35 +618,59 @@
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--text-dark);
-  margin: 0;
+  margin: 0 0 0.5rem 0;
 }
 
-.room-type-modal-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+/* Details Grid - Label: Value format */
+.room-type-modal-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-cream);
+  border-radius: 8px;
 }
 
 .room-type-modal-detail {
   display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  color: var(--text-gray);
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-.room-type-modal-detail span:first-child {
-  color: var(--primary-green);
+.room-type-modal-detail-label {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.room-type-modal-detail-value {
+  font-size: 0.9375rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* Description Section */
+.room-type-modal-description-section {
+  margin: 0.5rem 0;
 }
 
 .room-type-modal-description {
   font-size: 0.875rem;
   color: var(--text-gray);
   line-height: 1.6;
-  margin: 0.75rem 0;
-  padding: 0.75rem;
+  margin: 0;
+  padding: 0.875rem;
   background: var(--bg-cream);
   border-radius: 6px;
+  border-left: 3px solid var(--primary-green);
+}
+
+/* Action Section */
+.room-type-modal-action {
+  margin-top: auto;
+  padding-top: 0.5rem;
 }
 
 .room-type-modal-occupied-notice {
@@ -717,6 +741,10 @@
   .room-type-modal-summary-value {
     font-size: 1.5rem;
   }
+
+  .room-type-modal-details-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -740,8 +768,8 @@
     right: 1rem;
   }
 
-  .room-type-modal-details {
-    flex-direction: column;
+  .room-type-modal-details-grid {
+    grid-template-columns: 1fr;
     gap: 0.5rem;
   }
 }

@@ -999,58 +999,66 @@ function showRoomTypeModal(roomType, rooms, property) {
         </div>
         <div class="room-type-modal-info">
           <h4 class="room-type-modal-room-name">${roomName}</h4>
-          <div class="room-type-modal-details">
+          
+          <div class="room-type-modal-details-grid">
             <div class="room-type-modal-detail">
-              <span data-icon="users" data-icon-width="16" data-icon-height="16"></span>
-              <span>Capacity: ${room.capacity} ${room.capacity > 1 ? 'persons' : 'person'}</span>
+              <span class="room-type-modal-detail-label">Capacity:</span>
+              <span class="room-type-modal-detail-value">${room.capacity} ${
+        room.capacity > 1 ? 'persons' : 'person'
+      }</span>
             </div>
             ${
               room.size
                 ? `
             <div class="room-type-modal-detail">
-              <span data-icon="square" data-icon-width="16" data-icon-height="16"></span>
-              <span>Size: ${room.size} sqm</span>
+              <span class="room-type-modal-detail-label">Size:</span>
+              <span class="room-type-modal-detail-value">${room.size} sqm</span>
             </div>
             `
                 : ''
             }
             <div class="room-type-modal-detail">
-              <span data-icon="currencyDollar" data-icon-width="16" data-icon-height="16"></span>
-              <span>₱${room.price.toLocaleString()}/mo</span>
+              <span class="room-type-modal-detail-label">Price per month:</span>
+              <span class="room-type-modal-detail-value">₱${room.price.toLocaleString()}</span>
             </div>
             ${
               room.deposit > 0
                 ? `
             <div class="room-type-modal-detail">
-              <span data-icon="banknotes" data-icon-width="16" data-icon-height="16"></span>
-              <span>Deposit: ₱${room.deposit.toLocaleString()}</span>
+              <span class="room-type-modal-detail-label">Deposit:</span>
+              <span class="room-type-modal-detail-value">₱${room.deposit.toLocaleString()}</span>
             </div>
             `
                 : ''
             }
           </div>
+          
           ${
             room.description
               ? `
-          <p class="room-type-modal-description">${room.description}</p>
+          <div class="room-type-modal-description-section">
+            <p class="room-type-modal-description">${room.description}</p>
+          </div>
           `
               : ''
           }
-          ${
-            room.status === 'available'
-              ? `
-          <button class="room-type-modal-apply-btn" data-room-id="${room.id}" data-room-type="${roomType}" data-room-price="${room.price}" data-room-number="${roomName}">
-            <span data-icon="application" data-icon-width="16" data-icon-height="16"></span>
-            Apply for this room
-          </button>
-          `
-              : `
-          <div class="room-type-modal-occupied-notice">
-            <span data-icon="info" data-icon-width="16" data-icon-height="16"></span>
-            <span>This room is currently occupied</span>
+          
+          <div class="room-type-modal-action">
+            ${
+              room.status === 'available'
+                ? `
+            <button class="room-type-modal-apply-btn" data-room-id="${room.id}" data-room-type="${roomType}" data-room-price="${room.price}" data-room-number="${roomName}">
+              Apply for this room
+            </button>
+            `
+                : `
+            <div class="room-type-modal-occupied-notice">
+              <span data-icon="info" data-icon-width="16" data-icon-height="16"></span>
+              <span>This room is currently occupied</span>
+            </div>
+            `
+            }
           </div>
-          `
-          }
         </div>
       </div>
     `;
@@ -1063,7 +1071,7 @@ function showRoomTypeModal(roomType, rooms, property) {
     modalBody.innerHTML = `
       <div class="room-type-modal-summary">
         <div class="room-type-modal-summary-item">
-          <span class="room-type-modal-summary-label">Total:</span>
+          <span class="room-type-modal-summary-label">Total count:</span>
           <span class="room-type-modal-summary-value">${totalCount}</span>
         </div>
         <div class="room-type-modal-summary-item available">
