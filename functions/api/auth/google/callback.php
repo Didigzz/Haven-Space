@@ -1,7 +1,7 @@
 <?php
 /**
  * Google OAuth Callback Endpoint
- * 
+ *
  * Handles the callback from Google after user authentication.
  * - Validates state parameter (CSRF protection)
  * - Exchanges authorization code for tokens
@@ -24,7 +24,7 @@ use App\Core\Database\Connection;
 
 /**
  * Determine boarder status based on applications
- * 
+ *
  * @param \PDO $pdo Database connection
  * @param int $boarderId Boarder user ID
  * @return string Boarder status
@@ -34,30 +34,30 @@ function determineBoarderStatus($pdo, $boarderId) {
     $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $acceptedStmt->execute([$boarderId, 'accepted']);
     $acceptedCount = $acceptedStmt->fetchColumn();
-    
+
     if ($acceptedCount > 0) {
         return 'accepted';
     }
-    
+
     // Check for pending applications
     $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $pendingStmt->execute([$boarderId, 'pending']);
     $pendingCount = $pendingStmt->fetchColumn();
-    
+
     if ($pendingCount > 0) {
         return 'applied_pending';
     }
-    
+
     // Check for any applications (rejected/cancelled)
     $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
     $anyStmt->execute([$boarderId]);
     $anyCount = $anyStmt->fetchColumn();
-    
+
     if ($anyCount > 0) {
         // Has applications but none are pending or accepted (likely rejected)
         return 'rejected';
     }
-    
+
     // No applications at all
     return 'new';
 }
@@ -91,7 +91,7 @@ if ($appBaseUrl) {
         $parts = explode(':', $host);
         $portNum = $parts[1];
         // Keep port in URL if it's not standard (not 80 for HTTP, not 443 for HTTPS)
-        if (($protocol === 'http' && $portNum !== '80') || 
+        if (($protocol === 'http' && $portNum !== '80') ||
             ($protocol === 'https' && $portNum !== '443')) {
             $cleanHost = $host; // Keep the port
         } else {
@@ -178,7 +178,7 @@ try {
 
     // Check if user exists by Google ID
     $stmt = $pdo->prepare('
-        SELECT u.id, u.first_name, u.last_name, u.email, 
+        SELECT u.id, u.first_name, u.last_name, u.email,
                ur.role_name as role, u.is_verified, acs.status_name as account_status
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
@@ -191,7 +191,7 @@ try {
     // If no user found by Google ID, check by email
     if (!$user) {
         $stmt = $pdo->prepare('
-            SELECT u.id, u.first_name, u.last_name, u.email, 
+            SELECT u.id, u.first_name, u.last_name, u.email,
                    ur.role_name as role, u.password_hash, u.is_verified, acs.status_name as account_status
             FROM users u
             JOIN user_roles ur ON u.role_id = ur.id
@@ -212,7 +212,7 @@ try {
                     $stmt->execute([$avatarUrl, 'google_avatar.jpg', 0, 'image/jpeg', $user['id']]);
                     $avatarFileId = $pdo->lastInsertId();
                 }
-                
+
                 $stmt = $pdo->prepare('UPDATE users SET google_id = ?, google_token = ?, google_refresh_token = ?, avatar_file_id = ?, is_verified = ? WHERE id = ?');
                 $stmt->execute([$googleId, $accessToken, $refreshToken, $avatarFileId, $emailVerified ? true : $user['is_verified'], $user['id']]);
 
@@ -221,7 +221,7 @@ try {
             } else {
                 // For login action, automatically link Google to existing account and log them in
                 // This provides a better user experience - they don't need to manually link
-                
+
                 // First, create a file record for the avatar if it exists
                 $avatarFileId = null;
                 if ($avatarUrl) {
@@ -229,7 +229,7 @@ try {
                     $stmt->execute([$avatarUrl, 'google_avatar.jpg', 0, 'image/jpeg', $user['id']]);
                     $avatarFileId = $pdo->lastInsertId();
                 }
-                
+
                 // Link Google account to existing user
                 $stmt = $pdo->prepare('UPDATE users SET google_id = ?, google_token = ?, google_refresh_token = ?, avatar_file_id = ?, is_verified = ? WHERE id = ?');
                 $stmt->execute([$googleId, $accessToken, $refreshToken, $avatarFileId, $emailVerified ? true : $user['is_verified'], $user['id']]);
@@ -249,18 +249,17 @@ try {
                 // Clean up expired tokens first
                 $pdo->exec("DELETE FROM oauth_pending_registrations WHERE expires_at < UTC_TIMESTAMP()");
 
-                $pendingStmt = $pdo->prepare('
-                    INSERT INTO oauth_pending_registrations 
-                    (token, google_id, email, first_name, last_name, avatar_url, access_token, refresh_token, email_verified, came_from_login, expires_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ');
+                $pendingStmt = $pdo->prepare(
+                    'INSERT INTO oauth_pending_registrations
+                    (token, google_id, email, first_name, last_name, access_token, refresh_token, email_verified, came_from_login, expires_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                );
                 $pendingStmt->execute([
                     $pendingToken,
                     $googleId,
                     $email,
                     $firstName,
                     $lastName,
-                    $avatarUrl,
                     $accessToken,
                     $refreshToken,
                     $emailVerified ? 1 : 0,
@@ -282,7 +281,7 @@ try {
 
             // Determine initial account status based on role (same logic as regular registration)
             $accountStatusName = ($rolePreference === 'landlord') ? 'pending_verification' : 'active';
-            
+
             $stmt = $pdo->prepare('SELECT id FROM account_statuses WHERE status_name = ?');
             $stmt->execute([$accountStatusName]);
             $statusRow = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -297,7 +296,7 @@ try {
             }
 
             $stmt = $pdo->prepare('
-                INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role_id, is_verified, account_status_id) 
+                INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role_id, is_verified, account_status_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ');
 
@@ -315,13 +314,13 @@ try {
             ]);
 
             $userId = $pdo->lastInsertId();
-            
+
             // Update the file record with the correct user_id
             if ($avatarFileId) {
                 $stmt = $pdo->prepare('UPDATE files SET uploaded_by = ? WHERE id = ?');
                 $stmt->execute([$userId, $avatarFileId]);
             }
-            
+
             // For landlords, create the landlord profile and verification data
             if ($rolePreference === 'landlord') {
                 // Default property type
@@ -329,8 +328,8 @@ try {
 
                 // Create basic landlord profile
                 $stmt = $pdo->prepare('
-                    INSERT INTO landlord_profiles 
-                    (user_id, boarding_house_name, boarding_house_description, property_type, total_rooms, available_rooms) 
+                    INSERT INTO landlord_profiles
+                    (user_id, boarding_house_name, boarding_house_description, property_type, total_rooms, available_rooms)
                     VALUES (?, ?, ?, ?, ?, ?)
                 ');
                 $stmt->execute([$userId, 'My Boarding House', 'Boarding house managed via Haven Space', $propertyType, 1, 1]);
@@ -341,7 +340,7 @@ try {
                 // Phone number is already stored in users.phone_number
                 // ID verification will be done through document uploads
             }
-            
+
             $userRole = $rolePreference;
         }
     } else {
@@ -353,7 +352,7 @@ try {
             $stmt->execute([$avatarUrl, 'google_avatar.jpg', 0, 'image/jpeg', $user['id']]);
             $avatarFileId = $pdo->lastInsertId();
         }
-        
+
         $stmt = $pdo->prepare('UPDATE users SET google_token = ?, google_refresh_token = ?, avatar_file_id = ?, first_name = ?, last_name = ? WHERE id = ?');
         $stmt->execute([$accessToken, $refreshToken, $avatarFileId, $firstName, $lastName, $user['id']]);
 
@@ -372,7 +371,7 @@ try {
     $verifiedRow = $stmtVerified->fetch();
     $isVerified = $verifiedRow ? (bool) $verifiedRow['is_verified'] : false;
     $accountStatus = $verifiedRow['account_status'] ?? 'active';
-    
+
     // Derive verification status for landlords from is_verified flag
     $verificationStatus = null;
     if ($userRole === 'landlord') {
@@ -426,17 +425,17 @@ try {
     } else {
         // Boarder - determine status and redirect accordingly
         $boarderStatus = determineBoarderStatus($pdo, $userId);
-        
+
         // Set boarder status in payload for JWT
         $payload['boarder_status'] = $boarderStatus;
-        
+
         // Generate new JWT with boarder status
         $jwtAccessToken = JWT::generate($payload, $config['jwt_expiration']);
         $jwtRefreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
-        
+
         // Update auth cookies with new tokens
         JWT::setAuthCookies($jwtAccessToken, $jwtRefreshToken, $config);
-        
+
         // Determine redirect path based on boarder status
         switch ($boarderStatus) {
             case 'new':
@@ -463,7 +462,7 @@ try {
 
     // Ensure we're using the correct base URL
     $finalRedirectUrl = buildRedirectUrl($baseUrl, $redirectPath);
-    
+
     // Fetch avatar URL from database
     $avatarStmt = $pdo->prepare('
         SELECT f.file_url as avatar_url
@@ -474,7 +473,7 @@ try {
     $avatarStmt->execute([$userId]);
     $avatarRow = $avatarStmt->fetch();
     $userAvatarUrl = $avatarRow ? $avatarRow['avatar_url'] : null;
-    
+
     // Create user data for client-side storage
     $userData = [
         'id' => $userId,
@@ -486,24 +485,24 @@ try {
         'access_token' => $jwtAccessToken,
         'refresh_token' => $jwtRefreshToken,
     ];
-    
+
     // Add boarder status if available
     if (isset($boarderStatus)) {
         $userData['boarder_status'] = $boarderStatus;
         $userData['boarderStatus'] = $boarderStatus; // Keep both for compatibility
     }
-    
+
     // Encode user data for URL hash fragment
     $userDataJson = urlencode(json_encode($userData));
-    
+
     // Add hash fragment with user data
     $finalRedirectUrl .= '#auth=' . $userDataJson;
-    
+
     // Log for debugging
     error_log('Google OAuth - Base URL: ' . $baseUrl);
     error_log('Google OAuth - Redirect path: ' . $redirectPath);
     error_log('Google OAuth - Final redirect URL: ' . $finalRedirectUrl);
-    
+
     if (defined('APPWRITE_FUNCTION_CONTEXT')) {
         // In Appwrite context, set the result for the caller to use
         $oauthResult = [

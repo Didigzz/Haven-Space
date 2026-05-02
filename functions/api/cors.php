@@ -32,12 +32,6 @@ $allowed_origins = array_unique(array_merge($allowed_origins, $defaultOrigins));
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-// Always remove existing CORS headers to avoid duplicates
-header_remove('Access-Control-Allow-Origin');
-header_remove('Access-Control-Allow-Methods');
-header_remove('Access-Control-Allow-Headers');
-header_remove('Access-Control-Allow-Credentials');
-
 // Normalize origin for comparison (remove port for localhost)
 $normalizedOrigin = $origin;
 if (strpos($origin, 'http://localhost:') === 0) {
@@ -48,7 +42,14 @@ if (strpos($origin, 'http://localhost:') === 0) {
 if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin === 'http://localhost') {
     if ($origin !== '') {
         header("Access-Control-Allow-Origin: $origin");
+    } else {
+        // For requests without Origin header, allow localhost
+        header("Access-Control-Allow-Origin: http://localhost");
     }
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Id');
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Max-Age: 86400');
 } else {
     // Log unauthorized origin in debug mode
     if (isDebugMode()) {
@@ -68,12 +69,6 @@ if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin =
     }
     exit;
 }
-
-// Always set CORS headers (even in Appwrite context for direct endpoint calls)
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Id');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Max-Age: 86400');
 
 // Handle OPTIONS Preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

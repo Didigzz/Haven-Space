@@ -1,7 +1,7 @@
 <?php
 /**
  * Finalize Google OAuth Signup
- * 
+ *
  * Completes the signup process for Google OAuth users who need to select a role.
  * Creates the user account with the selected role and stored Google data.
  */
@@ -23,32 +23,32 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 try {
     // Get pending user data from session
     $pendingUser = $_SESSION['pending_google_user'] ?? null;
-    
+
     if (!$pendingUser) {
         http_response_code(400);
         echo json_encode(['error' => 'No pending Google signup found. Please start the signup process again.']);
         exit;
     }
-    
+
     // Get role and country from request
     $data = json_decode(file_get_contents('php://input'), true);
     $role = $data['role'] ?? null;
     $country = $data['country'] ?? null;
-    
+
     if (!$role || !in_array($role, ['boarder', 'landlord'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid role selected']);
         exit;
     }
-    
+
     // Connect to database
     $pdo = Connection::getInstance()->getPdo();
     $config = require __DIR__ . '/../../../config/app.php';
-    
+
     // Check if user already exists (by Google ID or email)
     $stmt = $pdo->prepare('SELECT id FROM users WHERE google_id = ? OR email = ?');
     $stmt->execute([$pendingUser['google_id'], $pendingUser['email']]);
-    
+
     if ($stmt->fetch()) {
         // User already exists, clear pending data
         unset($_SESSION['pending_google_user']);
@@ -56,21 +56,16 @@ try {
         echo json_encode(['error' => 'User already exists. Please login instead.']);
         exit;
     }
-    
-    // Create file record for avatar if it exists
+
+    // Avatar handling is now done via Google profile picture URL during OAuth callback
     $avatarFileId = null;
-    if ($pendingUser['avatar_url']) {
-        $stmt = $pdo->prepare('INSERT INTO files (file_url, file_name, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?)');
-        $stmt->execute([$pendingUser['avatar_url'], 'google_avatar.jpg', 0, 'image/jpeg', 1]); // Temporary uploaded_by, will update after user creation
-        $avatarFileId = $pdo->lastInsertId();
-    }
-    
+
     // Create user account
     $stmt = $pdo->prepare('
-        INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role, is_verified, country) 
+        INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role, is_verified, country)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
-    
+
     $stmt->execute([
         $pendingUser['first_name'],
         $pendingUser['last_name'],
@@ -83,15 +78,15 @@ try {
         $pendingUser['email_verified'] ? 1 : 0,
         $country,
     ]);
-    
+
     $userId = $pdo->lastInsertId();
-    
+
     // Update file record with correct uploaded_by
     if ($avatarFileId) {
         $stmt = $pdo->prepare('UPDATE files SET uploaded_by = ? WHERE id = ?');
         $stmt->execute([$userId, $avatarFileId]);
     }
-    
+
     // Generate JWT tokens
     $payload = [
         'user_id' => $userId,
@@ -103,10 +98,10 @@ try {
         'account_status' => 'active',
         'google_id' => $pendingUser['google_id'],
     ];
-    
+
     $jwtAccessToken = JWT::generate($payload, $config['jwt_expiration']);
     $jwtRefreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
-    
+
     // Set cookies
     setcookie('access_token', $jwtAccessToken, [
         'expires' => time() + $config['jwt_expiration'],
@@ -116,7 +111,7 @@ try {
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
-    
+
     setcookie('refresh_token', $jwtRefreshToken, [
         'expires' => time() + $config['refresh_token_expiration'],
         'path' => '/',
@@ -125,17 +120,17 @@ try {
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
-    
+
     // Clear pending user data
     unset($_SESSION['pending_google_user']);
-    
+
     // Determine boarder status if user is a boarder
     $boarderStatus = null;
     if ($role === 'boarder') {
         // New boarder has no applications yet
         $boarderStatus = 'new';
     }
-    
+
     // Return success with user data and tokens
     $userResponse = [
         'id' => $userId,
@@ -146,19 +141,19 @@ try {
         'is_verified' => (bool) ($pendingUser['email_verified'] ?? false),
         'account_status' => 'active',
     ];
-    
+
     // Add boarder status if applicable
     if ($boarderStatus !== null) {
         $userResponse['boarder_status'] = $boarderStatus;
     }
-    
+
     echo json_encode([
         'success' => true,
         'access_token' => $jwtAccessToken,
         'refresh_token' => $jwtRefreshToken,
         'user' => $userResponse,
     ]);
-    
+
 } catch (\Exception $e) {
     error_log('Google OAuth finalize signup error: ' . $e->getMessage());
     http_response_code(500);

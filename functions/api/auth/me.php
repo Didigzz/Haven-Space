@@ -16,30 +16,30 @@ function determineBoarderStatus($pdo, $boarderId) {
     $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $acceptedStmt->execute([$boarderId, 'accepted']);
     $acceptedCount = $acceptedStmt->fetchColumn();
-    
+
     if ($acceptedCount > 0) {
         return 'accepted';
     }
-    
+
     // Check for pending applications
     $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
     $pendingStmt->execute([$boarderId, 'pending']);
     $pendingCount = $pendingStmt->fetchColumn();
-    
+
     if ($pendingCount > 0) {
         return 'applied_pending';
     }
-    
+
     // Check for any applications (rejected/cancelled)
     $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
     $anyStmt->execute([$boarderId]);
     $anyCount = $anyStmt->fetchColumn();
-    
+
     if ($anyCount > 0) {
         // Has applications but none are pending or accepted (likely rejected)
         return 'rejected';
     }
-    
+
     // No applications at all
     return 'new';
 }
@@ -75,14 +75,14 @@ if (empty($token) && $simulatedId) {
     $userId = (int) $simulatedId;
     $pdo = Connection::getInstance()->getPdo();
     $stmt = $pdo->prepare(
-        'SELECT u.id, u.first_name, u.last_name, u.email, 
-                ur.role_name as role, u.is_verified, u.email_verified, acs.status_name as account_status, 
+        'SELECT u.id, u.first_name, u.last_name, u.email,
+                ur.role_name as role, u.is_verified, u.email_verified, acs.status_name as account_status,
                 f.file_url as avatar_url
          FROM users u
          JOIN user_roles ur ON u.role_id = ur.id
          JOIN account_statuses acs ON u.account_status_id = acs.id
          LEFT JOIN files f ON u.avatar_file_id = f.id         WHERE u.id = ? AND u.deleted_at IS NULL
-         ORDER BY 
+         ORDER BY
              CASE vs.status_name
                  WHEN "approved" THEN 1
                  WHEN "pending" THEN 2
@@ -95,7 +95,7 @@ if (empty($token) && $simulatedId) {
     );
     $stmt->execute([$userId]);
     $userRow = $stmt->fetch();
-    
+
     if ($userRow) {
         $simVerificationStatus = $userRow['verification_status'] ?? null;
         if ($userRow['role'] === 'landlord' && $simVerificationStatus === null) {
@@ -138,8 +138,8 @@ $userRow = null;
 if ($userId > 0) {
     $pdo = Connection::getInstance()->getPdo();
     $stmt = $pdo->prepare(
-        'SELECT u.id, u.first_name, u.last_name, u.email, 
-                ur.role_name as role, u.is_verified, u.email_verified, acs.status_name as account_status, 
+        'SELECT u.id, u.first_name, u.last_name, u.email,
+                ur.role_name as role, u.is_verified, u.email_verified, acs.status_name as account_status,
                 f.file_url as avatar_url
          FROM users u
          JOIN user_roles ur ON u.role_id = ur.id
@@ -153,7 +153,7 @@ if ($userId > 0) {
 
 if ($userRow) {
     $accountStatus = $userRow['account_status'] ?? 'active';
-    
+
     // Allow landlords with pending_verification status to access dashboard (read-only)
     if ($userRow['role'] === 'landlord' && $accountStatus === 'pending_verification') {
         // Landlords with pending verification can access dashboard in read-only mode
@@ -162,7 +162,7 @@ if ($userRow) {
         echo json_encode(['error' => 'Account is suspended or banned']);
         exit;
     }
-    
+
     // Derive verification_status for landlords from is_verified flag
     $verificationStatus = null;
     if ($userRow['role'] === 'landlord') {
@@ -182,7 +182,7 @@ if ($userRow) {
         'avatar_url' => $userRow['avatar_url'],
         'verification_status' => $verificationStatus,
     ];
-    
+
     // Add boarder status if user is a boarder
     if ($userRow['role'] === 'boarder') {
         $user['boarder_status'] = determineBoarderStatus($pdo, (int) $userRow['id']);
@@ -196,7 +196,7 @@ if ($userRow) {
         ],
         $payload
     );
-    
+
     // Add boarder status if user is a boarder
     if (($payload['role'] ?? '') === 'boarder') {
         $user['boarder_status'] = determineBoarderStatus($pdo, $userId);

@@ -2,7 +2,7 @@
 /**
  * Test script for Admin Landlords API
  * Tests: /api/admin/landlords.php
- * 
+ *
  * This script tests the admin landlords endpoint to ensure:
  * 1. Database connection works
  * 2. Normalized database queries work correctly
@@ -28,10 +28,10 @@ try {
     // Test normalized tables exist
     echo "2. Testing normalized tables...\n";
     $tables = [
-        'users', 'user_roles', 'account_statuses', 'landlord_profiles', 
+        'users', 'user_roles', 'account_statuses', 'landlord_profiles',
         'files', 'addresses'
     ];
-    
+
     foreach ($tables as $table) {
         $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
         $stmt->execute([$table]);
@@ -46,7 +46,7 @@ try {
     // Test landlords query with normalized joins
     echo "3. Testing landlords query with normalized joins...\n";
     $stmt = $pdo->prepare("
-        SELECT 
+        SELECT
             u.id,
             u.first_name,
             u.last_name,
@@ -72,15 +72,15 @@ try {
         JOIN account_statuses acs ON u.account_status_id = acs.id
         LEFT JOIN landlord_profiles lp ON u.id = lp.user_id
         LEFT JOIN files f ON u.avatar_file_id = f.id AND f.deleted_at IS NULL
-        WHERE ur.role_name = 'landlord' 
+        WHERE ur.role_name = 'landlord'
             AND u.deleted_at IS NULL
         ORDER BY u.created_at DESC
         LIMIT 10
     ");
-    
+
     $stmt->execute();
     $landlords = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     echo "✓ Landlords query executed successfully\n";
     echo "Found " . count($landlords) . " landlords\n\n";
 
@@ -104,7 +104,7 @@ try {
     // Test landlord statistics
     echo "5. Testing landlord statistics...\n";
     $statsStmt = $pdo->prepare("
-        SELECT 
+        SELECT
             COUNT(*) as total_landlords,
             SUM(CASE WHEN acs.status_name = 'active' THEN 1 ELSE 0 END) as active_count,
             SUM(CASE WHEN acs.status_name = 'pending_verification' THEN 1 ELSE 0 END) as pending_verification_count,
@@ -114,12 +114,12 @@ try {
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
         JOIN account_statuses acs ON u.account_status_id = acs.id
-        LEFT JOIN verification_records vr ON vr.entity_type = 'user' AND vr.entity_id = u.id        WHERE ur.role_name = 'landlord' 
+        LEFT JOIN verification_records vr ON vr.entity_type = 'user' AND vr.entity_id = u.id        WHERE ur.role_name = 'landlord'
             AND u.deleted_at IS NULL
     ");
     $statsStmt->execute();
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
-    
+
     echo "✓ Statistics query executed successfully\n";
     echo "Total Landlords: " . $stats['total_landlords'] . "\n";
     echo "Active: " . $stats['active_count'] . "\n";
@@ -131,7 +131,7 @@ try {
     // Test properties count per landlord
     echo "6. Testing properties count per landlord...\n";
     $propertiesStmt = $pdo->prepare("
-        SELECT 
+        SELECT
             u.id as landlord_id,
             u.first_name,
             u.last_name,
@@ -140,7 +140,7 @@ try {
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
         LEFT JOIN properties p ON u.id = p.landlord_id AND p.deleted_at IS NULL
-        WHERE ur.role_name = 'landlord' 
+        WHERE ur.role_name = 'landlord'
             AND u.deleted_at IS NULL
         GROUP BY u.id, u.first_name, u.last_name
         HAVING properties_count > 0
@@ -149,32 +149,32 @@ try {
     ");
     $propertiesStmt->execute();
     $propertiesData = $propertiesStmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     echo "✓ Properties count query executed successfully\n";
     echo "Landlords with properties: " . count($propertiesData) . "\n";
-    
+
     foreach ($propertiesData as $landlord) {
-        echo "- " . $landlord['first_name'] . " " . $landlord['last_name'] . 
-             ": " . $landlord['properties_count'] . " properties (" . 
+        echo "- " . $landlord['first_name'] . " " . $landlord['last_name'] .
+             ": " . $landlord['properties_count'] . " properties (" .
              $landlord['available_properties'] . " available)\n";
     }
     echo "\n";
 
     // Test the actual endpoint
     echo "7. Testing actual endpoint...\n";
-    
+
     // Simulate admin authentication (you may need to adjust this)
     $_SERVER['REQUEST_METHOD'] = 'GET';
-    
+
     // Capture output from the actual endpoint
     ob_start();
     try {
         include __DIR__ . '/landlords.php';
         $output = ob_get_contents();
         ob_end_clean();
-        
+
         echo "✓ Endpoint executed without fatal errors\n";
-        
+
         // Try to decode JSON response
         $response = json_decode($output, true);
         if (json_last_error() === JSON_ERROR_NONE) {

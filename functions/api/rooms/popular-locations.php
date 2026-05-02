@@ -58,18 +58,6 @@ try {
         $displayName = $locationName;
         $searchValue = $locationName;
         
-        // Special handling for known university areas
-        if (stripos($locationName, 'Diliman') !== false || stripos($locationName, 'UP') !== false) {
-            $displayName = 'UP Area';
-            $searchValue = 'University of the Philippines';
-        } elseif (stripos($locationName, 'Ateneo') !== false || stripos($locationName, 'Loyola') !== false) {
-            $displayName = 'Ateneo';
-            $searchValue = 'Ateneo de Manila';
-        } elseif (stripos($locationName, 'Miriam') !== false) {
-            $displayName = 'Miriam';
-            $searchValue = 'Miriam College';
-        }
-
         return [
             'name' => $displayName,
             'search_value' => $searchValue,
@@ -80,47 +68,6 @@ try {
             'price_range' => 'Various prices'
         ];
     }, $locations);
-
-    // If we don't have enough locations from the database, add some fallback popular areas
-    if (count($popularLocations) < 3) {
-        $fallbackLocations = [
-            [
-                'name' => 'UP Area',
-                'search_value' => 'University of the Philippines',
-                'property_count' => 0,
-                'avg_price' => 0,
-                'min_price' => 0,
-                'max_price' => 0,
-                'price_range' => 'Various prices'
-            ],
-            [
-                'name' => 'Ateneo',
-                'search_value' => 'Ateneo de Manila',
-                'property_count' => 0,
-                'avg_price' => 0,
-                'min_price' => 0,
-                'max_price' => 0,
-                'price_range' => 'Various prices'
-            ],
-            [
-                'name' => 'Miriam',
-                'search_value' => 'Miriam College',
-                'property_count' => 0,
-                'avg_price' => 0,
-                'min_price' => 0,
-                'max_price' => 0,
-                'price_range' => 'Various prices'
-            ]
-        ];
-
-        // Add fallback locations that aren't already in the list
-        $existingNames = array_column($popularLocations, 'name');
-        foreach ($fallbackLocations as $fallback) {
-            if (!in_array($fallback['name'], $existingNames) && count($popularLocations) < $limit) {
-                $popularLocations[] = $fallback;
-            }
-        }
-    }
 
     json_response(200, [
         'data' => [
