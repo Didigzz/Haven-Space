@@ -847,7 +847,7 @@ function getUserLocation() {
 // Global functions for popup and card buttons
 window.viewProperty = id => {
   // console.log('View property:', id);
-  window.location.href = `../rooms/detail.html?id=${id}`;
+  window.location.href = `../find-a-room/detail.html?id=${id}`;
 };
 
 window.viewApplication = id => {
