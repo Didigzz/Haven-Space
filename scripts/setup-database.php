@@ -1,10 +1,10 @@
 <?php
 /**
  * Haven Space - Database Setup Script
- * 
+ *
  * Automatically creates database and imports schema
  * Usage: php setup-database.php [--seed]
- * 
+ *
  * Options:
  *   --seed    Run seeders after schema import (optional)
  */
@@ -89,17 +89,12 @@ try {
     exit(1);
 }
 
-// Step 2: Drop and recreate database to ensure clean setup
+// Step 2: Create database if it does not already exist
 section('Step 2: Preparing Database');
 
 try {
-    // Drop database if it exists to ensure clean setup
-    $pdo->exec("DROP DATABASE IF EXISTS `{$dbName}`");
-    success("Dropped existing database (if existed)");
-    
-    // Create fresh database
-    $pdo->exec("CREATE DATABASE `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-    success("Database '{$dbName}' created");
+    $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    success("Database '{$dbName}' ready (created if it did not exist)");
 } catch (PDOException $e) {
     error('Failed to prepare database');
     error($e->getMessage());

@@ -82,12 +82,12 @@ class Router
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches); // Remove full match
                 $id = $matches[0] ?? null;
-                
+
                 if (is_callable($handler)) {
                     $handler($id);
                     return;
                 }
-                
+
                 $controller = new $handler[0]();
                 $controller->{$handler[1]}([], $id);
                 return;
@@ -394,6 +394,10 @@ Router::post('/api/payments/methods', function() {
 });
 
 Router::delete('/api/payments/methods/{id}', function($id) {
+    require_once __DIR__ . '/payments/methods.php';
+});
+
+Router::patch('/api/payments/methods/{id}/default', function($id) {
     require_once __DIR__ . '/payments/methods.php';
 });
 

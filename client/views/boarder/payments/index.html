@@ -149,69 +149,7 @@
                 </div>
 
                 <div class="payment-methods-list" id="paymentMethodsList">
-                  <!-- Payment methods will be loaded dynamically -->
-                  <div class="payment-method-card payment-method-primary" style="display: none">
-                    <div class="payment-method-header">
-                      <div class="payment-method-icon gcash">
-                        <img src="../../../assets/svg/payment.svg" alt="GCash" />
-                      </div>
-                      <span class="payment-method-badge">Default</span>
-                    </div>
-                    <div class="payment-method-body">
-                      <h4 class="payment-method-name">GCash</h4>
-                      <p class="payment-method-number">•••• •••• 4582</p>
-                    </div>
-                    <div class="payment-method-actions">
-                      <button class="payment-method-action-btn" title="Edit">
-                        <img src="../../../assets/svg/settings.svg" alt="Edit" />
-                      </button>
-                      <button class="payment-method-action-btn" title="Remove">
-                        <img src="../../../assets/svg/close.svg" alt="Remove" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Bank Transfer Method -->
-                  <div class="payment-method-card">
-                    <div class="payment-method-header">
-                      <div class="payment-method-icon bank">
-                        <img src="../../../assets/svg/server.svg" alt="Bank" />
-                      </div>
-                    </div>
-                    <div class="payment-method-body">
-                      <h4 class="payment-method-name">BDO Bank Transfer</h4>
-                      <p class="payment-method-number">•••• •••• 7891</p>
-                    </div>
-                    <div class="payment-method-actions">
-                      <button class="payment-method-action-btn" title="Edit">
-                        <img src="../../../assets/svg/settings.svg" alt="Edit" />
-                      </button>
-                      <button class="payment-method-action-btn" title="Remove">
-                        <img src="../../../assets/svg/close.svg" alt="Remove" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Credit Card Method -->
-                  <div class="payment-method-card">
-                    <div class="payment-method-header">
-                      <div class="payment-method-icon card">
-                        <img src="../../../assets/svg/creditCard.svg" alt="Credit Card" />
-                      </div>
-                    </div>
-                    <div class="payment-method-body">
-                      <h4 class="payment-method-name">Visa Credit Card</h4>
-                      <p class="payment-method-number">•••• •••• 3254</p>
-                    </div>
-                    <div class="payment-method-actions">
-                      <button class="payment-method-action-btn" title="Edit">
-                        <img src="../../../assets/svg/settings.svg" alt="Edit" />
-                      </button>
-                      <button class="payment-method-action-btn" title="Remove">
-                        <img src="../../../assets/svg/close.svg" alt="Remove" />
-                      </button>
-                    </div>
-                  </div>
+                  <!-- Payment methods loaded dynamically -->
                 </div>
               </div>
 
@@ -730,6 +668,67 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Add Payment Method Modal -->
+    <div class="pm-modal-overlay" id="addMethodModal" aria-hidden="true">
+      <div class="pm-modal" role="dialog" aria-labelledby="pmModalTitle">
+        <div class="pm-modal-header">
+          <h3 class="pm-modal-title" id="pmModalTitle">Add Payment Method</h3>
+          <button class="pm-modal-close" id="closeAddMethodModal" aria-label="Close">
+            <img src="../../../assets/svg/close.svg" alt="Close" />
+          </button>
+        </div>
+        <form class="pm-modal-form" id="addMethodForm" novalidate>
+          <div class="pm-form-group">
+            <label class="pm-form-label" for="pmType">Method Type</label>
+            <select class="pm-form-select" id="pmType" name="type" required>
+              <option value="" disabled selected>Select a type…</option>
+              <option value="gcash">GCash</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="card">Credit / Debit Card</option>
+            </select>
+          </div>
+          <div class="pm-form-group">
+            <label class="pm-form-label" for="pmName">Label / Account Name</label>
+            <input
+              class="pm-form-input"
+              type="text"
+              id="pmName"
+              name="name"
+              placeholder="e.g. My GCash, BDO Savings"
+              maxlength="100"
+              required
+            />
+          </div>
+          <div class="pm-form-group">
+            <label class="pm-form-label" for="pmLastFour">Last 4 Digits / Numbers</label>
+            <input
+              class="pm-form-input"
+              type="text"
+              id="pmLastFour"
+              name="last_four"
+              placeholder="e.g. 4582"
+              maxlength="4"
+              pattern="[0-9]{1,4}"
+            />
+            <span class="pm-form-hint">Optional — used for display only</span>
+          </div>
+          <div class="pm-form-check">
+            <input type="checkbox" id="pmIsDefault" name="is_default" />
+            <label for="pmIsDefault">Set as default payment method</label>
+          </div>
+          <div class="pm-form-error" id="pmFormError" style="display: none"></div>
+          <div class="pm-modal-actions">
+            <button type="button" class="payments-btn payments-btn-outline" id="cancelAddMethod">
+              Cancel
+            </button>
+            <button type="submit" class="payments-btn payments-btn-primary" id="submitAddMethod">
+              Save Method
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script type="module" src="../../../js/main.js"></script>

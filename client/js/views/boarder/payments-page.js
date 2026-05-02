@@ -469,7 +469,7 @@ function renderPaymentMethods(methods) {
 
   if (!methods || methods.length === 0) {
     methodsList.innerHTML =
-      '<p style="text-align: center; color: var(--text-gray); padding: 20px;">No payment methods saved</p>';
+      '<p class="pm-empty-state">No payment methods saved. Click <strong>Add New</strong> to get started.</p>';
     return;
   }
 
@@ -477,26 +477,45 @@ function renderPaymentMethods(methods) {
     .map(method => {
       const iconClass =
         method.type === 'gcash' ? 'gcash' : method.type === 'bank' ? 'bank' : 'card';
-      const iconName = method.icon || 'creditCard';
+      const iconSrc =
+        method.type === 'gcash'
+          ? '../../../assets/svg/payment.svg'
+          : method.type === 'bank'
+          ? '../../../assets/svg/server.svg'
+          : '../../../assets/svg/creditCard.svg';
+      const iconAlt = method.type === 'gcash' ? 'GCash' : method.type === 'bank' ? 'Bank' : 'Card';
+
+      const lastFourDisplay = method.last_four
+        ? `\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 ${method.last_four}`
+        : 'No number saved';
 
       return `
-      <div class="payment-method-card ${method.is_default ? 'payment-method-primary' : ''}">
+      <div class="payment-method-card ${
+        method.is_default ? 'payment-method-primary' : ''
+      }" data-method-id="${method.id}">
         <div class="payment-method-header">
           <div class="payment-method-icon ${iconClass}">
-            ${getIcon(iconName)}
+            <img src="${iconSrc}" alt="${iconAlt}" />
           </div>
           ${method.is_default ? '<span class="payment-method-badge">Default</span>' : ''}
         </div>
         <div class="payment-method-body">
           <h4 class="payment-method-name">${method.name || 'Payment Method'}</h4>
-          <p class="payment-method-number">•••• •••• ${method.last_four || '0000'}</p>
+          <p class="payment-method-number">${lastFourDisplay}</p>
         </div>
         <div class="payment-method-actions">
-          <button class="payment-method-action-btn" title="Edit" onclick="alert('Edit payment method coming soon!')">
-            ${getIcon('edit')}
-          </button>
-          <button class="payment-method-action-btn" title="Remove" onclick="alert('Remove payment method coming soon!')">
-            ${getIcon('trash')}
+          ${
+            !method.is_default
+              ? `
+          <button class="payment-method-action-btn pm-btn-set-default" data-method-id="${method.id}" title="Set as Default">
+            <img src="../../../assets/svg/bookmark.svg" alt="Set Default" />
+          </button>`
+              : ''
+          }
+          <button class="payment-method-action-btn pm-btn-delete" data-method-id="${
+            method.id
+          }" title="Remove">
+            <img src="../../../assets/svg/close.svg" alt="Remove" />
           </button>
         </div>
       </div>
@@ -509,7 +528,188 @@ function renderPaymentMethods(methods) {
   if (defaultMethod) {
     const autoPayMethodEl = document.getElementById('autoPayMethod');
     if (autoPayMethodEl) {
-      autoPayMethodEl.textContent = `${defaultMethod.name} •••• ${defaultMethod.last_four}`;
+      autoPayMethodEl.textContent = defaultMethod.last_four
+        ? `${defaultMethod.name} \u2022\u2022\u2022\u2022 ${defaultMethod.last_four}`
+        : defaultMethod.name;
+    }
+  }
+}
+
+/* ====================================================
+ * Payment Methods CRUD helpers
+ * ==================================================== */
+
+/**
+ * Build auth headers for API requests
+ */
+function buildAuthHeaders() {
+  const token = localStorage.getItem('token');
+  const userId = getCurrentUserId();
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-User-Id': userId.toString(),
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
+/**
+ * Refresh payment methods from API and re-render
+ */
+async function refreshPaymentMethods() {
+  const methods = await fetchPaymentMethods();
+  renderPaymentMethods(methods);
+}
+
+/**
+ * Delete a payment method
+ */
+async function deletePaymentMethod(id) {
+  if (!confirm('Remove this payment method?')) return;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods/${id}`, {
+      method: 'DELETE',
+      headers: buildAuthHeaders(),
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to remove payment method');
+    }
+    await refreshPaymentMethods();
+    showToast('Payment method removed', 'success');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+/**
+ * Set a payment method as default
+ */
+async function setDefaultPaymentMethod(id) {
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods/${id}/default`, {
+      method: 'PATCH',
+      headers: buildAuthHeaders(),
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to set default method');
+    }
+    await refreshPaymentMethods();
+    showToast('Default payment method updated', 'success');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+/**
+ * Show a brief toast notification
+ */
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  const bg = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#6366f1';
+  toast.style.cssText = `position:fixed;top:20px;right:20px;background:${bg};color:#fff;padding:12px 20px;border-radius:8px;z-index:99999;font-size:14px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.15);`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+/* ====================================================
+ * Add Payment Method Modal
+ * ==================================================== */
+
+function openAddMethodModal() {
+  const modal = document.getElementById('addMethodModal');
+  if (!modal) return;
+  // Reset form
+  const form = document.getElementById('addMethodForm');
+  if (form) form.reset();
+  const err = document.getElementById('pmFormError');
+  if (err) {
+    err.style.display = 'none';
+    err.textContent = '';
+  }
+  const btn = document.getElementById('submitAddMethod');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Save Method';
+  }
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('pm-modal-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAddMethodModal() {
+  const modal = document.getElementById('addMethodModal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  modal.classList.remove('pm-modal-open');
+  document.body.style.overflow = '';
+}
+
+async function handleAddMethodSubmit(e) {
+  e.preventDefault();
+  const type = document.getElementById('pmType')?.value;
+  const name = document.getElementById('pmName')?.value?.trim();
+  const lastFour = document.getElementById('pmLastFour')?.value?.trim();
+  const isDefault = document.getElementById('pmIsDefault')?.checked;
+  const errEl = document.getElementById('pmFormError');
+  const btn = document.getElementById('submitAddMethod');
+
+  // Validate
+  if (!type) {
+    if (errEl) {
+      errEl.textContent = 'Please select a method type.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  if (!name) {
+    if (errEl) {
+      errEl.textContent = 'Please enter a label or account name.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  if (lastFour && !/^\d{1,4}$/.test(lastFour)) {
+    if (errEl) {
+      errEl.textContent = 'Last 4 digits must be numeric.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+
+  if (errEl) {
+    errEl.style.display = 'none';
+    errEl.textContent = '';
+  }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+  }
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods`, {
+      method: 'POST',
+      headers: buildAuthHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ type, name, last_four: lastFour || '', is_default: isDefault }),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Failed to add payment method');
+    closeAddMethodModal();
+    await refreshPaymentMethods();
+    showToast('Payment method added successfully', 'success');
+  } catch (err) {
+    if (errEl) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Save Method';
     }
   }
 }
@@ -604,6 +804,50 @@ export async function initPaymentsPage() {
     }
     if (currentBillCard) {
       currentBillCard.style.opacity = '1';
+    }
+
+    // ---- Payment method modal & action wiring ----
+
+    // "Add New" button opens modal
+    const addMethodBtn = document.getElementById('addMethodBtn');
+    if (addMethodBtn) {
+      addMethodBtn.addEventListener('click', openAddMethodModal);
+    }
+
+    // Close modal buttons
+    const closeBtn = document.getElementById('closeAddMethodModal');
+    if (closeBtn) closeBtn.addEventListener('click', closeAddMethodModal);
+    const cancelBtn = document.getElementById('cancelAddMethod');
+    if (cancelBtn) cancelBtn.addEventListener('click', closeAddMethodModal);
+
+    // Close on overlay backdrop click
+    const modalOverlay = document.getElementById('addMethodModal');
+    if (modalOverlay) {
+      modalOverlay.addEventListener('click', e => {
+        if (e.target === modalOverlay) closeAddMethodModal();
+      });
+    }
+
+    // Form submit
+    const addMethodForm = document.getElementById('addMethodForm');
+    if (addMethodForm) {
+      addMethodForm.addEventListener('submit', handleAddMethodSubmit);
+    }
+
+    // Event delegation for delete and set-default buttons
+    const methodsList = document.querySelector('.payment-methods-list');
+    if (methodsList) {
+      methodsList.addEventListener('click', async e => {
+        const deleteBtn = e.target.closest('.pm-btn-delete');
+        const defaultBtn = e.target.closest('.pm-btn-set-default');
+        if (deleteBtn) {
+          const id = deleteBtn.dataset.methodId;
+          if (id) await deletePaymentMethod(id);
+        } else if (defaultBtn) {
+          const id = defaultBtn.dataset.methodId;
+          if (id) await setDefaultPaymentMethod(id);
+        }
+      });
     }
 
     console.warn('Payment data loaded and rendered successfully');

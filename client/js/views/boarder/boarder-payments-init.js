@@ -271,7 +271,12 @@ function renderCurrentBill() {
  */
 function renderPaymentMethods() {
   const methodsList = document.querySelector('.payment-methods-list');
-  if (!methodsList || paymentMethods.length === 0) return;
+  if (!methodsList) return;
+  if (paymentMethods.length === 0) {
+    methodsList.innerHTML =
+      '<p class="pm-empty-state">No payment methods saved. Click <strong>Add New</strong> to get started.</p>';
+    return;
+  }
 
   methodsList.innerHTML = paymentMethods
     .map(method => {
@@ -294,21 +299,20 @@ function renderPaymentMethods() {
           <p class="payment-method-number">•••• •••• ${method.last_four}</p>
         </div>
         <div class="payment-method-actions">
-          <button class="payment-method-action-btn" title="Edit" data-action="edit" data-method-id="${
-            method.id
-          }">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
-          <button class="payment-method-action-btn" title="Remove" data-action="remove" data-method-id="${
-            method.id
-          }">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
-        </div>
+            ${
+              !method.is_default
+                ? `
+            <button class="payment-method-action-btn" title="Set as Default" data-action="set-default" data-method-id="${method.id}">
+              <img src="../../../assets/svg/bookmark.svg" alt="Set Default" style="width:18px;height:18px;opacity:.65" />
+            </button>`
+                : ''
+            }
+            <button class="payment-method-action-btn" title="Remove" data-action="remove" data-method-id="${
+              method.id
+            }">
+              <img src="../../../assets/svg/close.svg" alt="Remove" style="width:18px;height:18px;opacity:.65" />
+            </button>
+          </div>
       </div>
     `;
     })
@@ -442,26 +446,45 @@ function initEventListeners() {
     downloadBtn.addEventListener('click', handleDownloadStatement);
   }
 
-  // Add Method button
+  // Add Method button — opens modal
   const addMethodBtn = document.getElementById('addMethodBtn');
   if (addMethodBtn) {
-    addMethodBtn.addEventListener('click', handleAddMethod);
+    addMethodBtn.addEventListener('click', openAddMethodModal);
   }
 
-  // Payment method actions
-  document.addEventListener('click', e => {
-    const actionBtn = e.target.closest('.payment-method-action-btn');
-    if (actionBtn) {
-      const action = actionBtn.dataset.action;
-      const methodId = actionBtn.dataset.methodId;
+  // Modal close buttons
+  const closeModalBtn = document.getElementById('closeAddMethodModal');
+  if (closeModalBtn) closeModalBtn.addEventListener('click', closeAddMethodModal);
+  const cancelModalBtn = document.getElementById('cancelAddMethod');
+  if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeAddMethodModal);
 
-      if (action === 'edit') {
-        handleEditMethod(methodId);
-      } else if (action === 'remove') {
-        handleRemoveMethod(methodId);
+  // Close modal on backdrop click
+  const modalOverlay = document.getElementById('addMethodModal');
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', e => {
+      if (e.target === modalOverlay) closeAddMethodModal();
+    });
+  }
+
+  // Modal form submit
+  const addMethodForm = document.getElementById('addMethodForm');
+  if (addMethodForm) {
+    addMethodForm.addEventListener('submit', handleAddMethodSubmit);
+  }
+
+  // Payment method action delegation (remove + set-default)
+  const methodsList = document.querySelector('.payment-methods-list');
+  if (methodsList) {
+    methodsList.addEventListener('click', async e => {
+      const removeBtn = e.target.closest('[data-action="remove"]');
+      const defaultBtn = e.target.closest('[data-action="set-default"]');
+      if (removeBtn) {
+        await handleRemoveMethod(removeBtn.dataset.methodId);
+      } else if (defaultBtn) {
+        await handleSetDefaultMethod(defaultBtn.dataset.methodId);
       }
-    }
-  });
+    });
+  }
 
   // Current bill pay button
   const currentBillPayBtn = document.querySelector(
@@ -476,45 +499,128 @@ function initEventListeners() {
  * Handle pay now action
  */
 function handlePayNow() {
-  // TODO: Implement payment flow
-  alert('Payment functionality will be implemented soon.');
+  window.location.href = '../payments/pay.html';
 }
 
 /**
  * Handle download statement
  */
 function handleDownloadStatement() {
-  // TODO: Implement statement download
-  alert('Statement download will be implemented soon.');
+  showToast('Statement download coming soon.', 'info');
 }
 
-/**
- * Handle add payment method
- */
-function handleAddMethod() {
-  // TODO: Implement add payment method modal
-  alert('Add payment method functionality will be implemented soon.');
+/* ============================================================
+ * Add Payment Method Modal
+ * ============================================================ */
+
+function openAddMethodModal() {
+  const modal = document.getElementById('addMethodModal');
+  if (!modal) return;
+  const form = document.getElementById('addMethodForm');
+  if (form) form.reset();
+  const errEl = document.getElementById('pmFormError');
+  if (errEl) {
+    errEl.style.display = 'none';
+    errEl.textContent = '';
+  }
+  const btn = document.getElementById('submitAddMethod');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Save Method';
+  }
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('pm-modal-open');
+  document.body.style.overflow = 'hidden';
 }
 
-/**
- * Handle edit payment method
- */
-function handleEditMethod(methodId) {
-  // TODO: Implement edit payment method modal
-  alert(`Edit payment method ${methodId} will be implemented soon.`);
+function closeAddMethodModal() {
+  const modal = document.getElementById('addMethodModal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  modal.classList.remove('pm-modal-open');
+  document.body.style.overflow = '';
+}
+
+async function handleAddMethodSubmit(e) {
+  e.preventDefault();
+  const type = document.getElementById('pmType')?.value;
+  const name = document.getElementById('pmName')?.value?.trim();
+  const lastFour = document.getElementById('pmLastFour')?.value?.trim();
+  const isDefault = document.getElementById('pmIsDefault')?.checked;
+  const errEl = document.getElementById('pmFormError');
+  const btn = document.getElementById('submitAddMethod');
+
+  // Client-side validation
+  if (!type) {
+    if (errEl) {
+      errEl.textContent = 'Please select a method type.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  if (!name) {
+    if (errEl) {
+      errEl.textContent = 'Please enter a label or account name.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  if (lastFour && !/^\d{1,4}$/.test(lastFour)) {
+    if (errEl) {
+      errEl.textContent = 'Last 4 digits must be numbers only.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+
+  if (errEl) {
+    errEl.style.display = 'none';
+    errEl.textContent = '';
+  }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+  }
+
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ type, name, last_four: lastFour || '', is_default: isDefault }),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Failed to add payment method');
+
+    closeAddMethodModal();
+    await fetchPaymentMethods();
+    renderPaymentMethods();
+    showToast('Payment method added successfully', 'success');
+  } catch (err) {
+    if (errEl) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Save Method';
+    }
+  }
 }
 
 /**
  * Handle remove payment method
  */
 async function handleRemoveMethod(methodId) {
-  if (!confirm('Are you sure you want to remove this payment method?')) {
-    return;
-  }
+  if (!confirm('Remove this payment method?')) return;
 
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods/${methodId}`, {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods/${methodId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -522,19 +628,43 @@ async function handleRemoveMethod(methodId) {
       },
       credentials: 'include',
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to remove payment method');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to remove payment method');
     }
-
-    // Refresh payment methods
     await fetchPaymentMethods();
     renderPaymentMethods();
-
-    showSuccess('Payment method removed successfully');
+    showToast('Payment method removed', 'success');
   } catch (error) {
     console.error('Error removing payment method:', error);
-    showError('Failed to remove payment method');
+    showToast('Failed to remove payment method', 'error');
+  }
+}
+
+/**
+ * Handle set default payment method
+ */
+async function handleSetDefaultMethod(methodId) {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/payments/methods/${methodId}/default`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to set default method');
+    }
+    await fetchPaymentMethods();
+    renderPaymentMethods();
+    showToast('Default payment method updated', 'success');
+  } catch (error) {
+    console.error('Error setting default method:', error);
+    showToast('Failed to update default payment method', 'error');
   }
 }
 
@@ -579,15 +709,13 @@ function getPaymentMethodIcon(type) {
   }
 }
 
-function showError(message) {
-  // TODO: Implement proper toast notification
-  console.error(message);
-  alert(message);
-}
-
-function showSuccess(message) {
-  // TODO: Implement proper toast notification
-  alert(message);
+function showToast(message, type = 'info') {
+  const bg = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#6366f1';
+  const toast = document.createElement('div');
+  toast.style.cssText = `position:fixed;top:20px;right:20px;background:${bg};color:#fff;padding:12px 20px;border-radius:8px;z-index:99999;font-size:14px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.15);pointer-events:none;`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
 }
 
 // Initialize on DOM load
