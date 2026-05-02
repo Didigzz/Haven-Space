@@ -385,6 +385,10 @@ Router::get('/api/payments/overview', function() {
     require_once __DIR__ . '/payments/overview.php';
 });
 
+Router::post('/api/payments/submit', function() {
+    require_once __DIR__ . '/payments/submit.php';
+});
+
 Router::get('/api/payments/methods', function() {
     require_once __DIR__ . '/payments/methods.php';
 });

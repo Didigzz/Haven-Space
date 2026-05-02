@@ -89,30 +89,32 @@
 
                 <!-- Upload New Photos Area -->
                 <div class="photo-upload-area" id="photo-upload-area">
-                  <input
-                    type="file"
-                    id="property-photos"
-                    name="propertyPhotos"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    multiple
-                    hidden
-                  />
-                  <div class="upload-placeholder">
-                    <div class="upload-icon">
-                      <span
-                        data-icon="cloudUpload"
-                        data-icon-width="48"
-                        data-icon-height="48"
-                        data-icon-stroke-width="2"
-                      ></span>
+                  <label for="property-photos" class="upload-label">
+                    <input
+                      type="file"
+                      id="property-photos"
+                      name="propertyPhotos"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      style="display: none"
+                    />
+                    <div class="upload-placeholder">
+                      <div class="upload-icon">
+                        <span
+                          data-icon="cloudUpload"
+                          data-icon-width="48"
+                          data-icon-height="48"
+                          data-icon-stroke-width="2"
+                        ></span>
+                      </div>
+                      <p class="upload-text">
+                        <strong>Click to add more photos</strong> or drag and drop
+                      </p>
+                      <p class="upload-hint">
+                        PNG, JPG, JPEG, WEBP up to 5MB each (Max 10 photos total)
+                      </p>
                     </div>
-                    <p class="upload-text">
-                      <strong>Click to add more photos</strong> or drag and drop
-                    </p>
-                    <p class="upload-hint">
-                      PNG, JPG, JPEG, WEBP up to 5MB each (Max 10 photos total)
-                    </p>
-                  </div>
+                  </label>
                 </div>
               </div>
 

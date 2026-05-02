@@ -700,22 +700,5 @@ function showToast(message, type = 'info') {
   }, 5000);
 }
 
-// Test function to verify single acceptance
-async function testSingleAcceptance() {
-  console.log('Testing single acceptance...');
-
-  // Mock the isProcessing flag
-  const testProcessingCount = 0;
-  const originalIsProcessing = isProcessing;
-
-  // Test that multiple calls to updateApplicationStatus don't result in multiple API calls
-  updateApplicationStatus(1, 'accepted');
-  updateApplicationStatus(1, 'accepted');
-  updateApplicationStatus(1, 'accepted');
-
-  // The isProcessing flag should prevent multiple simultaneous updates
-  console.log('Test completed - multiple calls should only result in one API call');
-}
-
 // Export functions for external use
-export { loadApplications, updateApplicationStatus, openApplicationModal, testSingleAcceptance };
+export { loadApplications, updateApplicationStatus, openApplicationModal };

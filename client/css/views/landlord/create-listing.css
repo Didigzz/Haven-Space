@@ -447,8 +447,24 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  pointer-events: none;
   user-select: none;
+  pointer-events: auto;
+}
+
+.upload-icon {
+  pointer-events: auto;
+}
+
+.upload-icon span {
+  pointer-events: auto;
+}
+
+.upload-icon span svg {
+  pointer-events: auto;
+}
+
+.upload-icon span svg path {
+  pointer-events: auto;
 }
 
 .upload-placeholder svg {
@@ -456,23 +472,25 @@
   height: 48px;
   color: var(--text-gray);
   margin-bottom: 0.5rem;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .upload-placeholder p {
   margin: 0;
   color: var(--text-dark);
   font-size: 0.95rem;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .upload-placeholder strong {
   color: var(--primary-green);
+  pointer-events: auto;
 }
 
 .upload-hint {
   color: var(--text-gray);
   font-size: 0.8rem !important;
+  pointer-events: auto;
 }
 
 /* Add more photos placeholder - compact button style */
@@ -480,17 +498,17 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  pointer-events: none;
   user-select: none;
   white-space: nowrap;
+  pointer-events: auto;
 }
 
 .add-more-placeholder svg {
   width: 18px;
   height: 18px;
   color: var(--white);
-  pointer-events: none;
   flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .add-more-placeholder p {
@@ -498,7 +516,7 @@
   color: var(--white);
   font-size: 0.875rem;
   font-weight: 600;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .add-more-placeholder .upload-hint {
@@ -506,6 +524,7 @@
   font-size: 0.75rem !important;
   font-weight: 500;
   margin-left: 0.25rem;
+  pointer-events: auto;
 }
 
 .btn-upload-photos {
@@ -819,7 +838,23 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.room-photo-icon {
+  pointer-events: auto;
+}
+
+.room-photo-icon span {
+  pointer-events: auto;
+}
+
+.room-photo-icon span svg {
+  pointer-events: auto;
+}
+
+.room-photo-icon span svg path {
+  pointer-events: auto;
 }
 
 .room-photo-placeholder svg {
@@ -827,17 +862,20 @@
   height: 32px;
   color: var(--text-gray);
   margin-bottom: 0.5rem;
+  pointer-events: auto;
 }
 
 .room-photo-placeholder p {
   margin: 0;
   color: var(--text-dark);
   font-size: 0.875rem;
+  pointer-events: auto;
 }
 
 .room-photo-placeholder .upload-hint {
   color: var(--text-gray);
   font-size: 0.75rem;
+  pointer-events: auto;
 }
 
 /* Room add more photos placeholder - compact button style */
@@ -845,17 +883,33 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  pointer-events: none;
   user-select: none;
   white-space: nowrap;
+  pointer-events: auto;
+}
+
+.room-add-more-icon {
+  pointer-events: auto;
+}
+
+.room-add-more-icon span {
+  pointer-events: auto;
+}
+
+.room-add-more-icon span svg {
+  pointer-events: auto;
+}
+
+.room-add-more-icon span svg path {
+  pointer-events: auto;
 }
 
 .room-add-more-placeholder svg {
   width: 18px;
   height: 18px;
   color: var(--white);
-  pointer-events: none;
   flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .room-add-more-placeholder p {
@@ -863,7 +917,7 @@
   color: var(--white);
   font-size: 0.875rem;
   font-weight: 600;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .room-add-more-placeholder .upload-hint {
@@ -871,6 +925,7 @@
   font-size: 0.75rem !important;
   font-weight: 500;
   margin-left: 0.25rem;
+  pointer-events: auto;
 }
 
 .room-photo-grid {

@@ -4,13 +4,15 @@
  * Handles payment form, GCash QR code generation, and payment confirmation
  */
 
-import { getIcon } from '../../shared/icons.js';
+import CONFIG from '../../config.js';
 
 // Payment state
 const paymentState = {
   selectedMethod: 'gcash',
+  paymentId: null,
   amount: 5500.0,
-  period: 'January 2025',
+  period: 'Current Bill',
+  dueDate: null,
   qrTimer: null,
   qrTimeRemaining: 15 * 60, // 15 minutes in seconds
 };
@@ -22,6 +24,9 @@ const paymentState = {
 export async function initPaymentPage() {
   // Initialize sidebar and navbar
   await initializeNavigation();
+
+  // Load current bill so the boarder pays the actual pending amount.
+  await loadCurrentBill();
 
   // Set up payment method selection
   setupPaymentMethodSelection();
@@ -40,8 +45,6 @@ export async function initPaymentPage() {
  * Initialize Navigation (Sidebar & Navbar)
  */
 async function initializeNavigation() {
-  const CONFIG = (await import('../../config.js')).default;
-
   function loginPath() {
     const pathname = window.location.pathname;
     if (pathname.includes('github.io')) {
@@ -61,7 +64,16 @@ async function initializeNavigation() {
 
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      headers,
+      credentials: 'include',
+    });
     if (!res.ok) {
       window.location.href = loginPath();
       return;
@@ -130,6 +142,96 @@ async function initializeNavigation() {
         notificationCount: 3,
       });
     });
+  }
+}
+
+/**
+ * Load the boarder's current bill from the payment overview API.
+ */
+async function loadCurrentBill() {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/overview`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load current bill');
+    }
+
+    const result = await response.json();
+    const overview = result.data || {};
+    const bill = overview.current_bill || {};
+
+    paymentState.paymentId = bill.id || null;
+    paymentState.amount = parseFloat(bill.total || overview.next_payment_amount || 0) || 0;
+    paymentState.period = bill.period || formatPeriod(overview.next_payment_date || new Date());
+    paymentState.dueDate = bill.due_date || overview.next_payment_date || null;
+
+    renderCurrentBill(overview, bill);
+  } catch (error) {
+    console.error('Failed to load current payment bill:', error);
+    showToast('Unable to load your current bill. Please refresh the page.', 'error');
+  }
+}
+
+/**
+ * Render current bill details into the static payment template.
+ */
+function renderCurrentBill(overview, bill) {
+  const amount = paymentState.amount;
+  const baseRent = parseFloat(bill.base_rent || amount || 0);
+  const includesExtras = amount > baseRent;
+  const utilities = includesExtras ? parseFloat(bill.utilities || 0) : 0;
+  const wifi = includesExtras ? parseFloat(bill.wifi || 0) : 0;
+
+  const periodEl = document.querySelector('.payment-summary-period');
+  if (periodEl) {
+    periodEl.textContent = paymentState.period;
+  }
+
+  const summaryRows = document.querySelectorAll('.payment-summary-row');
+  summaryRows.forEach(row => {
+    const label = row.querySelector('.payment-summary-label')?.textContent.trim().toLowerCase();
+    const valueEl = row.querySelector('.payment-summary-value');
+    if (!valueEl || !label) {
+      return;
+    }
+
+    if (label.includes('base rent')) {
+      valueEl.textContent = formatCurrency(baseRent);
+    } else if (label.includes('utilities')) {
+      valueEl.textContent = formatCurrency(utilities);
+    } else if (label.includes('wifi')) {
+      valueEl.textContent = formatCurrency(wifi);
+    } else if (label.includes('total')) {
+      valueEl.textContent = formatCurrency(amount);
+    }
+  });
+
+  const amountInput = document.getElementById('paymentAmount');
+  if (amountInput && amount > 0) {
+    amountInput.value = amount.toFixed(2);
+    amountInput.placeholder = amount.toFixed(2);
+  }
+
+  const manualAmount = document.querySelector('.gcash-amount');
+  if (manualAmount) {
+    manualAmount.textContent = formatCurrency(amount);
+  }
+
+  const hint = document.querySelector('.gcash-reference-hint');
+  if (hint && overview.room_info) {
+    const property = overview.room_info.property_name || 'your room';
+    const room = overview.room_info.room_number ? ` Room ${overview.room_info.room_number}` : '';
+    hint.textContent = `Use your name and ${property}${room} as reference`;
   }
 }
 
@@ -373,16 +475,20 @@ async function handleSubmitPayment() {
     `;
   }
 
-  // TODO: Integrate with backend API for payment processing
-  // Simulate API call
   try {
-    await simulatePaymentProcessing();
+    await submitPayment({
+      payment_id: paymentState.paymentId,
+      reference_number: referenceNumber,
+      amount: paymentAmount,
+      paid_date: paymentDate,
+      payment_method: paymentState.selectedMethod,
+    });
 
     // Show success modal
     showSuccessModal({
       referenceNumber,
       amount: paymentAmount,
-      method: paymentState.selectedMethod === 'gcash' ? 'GCash' : 'Bank Transfer',
+      method: getPaymentMethodLabel(paymentState.selectedMethod),
       date: new Date(paymentDate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -391,17 +497,60 @@ async function handleSubmitPayment() {
     });
   } catch (error) {
     console.error('Payment processing failed:', error);
-    showErrorModal('There was an error processing your payment. Please try again.');
+    showErrorModal(
+      error.message || 'There was an error processing your payment. Please try again.'
+    );
   } finally {
     // Re-enable submit button
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.innerHTML = `
-        ${getIcon('check', { strokeWidth: '2' })}
+        <img src="../../../assets/svg/check.svg" alt="check" width="20" height="20" />
         Submit Payment
       `;
     }
   }
+}
+
+/**
+ * Submit payment details to the API so the landlord can see the payment.
+ * @param {Object} payload - Payment submission data
+ */
+async function submitPayment(payload) {
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/submit`, {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.success === false) {
+    throw new Error(result.error || result.message || 'Failed to submit payment');
+  }
+
+  return result.data;
+}
+
+/**
+ * Format payment method label for display.
+ */
+function getPaymentMethodLabel(method) {
+  const labels = {
+    gcash: 'GCash',
+    bank: 'Bank Transfer',
+    card: 'Credit/Debit Card',
+    cash: 'Cash',
+    other: 'Other',
+  };
+
+  return labels[method] || 'Other';
 }
 
 /**
@@ -457,19 +606,27 @@ function validatePaymentForm() {
 }
 
 /**
- * Simulate Payment Processing (Replace with actual API call)
- * @returns {Promise<void>}
+ * Format currency for Philippine peso amounts.
  */
-function simulatePaymentProcessing() {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate 90% success rate
-      if (Math.random() > 0.1) {
-        resolve();
-      } else {
-        reject(new Error('Simulated payment failure'));
-      }
-    }, 2000);
+function formatCurrency(amount) {
+  return `₱${Number(amount || 0).toLocaleString('en-PH', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+/**
+ * Format a bill period from a date value.
+ */
+function formatPeriod(dateValue) {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return 'Current Bill';
+  }
+
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
   });
 }
 

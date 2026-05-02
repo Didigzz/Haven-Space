@@ -214,20 +214,12 @@ function updatePhotoOrder() {
 }
 
 function setupPhotoUpload() {
-  const uploadArea = document.getElementById('photo-upload-area');
   const fileInput = document.getElementById('property-photos');
+  const uploadLabel = document.querySelector('.upload-label');
 
-  if (!uploadArea || !fileInput) {
+  if (!fileInput || !uploadLabel) {
     return;
   }
-
-  uploadArea.addEventListener('click', e => {
-    // Prevent multiple triggers and event bubbling
-    e.stopPropagation();
-    e.preventDefault();
-    if (e.target === fileInput) return;
-    fileInput.click();
-  });
 
   fileInput.addEventListener('change', e => {
     handleFileSelect(e.target.files);
@@ -236,22 +228,24 @@ function setupPhotoUpload() {
   });
 
   // Drag and drop
-  uploadArea.addEventListener('dragover', e => {
+  uploadLabel.addEventListener('dragover', e => {
     e.preventDefault();
     e.stopPropagation();
-    uploadArea.classList.add('drag-over');
+    uploadLabel.closest('.photo-upload-area').classList.add('drag-over');
   });
 
-  uploadArea.addEventListener('dragleave', e => {
+  uploadLabel.addEventListener('dragleave', e => {
     e.stopPropagation();
-    uploadArea.classList.remove('drag-over');
+    uploadLabel.closest('.photo-upload-area').classList.remove('drag-over');
   });
 
-  uploadArea.addEventListener('drop', e => {
+  uploadLabel.addEventListener('drop', e => {
     e.preventDefault();
     e.stopPropagation();
-    uploadArea.classList.remove('drag-over');
-    handleFileSelect(e.dataTransfer.files);
+    uploadLabel.closest('.photo-upload-area').classList.remove('drag-over');
+    if (e.dataTransfer.files.length) {
+      handleFileSelect(e.dataTransfer.files);
+    }
   });
 }
 
