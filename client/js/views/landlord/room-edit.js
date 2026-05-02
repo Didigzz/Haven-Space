@@ -147,13 +147,15 @@ function buildRoomCard(room) {
     {
       available: 'available',
       occupied: 'occupied',
-    }[room.status] ?? 'available';
+      maintenance: 'maintenance',
+    }[room.status] ?? 'maintenance';
 
   const statusLabel =
     {
       available: 'Available',
       occupied: 'Occupied',
-    }[room.status] ?? room.status;
+      maintenance: 'Maintenance',
+    }[room.status] ?? 'Maintenance';
 
   const tenantHtml = room.tenant
     ? `<div class="tenant-info">
@@ -248,6 +250,7 @@ function openAddModal() {
   setText('modal-title', 'Add New Room');
   document.getElementById('room-form').reset();
   hideTenantSection();
+  showMaxOccupancy(); // Show max occupancy by default for new rooms
   resetPhotoUI();
   openModal('room-modal');
 }
@@ -263,9 +266,20 @@ function openEditModal(roomId) {
   setVal('room-price', room.price);
   setVal('room-deposit', room.deposit ?? 0);
   setVal('room-size', room.size ?? '');
-  setVal('room-capacity', room.capacity);
+  setVal('room-type', room.room_type ?? '');
   setVal('room-status', room.status);
   setVal('room-description', room.description ?? '');
+
+  // Show/hide max occupancy based on room type and auto-correct capacity
+  if (room.room_type === 'single') {
+    // For single rooms, always set capacity to 1
+    setVal('room-capacity', 1);
+    hideMaxOccupancy();
+  } else {
+    // For shared/private rooms, use the stored capacity
+    setVal('room-capacity', room.capacity);
+    showMaxOccupancy();
+  }
 
   if (room.tenant) {
     showTenantSection();
@@ -311,6 +325,7 @@ async function saveRoom() {
     deposit: getVal('room-deposit') ? parseFloat(getVal('room-deposit')) : 0,
     size: getVal('room-size') ? parseFloat(getVal('room-size')) : null,
     capacity: getVal('room-capacity') ? parseInt(getVal('room-capacity')) : 1,
+    room_type: getVal('room-type') || null,
     status: getVal('room-status'),
     description: getVal('room-description'),
   };
@@ -573,6 +588,23 @@ function bindUI() {
     e.target.value === 'occupied' ? showTenantSection() : hideTenantSection();
   });
 
+  // Show/hide max occupancy when room type changes and auto-update capacity
+  document.getElementById('room-type')?.addEventListener('change', e => {
+    const roomType = e.target.value;
+    if (roomType === 'single') {
+      // Auto-set capacity to 1 for single rooms
+      setVal('room-capacity', 1);
+      hideMaxOccupancy();
+    } else {
+      showMaxOccupancy();
+      // For shared/private rooms, set default capacity to 2 if currently 1
+      const currentCapacity = parseInt(getVal('room-capacity')) || 1;
+      if (currentCapacity === 1) {
+        setVal('room-capacity', 2);
+      }
+    }
+  });
+
   // Search / filter / sort
   document.getElementById('search-rooms')?.addEventListener('input', applyFilters);
   document.getElementById('filter-status')?.addEventListener('change', applyFilters);
@@ -615,6 +647,16 @@ function showTenantSection() {
 
 function hideTenantSection() {
   const el = document.getElementById('tenant-section');
+  if (el) el.style.display = 'none';
+}
+
+function showMaxOccupancy() {
+  const el = document.getElementById('room-capacity')?.closest('.form-row');
+  if (el) el.style.display = '';
+}
+
+function hideMaxOccupancy() {
+  const el = document.getElementById('room-capacity')?.closest('.form-row');
   if (el) el.style.display = 'none';
 }
 

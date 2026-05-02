@@ -56,9 +56,9 @@ try {
         json_response(404, ['error' => 'Property not found']);
     }
 
-    // Calculate price range (+/- 30%)
-    $minPrice = $currentProperty['price'] * 0.7;
-    $maxPrice = $currentProperty['price'] * 1.3;
+    // Calculate price range (+/- 150% for better matching with limited listings)
+    $minPrice = $currentProperty['price'] * 0.4;
+    $maxPrice = $currentProperty['price'] * 2.5;
 
     // Get similar properties
     $similarQuery = "

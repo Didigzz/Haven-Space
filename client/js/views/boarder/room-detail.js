@@ -1053,19 +1053,37 @@ function showRoomDetailModal(room, property) {
   // Update capacity
   const capacity = document.getElementById('modal-room-capacity');
   if (capacity)
-    capacity.textContent = `${room.capacity} ${room.capacity > 1 ? 'persons' : 'person'}`;
+    capacity.textContent = `${room.capacity}\u00A0${room.capacity > 1 ? 'persons' : 'person'}`;
 
   // Update room type
   const modalRoomType = document.getElementById('modal-room-type');
   if (modalRoomType) modalRoomType.textContent = roomType;
 
-  // Update size
-  const size = document.getElementById('modal-room-size');
-  if (size) size.textContent = room.size ? `${room.size} sqm` : 'Not specified';
+  // Update status
+  const modalRoomStatusValue = document.getElementById('modal-room-status-value');
+  if (modalRoomStatusValue) {
+    const statusText =
+      room.status === 'available'
+        ? 'Available'
+        : room.status === 'occupied'
+        ? 'Occupied'
+        : 'Maintenance';
+    modalRoomStatusValue.textContent = statusText;
+  }
 
-  // Update furnishing
+  // Update deposit
+  const deposit = document.getElementById('modal-room-deposit');
+  if (deposit) deposit.textContent = room.deposit || 'Not specified';
+
+  // Update furnishing - hide if not specified
   const furnishing = document.getElementById('modal-room-furnishing');
-  if (furnishing) furnishing.textContent = room.furnishing || 'Not specified';
+  const furnishingItem = furnishing?.closest('.room-modal-detail-item');
+  if (room.furnishing && room.furnishing !== 'Not specified') {
+    if (furnishing) furnishing.textContent = room.furnishing;
+    if (furnishingItem) furnishingItem.style.display = '';
+  } else {
+    if (furnishingItem) furnishingItem.style.display = 'none';
+  }
 
   // Update description
   const description = document.getElementById('modal-room-description');
