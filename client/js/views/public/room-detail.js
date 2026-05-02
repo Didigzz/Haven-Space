@@ -591,12 +591,11 @@ function updateGalleryImage() {
  * Setup event listeners
  */
 function setupEventListeners(_room) {
-  // Apply Now button - redirect to login for public users
+  // Apply Now button - scroll to Available Rooms section
   const applyBtn = document.getElementById('apply-now-btn');
   if (applyBtn) {
     applyBtn.addEventListener('click', () => {
-      const redirectUrl = encodeURIComponent(window.location.href);
-      window.location.href = `../auth/login.html?redirect=${redirectUrl}`;
+      scrollToAvailableRooms();
     });
   }
 
@@ -618,6 +617,15 @@ function setupEventListeners(_room) {
     });
   }
 
+  // Room type options - scroll to Available Rooms section when clicked (prevent selection)
+  const roomTypeOptions = document.querySelectorAll('.booking-room-option');
+  roomTypeOptions.forEach(option => {
+    option.addEventListener('click', e => {
+      e.preventDefault();
+      scrollToAvailableRooms();
+    });
+  });
+
   // Similar property cards
   document.querySelectorAll('.similar-property-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -627,6 +635,19 @@ function setupEventListeners(_room) {
       }
     });
   });
+}
+
+/**
+ * Scroll to Available Rooms section
+ */
+function scrollToAvailableRooms() {
+  const availableRoomsSection = document.querySelector('.available-rooms-section');
+  if (availableRoomsSection) {
+    availableRoomsSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }
 }
 
 /**
@@ -844,11 +865,11 @@ function loadAvailableRooms(property, filter = 'all') {
   // Initialize icons for room cards
   initIconElements();
 
-  // Add click event listeners to room cards
+  // Add click event listeners to room cards - redirect to login for public users
   document.querySelectorAll('.available-room-card').forEach(card => {
     card.addEventListener('click', () => {
-      const roomData = JSON.parse(card.dataset.room);
-      showRoomDetailModal(roomData);
+      const redirectUrl = encodeURIComponent(window.location.href);
+      window.location.href = `../auth/login.html?redirect=${redirectUrl}`;
     });
   });
 }
