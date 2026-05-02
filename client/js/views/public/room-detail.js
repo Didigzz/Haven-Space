@@ -219,10 +219,13 @@ function populateRoomData(room) {
           `;
       })
       .join('');
+  } else if (roomAmenities) {
+    roomAmenities.innerHTML =
+      '<p style="color: #6b7280;">No amenities listed for this property.</p>';
   }
 
-  // Update house rules
-  const rulesContainer = document.querySelector('.room-detail-rules');
+  // Update property rules (formerly house rules)
+  const rulesContainer = document.getElementById('room-property-rules');
   if (rulesContainer && room.houseRules && room.houseRules.length > 0) {
     rulesContainer.innerHTML = room.houseRules
       .map(rule => {
@@ -240,21 +243,45 @@ function populateRoomData(room) {
           `;
       })
       .join('');
-  } else if (rulesContainer && room.rules && room.rules.length > 0) {
-    // Fallback to old format
-    rulesContainer.innerHTML = room.rules
-      .map(
-        rule => `
+  } else if (rulesContainer && room.propertyRules) {
+    // If propertyRules is a plain text field, display it
+    rulesContainer.innerHTML = `<p>${room.propertyRules}</p>`;
+  } else if (rulesContainer) {
+    rulesContainer.innerHTML = '<p style="color: #6b7280;">No property rules specified.</p>';
+  }
+
+  // Update gender preferences
+  const genderPreferenceContainer = document.getElementById('room-gender-preference');
+  if (genderPreferenceContainer) {
+    const genderPref = room.genderPreference || 'any';
+    let genderText = '';
+    let genderIcon = 'users';
+
+    switch (genderPref.toLowerCase()) {
+      case 'male':
+        genderText = 'Male Only';
+        genderIcon = 'user';
+        break;
+      case 'female':
+        genderText = 'Female Only';
+        genderIcon = 'user';
+        break;
+      case 'any':
+      default:
+        genderText = 'Open to All Genders';
+        genderIcon = 'users';
+        break;
+    }
+
+    genderPreferenceContainer.innerHTML = `
       <div class="rule-item">
-        <span data-icon="${rule.icon}" data-icon-width="20" data-icon-height="20"></span>
+        <span data-icon="${genderIcon}" data-icon-width="20" data-icon-height="20"></span>
         <div class="rule-content">
-          <h4>${rule.title}</h4>
-          <p>${rule.desc}</p>
+          <h4>${genderText}</h4>
+          <p>This property accepts ${genderText.toLowerCase()} boarders.</p>
         </div>
       </div>
-    `
-      )
-      .join('');
+    `;
   }
 
   // Update landlord info

@@ -29,12 +29,9 @@ let currentRoomIndex = 0;
 
 // Room type options
 const ROOM_TYPES = [
-  { value: 'single', label: 'Single Room' },
-  { value: 'shared', label: 'Shared Room' },
-  { value: 'studio', label: 'Studio' },
-  { value: 'suite', label: 'Suite' },
-  { value: 'dormitory', label: 'Dormitory Style' },
-  { value: 'other', label: 'Other' },
+  { value: 'shared', label: 'Shared' },
+  { value: 'single', label: 'Single' },
+  { value: 'private', label: 'Private' },
 ];
 
 // Map state

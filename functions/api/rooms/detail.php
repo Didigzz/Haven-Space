@@ -48,6 +48,8 @@ try {
             p.deposit,
             p.min_stay,
             p.house_rules,
+            p.gender_preference,
+            p.property_rules,
             a.city,
             a.province,
             u.first_name as landlord_first_name,
@@ -79,6 +81,8 @@ try {
     $availabilityStatus = '';
     $propertyTotalRooms = 0;
     $houseRules = [];
+    $genderPreference = '';
+    $propertyRules = '';
     
     // Get amenities
     try {
@@ -95,7 +99,17 @@ try {
         error_log('Property amenities fetch error: ' . $e->getMessage());
     }
     
-    // Get details from properties table (deposit, min_stay, house_rules migrated there)
+    // Get details from properties table (deposit, min_stay, house_rules, gender_preference, property_rules)
+    $city = $property['city'] ?? '';
+    $province = $property['province'] ?? '';
+    $deposit = $property['deposit'] ?? '';
+    $minStay = $property['min_stay'] ?? '';
+    $houseRules = [];
+    if (!empty($property['house_rules'])) {
+        $houseRules = json_decode($property['house_rules'], true) ?: [];
+    }
+    $genderPreference = $property['gender_preference'] ?? 'any';
+    $propertyRules = $property['property_rules'] ?? '';
     $city = $property['city'] ?? '';
     $province = $property['province'] ?? '';
     $propertyType = '';
@@ -107,6 +121,26 @@ try {
     $houseRules = [];
     if (!empty($property['house_rules'])) {
         $houseRules = json_decode($property['house_rules'], true) ?: [];
+    }
+    
+    // Get gender preference and property rules
+    try {
+        $detailsStmt = $pdo->prepare("
+            SELECT gender_preference, property_rules 
+            FROM properties 
+            WHERE id = ?
+        ");
+        $detailsStmt->execute([$propertyId]);
+        $details = $detailsStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($details) {
+            $genderPreference = $details['gender_preference'] ?? 'any';
+            $propertyRules = $details['property_rules'] ?? '';
+        }
+    } catch (PDOException $e) {
+        error_log('Property details fetch error: ' . $e->getMessage());
+        $genderPreference = 'any';
+        $propertyRules = '';
     }
 
     // Get all property photos
@@ -344,6 +378,8 @@ try {
         'totalRooms' => $totalRooms,
         'amenities' => $amenities,
         'houseRules' => $houseRules,
+        'genderPreference' => $genderPreference,
+        'propertyRules' => $propertyRules,
         'images' => $images,
         'coverImage' => $coverImage,
         'badges' => $badges,
