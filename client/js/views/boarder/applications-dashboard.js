@@ -8,6 +8,7 @@ import { initNavbar } from '../../components/navbar.js';
 import { authenticatedFetch } from '../../shared/state.js';
 import { getIcon } from '../../shared/icons.js';
 import { showToast } from '../../shared/toast.js';
+import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
 
 /**
@@ -608,8 +609,9 @@ async function loadSavedProperties() {
         return `
         <div class="saved-property-card" data-property-id="${property.id}">
           <div class="saved-property-image">
-            <img src="${property.cover_image || '../../../../assets/images/placeholder-room.svg'}" 
-                 alt="${property.title}" />
+            <img src="${getImageUrl(property.cover_image)}" 
+                 alt="${property.title}"
+                 onerror="${getImageErrorHandler()}" />
             <button class="saved-property-remove" onclick="removeSavedProperty(${property.id})">
               <span class="icon-placeholder" data-icon="xMark"></span>
             </button>
