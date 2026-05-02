@@ -1,0 +1,65 @@
+{
+  "data": {
+    "id": 3,
+    "title": "DIGAL BOARDING HOUSE",
+    "description": "GARAAA NIMU OI",
+    "address": "Perino Street Sumpong",
+    "city": "Malaybalay",
+    "province": "Bukidnon",
+    "price": 1500,
+    "latitude": 8.161023,
+    "longitude": 125.121848,
+    "propertyType": "boarding-house",
+    "deposit": "1500",
+    "minStay": "1 month",
+    "capacity": "",
+    "availabilityStatus": "",
+    "rating": 4.5,
+    "reviews": 0,
+    "roomTypes": "shared & single",
+    "availability": "Available Now",
+    "availableRooms": 2,
+    "totalRooms": 2,
+    "amenities": ["Fully Furnished", "WiFi"],
+    "houseRules": [],
+    "genderPreference": "any",
+    "propertyRules": "Bisaya si abecia",
+    "images": [
+      "/storage/properties/3/listing_69f62526b0ff1_1777739046.png",
+      "/storage/properties/3/listing_69f62526b129a_1777739046.jpg",
+      "/storage/properties/3/listing_69f62526b155b_1777739046.jpeg"
+    ],
+    "coverImage": "/storage/properties/3/listing_69f62526b0ff1_1777739046.png",
+    "badges": ["verified", "new"],
+    "rooms": [
+      {
+        "id": 6,
+        "roomNumber": "Room 2",
+        "roomType": "shared",
+        "price": 1500,
+        "deposit": 0,
+        "status": "available",
+        "capacity": 3,
+        "description": "",
+        "size": 0,
+        "images": ["/storage/properties/3/rooms/6/room_6_69f62526becae.png"],
+        "furnishing": "Not specified"
+      },
+      {
+        "id": 5,
+        "roomNumber": "wadasd",
+        "roomType": "single",
+        "price": 1500,
+        "deposit": 0,
+        "status": "available",
+        "capacity": 1,
+        "description": "",
+        "size": 0,
+        "images": ["/storage/properties/3/rooms/5/room_5_69f62526b89d2.jpeg"],
+        "furnishing": "Not specified"
+      }
+    ],
+    "landlord": { "id": 2, "name": "JOHN DIGAL", "properties": 2, "rating": 4.7 },
+    "createdAt": "2026-05-03 00:24:06"
+  }
+}

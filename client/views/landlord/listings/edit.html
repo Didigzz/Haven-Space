@@ -199,115 +199,172 @@
                   </div>
                 </section>
 
-                <!-- Pricing & Capacity Section -->
+<!-- Amenities Section -->
                 <section class="form-section">
                   <div class="section-header">
                     <h2 class="section-title">
                       <span
-                        data-icon="currencyDollar"
+                        data-icon="sparkles"
                         data-icon-width="24"
                         data-icon-height="24"
                         data-icon-stroke-width="2"
                       ></span>
-                      Pricing & Capacity
+                      Amenities & Features
                     </h2>
-                    <p class="section-description">Set your rental rates and room availability</p>
+                    <p class="section-description">Select all amenities that your property offers</p>
                   </div>
 
-                  <div class="form-grid">
-                    <div class="form-group full-width">
-                      <label for="property-price">
-                        Monthly Rent (₱) *
-                        <span class="label-hint">Base price per month</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="input-icon">₱</span>
-                        <input
-                          type="number"
-                          id="property-price"
-                          name="propertyPrice"
-                          placeholder="5000"
-                          min="0"
-                          step="100"
-                          required
-                        />
-                      </div>
-                    </div>
+                  <div class="amenities-grid">
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="WiFi" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="sparkles"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        WiFi
+                      </span>
+                    </label>
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="Air Conditioning" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="computerDesktop"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        Air Conditioning
+                      </span>
+                    </label>
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="Fully Furnished" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="videoCamera"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        Fully Furnished
+                      </span>
+                    </label>
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="Parking" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="home"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        Parking
+                      </span>
+                    </label>
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="Laundry" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="history"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        Laundry
+                      </span>
+                    </label>
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="Kitchen Access" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="moon"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        Kitchen Access
+                      </span>
+                    </label>
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="CR Inside Room" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="clipboard"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        CR Inside Room
+                      </span>
+                    </label>
+                    <label class="amenity-checkbox">
+                      <input type="checkbox" name="amenities" value="CCTV Security" />
+                      <span class="amenity-label">
+                        <span
+                          data-icon="camera"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        CCTV Security
+                      </span>
+                    </label>
+                  </div>
 
-                    <div class="form-group full-width">
-                      <label for="property-deposit">
-                        Security Deposit (₱)
-                        <span class="label-hint">Usually 1-2 months rent</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="input-icon">₱</span>
-                        <input
-                          type="number"
-                          id="property-deposit"
-                          name="propertyDeposit"
-                          placeholder="10000"
-                          min="0"
-                          step="100"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="form-group full-width">
-                      <label for="property-rooms">
-                        Total Number of Rooms *
-                        <span class="label-hint">Available rooms in your property</span>
-                      </label>
+                  <!-- Custom Amenities Section -->
+                  <div class="custom-amenities-section" style="margin-top: 1.5rem">
+                    <h4
+                      style="
+                        margin-bottom: 0.75rem;
+                        font-size: 0.95rem;
+                        font-weight: 600;
+                        color: var(--text-dark);
+                      "
+                    >
+                      Add Custom Amenity
+                    </h4>
+                    <div
+                      class="custom-amenities-input-group"
+                      style="display: flex; gap: 0.5rem; align-items: flex-start"
+                    >
                       <input
-                        type="number"
-                        id="property-rooms"
-                        name="propertyRooms"
-                        placeholder="10"
-                        min="1"
-                        max="100"
-                        required
+                        type="text"
+                        id="custom-amenity-input"
+                        placeholder="e.g. Swimming Pool, Gym, 24/7 Security, etc."
+                        style="
+                          flex: 1;
+                          padding: 0.75rem 1rem;
+                          border: 1px solid var(--border-color);
+                          border-radius: 8px;
+                          font-size: 0.95rem;
+                          font-family: var(--font-main);
+                        "
                       />
+                      <button
+                        type="button"
+                        id="add-custom-amenity-btn"
+                        class="btn-add-amenity"
+                        style="
+                          padding: 0.75rem 1.25rem;
+                          background-color: var(--primary-green);
+                          color: var(--white);
+                          border: none;
+                          border-radius: 8px;
+                          font-weight: 500;
+                          cursor: pointer;
+                          transition: all 0.2s ease;
+                        "
+                      >
+                        Add
+                      </button>
                     </div>
-
-                    <div class="form-group full-width">
-                      <label for="property-capacity">
-                        Capacity per Room
-                        <span class="label-hint">How many people per room</span>
-                      </label>
-                      <select id="property-capacity" name="propertyCapacity">
-                        <option value="">Select capacity</option>
-                        <option value="1">1 person (Single)</option>
-                        <option value="2">2 persons (Shared)</option>
-                        <option value="3">3 persons</option>
-                        <option value="4">4 persons</option>
-                        <option value="5+">5+ persons</option>
-                      </select>
-                    </div>
-
-                    <div class="form-group full-width">
-                      <label for="property-min-stay">
-                        Minimum Stay Period
-                        <span class="label-hint">Shortest rental duration</span>
-                      </label>
-                      <select id="property-min-stay" name="propertyMinStay">
-                        <option value="">No minimum</option>
-                        <option value="1-month">1 month</option>
-                        <option value="3-months">3 months</option>
-                        <option value="6-months">6 months</option>
-                        <option value="1-year">1 year</option>
-                      </select>
-                    </div>
-
-                    <div class="form-group full-width">
-                      <label for="property-availability">
-                        Availability Status
-                        <span class="label-hint">When can boarders move in</span>
-                      </label>
-                      <select id="property-availability" name="propertyAvailability">
-                        <option value="available-now">Available Now</option>
-                        <option value="available-soon">Available Soon</option>
-                        <option value="by-appointment">By Appointment</option>
-                      </select>
-                    </div>
+                    <div
+                      id="custom-amenities-list"
+                      class="custom-amenities-list"
+                      style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem"
+                    ></div>
                   </div>
                 </section>
               </div>
@@ -385,6 +442,37 @@
                     </div>
                   </div>
                 </section>
+
+                <!-- Property Rules Section -->
+                <section class="form-section">
+                  <div class="section-header">
+                    <h2 class="section-title">
+                      <span
+                        data-icon="clipboardList"
+                        data-icon-width="24"
+                        data-icon-height="24"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      Property Rules
+                    </h2>
+                    <p class="section-description">Set house rules and guidelines for your property</p>
+                  </div>
+
+                  <div class="form-grid">
+                    <div class="form-group full-width"> 
+                        <span class="label-hint">One rule per line</span>
+                      <textarea
+                        id="property-rules"
+                        name="propertyRules"
+                        rows="6"
+                        placeholder="Enter house rules (e.g., No smoking, No pets, Curfew at 10 PM, etc.)&#10;&#10;• One rule per line&#10;• Be clear and specific&#10;• Keep rules reasonable"
+                      ></textarea>
+                      <p class="field-hint">Optional: Add specific rules that boarders must follow</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
               </div>
             </div>
 
@@ -519,6 +607,6 @@
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../../js/main.js?v=1777136032299"></script>
-    <script type="module" src="../../../js/views/landlord/edit-listing.js?v=1777136032301"></script>
+    <script type="module" src="../../../js/views/landlord/edit-listing.js?v=1777136032304"></script>
   </body>
 </html>

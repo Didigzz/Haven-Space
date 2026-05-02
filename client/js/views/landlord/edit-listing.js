@@ -18,6 +18,7 @@ let editMap = null;
 let editMapMarker = null;
 let tempLatitude = null;
 let tempLongitude = null;
+let customAmenitiesList = [];
 
 export function initEditListing() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -32,6 +33,7 @@ export function initEditListing() {
   loadPropertyData();
   setupFormHandlers();
   setupPhotoUpload();
+  initCustomAmenities();
 }
 
 async function loadPropertyData() {
@@ -83,12 +85,6 @@ function populateForm(property) {
   document.getElementById('property-name').value = property.name || '';
   document.getElementById('property-type').value = property.type || 'boarding-house';
   document.getElementById('property-description').value = property.description || '';
-  document.getElementById('property-price').value = property.price || 0;
-  document.getElementById('property-deposit').value = property.deposit || 0;
-  document.getElementById('property-rooms').value = property.total_rooms || property.rooms || 0;
-  document.getElementById('property-capacity').value = property.capacity || '';
-  document.getElementById('property-min-stay').value = property.min_stay || '';
-  document.getElementById('property-availability').value = property.availability || 'available-now';
   document.getElementById('property-status').value = property.status || 'active';
   document.getElementById('property-address').value = property.address || '';
   document.getElementById('property-city').value = property.city || '';
@@ -96,12 +92,24 @@ function populateForm(property) {
   document.getElementById('property-latitude').value = property.latitude || '';
   document.getElementById('property-longitude').value = property.longitude || '';
 
+  // Set property rules
+  const rulesField = document.getElementById('property-rules');
+  if (rulesField) {
+    rulesField.value = property.rules || '';
+  }
+
   // Set amenities
   const amenities = property.amenities || [];
   const amenityCheckboxes = document.querySelectorAll('input[name="amenities"]');
   amenityCheckboxes.forEach(checkbox => {
     checkbox.checked = amenities.includes(checkbox.value);
   });
+
+  // Set custom amenities
+  if (property.custom_amenities && Array.isArray(property.custom_amenities)) {
+    customAmenitiesList = [...property.custom_amenities];
+    renderCustomAmenities();
+  }
 
   // Load existing photos
   existingPhotos = property.photos || [];
@@ -360,19 +368,15 @@ async function handleFormSubmit(e) {
     name: formData.get('propertyName'),
     type: formData.get('propertyType'),
     description: formData.get('propertyDescription'),
-    price: parseFloat(formData.get('propertyPrice')) || 0,
-    deposit: parseFloat(formData.get('propertyDeposit')) || 0,
-    total_rooms: parseInt(formData.get('propertyRooms')) || 0,
-    capacity: formData.get('propertyCapacity') || null,
-    min_stay: formData.get('propertyMinStay') || null,
-    availability: formData.get('propertyAvailability') || 'available-now',
     status: formData.get('propertyStatus'),
     address: formData.get('propertyAddress'),
     city: formData.get('propertyCity'),
     province: formData.get('propertyProvince'),
     latitude: formData.get('propertyLatitude') || null,
     longitude: formData.get('propertyLongitude') || null,
+    rules: formData.get('propertyRules') || null,
     amenities: selectedAmenities,
+    custom_amenities: customAmenitiesList,
     photos: existingPhotos,
     photos_to_delete: photosToDelete,
   };
@@ -889,6 +893,96 @@ async function handleGeocodeFromAddress() {
     console.error('Error geocoding address:', error);
     alert('Failed to geocode address. Please try setting location manually on the map.');
   }
+}
+
+/**
+ * Initialize custom amenities functionality
+ */
+function initCustomAmenities() {
+  const addCustomAmenityBtn = document.getElementById('add-custom-amenity-btn');
+  const customAmenityInput = document.getElementById('custom-amenity-input');
+
+  if (addCustomAmenityBtn) {
+    addCustomAmenityBtn.addEventListener('click', handleAddCustomAmenity);
+  }
+
+  if (customAmenityInput) {
+    customAmenityInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAddCustomAmenity();
+      }
+    });
+  }
+}
+
+/**
+ * Handle add custom amenity
+ */
+function handleAddCustomAmenity() {
+  const input = document.getElementById('custom-amenity-input');
+  const listContainer = document.getElementById('custom-amenities-list');
+
+  if (!input || !listContainer) return;
+
+  const value = input.value.trim();
+  if (!value) return;
+
+  // Check if already exists
+  if (customAmenitiesList.includes(value)) {
+    alert('This amenity has already been added');
+    return;
+  }
+
+  // Add to array
+  customAmenitiesList.push(value);
+
+  // Re-render
+  renderCustomAmenities();
+
+  // Clear input
+  input.value = '';
+  input.focus();
+}
+
+/**
+ * Remove custom amenity
+ */
+function removeCustomAmenity(value) {
+  customAmenitiesList = customAmenitiesList.filter(a => a !== value);
+  renderCustomAmenities();
+}
+
+/**
+ * Render custom amenities list
+ */
+function renderCustomAmenities() {
+  const listContainer = document.getElementById('custom-amenities-list');
+  if (!listContainer) return;
+
+  listContainer.innerHTML = '';
+
+  customAmenitiesList.forEach(amenity => {
+    const tag = document.createElement('div');
+    tag.className = 'amenity-tag-custom';
+    tag.style.cssText =
+      'display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--bg-green); color: var(--primary-green); border-radius: 20px; font-size: 0.85rem; font-weight: 500; margin: 0.25rem;';
+
+    tag.innerHTML = `
+      ${amenity}
+      <button type="button" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
+        ${getIcon('xMark', { width: 16, height: 16 })}
+      </button>
+    `;
+
+    // Add remove event listener
+    const removeBtn = tag.querySelector('button');
+    removeBtn.addEventListener('click', () => {
+      removeCustomAmenity(amenity);
+    });
+
+    listContainer.appendChild(tag);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

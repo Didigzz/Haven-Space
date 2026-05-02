@@ -97,6 +97,8 @@ try {
             price = ?,
             deposit = ?,
             min_stay = ?,
+            property_rules = ?,
+            property_type = ?,
             status = ?,
             updated_at = NOW()
         WHERE id = ? AND landlord_id = ?
@@ -111,7 +113,7 @@ try {
     }
 
     // Get current property data for fallback values
-    $currentPropStmt = $pdo->prepare("SELECT title, description, price, deposit, min_stay FROM properties WHERE id = ?");
+    $currentPropStmt = $pdo->prepare("SELECT title, description, price, deposit, min_stay, property_rules, property_type FROM properties WHERE id = ?");
     $currentPropStmt->execute([$propertyId]);
     $currentProp = $currentPropStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -134,6 +136,8 @@ try {
         floatval($input['price'] ?? $input['propertyPrice'] ?? $currentProp['price']),
         isset($input['deposit']) ? strval($input['deposit']) : $currentProp['deposit'],
         $minStay,
+        $input['rules'] ?? $input['propertyRules'] ?? $currentProp['property_rules'],
+        $input['type'] ?? $input['propertyType'] ?? $currentProp['property_type'],
         $status,
         $propertyId,
         $landlordId,

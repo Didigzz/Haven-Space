@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         if ($propertyId) {
             // Get single property with full details
-            $stmt = $pdo->prepare("\n                SELECT \n                    p.id,\n                    p.title,\n                    p.description,\n                    a.address_line_1 as address,\n                    a.latitude,\n                    a.longitude,\n                    a.city,\n                    a.province,\n                    p.price,\n                    p.deposit,\n                    p.min_stay,\n                    p.status,\n                    p.listing_moderation_status,\n                    p.created_at,\n                    COUNT(DISTINCT r.id) as rooms_count,\n                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms\n                FROM properties p\n                LEFT JOIN addresses a ON p.address_id = a.id\n                LEFT JOIN rooms r ON p.id = r.property_id\n                WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL\n                GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, a.city, a.province, p.price, p.deposit, p.min_stay, p.status, p.listing_moderation_status, p.created_at\n            ");
+            $stmt = $pdo->prepare("\n                SELECT \n                    p.id,\n                    p.title,\n                    p.description,\n                    p.property_type,\n                    a.address_line_1 as address,\n                    a.latitude,\n                    a.longitude,\n                    a.city,\n                    a.province,\n                    p.price,\n                    p.deposit,\n                    p.min_stay,\n                    p.property_rules,\n                    p.status,\n                    p.listing_moderation_status,\n                    p.created_at,\n                    COUNT(DISTINCT r.id) as rooms_count,\n                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms\n                FROM properties p\n                LEFT JOIN addresses a ON p.address_id = a.id\n                LEFT JOIN rooms r ON p.id = r.property_id\n                WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL\n                GROUP BY p.id, p.title, p.description, p.property_type, a.address_line_1, a.latitude, a.longitude, a.city, a.province, p.price, p.deposit, p.min_stay, p.property_rules, p.status, p.listing_moderation_status, p.created_at\n            ");
             $stmt->execute([$propertyId, $landlordId]);
             $property = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -206,15 +206,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             }, $rawPhotos);
 
             // Map property_type to frontend format
+            // The property_type column stores the frontend format values (e.g., 'apartment', 'boarding-house')
+            // so we just need to return it as-is, with a fallback for legacy data
             $typeMapping = [
                 'Single unit' => 'boarding-house',
                 'Multi-unit' => 'boarding-house',
                 'Apartment' => 'apartment',
                 'Dormitory' => 'dormitory',
             ];
-            $type = isset($property['property_type']) && isset($typeMapping[$property['property_type']]) 
-                ? $typeMapping[$property['property_type']] 
-                : 'boarding-house';
+            
+            $propertyType = $property['property_type'] ?? 'boarding-house';
+            
+            // If it's already in the correct format (lowercase with hyphens), use it directly
+            // Otherwise, try to map it from legacy format
+            if (isset($typeMapping[$propertyType])) {
+                $type = $typeMapping[$propertyType];
+            } else {
+                $type = $propertyType;
+            }
 
             // Map database status to frontend status
             $displayStatus = $property['status'];
@@ -246,6 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'created_at' => $property['created_at'],
                 'amenities' => $amenities,
                 'photos' => $photos,
+                'rules' => $property['property_rules'] ?? '',
             ];
 
             json_response(200, ['data' => $transformedProperty]);
