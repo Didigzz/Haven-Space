@@ -370,10 +370,6 @@ Router::get('/api/landlord/payment-summary', function() {
     require_once __DIR__ . '/landlord/payment-summary.php';
 });
 
-Router::get('/api/landlord/reports', function() {
-    require_once __DIR__ . '/landlord/reports.php';
-});
-
 // ============================================
 // PAYMENT ROUTES - SHARED
 // ============================================

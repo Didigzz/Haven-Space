@@ -120,48 +120,6 @@ const response = await fetch(url, {
 
 **Prevention**: Before adding columns to the `users` table, check if the data belongs in role-specific profile tables or normalized reference tables. Keep the base `users` table minimal with only authentication and core identity fields. Don't duplicate data that's already available through foreign keys.
 
-### Fixed: applications Table Using Removed property_id Column (2026-05-01)
-
-**Problem**: The application creation endpoint was failing with "Unknown column 'property_id' in 'field list'" error. Migration 021 had removed the `property_id` column from the `applications` table as redundant, but the schema.sql and repository code still referenced it.
-
-**Root Cause**: Migration `021_remove_redundant_columns.sql` correctly removed `property_id` from `applications` table because it can be derived from `room_id -> rooms.property_id`. However, the schema.sql file and ApplicationRepository.php were never updated to reflect this change.
-
-**Evidence**:
-
-- Error: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'property_id' in 'field list'`
-- Migration 021 dropped the column: `ALTER TABLE applications DROP COLUMN IF EXISTS property_id;`
-- `functions/database/schema.sql` still defined `property_id INT NULL` in applications table
-- `ApplicationRepository::create()` was still trying to INSERT into property_id column
-- Frontend was sending property_id in request body
-
-**Solution**:
-
-- Updated `functions/database/schema.sql` to remove `property_id` column and FK constraint from applications table definition
-- Updated `ApplicationRepository::create()` to remove property_id from INSERT statement
-- Updated migration `033_convert_all_nulls_to_not_null.sql` comments to note property_id was removed
-- Fixed 9 additional files that were querying `a.property_id` or `applications.property_id`:
-  - `functions/src/Modules/Notification/Repositories/NotificationRepository.php` - 2 queries (getAcceptedApplications, hasAcceptedApplications)
-  - `functions/api/landlord/boarders.php` - boarder listing query
-  - `functions/api/payments/overview.php` - payment overview query
-  - `functions/api/landlord/announcements.php` - boarder lookup for announcements
-  - `functions/api/payments/history.php` - payment history query
-  - `functions/api/boarder/lease.php` - lease information query
-  - `functions/api/boarder/announcements.php` - landlord lookup query
-  - `functions/api/admin/test_applications.php` - admin applications view
-  - `functions/api/landlord/test_dashboard-stats.php` - dashboard stats query
-- All queries now join through rooms table: `JOIN rooms r ON a.room_id = r.id` then `JOIN properties p ON r.property_id = p.id`
-- Property ID can still be retrieved via JOIN: `SELECT r.property_id FROM applications a JOIN rooms r ON a.room_id = r.id`
-
-**Current Pattern**: Applications table structure:
-
-- `room_id` FK to rooms table (required)
-- Property ID derived via: `room_id -> rooms.property_id`
-- No redundant property_id column stored directly
-
-**Prevention**: When migrations remove columns, immediately update schema.sql and search the codebase for all references to that column. Use `rg "property_id.*applications"` to find all code that references the removed column. Keep schema.sql synchronized with applied migrations.
-
-**Related Issue**: The same migration 034 that removed `avatar_url` also affected `ApplicationRepository::findById()` and `functions/api/users/search.php`, which were selecting `avatar_url` directly from the users table. These were fixed to use `LEFT JOIN files f ON u.avatar_file_id = f.id` and select `f.file_url as avatar_url` instead.
-
 ## landlord credentials
 
 qwenzy23062@gmail.com

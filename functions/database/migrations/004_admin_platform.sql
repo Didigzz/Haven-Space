@@ -105,43 +105,6 @@ CREATE TABLE IF NOT EXISTS landlord_verification_log (
     INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS property_reports (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    property_id INT NOT NULL,
-    reporter_id INT NOT NULL,
-    reason VARCHAR(64) NOT NULL,
-    details TEXT,
-    status ENUM('open', 'reviewing', 'resolved', 'dismissed') NOT NULL DEFAULT 'open',
-    resolution_notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
-    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_status (status),
-    INDEX idx_deleted_at (deleted_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS disputes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    type ENUM('payment', 'tenancy', 'property', 'other') NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    opened_by INT NOT NULL,
-    related_user_id INT NULL,
-    related_property_id INT NULL,
-    status ENUM('open', 'in_review', 'resolved', 'escalated') NOT NULL DEFAULT 'open',
-    resolution_notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (opened_by) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (related_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (related_property_id) REFERENCES properties(id) ON DELETE SET NULL,
-    INDEX idx_dispute_status (status),
-    INDEX idx_deleted_at (deleted_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS platform_settings (
     setting_key VARCHAR(64) PRIMARY KEY,
     setting_value TEXT,

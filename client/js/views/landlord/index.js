@@ -11,7 +11,6 @@ import { initLandlordDashboard } from './landlord.js';
 import { initMessages } from './messages.js';
 import { initLandlordSettings } from './settings.js';
 import { initAnnouncements } from './announcements.js';
-import { initReports } from './reports.js';
 import { initLandlordPermissions } from '../../shared/permissions.js';
 import '../../shared/auth-headers.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
@@ -233,11 +232,6 @@ export async function initLandlordDashboardEntry() {
   // Initialize settings page
   if (currentPath.includes('settings')) {
     initLandlordSettings();
-  }
-
-  // Initialize reports page
-  if (currentPath.includes('reports')) {
-    initReports();
   }
 
   // Initialize boarders page

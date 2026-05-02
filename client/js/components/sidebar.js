@@ -171,10 +171,7 @@ const NAV_CONFIG = {
     },
     {
       group: 'Management',
-      items: [
-        { label: 'Calendar', href: '../landlord/calendar/index.html', icon: 'calendar' },
-        { label: 'Reports', href: '../landlord/reports/index.html', icon: 'analytics' },
-      ],
+      items: [{ label: 'Calendar', href: '../landlord/calendar/index.html', icon: 'calendar' }],
     },
     {
       group: 'Account',
@@ -195,7 +192,6 @@ const NAV_CONFIG = {
         { label: 'Property', href: '../admin/index.html#properties', icon: 'buildingOffice' },
         { label: 'Applications', href: '../admin/index.html#applications', icon: 'application' },
         { label: 'Analytics', href: '../admin/index.html#analytics', icon: 'chartBar' },
-        { label: 'Reports & disputes', href: '../admin/index.html#reports', icon: 'flag' },
         { label: 'System settings', href: '../admin/index.html#settings', icon: 'cog' },
       ],
     },

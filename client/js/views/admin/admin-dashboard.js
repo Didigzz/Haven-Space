@@ -12,7 +12,6 @@ const SECTIONS = [
   'properties',
   'applications',
   'analytics',
-  'reports',
   'settings',
 ];
 
@@ -68,7 +67,6 @@ function setHashSection(hash) {
     properties: 'Property Moderation',
     applications: 'Application Oversight',
     analytics: 'Analytics',
-    reports: 'Reports & Disputes',
     settings: 'System Settings',
   };
   const sub = document.getElementById('admin-section-subtitle');
@@ -81,7 +79,6 @@ function setHashSection(hash) {
     properties: loadProperties,
     applications: loadApplications,
     analytics: loadAnalytics,
-    reports: loadReports,
     settings: loadSettings,
   };
   loaders[id]?.();
@@ -110,38 +107,18 @@ async function loadOverview() {
     const c = data.counts;
     root.innerHTML = `
       <div class="admin-stat-grid">
-        <div class="admin-stat-card accent-violet"><div class="label">Total users</div><div class="value">${
-          c.users_total
-        }</div></div>
-        <div class="admin-stat-card"><div class="label">Boarders</div><div class="value">${
-          c.users_boarder
-        }</div></div>
-        <div class="admin-stat-card"><div class="label">Landlords</div><div class="value">${
-          c.users_landlord
-        }</div></div>
-        <div class="admin-stat-card accent-light-green"><div class="label">Pending landlord KYC</div><div class="value">${
-          c.landlords_pending_verification
-        }</div></div>
-        <div class="admin-stat-card"><div class="label">Properties</div><div class="value">${
-          c.properties_total
-        }</div></div>
-        <div class="admin-stat-card"><div class="label">Listings pending review</div><div class="value">${
-          c.properties_pending_moderation
-        }</div></div>
-        <div class="admin-stat-card"><div class="label">Applications</div><div class="value">${
-          c.applications_total
-        }</div></div>
-        <div class="admin-stat-card"><div class="label">Open reports / disputes</div><div class="value">${
-          c.property_reports_open + c.disputes_open
-        }</div></div>
+        <div class="admin-stat-card accent-violet"><div class="label">Total users</div><div class="value">${c.users_total}</div></div>
+        <div class="admin-stat-card"><div class="label">Boarders</div><div class="value">${c.users_boarder}</div></div>
+        <div class="admin-stat-card"><div class="label">Landlords</div><div class="value">${c.users_landlord}</div></div>
+        <div class="admin-stat-card accent-light-green"><div class="label">Pending landlord KYC</div><div class="value">${c.landlords_pending_verification}</div></div>
+        <div class="admin-stat-card"><div class="label">Properties</div><div class="value">${c.properties_total}</div></div>
+        <div class="admin-stat-card"><div class="label">Listings pending review</div><div class="value">${c.properties_pending_moderation}</div></div>
+        <div class="admin-stat-card"><div class="label">Applications</div><div class="value">${c.applications_total}</div></div>
+        <div class="admin-stat-card"><div class="label">Open reports / disputes</div><div class="value">—</div></div>
       </div>
       <div class="admin-card">
         <h2>Revenue & fees</h2>
-        <p style="color:var(--admin-text-secondary);font-size:0.9rem;margin:0;">${
-          data.revenue.note
-        } Platform fee: <strong style="color:var(--admin-text-primary)">${
-      data.revenue.platform_fee_percent
-    }%</strong> (${data.revenue.currency}).</p>
+        <p style="color:var(--admin-text-secondary);font-size:0.9rem;margin:0;">${data.revenue.note} Platform fee: <strong style="color:var(--admin-text-primary)">${data.revenue.platform_fee_percent}%</strong> (${data.revenue.currency}).</p>
       </div>`;
   } catch (e) {
     root.innerHTML = `<p class="admin-pill bad">Could not load overview: ${e.message}</p>`;
@@ -511,112 +488,13 @@ async function loadAnalytics() {
             sum.counts.properties_pending_moderation
           }</strong></div>
           <div>Open compliance queue</div><div><strong>${
-            sum.counts.property_reports_open + sum.counts.disputes_open
+            sum.counts.properties_pending_moderation
           }</strong></div>
         </div>
         <p style="color:var(--admin-text-muted);font-size:0.85rem;margin-top:16px;margin-bottom:0;">User growth charts can be layered on once historical snapshots are stored.</p>
       </div>`;
   } catch (e) {
     root.innerHTML = `<p class="admin-pill bad">${e.message}</p>`;
-  }
-}
-
-async function loadReports() {
-  const rep = document.getElementById('admin-reports-prop');
-  const dis = document.getElementById('admin-reports-disputes');
-  if (!rep || !dis) return;
-  rep.innerHTML = '<p style="color:var(--admin-text-muted)">Loading…</p>';
-  dis.innerHTML = '<p style="color:var(--admin-text-muted)">Loading…</p>';
-  try {
-    const { data } = await adminApi('reports.php');
-    rep.innerHTML = data.property_reports.length
-      ? `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Property</th><th>Reporter</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        ${data.property_reports
-          .map(
-            r => `<tr>
-          <td>${r.property_title}</td>
-          <td>${r.reporter_email}</td>
-          <td>${r.reason}</td>
-          <td><span class="admin-pill neutral">${r.status}</span></td>
-          <td>
-            <select class="admin-select admin-report-status" style="min-width:130px;padding:4px 8px;font-size:0.75rem" data-id="${
-              r.id
-            }">
-              ${['open', 'reviewing', 'resolved', 'dismissed']
-                .map(s => `<option value="${s}" ${r.status === s ? 'selected' : ''}>${s}</option>`)
-                .join('')}
-            </select>
-          </td>
-        </tr>`
-          )
-          .join('')}
-      </tbody></table></div>`
-      : '<p style="color:var(--admin-text-muted)">No property reports.</p>';
-
-    dis.innerHTML = data.disputes.length
-      ? `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Title</th><th>Type</th><th>Opened by</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        ${data.disputes
-          .map(
-            d => `<tr>
-          <td><strong style="color:var(--admin-text-primary)">${d.title}</strong></td>
-          <td>${d.type}</td>
-          <td>${d.opened_by_email}</td>
-          <td><span class="admin-pill neutral">${d.status}</span></td>
-          <td>
-            <select class="admin-select admin-dispute-status" style="min-width:130px;padding:4px 8px;font-size:0.75rem" data-id="${
-              d.id
-            }">
-              ${['open', 'in_review', 'resolved', 'escalated']
-                .map(s => `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`)
-                .join('')}
-            </select>
-          </td>
-        </tr>`
-          )
-          .join('')}
-      </tbody></table></div>`
-      : '<p style="color:var(--admin-text-muted)">No disputes logged.</p>';
-
-    rep.querySelectorAll('.admin-report-status').forEach(sel => {
-      sel.addEventListener('change', async () => {
-        try {
-          await adminApi('reports.php', {
-            method: 'PATCH',
-            body: JSON.stringify({
-              kind: 'report',
-              id: Number(sel.dataset.id),
-              status: sel.value,
-            }),
-          });
-          showToast('Report updated');
-        } catch (e) {
-          showToast(e.message, true);
-          loadReports();
-        }
-      });
-    });
-
-    dis.querySelectorAll('.admin-dispute-status').forEach(sel => {
-      sel.addEventListener('change', async () => {
-        try {
-          await adminApi('reports.php', {
-            method: 'PATCH',
-            body: JSON.stringify({
-              kind: 'dispute',
-              id: Number(sel.dataset.id),
-              status: sel.value,
-            }),
-          });
-          showToast('Dispute updated');
-        } catch (e) {
-          showToast(e.message, true);
-          loadReports();
-        }
-      });
-    });
-  } catch (e) {
-    rep.innerHTML = `<p class="admin-pill bad">${e.message}</p>`;
-    dis.innerHTML = '';
   }
 }
 

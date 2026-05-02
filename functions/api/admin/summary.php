@@ -71,22 +71,6 @@ try {
     ");
     $applicationCounts = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Get report counts
-    $stmt = $pdo->query("
-        SELECT COUNT(*) as open
-        FROM property_reports
-        WHERE status IN ('open', 'reviewing')
-    ");
-    $openReports = $stmt->fetch(PDO::FETCH_ASSOC)['open'];
-    
-    // Get dispute counts
-    $stmt = $pdo->query("
-        SELECT COUNT(*) as open
-        FROM disputes
-        WHERE status = 'open'
-    ");
-    $openDisputes = $stmt->fetch(PDO::FETCH_ASSOC)['open'];
-    
     // Get platform fee from settings
     $stmt = $pdo->query("
         SELECT setting_value FROM platform_settings
@@ -107,8 +91,6 @@ try {
                 'properties_total' => intval($propertyCounts['total']),
                 'properties_pending_moderation' => intval($propertyCounts['pending_moderation']),
                 'applications_total' => intval($applicationCounts['total']),
-                'property_reports_open' => intval($openReports),
-                'disputes_open' => intval($openDisputes),
             ],
             'revenue' => [
                 'platform_fee_percent' => $platformFeePercent,

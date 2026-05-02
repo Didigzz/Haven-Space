@@ -49,12 +49,6 @@ UPDATE boarder_profiles SET move_in_date = '1970-01-01' WHERE move_in_date IS NU
 UPDATE boarder_profiles SET occupation = '' WHERE occupation IS NULL;
 UPDATE boarder_profiles SET bio = '' WHERE bio IS NULL;
 
--- disputes table
-UPDATE disputes SET related_user_id = NULL WHERE related_user_id IS NOT NULL AND related_user_id NOT IN (SELECT id FROM users);
-UPDATE disputes SET related_property_id = NULL WHERE related_property_id IS NOT NULL AND related_property_id NOT IN (SELECT id FROM properties);
-UPDATE disputes SET resolution_notes = '' WHERE resolution_notes IS NULL;
--- related_user_id and related_property_id will remain nullable as they're optional FKs
-
 -- conversations table
 -- property_id will remain nullable as it's an optional FK
 
@@ -96,10 +90,6 @@ UPDATE oauth_pending_registrations SET refresh_token = '' WHERE refresh_token IS
 UPDATE payments SET payment_method = '' WHERE payment_method IS NULL;
 UPDATE payments SET reference_number = '' WHERE reference_number IS NULL;
 UPDATE payments SET notes = '' WHERE notes IS NULL;
-
--- property_reports table
-UPDATE property_reports SET details = '' WHERE details IS NULL;
-UPDATE property_reports SET resolution_notes = '' WHERE resolution_notes IS NULL;
 
 -- rooms table (from migration 006)
 UPDATE rooms SET size = 0.00 WHERE size IS NULL;
@@ -158,12 +148,6 @@ ALTER TABLE boarder_profiles
     MODIFY COLUMN occupation VARCHAR(255) NOT NULL DEFAULT '',
     MODIFY COLUMN bio TEXT NOT NULL;
 
--- disputes table
-ALTER TABLE disputes 
-    MODIFY COLUMN description TEXT NOT NULL,
-    MODIFY COLUMN resolution_notes TEXT NOT NULL;
--- related_user_id and related_property_id remain nullable (optional FKs)
-
 -- conversation_participants table
 ALTER TABLE conversation_participants 
     MODIFY COLUMN role VARCHAR(50) NOT NULL DEFAULT 'member',
@@ -209,11 +193,6 @@ ALTER TABLE payments
     MODIFY COLUMN reference_number VARCHAR(100) NOT NULL DEFAULT '',
     MODIFY COLUMN notes TEXT NOT NULL;
 
--- property_reports table
-ALTER TABLE property_reports 
-    MODIFY COLUMN details TEXT NOT NULL,
-    MODIFY COLUMN resolution_notes TEXT NOT NULL;
-
 -- rooms table (from migration 006)
 ALTER TABLE rooms 
     MODIFY COLUMN size DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -225,8 +204,6 @@ ALTER TABLE rooms
 -- users.avatar_file_id - Optional profile picture
 -- users.google_id - Optional Google OAuth ID (UNIQUE constraint requires NULL for non-Google users)
 -- landlord_profiles.house_rules_file_id - Optional house rules document
--- disputes.related_user_id - Optional user reference
--- disputes.related_property_id - Optional property reference
 -- conversations.property_id - Optional property context
 -- saved_listings.room_id - Optional specific room reference
 -- Note: applications.property_id was removed in migration 021 (redundant)
