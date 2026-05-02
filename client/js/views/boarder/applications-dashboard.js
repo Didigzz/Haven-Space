@@ -1241,8 +1241,6 @@ function formatRelativeDate(dateString) {
   return formatDate(dateString);
 }
 
-
-
 /**
  * Check if this is a new user and show helpful guidance
  */

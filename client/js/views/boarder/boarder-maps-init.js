@@ -62,8 +62,15 @@ export function initBoarderMaps() {
           location: { lat: 8.1569, lng: 125.1297 }, // Default to Malaybalay, Bukidnon
         };
 
-  const displayName = [storedUser.first_name, storedUser.last_name].filter(Boolean).join(' ').trim() || currentUser.name;
-  const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const displayName =
+    [storedUser.first_name, storedUser.last_name].filter(Boolean).join(' ').trim() ||
+    currentUser.name;
+  const initials = displayName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   // Initialize sidebar
   initSidebar({
@@ -84,12 +91,17 @@ export function initBoarderMaps() {
     const sidebarName = document.getElementById('sidebar-profile-name');
     if (updated.avatar_url && avatarImg && avatarInitials) {
       avatarImg.src = updated.avatar_url;
-      avatarImg.style.cssText = 'display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;';
+      avatarImg.style.cssText =
+        'display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;';
       avatarInitials.style.display = 'none';
-      avatarImg.onerror = () => { avatarImg.style.display = 'none'; avatarInitials.style.display = 'flex'; };
+      avatarImg.onerror = () => {
+        avatarImg.style.display = 'none';
+        avatarInitials.style.display = 'flex';
+      };
     }
     if ((updated.first_name || updated.last_name) && sidebarName) {
-      sidebarName.textContent = `${updated.first_name || ''} ${updated.last_name || ''}`.trim() || sidebarName.textContent;
+      sidebarName.textContent =
+        `${updated.first_name || ''} ${updated.last_name || ''}`.trim() || sidebarName.textContent;
     }
   });
 
