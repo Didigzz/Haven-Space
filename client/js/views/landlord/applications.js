@@ -4,7 +4,6 @@
  */
 
 import CONFIG from '../../config.js';
-import '../../shared/icons.js';
 import { authenticatedFetch } from '../../shared/state.js';
 
 // Application state
@@ -22,7 +21,6 @@ const state = {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadApplications();
   initializeEventListeners();
-  initializeIcons();
 });
 
 /**
@@ -239,9 +237,6 @@ function renderApplications() {
     const card = createApplicationCard(app);
     container.appendChild(card);
   });
-
-  // Re-initialize icons
-  initializeIcons();
 }
 
 /**
@@ -279,12 +274,7 @@ function createApplicationCard(app) {
       <div class="application-card-info">
         <h3 class="application-card-name">${fullName}</h3>
         <p class="application-card-email">
-          <span
-            data-icon="envelope"
-            data-icon-width="14"
-            data-icon-height="14"
-            data-icon-stroke-width="2"
-          ></span>
+          <img src="../../../assets/svg/envelope.svg" alt="Email" width="14" height="14" />
           ${email}
         </p>
       </div>
@@ -293,12 +283,7 @@ function createApplicationCard(app) {
 
     <div class="application-card-body">
       <div class="application-card-property">
-        <span
-          data-icon="home"
-          data-icon-width="18"
-          data-icon-height="18"
-          data-icon-stroke-width="2"
-        ></span>
+        <img src="../../../assets/svg/home.svg" alt="Property" width="18" height="18" />
         <div class="application-property-info">
           <div class="application-property-name">${roomTitle}</div>
           <div class="application-property-price">₱${roomPrice.toLocaleString()}/month</div>
@@ -312,12 +297,7 @@ function createApplicationCard(app) {
 
       <div class="application-card-meta">
         <div class="application-meta-item">
-          <span
-            data-icon="calendar"
-            data-icon-width="16"
-            data-icon-height="16"
-            data-icon-stroke-width="2"
-          ></span>
+          <img src="../../../assets/svg/calendar.svg" alt="Date" width="16" height="16" />
           Applied on ${appliedDate}
         </div>
       </div>
@@ -327,12 +307,7 @@ function createApplicationCard(app) {
       <button class="landlord-btn landlord-btn-outline landlord-btn-sm view-details-btn" data-id="${
         app.id
       }">
-        <span
-          data-icon="eye"
-          data-icon-width="18"
-          data-icon-height="18"
-          data-icon-stroke-width="2"
-        ></span>
+        <img src="../../../assets/svg/eye.svg" alt="View" width="18" height="18" />
         View Details
       </button>
       ${getActionButtons(app.status, app.id)}
@@ -383,21 +358,11 @@ function getActionButtons(status, id) {
 
   return `
     <button class="landlord-btn landlord-btn-success landlord-btn-sm approve-btn" data-id="${id}">
-      <span
-        data-icon="check"
-        data-icon-width="18"
-        data-icon-height="18"
-        data-icon-stroke-width="2"
-      ></span>
+      <img src="../../../assets/svg/check.svg" alt="Approve" width="18" height="18" />
       Approve
     </button>
     <button class="landlord-btn landlord-btn-danger landlord-btn-sm reject-btn" data-id="${id}">
-      <span
-        data-icon="xMark"
-        data-icon-width="18"
-        data-icon-height="18"
-        data-icon-stroke-width="2"
-      ></span>
+      <img src="../../../assets/svg/close.svg" alt="Reject" width="18" height="18" />
       Reject
     </button>
   `;
@@ -561,12 +526,7 @@ function openApplicationModal(id) {
     <div class="modal-application-section">
       <h4 class="modal-section-title">Property Details</h4>
       <div class="modal-property-card">
-        <span
-          data-icon="home"
-          data-icon-width="24"
-          data-icon-height="24"
-          data-icon-stroke-width="2"
-        ></span>
+        <img src="../../../assets/svg/home.svg" alt="Property" width="24" height="24" />
         <div class="modal-property-info">
           <div class="modal-property-name">${roomTitle}</div>
           <div class="modal-property-price">₱${roomPrice.toLocaleString()}/month</div>
@@ -604,21 +564,11 @@ function openApplicationModal(id) {
         ? `
     <div class="modal-application-actions">
       <button class="landlord-btn landlord-btn-success modal-approve-btn" data-id="${app.id}">
-        <span
-          data-icon="check"
-          data-icon-width="20"
-          data-icon-height="20"
-          data-icon-stroke-width="2"
-        ></span>
+        <img src="../../../assets/svg/check.svg" alt="Approve" width="20" height="20" />
         Approve Application
       </button>
       <button class="landlord-btn landlord-btn-danger modal-reject-btn" data-id="${app.id}">
-        <span
-          data-icon="xMark"
-          data-icon-width="20"
-          data-icon-height="20"
-          data-icon-stroke-width="2"
-        ></span>
+        <img src="../../../assets/svg/close.svg" alt="Reject" width="20" height="20" />
         Reject Application
       </button>
     </div>
@@ -629,9 +579,6 @@ function openApplicationModal(id) {
 
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-
-  // Re-initialize icons
-  initializeIcons();
 }
 
 /**
@@ -686,36 +633,27 @@ function showToast(message, type = 'info') {
   toast.className = `toast-notification toast-${type}`;
 
   const icons = {
-    success: 'checkCircle',
-    error: 'xCircle',
-    warning: 'exclamationTriangle',
-    info: 'infoCircle',
+    success: '../../../assets/svg/check.svg',
+    error: '../../../assets/svg/close.svg',
+    warning: '../../../assets/svg/alert.svg',
+    info: '../../../assets/svg/notification.svg',
   };
+
+  const iconAlt = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Info' };
 
   toast.innerHTML = `
     <div class="toast-icon">
-      <span
-        data-icon="${icons[type] || icons.info}"
-        data-icon-width="20"
-        data-icon-height="20"
-        data-icon-stroke-width="2"
-      ></span>
+      <img src="${icons[type] || icons.info}" alt="${
+    iconAlt[type] || 'Info'
+  }" width="20" height="20" />
     </div>
     <div class="toast-content">${message}</div>
     <button class="toast-close">
-      <span
-        data-icon="xMark"
-        data-icon-width="16"
-        data-icon-height="16"
-        data-icon-stroke-width="2"
-      ></span>
+      <img src="../../../assets/svg/close.svg" alt="Close" width="16" height="16" />
     </button>
   `;
 
   document.body.appendChild(toast);
-
-  // Initialize icons in toast
-  initializeIcons();
 
   // Show toast
   setTimeout(() => toast.classList.add('toast-visible'), 10);
@@ -732,15 +670,6 @@ function showToast(message, type = 'info') {
     toast.classList.remove('toast-visible');
     setTimeout(() => toast.remove(), 300);
   }, 5000);
-}
-
-/**
- * Initialize icons
- */
-function initializeIcons() {
-  if (typeof window.initIcons === 'function') {
-    window.initIcons();
-  }
 }
 
 // Export functions for external use

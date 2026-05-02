@@ -33,12 +33,12 @@
           <div class="applications-header">
             <div class="applications-header-text">
               <h1 class="applications-title">
-                <span
-                  data-icon="document"
-                  data-icon-width="28"
-                  data-icon-height="28"
-                  data-icon-stroke-width="2"
-                ></span>
+                <img
+                  src="../../../assets/svg/applications.svg"
+                  alt="Applications"
+                  width="28"
+                  height="28"
+                />
                 Applications
               </h1>
               <p class="applications-subtitle">
@@ -47,12 +47,7 @@
             </div>
             <div class="applications-header-actions">
               <button class="landlord-btn landlord-btn-outline" id="refreshBtn">
-                <span
-                  data-icon="arrowPath"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
+                <img src="../../../assets/svg/history.svg" alt="Refresh" width="20" height="20" />
                 Refresh
               </button>
             </div>
@@ -64,12 +59,7 @@
               <div class="applications-stat-header">
                 <span class="applications-stat-label">Pending Review</span>
                 <div class="applications-stat-icon pending">
-                  <span
-                    data-icon="clock"
-                    data-icon-width="20"
-                    data-icon-height="20"
-                    data-icon-stroke-width="2"
-                  ></span>
+                  <img src="../../../assets/svg/clock.svg" alt="Clock" width="20" height="20" />
                 </div>
               </div>
               <div class="applications-stat-value" id="pendingCount">0</div>
@@ -79,12 +69,7 @@
               <div class="applications-stat-header">
                 <span class="applications-stat-label">Accepted</span>
                 <div class="applications-stat-icon approved">
-                  <span
-                    data-icon="checkCircle"
-                    data-icon-width="20"
-                    data-icon-height="20"
-                    data-icon-stroke-width="2"
-                  ></span>
+                  <img src="../../../assets/svg/check.svg" alt="Check" width="20" height="20" />
                 </div>
               </div>
               <div class="applications-stat-value" id="approvedCount">0</div>
@@ -94,12 +79,7 @@
               <div class="applications-stat-header">
                 <span class="applications-stat-label">Rejected</span>
                 <div class="applications-stat-icon rejected">
-                  <span
-                    data-icon="xCircle"
-                    data-icon-width="20"
-                    data-icon-height="20"
-                    data-icon-stroke-width="2"
-                  ></span>
+                  <img src="../../../assets/svg/close.svg" alt="Rejected" width="20" height="20" />
                 </div>
               </div>
               <div class="applications-stat-value" id="rejectedCount">0</div>
@@ -109,12 +89,12 @@
               <div class="applications-stat-header">
                 <span class="applications-stat-label">Total Applications</span>
                 <div class="applications-stat-icon total">
-                  <span
-                    data-icon="documentText"
-                    data-icon-width="20"
-                    data-icon-height="20"
-                    data-icon-stroke-width="2"
-                  ></span>
+                  <img
+                    src="../../../assets/svg/document.svg"
+                    alt="Document"
+                    width="20"
+                    height="20"
+                  />
                 </div>
               </div>
               <div class="applications-stat-value" id="totalCount">0</div>
@@ -124,13 +104,13 @@
           <!-- Filters and Search -->
           <div class="applications-filters">
             <div class="applications-search">
-              <span
-                data-icon="magnifyingGlass"
-                data-icon-width="20"
-                data-icon-height="20"
-                data-icon-stroke-width="2"
+              <img
+                src="../../../assets/svg/magnifier.svg"
+                alt="Search"
+                width="20"
+                height="20"
                 class="applications-search-icon"
-              ></span>
+              />
               <input
                 type="text"
                 class="applications-search-input"
@@ -173,12 +153,12 @@
             <!-- Empty State (hidden by default) -->
             <div class="applications-empty" id="emptyState" style="display: none">
               <div class="applications-empty-icon">
-                <span
-                  data-icon="documentText"
-                  data-icon-width="64"
-                  data-icon-height="64"
-                  data-icon-stroke-width="1.5"
-                ></span>
+                <img
+                  src="../../../assets/svg/document.svg"
+                  alt="No applications"
+                  width="64"
+                  height="64"
+                />
               </div>
               <h3 class="applications-empty-title">No applications yet</h3>
               <p class="applications-empty-text">
@@ -190,12 +170,7 @@
             <!-- Error State (hidden by default) -->
             <div class="applications-error" id="errorState" style="display: none">
               <div class="applications-error-icon">
-                <span
-                  data-icon="exclamationTriangle"
-                  data-icon-width="64"
-                  data-icon-height="64"
-                  data-icon-stroke-width="1.5"
-                ></span>
+                <img src="../../../assets/svg/alert.svg" alt="Error" width="64" height="64" />
               </div>
               <h3 class="applications-error-title">Failed to load applications</h3>
               <p class="applications-error-text">
@@ -217,12 +192,7 @@
         <div class="applications-modal-header">
           <h2 class="applications-modal-title">Application Details</h2>
           <button class="applications-modal-close" id="modalCloseBtn">
-            <span
-              data-icon="xMark"
-              data-icon-width="24"
-              data-icon-height="24"
-              data-icon-stroke-width="2"
-            ></span>
+            <img src="../../../assets/svg/close.svg" alt="Close" width="24" height="24" />
           </button>
         </div>
 
@@ -239,12 +209,7 @@
         <div class="confirmation-modal-header">
           <h3 class="confirmation-modal-title">Confirm Action</h3>
           <button class="confirmation-modal-close" id="confirmationCloseBtn">
-            <span
-              data-icon="xMark"
-              data-icon-width="24"
-              data-icon-height="24"
-              data-icon-stroke-width="2"
-            ></span>
+            <img src="../../../assets/svg/close.svg" alt="Close" width="24" height="24" />
           </button>
         </div>
         <div class="confirmation-modal-body">

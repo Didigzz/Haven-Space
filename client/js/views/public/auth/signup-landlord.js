@@ -546,9 +546,55 @@ async function getCurrentLocation() {
 }
 
 /**
+ * Show the terms agreement overlay
+ */
+function showTermsOverlay() {
+  const termsOverlay = document.getElementById('termsOverlay');
+  if (termsOverlay) {
+    termsOverlay.classList.add('active');
+  }
+}
+
+/**
+ * Hide the terms agreement overlay
+ */
+function hideTermsOverlay() {
+  const termsOverlay = document.getElementById('termsOverlay');
+  if (termsOverlay) {
+    termsOverlay.classList.remove('active');
+    // Focus the terms checkbox after closing
+    const termsCheckbox = document.querySelector('#step3Form input[name="terms"]');
+    if (termsCheckbox) {
+      termsCheckbox.focus();
+    }
+  }
+}
+
+/**
  * Setup event listeners for all steps
  */
 function setupEventListeners() {
+  // Terms overlay handlers
+  const termsOverlay = document.getElementById('termsOverlay');
+  const termsOverlayClose = termsOverlay?.querySelector('.terms-overlay-close');
+  const termsOverlayOk = document.getElementById('termsOverlayOk');
+
+  if (termsOverlayClose) {
+    termsOverlayClose.addEventListener('click', hideTermsOverlay);
+  }
+
+  if (termsOverlayOk) {
+    termsOverlayOk.addEventListener('click', hideTermsOverlay);
+  }
+
+  // Close overlay on backdrop click
+  if (termsOverlay) {
+    termsOverlay.addEventListener('click', function (e) {
+      if (e.target === termsOverlay) {
+        hideTermsOverlay();
+      }
+    });
+  }
   // Step 1: Account form
   document.getElementById('step1Form').addEventListener('submit', e => {
     e.preventDefault();
@@ -610,7 +656,7 @@ function setupEventListeners() {
     // Check terms agreement
     const termsCheckbox = form.querySelector('input[name="terms"]');
     if (!termsCheckbox.checked) {
-      showToast('Please agree to the Terms of Service to continue', 'error');
+      showTermsOverlay();
       return;
     }
 

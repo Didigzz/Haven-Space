@@ -154,6 +154,7 @@ function updateNavigationForAuthenticatedUser() {
   // Determine dropdown content based on user role
   const isBoarder = user.role === 'boarder';
   const isLandlord = user.role === 'landlord';
+  const isAdmin = user.role === 'admin';
 
   const boarderMenuItems = isBoarder
     ? `
@@ -179,6 +180,16 @@ function updateNavigationForAuthenticatedUser() {
   `
     : '';
 
+  const adminMenuItems = isAdmin
+    ? `
+    <a href="../admin/index.html" class="nav-user-menu-item">
+      <img src="../../assets/svg/dashboard.svg" alt="" width="18" height="18" />
+      Go to Dashboard
+    </a>
+    <div class="nav-user-divider"></div>
+  `
+    : '';
+
   navActions.innerHTML = `
     <div class="nav-user-menu">
       <button class="nav-user-button" id="nav-user-btn" aria-label="User menu">
@@ -193,6 +204,7 @@ function updateNavigationForAuthenticatedUser() {
           <div class="nav-user-info-role">${user.role || 'Boarder'}</div>
         </div>
         <div class="nav-user-divider"></div>
+        ${adminMenuItems}
         ${landlordMenuItems}
         ${boarderMenuItems}
         <button class="nav-user-menu-item nav-user-logout" id="nav-logout-btn">

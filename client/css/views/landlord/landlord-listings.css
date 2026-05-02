@@ -78,33 +78,35 @@
 }
 
 .listings-stat-card .stat-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
+.listings-stat-card .stat-icon img,
 .listings-stat-card .stat-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .listings-stat-card .stat-icon.green {
-  color: #333;
+  background-color: rgba(74, 124, 35, 0.1);
 }
 
 .listings-stat-card .stat-icon.blue {
-  color: #333;
+  background-color: rgba(25, 118, 210, 0.1);
 }
 
 .listings-stat-card .stat-icon.purple {
-  color: #333;
+  background-color: rgba(139, 92, 246, 0.1);
 }
 
 .listings-stat-card .stat-icon.orange {
-  color: #333;
+  background-color: rgba(255, 152, 0, 0.1);
 }
 
 .listings-stat-card .stat-label {
@@ -157,12 +159,11 @@
 }
 
 .search-box svg,
-.search-box [data-icon] {
+.search-box img {
   width: 20px;
   height: 20px;
-  color: var(--text-gray);
   flex-shrink: 0;
-  vertical-align: middle;
+  opacity: 0.5;
 }
 
 .search-box input {
@@ -793,7 +794,12 @@
   margin: 0 auto 1.5rem;
   background-color: #fee2e2;
   border-radius: 50%;
-  color: #ef4444;
+}
+
+.delete-icon img {
+  width: 32px;
+  height: 32px;
+  filter: invert(27%) sepia(90%) saturate(1500%) hue-rotate(340deg) brightness(90%);
 }
 
 .delete-modal-content h3 {

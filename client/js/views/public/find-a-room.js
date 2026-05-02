@@ -1535,10 +1535,11 @@ function populateDetailPanel(property) {
     }
   }
 
-  // Set photos
+  // Set photos (API returns 'images', fall back gracefully)
   const photosContainer = document.getElementById('detail-photos');
   if (photosContainer) {
-    photosContainer.innerHTML = property.photos
+    const photosList = property.photos || property.images || [];
+    photosContainer.innerHTML = photosList
       .map(
         (photo, index) => `
       <div class="find-room-photo-item ${index === 0 ? 'active' : ''}">

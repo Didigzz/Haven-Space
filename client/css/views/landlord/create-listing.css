@@ -68,6 +68,9 @@
   font-weight: 500;
   margin-bottom: 1rem;
   transition: color 0.2s ease;
+  background-color: transparent;
+  border: none;
+  padding: 0;
 }
 
 .create-listing-header .back-btn:hover {
