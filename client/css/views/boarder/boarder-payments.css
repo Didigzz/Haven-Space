@@ -984,6 +984,17 @@
   color: var(--payments-text-secondary);
 }
 
+.timeline-marker-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.timeline-icon {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+}
+
 .timeline-status {
   display: inline-flex;
   align-items: center;

@@ -654,6 +654,27 @@
   align-items: flex-start;
 }
 
+.landlord-activity-item.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.landlord-activity-item.clickable:hover {
+  background-color: var(--dashboard-hover);
+  border-radius: 8px;
+}
+
+.landlord-activity-link {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+  padding: 8px;
+  border-radius: 8px;
+}
+
 .landlord-activity-icon {
   width: 36px;
   height: 36px;

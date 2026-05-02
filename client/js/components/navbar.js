@@ -297,6 +297,17 @@ function renderNotifications(notifications) {
           });
       }
 
+      // If this is a new application notification, navigate to applications page
+      if (notification && notification.type === 'new_application') {
+        const currentPath = window.location.pathname;
+        const basePath = currentPath.includes('github.io')
+          ? '/Haven-Space/client/views/'
+          : currentPath.includes('/views/')
+          ? ''
+          : '/views/';
+        window.location.href = `${basePath}landlord/applications/index.html`;
+      }
+
       // If this is an application status notification, sync user data
       if (
         notification &&
@@ -625,6 +636,7 @@ function getNotificationType(type) {
  */
 function getNotificationIcon(type) {
   const map = {
+    new_application: 'user',
     application_accepted: 'checkCircle',
     application_rejected: 'xCircle',
     maintenance_status_change: 'wrench',

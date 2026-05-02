@@ -126,33 +126,28 @@ function addPropertyMarkers(properties) {
         : '<span class="amenity-badge">No amenities listed</span>';
 
     const popupContent = `
-      <div class="property-popup" style="min-width: 250px;">
-        <div class="property-popup-image" style="width: 100%; height: 120px; background: url('${
+      <div class="property-popup">
+        <div class="property-popup-image" style="background: url('${
           property.image
-        }') center/cover no-repeat; border-radius: 8px 8px 0 0; background-color: #f0f0f0;"></div>
-        <div class="property-popup-content" style="padding: 12px;">
-          <h3 class="property-popup-title" style="font-size: 14px; font-weight: 600; margin: 0 0 8px 0; color: #1a1a1a;">${
-            property.title
-          }</h3>
-          <div class="property-popup-landlord" style="font-size: 11px; color: #888; margin-bottom: 6px;">
-            By ${property.landlord_name}
-          </div>
-          <div class="property-popup-location" style="font-size: 12px; color: #555; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+        }') center/cover no-repeat; background-color: #f0f0f0;"></div>
+        <div class="property-popup-content">
+          <h3 class="property-popup-title">${property.title}</h3>
+          <div class="property-popup-location">
             <span>📍</span>
             ${property.location}
           </div>
-          <div class="property-popup-price" style="font-size: 16px; font-weight: 700; color: #4a7c23; margin-bottom: 8px;">₱${property.price.toLocaleString()}/month</div>
+          <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
           <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
             ${property.total_rooms} rooms • ${property.occupied_rooms} occupied (${
       property.occupancy_rate
     }% full)
           </div>
-          <div class="property-popup-amenities" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+          <div class="property-popup-amenities">
             ${amenitiesHtml}
           </div>
           <button onclick="viewProperty(${
             property.id
-          })" style="width: 100%; padding: 8px; background: #4a7c23; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">View Details</button>
+          })" style="width: 100%; padding: 8px; background: #4a7c23; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 12px;">View Details</button>
         </div>
       </div>
     `;

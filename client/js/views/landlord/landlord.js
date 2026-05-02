@@ -383,20 +383,43 @@ function renderActivities(activities, container) {
 
   const html = activities
     .map(activity => {
+      const isNewApplication = activity.type === 'new_application';
+      const itemClass = isNewApplication
+        ? 'landlord-activity-item clickable'
+        : 'landlord-activity-item';
+      const itemContent = isNewApplication
+        ? `<a href="applications/index.html" class="landlord-activity-link">
+            <div class="landlord-activity-icon ${activity.color}">
+              <span
+                data-icon="${activity.icon}"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+            </div>
+            <div class="landlord-activity-content">
+              <p class="landlord-activity-text">${activity.description}</p>
+              <span class="landlord-activity-time">${activity.time_ago}</span>
+            </div>
+          </a>`
+        : `
+            <div class="landlord-activity-icon ${activity.color}">
+              <span
+                data-icon="${activity.icon}"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+            </div>
+            <div class="landlord-activity-content">
+              <p class="landlord-activity-text">${activity.description}</p>
+              <span class="landlord-activity-time">${activity.time_ago}</span>
+            </div>
+          `;
+
       return `
-        <div class="landlord-activity-item" data-activity-id="${activity.id}" data-activity-type="${activity.type}">
-          <div class="landlord-activity-icon ${activity.color}">
-            <span
-              data-icon="${activity.icon}"
-              data-icon-width="20"
-              data-icon-height="20"
-              data-icon-stroke-width="2"
-            ></span>
-          </div>
-          <div class="landlord-activity-content">
-            <p class="landlord-activity-text">${activity.description}</p>
-            <span class="landlord-activity-time">${activity.time_ago}</span>
-          </div>
+        <div class="${itemClass}" data-activity-id="${activity.id}" data-activity-type="${activity.type}">
+          ${itemContent}
         </div>
       `;
     })
@@ -762,7 +785,7 @@ function createPropertyCard(property) {
         ${
           imageUrl
             ? `
-          <img src="${imageUrl}" alt="${escapeHtml(property.name)}" 
+          <img src="${imageUrl}" alt="${escapeHtml(property.name)}"
                onerror="this.onerror=null;this.src='/assets/images/placeholder-property.svg'" />
         `
             : `

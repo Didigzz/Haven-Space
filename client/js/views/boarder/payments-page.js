@@ -415,7 +415,7 @@ function renderPaymentHistory(payments) {
           </div>
           <div class="timeline-details">
             <span class="timeline-detail">
-              ${getIcon('calendar')}
+              <img src="../../../assets/svg/calendar.svg" alt="Calendar" class="timeline-icon" />
               ${
                 isPaid
                   ? `Paid on ${formatDate(payment.payment_date, 'short')}`
@@ -426,14 +426,16 @@ function renderPaymentHistory(payments) {
               payment.payment_method
                 ? `
               <span class="timeline-detail">
-                ${getIcon('creditCard')}
+                <img src="../../../assets/svg/creditCard.svg" alt="Credit Card" class="timeline-icon" />
                 ${payment.payment_method}
               </span>
             `
                 : ''
             }
             <span class="timeline-status ${isPaid ? 'paid' : status.cssClass}">
-              ${getIcon(isPaid ? 'checkCircle' : 'history')}
+              <img src="../../../assets/svg/${isPaid ? 'check' : 'history'}.svg" alt="${
+        isPaid ? 'Paid' : 'Pending'
+      }" class="timeline-icon" />
               ${isPaid ? 'Paid' : status.label}
             </span>
           </div>

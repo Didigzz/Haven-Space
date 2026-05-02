@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const ownershipColor = isOwnProperty ? '#4a7c23' : '#dc2626';
 
             const popupContent = `
-              <div style="min-width: 220px;">
+              <div class="property-popup">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                   <h3 style="margin: 0; font-size: 16px; font-weight: 600; flex: 1;">${
                     property.name
@@ -113,9 +113,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${ownershipLabel}
                   </span>
                 </div>
-                <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
-                  <strong>Address:</strong> ${property.address || 'N/A'}
-                </p>
+                <div class="property-popup-image" style="background: url('${
+                  property.photos && property.photos.length > 0
+                    ? property.photos[0]
+                    : '../../assets/images/placeholder-room.svg'
+                }') center/cover no-repeat; background-color: #f0f0f0; height: 120px; margin-bottom: 12px;"></div>
+                <div class="property-popup-content">
+                  <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
+                    <strong>Address:</strong> ${property.address || 'N/A'}
+                  </p>
                 <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
                   <strong>Price:</strong> ₱${(property.price || 0).toLocaleString()}/month
                 </p>
@@ -144,19 +150,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ${
                   isOwnProperty
                     ? `
-                  <a href="../listings/edit.html?id=${property.id}" 
-                     style="display: inline-block; padding: 6px 12px; background: #4a7c23; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                  <a href="../listings/edit.html?id=${property.id}"
+                     style="display: inline-block; padding: 8px 16px; background: #4a7c23; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600; margin-top: 12px;">
                     Edit Property
                   </a>
                 `
                     : `
-                  <a href="../../public/room-detail.html?id=${property.id}" 
-                     style="display: inline-block; padding: 6px 12px; background: #dc2626; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                  <a href="../../public/room-detail.html?id=${property.id}"
+                     style="display: inline-block; padding: 8px 16px; background: #dc2626; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600; margin-top: 12px;">
                     View Details
                   </a>
                 `
                 }
               </div>
+            </div>
             `;
 
             marker.bindPopup(popupContent);
@@ -174,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div style="text-align: center;">
             <div style="font-weight: 600; margin-bottom: 4px;">Market Overview</div>
             <div style="font-size: 12px; opacity: 0.8;">
-              <span style="color: #4a7c23;">●</span> Your properties: ${ownProperties.length} | 
+              <span style="color: #4a7c23;">●</span> Your properties: ${ownProperties.length} |
               <span style="color: #dc2626;">●</span> Other properties: ${otherProperties.length}
             </div>
           </div>

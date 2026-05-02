@@ -74,12 +74,60 @@
 
       /* Leaflet popup styling */
       .leaflet-popup-content-wrapper {
-        border-radius: 8px;
+        border-radius: 12px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       }
 
       .leaflet-popup-content {
+        margin: 0;
+        min-width: 280px;
+      }
+
+      .leaflet-popup-tip {
+        background: white;
+      }
+
+      .property-popup {
+        display: flex;
+        flex-direction: column;
         font-family: 'Plus Jakarta Sans', sans-serif;
-        margin: 8px;
+      }
+
+      .property-popup-image {
+        width: 100%;
+        height: 160px;
+        background: linear-gradient(135deg, #4a7c23 0%, #6ba83e 100%);
+        background-size: cover;
+        background-position: center;
+      }
+
+      .property-popup-content {
+        padding: 16px;
+      }
+
+      .property-popup-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+      }
+
+      .property-popup-location {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #555555;
+        margin-bottom: 8px;
+      }
+
+      .property-popup-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #4a7c23;
+        margin-bottom: 12px;
       }
     </style>
   </head>
@@ -153,22 +201,23 @@
 
               // Create popup content
               const popupContent = `
-                <div style="font-family: 'Plus Jakarta Sans', sans-serif; min-width: 200px;">
-                  <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">
-                    ${property.title}
-                  </h3>
-                  <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">
-                    ${property.address}
-                  </p>
-                  <p style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #2563eb;">
-                    ₱${property.price.toLocaleString()}/month
-                  </p>
-                  <a 
-                    href="find-a-room.html" 
-                    style="display: inline-block; padding: 8px 16px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;"
-                  >
-                    View Details
-                  </a>
+                <div class="property-popup">
+                  <div class="property-popup-image" style="background: url('${
+                    property.photos && property.photos.length > 0
+                      ? property.photos[0]
+                      : '../../assets/images/placeholder-room.svg'
+                  }') center/cover no-repeat; background-color: #f0f0f0;"></div>
+                  <div class="property-popup-content">
+                    <h3 class="property-popup-title">${property.title}</h3>
+                    <div class="property-popup-location">
+                      <span>📍</span>
+                      ${property.address}
+                    </div>
+                    <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
+                    <a href="find-a-room.html" style="display: inline-block; padding: 8px 16px; background: #4a7c23; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; margin-top: 12px;">
+                      View Details
+                    </a>
+                  </div>
                 </div>
               `;
 

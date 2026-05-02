@@ -368,9 +368,9 @@ function renderPaymentHistory() {
       return `
       <div class="timeline-item" data-payment-id="${payment.id}">
         <div class="timeline-marker ${markerClass}">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            ${markerIcon}
-          </svg>
+          <img src="../../../assets/svg/${isPaid ? 'check' : 'history'}.svg" alt="${
+        isPaid ? 'Paid' : 'Pending'
+      }" class="timeline-marker-icon" />
         </div>
         <div class="timeline-content">
           <div class="timeline-header">
@@ -379,9 +379,7 @@ function renderPaymentHistory() {
           </div>
           <div class="timeline-details">
             <span class="timeline-detail">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <img src="../../../assets/svg/calendar.svg" alt="Calendar" class="timeline-icon" />
               ${
                 isPaid
                   ? 'Paid on ' + formatDate(payment.payment_date)
@@ -389,18 +387,14 @@ function renderPaymentHistory() {
               }
             </span>
             <span class="timeline-detail">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+              <img src="../../../assets/svg/building.svg" alt="Property" class="timeline-icon" />
               ${escapeHtml(propertyInfo)}
             </span>
             ${
               payment.payment_method
                 ? `
               <span class="timeline-detail">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
+                <img src="../../../assets/svg/creditCard.svg" alt="Credit Card" class="timeline-icon" />
                 ${escapeHtml(payment.payment_method)}
               </span>
             `
