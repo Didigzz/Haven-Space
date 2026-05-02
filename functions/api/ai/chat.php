@@ -7,87 +7,139 @@ require_once __DIR__ . '/../../src/Core/bootstrap.php';
 require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
 
-// CORS is handled by cors.php middleware
-
 use App\AI\GroqService;
 use App\AI\PropertyService;
 
 try {
-    // Allow public access to AI chat - no authentication required
-    $input = json_decode(file_get_contents('php://input'), true);
+    /* -------------------------------------------------------
+     * 1. Parse & validate the request
+     * ----------------------------------------------------- */
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
     if (empty($input['message'])) {
-        json_response(400, ['error' => 'Message is required']);
+        json_response(400, ['error' => 'Message is required', 'success' => false]);
         exit;
     }
 
+    $userMessage = trim($input['message']);
+
+    /* -------------------------------------------------------
+     * 2. Check AI service availability
+     * ----------------------------------------------------- */
     $groqService = new GroqService();
-
     if (!$groqService->isConfigured()) {
-        json_response(503, ['error' => 'AI service not configured']);
+        json_response(503, ['error' => 'AI service not configured', 'success' => false]);
         exit;
     }
 
-    $userMessage = $input['message'];
-
-    // Always fetch current listings so every response is grounded in real data
+    /* -------------------------------------------------------
+     * 3. ALWAYS load real property data FIRST — no exceptions
+     * ----------------------------------------------------- */
     $propertyService = new PropertyService();
-    $properties = $propertyService->getActivePropertiesForAI();
-    $propertyContext = $propertyService->formatPropertiesForAIContext($properties);
+    $properties      = $propertyService->getActivePropertiesForAI();
+    $propertyCount   = count($properties);
+    $propertyContext = PropertyService::formatPropertiesForAIContext($properties);
 
-    // Ensure the chatbot reads and displays the current listings before responding
-    if (strpos($userMessage, 'current listing') !== false) {
-        $propertyService = new PropertyService();
-        $properties = $propertyService->getActivePropertiesForAI();
-        if (!empty($properties)) {
-            $response = "Here are our current listings:\n";
-            foreach ($properties as $property) {
-                $response .= "- {$property['name']}: {$property['description']}\n";
+    /* -------------------------------------------------------
+     * 4. Build conversation history for multi-turn context
+     * ----------------------------------------------------- */
+    $history = [];
+    if (!empty($input['history']) && is_array($input['history'])) {
+        // Sanitize and limit to last 10 exchanges (20 messages) to stay within token limits
+        $safeHistory = array_slice($input['history'], -20);
+        foreach ($safeHistory as $msg) {
+            if (!empty($msg['role']) && !empty($msg['content'])
+                && in_array($msg['role'], ['user', 'assistant'], true)) {
+                $history[] = [
+                    'role'    => $msg['role'],
+                    'content' => substr($msg['content'], 0, 2000), // hard cap per message
+                ];
             }
-            $response .= "If you'd like more information about any of these listings, please let me know!";
-        } else {
-            $response = "I've checked our current listings, and unfortunately, we don't have any properties available at the moment. If you'd like, I can help you set up a search or notify you when new listings become available. What type of boarding house are you looking for?";
         }
-        echo json_encode(['response' => $response]);
-        exit;
     }
 
+    /* -------------------------------------------------------
+     * 5. Compose the system prompts
+     *    – System prompt 1: role & hard rules
+     *    – System prompt 2: live database snapshot
+     * ----------------------------------------------------- */
+    $noListingsNote = $propertyCount === 0
+        ? "The database currently has NO published listings. Honestly tell the user that there are no listings yet and invite them to check back soon."
+        : "The database currently has {$propertyCount} published listing(s). You MUST reference these real listings when answering property-related questions. It is INCORRECT and FORBIDDEN to say there are no properties or no listings — the data above proves otherwise.";
+
+    $systemPrompt1 = <<<PROMPT
+You are Haven AI, the intelligent boarding-house assistant for Haven Space — a Philippine boarding-house marketplace.
+
+YOUR ROLE:
+• Help users find boarding houses, compare prices, explore locations, and understand the platform.
+• Give direct, friendly, and accurate answers grounded in the real database data provided.
+• When property data is available, always cite specific property names, prices, and locations.
+
+HARD RULES (never break these):
+1. {$noListingsNote}
+2. Never invent property names, prices, or addresses that are not in the database.
+3. When comparing prices, always use the actual ₱ figures from the data.
+4. When asked "near me" questions, list the cities/addresses of available properties since you cannot access the user's GPS.
+5. When a user asks a general question (not property-related), answer helpfully as a platform assistant.
+6. Keep responses concise — use bullet points or short paragraphs.
+7. Always respond in the same language the user uses (Filipino or English).
+PROMPT;
+
+    $systemPrompt2 = <<<DATA
+LIVE DATABASE SNAPSHOT (fetched right now — this is ground truth):
+
+{$propertyContext}
+
+Use this data to answer ALL property-related questions accurately and specifically.
+DATA;
+
+    /* -------------------------------------------------------
+     * 6. Assemble messages array
+     * ----------------------------------------------------- */
     $messages = [
-        [
-            'role' => 'system',
-            'content' => 'You are Haven AI, a smart boarding house assistant for the Haven Space platform. '
-                . 'Your role is to help users find boarding houses, answer questions about the platform, '
-                . 'and provide helpful information about rental properties. '
-                . 'Be friendly, helpful, and concise. '
-                . 'Base your answers on the current listings provided. '
-                . 'Never make up property listings or specific details not present in the data.'
-        ],
-        [
-            'role' => 'system',
-            'content' => "Current property listings from the database (real-time):\n\n"
-                . $propertyContext
-                . "\nUse this data to answer property-related questions accurately. "
-                . "If no properties match the user's criteria, say so and suggest they adjust their search."
-        ],
-        [
-            'role' => 'user',
-            'content' => $userMessage
-        ]
+        ['role' => 'system', 'content' => $systemPrompt1],
+        ['role' => 'system', 'content' => $systemPrompt2],
     ];
 
-    $response = $groqService->chatCompletion($messages);
-    $aiResponse = $response['choices'][0]['message']['content'] ?? '';
+    // Inject conversation history
+    foreach ($history as $msg) {
+        $messages[] = $msg;
+    }
 
+    // Append the current user message
+    $messages[] = ['role' => 'user', 'content' => $userMessage];
+
+    /* -------------------------------------------------------
+     * 7. Call Groq
+     * ----------------------------------------------------- */
+    $response  = $groqService->chatCompletion(
+        $messages,
+        null,   // use default model
+        0.6,    // slightly lower temperature for factual accuracy
+        1500    // allow longer, richer responses
+    );
+    $aiResponse = trim($response['choices'][0]['message']['content'] ?? '');
+
+    if (empty($aiResponse)) {
+        json_response(500, ['error' => 'Empty response from AI', 'success' => false]);
+        exit;
+    }
+
+    /* -------------------------------------------------------
+     * 8. Return structured response
+     * ----------------------------------------------------- */
     json_response(200, [
-        'success' => true,
-        'response' => trim($aiResponse),
-        'model_used' => $response['model'] ?? 'unknown',
-        'usage' => $response['usage'] ?? null
+        'success'          => true,
+        'response'         => $aiResponse,
+        'property_count'   => $propertyCount,
+        'model_used'       => $response['model'] ?? 'unknown',
+        'usage'            => $response['usage'] ?? null,
     ]);
 
 } catch (\Throwable $e) {
+    error_log('AI chat error: ' . $e->getMessage());
     json_response(500, [
-        'error' => 'AI chat failed: ' . $e->getMessage(),
-        'success' => false
+        'success' => false,
+        'error'   => 'AI chat failed: ' . $e->getMessage(),
     ]);
 }

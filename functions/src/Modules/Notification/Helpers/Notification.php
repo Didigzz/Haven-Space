@@ -2,6 +2,10 @@
 
 namespace App\Modules\Notification\Helpers;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
 /**
  * Notification Helper
  * Simple notification system for logging and triggering notifications
@@ -17,8 +21,10 @@ class Notification
      * @param string $title Notification title
      * @param string $message Notification message
      * @param array $metadata Additional metadata
+     * @param string|null $email Recipient email address
+     * @param bool $sendEmail Whether to send email notification
      */
-    public static function send(int $userId, string $type, string $title, string $message, array $metadata = []): void
+    public static function send(int $userId, string $type, string $title, string $message, array $metadata = [], ?string $email = null, bool $sendEmail = false): void
     {
         // Log the notification
         $logEntry = [
@@ -32,10 +38,59 @@ class Notification
 
         error_log('[NOTIFICATION] ' . json_encode($logEntry));
 
+        // Send email notification if requested
+        if ($sendEmail && $email) {
+            self::sendEmailNotification($email, $title, $message);
+        }
+
         // TODO: Integrate with database notification table
-        // TODO: Integrate with email service (PHPMailer, SendGrid, etc.)
         // TODO: Integrate with push notification service (Firebase, etc.)
         // TODO: Integrate with SMS service (Twilio, etc.)
+    }
+
+    /**
+     * Send email notification using PHPMailer
+     *
+     * @param string $email Recipient email address
+     * @param string $title Email subject
+     * @param string $message Email message
+     */
+    private static function sendEmailNotification(string $email, string $title, string $message): void
+    {
+        $emailConfig = require __DIR__ . '/../../../../config/email.php';
+
+        $mail = new PHPMailer(true);
+
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host       = $emailConfig['smtp']['host'];
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $emailConfig['smtp']['username'];
+            $mail->Password   = $emailConfig['smtp']['password'];
+            $mail->SMTPSecure = $emailConfig['smtp']['secure'] === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = $emailConfig['smtp']['port'];
+
+            // Recipients
+            $mail->setFrom($emailConfig['from']['email'], $emailConfig['from']['name']);
+            $mail->addAddress($email);
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = $title;
+
+            $mail->Body = "
+                <p>Hello,</p>
+                <p>{$message}</p>
+            ";
+
+            $mail->AltBody = "Hello, {$message}";
+
+            $mail->send();
+            error_log("Email notification sent to {$email}");
+        } catch (Exception $e) {
+            error_log('Mailer Error: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -2,6 +2,11 @@
 
 require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../../src/Core/bootstrap.php';
+require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/SMTP.php';
+require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/Exception.php';
+
+$emailConfig = require __DIR__ . '/../../config/email.php';
 
 header('Content-Type: application/json');
 
@@ -40,8 +45,8 @@ $pdo = Connection::getInstance()->getPdo();
 try {
     // Find user with email
     $stmt = $pdo->prepare('
-        SELECT id, email_verified, first_name, last_name 
-        FROM users 
+        SELECT id, email_verified, first_name, last_name
+        FROM users
         WHERE email = ? AND deleted_at IS NULL
     ');
     $stmt->execute([$email]);
@@ -71,22 +76,58 @@ try {
 
     // Update user with new token
     $stmt = $pdo->prepare('
-        UPDATE users 
-        SET email_verification_token = ?, 
+        UPDATE users
+        SET email_verification_token = ?,
             email_verification_expires = ?,
             updated_at = NOW()
         WHERE id = ?
     ');
     $stmt->execute([$emailVerificationToken, $emailVerificationExpires, $user['id']]);
 
-    // TODO: Send email verification email
-    // For now, we'll just log it
-    error_log("New email verification token for {$email}: {$emailVerificationToken}");
+    // Send email verification email using PHPMailer
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'Verification email sent successfully. Please check your inbox.'
-    ]);
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = $emailConfig['smtp']['host'];
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $emailConfig['smtp']['username'];
+        $mail->Password   = $emailConfig['smtp']['password'];
+        $mail->SMTPSecure = $emailConfig['smtp']['secure'] === 'ssl' ? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS : PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = $emailConfig['smtp']['port'];
+
+        // Recipients
+        $mail->setFrom($emailConfig['from']['email'], $emailConfig['from']['name']);
+        $mail->addAddress($email);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = "Verify Your Email Address";
+        $verificationLink = "http://localhost/verify-email?token={$emailVerificationToken}";
+
+        $mail->Body = "
+            <p>Hello,</p>
+            <p>Please click the following link to verify your email address:</p>
+            <p><a href='{$verificationLink}'>{$verificationLink}</a></p>
+            <p>This link will expire in 24 hours.</p>
+            <p>If you did not request this, please ignore this email.</p>
+        ";
+
+        $mail->AltBody = "Hello, Please click the following link to verify your email address: {$verificationLink}";
+
+        $mail->send();
+        error_log("Email verification email sent to {$email}");
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Verification email sent successfully. Please check your inbox.'
+        ]);
+    } catch (PHPMailer\PHPMailer\Exception $e) {
+        error_log('Mailer Error: ' . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to send verification email. Please try again.']);
+    }
 
 } catch (\PDOException $e) {
     error_log('Resend verification error: ' . $e->getMessage());

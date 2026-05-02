@@ -1,5 +1,8 @@
 <?php
 
+// Load Composer autoloader for vendor libraries
+require_once __DIR__ . '/../../vendor/autoload.php';
+
 require_once __DIR__ . '/Env.php';
 \App\Core\Env::load(__DIR__ . '/../../.env');
 
@@ -9,11 +12,11 @@ if (!defined('APPWRITE_FUNCTION_CONTEXT') && session_status() === PHP_SESSION_NO
     ini_set('session.cookie_path', '/');
     ini_set('session.cookie_httponly', '1');
     ini_set('session.use_strict_mode', '1');
-    
+
     // For local development, disable secure cookie (HTTP)
     ini_set('session.cookie_secure', '0');
     ini_set('session.cookie_samesite', 'Lax');
-    
+
     session_start();
 }
 

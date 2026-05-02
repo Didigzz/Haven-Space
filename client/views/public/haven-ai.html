@@ -79,6 +79,7 @@
               <span class="dot dot-green"></span>
             </div>
             <span class="haven-ai-demo-title">Haven AI Assistant</span>
+            <span class="demo-property-badge" style="display: none"></span>
           </div>
           <div class="haven-ai-demo-chat" id="demo-chat">
             <!-- Demo messages will be dynamically generated -->
@@ -90,13 +91,21 @@
               class="demo-input-field"
               placeholder="Ask Haven AI anything..."
             />
-            <button id="demo-send-button" class="demo-send-button">
-              <span
-                data-icon="arrowRight"
-                data-icon-width="18"
-                data-icon-height="18"
-                data-icon-stroke-width="2"
-              ></span>
+            <button id="demo-send-button" class="demo-send-button" title="Send message">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>

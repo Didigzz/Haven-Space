@@ -8,7 +8,8 @@
     "php": ">=8.0",
     "appwrite/appwrite": "13.0",
     "firebase/php-jwt": "^7.0",
-    "guzzlehttp/guzzle": "^7.0"
+    "guzzlehttp/guzzle": "^7.0",
+    "phpmailer/phpmailer": "^6.9"
   },
   "require-dev": {
     "codeception/codeception": "^5.3",

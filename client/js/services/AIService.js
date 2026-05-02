@@ -285,18 +285,31 @@ class AIService {
   }
 
   /**
-   * Chat with Haven AI assistant
+   * Chat with Haven AI assistant (basic, no history)
    * @param {string} message - User message
    * @param {string} sessionId - Optional session ID
    * @param {string} userId - Optional user ID
    * @returns {Promise<Object>} AI response
    */
   static async chat(message, sessionId = null, userId = null) {
+    return AIService.chatWithHistory(message, []);
+  }
+
+  /**
+   * Chat with Haven AI assistant, forwarding full conversation history for multi-turn context.
+   * The backend injects the live property database before every request.
+   *
+   * @param {string} message - Current user message
+   * @param {Array}  history - Array of {role, content} objects from prior turns
+   * @returns {Promise<Object>} AI response with success, response, property_count fields
+   */
+  static async chatWithHistory(message, history = []) {
     try {
       const chatData = {
-        message: message,
-        session_id: sessionId || localStorage.getItem('ai_session_id') || 'session_' + Date.now(),
-        user_id: userId || localStorage.getItem('user_id') || 'anonymous',
+        message,
+        history: Array.isArray(history) ? history : [],
+        session_id: localStorage.getItem('ai_session_id') || 'session_' + Date.now(),
+        user_id: localStorage.getItem('user_id') || 'anonymous',
       };
 
       // Store session ID for continuity
@@ -306,7 +319,7 @@ class AIService {
 
       return await AIService.executeFunction('/api/ai/chat', 'POST', chatData);
     } catch (error) {
-      console.error('AI chat failed:', error);
+      console.error('AI chatWithHistory failed:', error);
       return {
         success: false,
         error: 'AI assistant unavailable. Please try again later.',

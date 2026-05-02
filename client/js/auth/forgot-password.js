@@ -1,5 +1,6 @@
 // Import CONFIG
-import CONFIG from '../../config.js';
+import CONFIG from '../config.js';
+import { showToast } from '../shared/toast.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   const step1 = document.getElementById('step1');
@@ -12,10 +13,33 @@ document.addEventListener('DOMContentLoaded', function () {
   const resendTimer = document.getElementById('resendTimer');
   const codeInputs = document.querySelectorAll('.code-input');
 
+  const emailInput = document.getElementById('email');
+
+  // Helper: show inline error under the email field
+  function setEmailFieldError(message) {
+    clearEmailFieldError();
+    emailInput.classList.add('input-error');
+    const err = document.createElement('p');
+    err.className = 'field-error';
+    err.id = 'emailFieldError';
+    err.textContent = message;
+    emailInput.parentElement.appendChild(err);
+  }
+
+  function clearEmailFieldError() {
+    emailInput.classList.remove('input-error');
+    const existing = document.getElementById('emailFieldError');
+    if (existing) existing.remove();
+  }
+
+  // Clear inline error as soon as the user starts correcting the email
+  emailInput.addEventListener('input', clearEmailFieldError);
+
   // Step 1: Send reset code
   forgotPasswordForm.addEventListener('submit', function (e) {
     e.preventDefault();
 
+    clearEmailFieldError();
     const email = this.querySelector('#email').value;
     emailDisplay.textContent = email;
 
@@ -30,7 +54,16 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(response => response.json())
       .then(data => {
         if (data.error) {
-          alert(data.error);
+          if (data.error_code === 'EMAIL_NOT_FOUND') {
+            setEmailFieldError('No account found with this email address.');
+            showToast(
+              'No account found with this email address. Please check your email or sign up.',
+              'error',
+              6000
+            );
+          } else {
+            showToast(data.error, 'error');
+          }
           return;
         }
 
@@ -40,21 +73,113 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
 
-        // Switch to step 2
-        step1.classList.add('hidden');
-        step2.classList.remove('hidden');
+        // Show success modal
+        showSuccessModal(email, () => {
+          // Switch to step 2
+          step1.classList.add('hidden');
+          step2.classList.remove('hidden');
 
-        // Focus first code input
-        setTimeout(() => codeInputs[0].focus(), 100);
+          // Focus first code input
+          setTimeout(() => codeInputs[0].focus(), 100);
 
-        // Start resend timer
-        startResendTimer();
+          // Start resend timer
+          startResendTimer();
+        });
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Failed to send reset code. Please try again.');
+        showToast('Failed to send reset code. Please try again.', 'error');
       });
   });
+
+  // Show success modal
+  function showSuccessModal(email, onContinue) {
+    const modal = document.createElement('div');
+    modal.className = 'success-modal';
+    modal.innerHTML = `
+      <div class="success-modal-content">
+        <div class="success-icon">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h3>Email Sent Successfully!</h3>
+        <p>We've sent a 6-digit verification code to <strong>${email}</strong>.</p>
+        <p>Please check your inbox (and spam folder) and enter the code to proceed with password reset.</p>
+        <button id="continueBtn" class="auth-btn-primary auth-btn-full">Continue</button>
+      </div>
+    `;
+
+    // Add styles for the modal
+    const style = document.createElement('style');
+    style.textContent = `
+      .success-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .success-modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        text-align: center;
+      }
+
+      .success-icon {
+        color: #4CAF50;
+        margin-bottom: 1rem;
+      }
+
+      .success-modal-content h3 {
+        color: #1a202c;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+
+      .success-modal-content p {
+        color: #4a5568;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+
+      .success-modal-content strong {
+        font-weight: 600;
+        color: #2d3748;
+      }
+    `;
+
+    document.head.appendChild(style);
+    document.body.appendChild(modal);
+
+    // Add event listener for the continue button
+    modal.querySelector('#continueBtn').addEventListener('click', () => {
+      modal.remove();
+      style.remove();
+      onContinue();
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.remove();
+        style.remove();
+        onContinue();
+      }
+    });
+  }
 
   // Back button
   backBtn.addEventListener('click', function () {
@@ -168,6 +293,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const email = emailDisplay.textContent;
 
+    // Show loading state
+    const originalHTML = resendLink.innerHTML;
+    resendLink.innerHTML = '<span class="resend-spinner"></span> Sending...';
+    resendLink.classList.add('resend-loading-link');
+
+    const stopLoading = () => {
+      resendLink.innerHTML = originalHTML;
+      resendLink.classList.remove('resend-loading-link');
+    };
+
     // Send to backend to resend code
     fetch(`${CONFIG.API_BASE_URL}/auth/resend-reset-code`, {
       method: 'POST',
@@ -178,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })
       .then(response => response.json())
       .then(data => {
+        stopLoading();
         if (data.error) {
           alert(data.error);
           return;
@@ -187,6 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
         startResendTimer();
       })
       .catch(error => {
+        stopLoading();
         console.error('Error:', error);
         alert('Failed to resend code. Please try again.');
       });

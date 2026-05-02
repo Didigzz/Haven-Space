@@ -8,7 +8,7 @@
 require_once __DIR__ . '/../../src/Core/bootstrap.php';
 require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
 
-use App\Services\AppwriteService;
+use App\Core\Database\Connection;
 
 // Get input data
 $data = json_decode(file_get_contents('php://input'), true);
@@ -18,8 +18,8 @@ if (!$data || empty($data['email']) || empty($data['request_id']) || empty($data
     exit;
 }
 
-$email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
-$requestId = $data['request_id'];
+$email       = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
+$requestId   = (int) $data['request_id'];
 $newPassword = $data['new_password'];
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -33,68 +33,54 @@ if (strlen($newPassword) < 8) {
 }
 
 try {
-    $appwrite = new AppwriteService();
-    $database = $appwrite->getDatabases();
-    
+    $pdo = Connection::getInstance()->getPdo();
+
     // Find the reset request
-    $requests = $database->listDocuments(
-        'haven_space',
-        'password_reset_requests',
-        [
-            'queries' => [
-                'equal("$id", ["' . $requestId . '"])',
-                'equal("email", ["' . $email . '"])',
-                'equal("is_used", [false])',
-                'limit(1)'
-            ]
-        ]
+    $stmt = $pdo->prepare(
+        'SELECT id, user_id, expires_at
+         FROM password_reset_requests
+         WHERE id = ? AND email = ? AND is_used = FALSE
+         LIMIT 1'
     );
-    
-    if ($requests['total'] === 0) {
+    $stmt->execute([$requestId, $email]);
+    $request = $stmt->fetch();
+
+    if (!$request) {
         json_response(404, ['error' => 'Invalid or expired reset request']);
         exit;
     }
-    
-    $request = $requests['documents'][0];
-    
+
     // Check if request has expired
     if ($request['expires_at'] < time()) {
         json_response(400, ['error' => 'Reset request has expired']);
         exit;
     }
-    
-    // Get user ID and update password
+
     $userId = $request['user_id'];
-    
-    // Update user password using Appwrite Account API
-    // Note: Appwrite doesn't directly support updating other users' passwords
-    // This would typically require admin privileges or a custom implementation
-    
-    // For this implementation, we'll mark the reset request as used
-    // In a production environment, you would need to implement the actual
-    // password update logic, possibly using Appwrite's admin API or a custom
-    // user management system
-    
-    $database->updateDocument(
-        'haven_space',
-        'password_reset_requests',
-        $requestId,
-        [
-            'is_used' => true,
-            'used_at' => time()
-        ]
+
+    // Hash the new password and update the user record
+    $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
+    $updateUserStmt = $pdo->prepare(
+        'UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL'
     );
-    
-    // TODO: Implement actual password update logic
-    // This is a placeholder - in production you would:
-    // 1. Use Appwrite Admin API to update user password, OR
-    // 2. Implement a custom password update mechanism
-    
+    $updateUserStmt->execute([$newHash, $userId]);
+
+    if ($updateUserStmt->rowCount() === 0) {
+        json_response(404, ['error' => 'User not found']);
+        exit;
+    }
+
+    // Mark the reset request as used
+    $markUsedStmt = $pdo->prepare(
+        'UPDATE password_reset_requests SET is_used = TRUE, used_at = ? WHERE id = ?'
+    );
+    $markUsedStmt->execute([time(), $request['id']]);
+
     json_response(200, [
-        'message' => 'Password has been reset successfully',
-        'user_id' => $userId
+        'message' => 'Password has been reset successfully'
     ]);
-    
+
 } catch (Exception $e) {
+    error_log('Reset password error: ' . $e->getMessage());
     json_response(500, ['error' => 'Failed to reset password']);
 }

@@ -1,13 +1,46 @@
 // Import CONFIG
-import CONFIG from '../../config.js';
+import CONFIG from '../config.js';
+import { showToast, showErrorToast } from '../shared/toast.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   const resetPasswordForm = document.getElementById('resetPasswordForm');
+  const successModalOverlay = document.getElementById('success-modal-overlay');
+  const modalCloseBtn = document.getElementById('modal-close-btn');
 
   // Get query parameters
   const urlParams = new URLSearchParams(window.location.search);
   const email = urlParams.get('email');
   const requestId = urlParams.get('request_id');
+
+  // Modal functions
+  function showSuccessModal() {
+    successModalOverlay.classList.add('active');
+  }
+
+  function hideSuccessModal() {
+    successModalOverlay.classList.remove('active');
+    // Redirect to login after modal closes
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 300);
+  }
+
+  // Modal event listeners
+  modalCloseBtn.addEventListener('click', hideSuccessModal);
+
+  // Close on backdrop click
+  successModalOverlay.addEventListener('click', e => {
+    if (e.target === successModalOverlay) {
+      hideSuccessModal();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && successModalOverlay.classList.contains('active')) {
+      hideSuccessModal();
+    }
+  });
 
   // Form submission
   resetPasswordForm.addEventListener('submit', function (e) {
@@ -18,13 +51,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Validate passwords match
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match');
+      showErrorToast('Passwords do not match');
       return;
     }
 
     // Validate password strength
     if (newPassword.length < 8) {
-      alert('Password must be at least 8 characters long');
+      showErrorToast('Password must be at least 8 characters long');
       return;
     }
 
@@ -43,16 +76,15 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(response => response.json())
       .then(data => {
         if (data.error) {
-          alert(data.error);
+          showErrorToast(data.error);
           return;
         }
 
-        alert('Password reset successfully! You can now log in with your new password.');
-        window.location.href = 'login.html';
+        showSuccessModal();
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Failed to reset password. Please try again.');
+        showErrorToast('Failed to reset password. Please try again.');
       });
   });
 });

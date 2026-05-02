@@ -15,198 +15,214 @@ class PropertyService
     }
 
     /**
-     * Get all active properties with details for AI chat
+     * Get all active/published properties with details for AI chat.
+     * Intentionally broad — latitude/longitude are optional so no listings are hidden.
      *
      * @return array Array of property data
      */
     public function getActivePropertiesForAI(): array
     {
         try {
-            $stmt = $this->pdo->prepare(" 
-                SELECT 
+            $stmt = $this->pdo->prepare("
+                SELECT
                     p.id,
-                    p.title as name,
+                    p.title          AS name,
                     p.description,
-                    a.address_line_1 as address,
+                    a.address_line_1 AS address,
                     a.city,
                     a.province,
                     a.latitude,
                     a.longitude,
                     p.price,
                     p.status,
-                    COUNT(DISTINCT r.id) as rooms_count,
-                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
-                    u.first_name as landlord_first_name,
-                    u.last_name as landlord_last_name,
-                    lp.boarding_house_name as landlord_business_name,
-                    lp.total_rooms as property_total_rooms
+                    p.listing_moderation_status,
+                    COUNT(DISTINCT r.id)                                                          AS rooms_count,
+                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0)          AS occupied_rooms,
+                    COALESCE(SUM(CASE WHEN r.status = 'available' THEN 1 ELSE 0 END), 0)         AS available_rooms,
+                    u.first_name                                                                   AS landlord_first_name,
+                    u.last_name                                                                    AS landlord_last_name,
+                    lp.boarding_house_name                                                         AS landlord_business_name,
+                    lp.total_rooms                                                                 AS property_total_rooms
                 FROM properties p
-                LEFT JOIN addresses a ON p.address_id = a.id
-                LEFT JOIN rooms r ON p.id = r.property_id AND r.deleted_at IS NULL
-                LEFT JOIN users u ON u.id = p.landlord_id
-                LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
-                WHERE p.deleted_at IS NULL 
-                    AND p.status IN ('available', 'active')
-                    AND p.listing_moderation_status = 'approved'
-                    AND a.latitude IS NOT NULL 
-                    AND a.longitude IS NOT NULL
-                GROUP BY p.id, p.title, p.description, a.address_line_1, a.city, a.province, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, u.first_name, u.last_name, lp.boarding_house_name, lp.total_rooms
+                LEFT JOIN addresses       a  ON p.address_id   = a.id
+                LEFT JOIN rooms           r  ON p.id = r.property_id AND r.deleted_at IS NULL
+                LEFT JOIN users           u  ON u.id = p.landlord_id
+                LEFT JOIN landlord_profiles lp ON lp.user_id   = p.landlord_id
+                WHERE p.deleted_at IS NULL
+                  AND p.listing_moderation_status = 'published'
+                GROUP BY
+                    p.id, p.title, p.description,
+                    a.address_line_1, a.city, a.province, a.latitude, a.longitude,
+                    p.price, p.status, p.listing_moderation_status, p.created_at,
+                    p.landlord_id,
+                    u.first_name, u.last_name,
+                    lp.boarding_house_name, lp.total_rooms
                 ORDER BY p.created_at DESC
-                LIMIT 50
+                LIMIT 100
             ");
             $stmt->execute();
             $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Get amenities for all properties
-            $propertyIds = array_column($properties, 'id');
+            if (empty($properties)) {
+                return [];
+            }
+
+            // Fetch amenities for all properties in one query
+            $propertyIds  = array_column($properties, 'id');
             $amenitiesMap = [];
-            
+
             if (!empty($propertyIds)) {
-                $placeholders = implode(',', array_fill(0, count($propertyIds), '?'));
-                
-                $amenitiesStmt = $this->pdo->prepare(" 
-                    SELECT property_id, amenity_name 
-                    FROM amenities
-                    WHERE property_id IN ($placeholders)
+                $placeholders   = implode(',', array_fill(0, count($propertyIds), '?'));
+                $amenitiesStmt  = $this->pdo->prepare("
+                    SELECT property_id, amenity_name
+                    FROM   amenities
+                    WHERE  property_id IN ($placeholders)
                 ");
                 $amenitiesStmt->execute($propertyIds);
-                $amenitiesRows = $amenitiesStmt->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($amenitiesRows as $row) {
-                    if (!isset($amenitiesMap[$row['property_id']])) {
-                        $amenitiesMap[$row['property_id']] = [];
-                    }
+                foreach ($amenitiesStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                     $amenitiesMap[$row['property_id']][] = $row['amenity_name'];
                 }
             }
 
-            // Transform data for AI consumption
-            $transformedProperties = [];
+            // Transform for AI consumption
+            $result = [];
             foreach ($properties as $property) {
-                // Use property_total_rooms from landlord_profiles if available, otherwise fall back to rooms_count
-                $totalRooms = $property['property_total_rooms'] ? intval($property['property_total_rooms']) : intval($property['rooms_count']);
-                $occupiedRooms = intval($property['occupied_rooms']);
-                $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100) : 0;
+                $totalRooms    = $property['property_total_rooms']
+                    ? intval($property['property_total_rooms'])
+                    : intval($property['rooms_count']);
+                $occupiedRooms  = intval($property['occupied_rooms']);
+                $availableRooms = intval($property['available_rooms']);
+                $occupancyRate  = $totalRooms > 0
+                    ? round(($occupiedRooms / $totalRooms) * 100)
+                    : 0;
 
-                // Determine status based on occupancy
-                $displayStatus = 'active';
-                if ($occupancyRate === 100 && $totalRooms > 0) {
-                    $displayStatus = 'full';
-                }
+                $displayStatus = ($occupancyRate === 100 && $totalRooms > 0) ? 'full' : 'available';
 
-                // Determine landlord display name
-                $landlordName = $property['landlord_business_name'] 
-                    ? $property['landlord_business_name']
-                    : trim($property['landlord_first_name'] . ' ' . $property['landlord_last_name']);
+                $landlordName = $property['landlord_business_name']
+                    ?: trim(($property['landlord_first_name'] ?? '') . ' ' . ($property['landlord_last_name'] ?? ''));
 
-                $transformedProperties[] = [
-                    'id' => intval($property['id']),
-                    'name' => htmlspecialchars($property['name']),
-                    'description' => htmlspecialchars($property['description'] ?? ''),
-                    'address' => htmlspecialchars($property['address']),
-                    'latitude' => floatval($property['latitude']),
-                    'longitude' => floatval($property['longitude']),
-                    'city' => htmlspecialchars($property['city'] ?? ''),
-                    'province' => htmlspecialchars($property['province'] ?? ''),
-                    'price' => floatval($property['price']),
-                    'status' => $displayStatus,
-                    'total_rooms' => $totalRooms,
+                $result[] = [
+                    'id'             => intval($property['id']),
+                    'name'           => $property['name'],
+                    'description'    => $property['description'] ?? '',
+                    'address'        => $property['address'] ?? 'N/A',
+                    'latitude'       => $property['latitude']  ? floatval($property['latitude'])  : null,
+                    'longitude'      => $property['longitude'] ? floatval($property['longitude']) : null,
+                    'city'           => $property['city']     ?? '',
+                    'province'       => $property['province'] ?? '',
+                    'price'          => floatval($property['price']),
+                    'status'         => $displayStatus,
+                    'total_rooms'    => $totalRooms,
                     'occupied_rooms' => $occupiedRooms,
+                    'available_rooms'=> $availableRooms,
                     'occupancy_rate' => $occupancyRate,
-                    'landlord_name' => htmlspecialchars($landlordName),
-                    'amenities' => $amenitiesMap[$property['id']] ?? [],
+                    'landlord_name'  => $landlordName,
+                    'amenities'      => $amenitiesMap[$property['id']] ?? [],
                 ];
             }
 
-            return $transformedProperties;
-            
-        } catch (Exception $e) {
-            error_log('PropertyService error: ' . $e->getMessage());
+            return $result;
+
+        } catch (\Exception $e) {
+            error_log('PropertyService::getActivePropertiesForAI error: ' . $e->getMessage());
             return [];
         }
     }
 
     /**
-     * Check if a user message is property-related
-     *
-     * @param string $message User message
-     * @return bool True if message is property-related
+     * Return a quick price-range summary for the AI (min, max, avg).
+     */
+    public function getPriceSummary(): array
+    {
+        try {
+            $stmt = $this->pdo->query("
+                SELECT
+                    MIN(price) AS min_price,
+                    MAX(price) AS max_price,
+                    ROUND(AVG(price), 2) AS avg_price,
+                    COUNT(*)   AS total
+                FROM properties
+                WHERE deleted_at IS NULL
+                  AND listing_moderation_status = 'published'
+            ");
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Check if a user message is property/listing related.
      */
     public static function isPropertyRelatedQuery(string $message): bool
     {
-        $lowerMessage = strtolower($message);
-        
-        // Keywords that indicate property-related queries
-        $propertyKeywords = [
-            'property', 'properties', 'boarding house', 'boarding houses', 'rental',
-            'room', 'rooms', 'apartment', 'dormitory', 'accommodation',
-            'available', 'price', 'location', 'amenities', 'landlord',
-            'find', 'search', 'list', 'show', 'near', 'area', 'city',
-            'cheap', 'affordable', 'expensive', 'luxury', 'budget'
+        $msg = strtolower($message);
+
+        $keywords = [
+            'property', 'properties', 'boarding house', 'boarding houses', 'boardinghouse',
+            'rental', 'room', 'rooms', 'apartment', 'dormitory', 'accommodation', 'listing',
+            'available', 'price', 'location', 'amenities', 'landlord', 'find', 'search',
+            'list', 'show', 'near', 'area', 'city', 'cheap', 'affordable', 'expensive',
+            'luxury', 'budget', 'how much', 'cost', 'rate', 'monthly', 'wifi', 'ac',
+            'aircon', 'cctv', 'water', 'electric',
         ];
-        
-        // Questions about properties
-        $questionPatterns = [
-            'how much', 'what is the price', 'where is', 'where are',
-            'what amenities', 'who is the landlord', 'is there', 'are there',
-            'do you have', 'can you show', 'tell me about', 'information about'
-        ];
-        
-        foreach ($propertyKeywords as $keyword) {
-            if (strpos($lowerMessage, $keyword) !== false) {
+
+        foreach ($keywords as $kw) {
+            if (str_contains($msg, $kw)) {
                 return true;
             }
         }
-        
-        foreach ($questionPatterns as $pattern) {
-            if (strpos($lowerMessage, $pattern) !== false) {
-                return true;
-            }
-        }
-        
         return false;
     }
 
     /**
-     * Format properties data for AI context
-     *
-     * @param array $properties Array of property data
-     * @return string Formatted string for AI context
+     * Format properties for injection into the AI system prompt.
+     * Includes a header that states the exact count so the model cannot claim zero listings.
      */
     public static function formatPropertiesForAIContext(array $properties): string
     {
-        if (empty($properties)) {
-            return "No current property listings available.";
+        $count = count($properties);
+
+        if ($count === 0) {
+            return "PROPERTY DATABASE: 0 published listings found.";
         }
-        
-        $context = "Current Property Listings:\n\n";
-        
-        foreach ($properties as $property) {
-            $context .= sprintf("Property: %s\n", $property['name']);
-            $context .= sprintf("Location: %s, %s, %s\n", 
-                $property['address'], 
-                $property['city'] ?? 'N/A', 
-                $property['province'] ?? 'N/A'
-            );
-            $context .= sprintf("Price: ₱%.2f per month\n", $property['price']);
-            $context .= sprintf("Status: %s\n", ucfirst($property['status']));
-            $context .= sprintf("Rooms: %d total, %d occupied (%d%% occupancy)\n", 
-                $property['total_rooms'], 
-                $property['occupied_rooms'], 
-                $property['occupancy_rate']
-            );
-            
-            if (!empty($property['amenities'])) {
-                $context .= "Amenities: " . implode(', ', $property['amenities']) . "\n";
+
+        // Price stats
+        $prices   = array_column($properties, 'price');
+        $minPrice = min($prices);
+        $maxPrice = max($prices);
+        $avgPrice = round(array_sum($prices) / $count, 2);
+
+        $context  = "=== HAVEN SPACE PROPERTY DATABASE ===\n";
+        $context .= "Total published listings: {$count}\n";
+        $context .= sprintf(
+            "Price range: ₱%.2f – ₱%.2f per month  |  Average: ₱%.2f/month\n\n",
+            $minPrice, $maxPrice, $avgPrice
+        );
+
+        foreach ($properties as $i => $p) {
+            $num       = $i + 1;
+            $available = $p['available_rooms'] > 0 ? "{$p['available_rooms']} room(s) available" : "fully occupied";
+            $location  = implode(', ', array_filter([$p['address'], $p['city'], $p['province']]));
+            $amenities = !empty($p['amenities']) ? implode(', ', $p['amenities']) : 'not listed';
+
+            $context .= "--- Listing #{$num} ---\n";
+            $context .= "Name      : {$p['name']}\n";
+            $context .= "Location  : {$location}\n";
+            $context .= "Price     : ₱" . number_format($p['price'], 2) . " per month\n";
+            $context .= "Rooms     : {$p['total_rooms']} total, {$available}\n";
+            $context .= "Amenities : {$amenities}\n";
+
+            if (!empty($p['description'])) {
+                $context .= "Details   : {$p['description']}\n";
             }
-            
-            if (!empty($property['description'])) {
-                $context .= "Description: " . $property['description'] . "\n";
+            if (!empty($p['landlord_name'])) {
+                $context .= "Landlord  : {$p['landlord_name']}\n";
             }
-            
-            $context .= "Landlord: " . $property['landlord_name'] . "\n";
-            $context .= str_repeat("-", 50) . "\n";
+            $context .= "\n";
         }
-        
+
+        $context .= "=== END OF PROPERTY DATABASE ===\n";
         return $context;
     }
 }

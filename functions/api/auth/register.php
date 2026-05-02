@@ -2,6 +2,11 @@
 
 require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../../src/Core/bootstrap.php';
+require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/SMTP.php';
+require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/Exception.php';
+
+$emailConfig = require __DIR__ . '/../../config/email.php';
 
 header('Content-Type: application/json');
 
@@ -51,7 +56,7 @@ if ($role === 'landlord') {
         echo json_encode(['error' => 'Missing required landlord profile fields']);
         exit;
     }
-    
+
     // Validate phone number format (Philippine mobile)
     $cleanPhone = preg_replace('/\D/', '', $phoneNumber);
     if (!preg_match('/^(63|0)?9\d{9}$/', $cleanPhone)) {
@@ -59,7 +64,7 @@ if ($role === 'landlord') {
         echo json_encode(['error' => 'Invalid Philippine mobile number format']);
         exit;
     }
-    
+
     // Format phone number to +63 format
     if (substr($cleanPhone, 0, 2) === '63') {
         $phoneNumber = '+' . $cleanPhone;
@@ -114,7 +119,7 @@ try {
     if (!$pdo->beginTransaction()) {
         throw new \RuntimeException("Failed to start database transaction");
     }
-    
+
     // Determine initial account status based on role
     $accountStatusName = ($role === 'landlord') ? 'pending_verification' : 'active';
     $accountStatus = $accountStatusName; // keep for JWT payload
@@ -140,16 +145,16 @@ try {
 
     // Create user account
     $stmt = $pdo->prepare('
-        INSERT INTO users 
+        INSERT INTO users
         (first_name, last_name, email, phone_number, password_hash, role_id,
-         email_verification_token, email_verification_expires, account_status_id) 
+         email_verification_token, email_verification_expires, account_status_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
     $stmt->execute([
         $firstName, $lastName, $email, $phoneNumber, $passwordHash, $roleId,
         $emailVerificationToken, $emailVerificationExpires, $accountStatusId
     ]);
-    
+
     $userId = $pdo->lastInsertId();
 
     // Create role-specific profiles
@@ -159,8 +164,8 @@ try {
 
         // Create landlord profile
         $stmt = $pdo->prepare('
-            INSERT INTO landlord_profiles 
-            (user_id, boarding_house_name, boarding_house_description, property_type, total_rooms, available_rooms) 
+            INSERT INTO landlord_profiles
+            (user_id, boarding_house_name, boarding_house_description, property_type, total_rooms, available_rooms)
             VALUES (?, ?, ?, ?, ?, ?)
         ');
         $stmt->execute([$userId, $businessName, $businessDescription, $propertyType, 1, 1]);
@@ -168,12 +173,12 @@ try {
     } elseif ($role === 'boarder') {
         // Create basic boarder profile
         $stmt = $pdo->prepare('
-            INSERT INTO boarder_profiles (user_id, profile_completed) 
+            INSERT INTO boarder_profiles (user_id, profile_completed)
             VALUES (?, ?)
         ');
         $stmt->execute([$userId, false]);
     }
-    
+
     // Commit transaction
     $pdo->commit();
 
@@ -192,13 +197,48 @@ try {
         error_log('Appwrite sync failed for user ' . $userId . ': ' . $e->getMessage());
     }
 
-    // TODO: Send email verification email
-    // For now, we'll just log it
-    error_log("Email verification token for {$email}: {$emailVerificationToken}");
+    // Send email verification email using PHPMailer
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = $emailConfig['smtp']['host'];
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $emailConfig['smtp']['username'];
+        $mail->Password   = $emailConfig['smtp']['password'];
+        $mail->SMTPSecure = $emailConfig['smtp']['secure'] === 'ssl' ? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS : PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = $emailConfig['smtp']['port'];
+
+        // Recipients
+        $mail->setFrom($emailConfig['from']['email'], $emailConfig['from']['name']);
+        $mail->addAddress($email);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = "Verify Your Email Address";
+        $verificationLink = "http://localhost/verify-email?token={$emailVerificationToken}";
+
+        $mail->Body = "
+            <p>Hello,</p>
+            <p>Please click the following link to verify your email address:</p>
+            <p><a href='{$verificationLink}'>{$verificationLink}</a></p>
+            <p>This link will expire in 24 hours.</p>
+            <p>If you did not request this, please ignore this email.</p>
+        ";
+
+        $mail->AltBody = "Hello, Please click the following link to verify your email address: {$verificationLink}";
+
+        $mail->send();
+        error_log("Email verification email sent to {$email}");
+    } catch (PHPMailer\PHPMailer\Exception $e) {
+        error_log('Mailer Error: ' . $e->getMessage());
+        // Don't fail registration if email sending fails
+    }
 
     // Generate JWT tokens for automatic login
     $config = require __DIR__ . '/../../config/app.php';
-    
+
     $jwtPayload = [
         'user_id' => $userId,
         'first_name' => $firstName,
@@ -209,10 +249,10 @@ try {
         'account_status' => $accountStatus,
         'verification_status' => $verificationStatus
     ];
-    
+
     $jwtAccessToken = \App\Core\Auth\JWT::generate($jwtPayload, $config['jwt_expiration']);
     $jwtRefreshToken = \App\Core\Auth\JWT::generate($jwtPayload, $config['refresh_token_expiration']);
-    
+
     // Set authentication cookies
     \App\Core\Auth\JWT::setAuthCookies($jwtAccessToken, $jwtRefreshToken, $config);
 
