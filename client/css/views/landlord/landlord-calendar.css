@@ -54,6 +54,17 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s var(--ease-standard, ease);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.calendar-btn-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
 }
 
 .calendar-view-btn:hover {
@@ -61,10 +72,19 @@
   color: var(--primary-green);
 }
 
+.calendar-view-btn:hover .calendar-btn-icon {
+  opacity: 1;
+}
+
 .calendar-view-btn.active {
   background-color: var(--primary-green);
   color: var(--white);
   font-weight: 600;
+}
+
+.calendar-view-btn.active .calendar-btn-icon {
+  opacity: 1;
+  filter: brightness(0) invert(1);
 }
 
 /* ─── Navigation ─────────────────────────────────────────── */

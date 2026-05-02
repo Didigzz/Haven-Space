@@ -506,13 +506,23 @@ async function goToToday() {
 function initEventListeners() {
   document.getElementById('prevMonth')?.addEventListener('click', () => navigateMonth(-1));
   document.getElementById('nextMonth')?.addEventListener('click', () => navigateMonth(1));
-  document.getElementById('todayBtn')?.addEventListener('click', goToToday);
 
-  // View toggle
+  // View toggle buttons
   document.querySelectorAll('.calendar-view-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.calendar-view-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      const view = btn.dataset.view;
+
+      // Handle Today button
+      if (view === 'today') {
+        goToToday();
+        // Set Month as active after going to today
+        document.querySelectorAll('.calendar-view-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.calendar-view-btn[data-view="month"]')?.classList.add('active');
+      } else {
+        // Handle Month/Week toggle
+        document.querySelectorAll('.calendar-view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
     });
   });
 

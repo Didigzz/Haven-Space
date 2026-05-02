@@ -39,28 +39,13 @@
               <p class="calendar-subtitle">Track payments and tenancy events</p>
             </div>
             <div class="calendar-header-actions">
-              <button class="landlord-btn landlord-btn-outline" id="todayBtn">
-                <span
-                  data-icon="calendar"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-                Today
-              </button>
               <div class="calendar-view-toggle">
-                <button
-                  class="landlord-btn landlord-btn-outline calendar-view-btn active"
-                  data-view="month"
-                >
-                  Month
+                <button class="calendar-view-btn" id="todayBtn" data-view="today">
+                  <img src="../../../assets/svg/calendar.svg" alt="" class="calendar-btn-icon" />
+                  Today
                 </button>
-                <button
-                  class="landlord-btn landlord-btn-outline calendar-view-btn"
-                  data-view="week"
-                >
-                  Week
-                </button>
+                <button class="calendar-view-btn active" data-view="month">Month</button>
+                <button class="calendar-view-btn" data-view="week">Week</button>
               </div>
             </div>
           </div>
