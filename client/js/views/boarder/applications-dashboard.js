@@ -7,6 +7,7 @@ import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { authenticatedFetch } from '../../shared/state.js';
 import { getIcon } from '../../shared/icons.js';
+import { showToast } from '../../shared/toast.js';
 import CONFIG from '../../config.js';
 
 /**
@@ -118,11 +119,13 @@ function initializeComponents() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const userInfo = {
-    name: user.name || 'Boarder User',
-    initials: getInitials(user.name || 'Boarder User'),
+    name: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Boarder User',
+    initials: getInitials(
+      `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.name || 'Boarder User'
+    ),
     role: 'Boarder',
-    email: user.email || 'boarder@example.com',
-    avatarUrl: user.avatarUrl || '',
+    email: user.email || '',
+    avatar_url: user.avatar_url || '',
   };
 
   // Get boarder status from user data (default to applied_pending for applications dashboard)
@@ -138,6 +141,33 @@ function initializeComponents() {
   // Initialize navbar
   initNavbar({
     user: userInfo,
+  });
+
+  // Keep sidebar avatar in sync when profile is updated (e.g. after photo upload)
+  window.addEventListener('userProfileUpdated', e => {
+    const updated = e.detail || {};
+    const avatarImg = document.getElementById('sidebar-avatar-img');
+    const avatarInitials = document.getElementById('sidebar-avatar-initials');
+    const sidebarName = document.getElementById('sidebar-profile-name');
+
+    if (updated.avatar_url && avatarImg && avatarInitials) {
+      avatarImg.src = updated.avatar_url;
+      avatarImg.style.display = 'block';
+      avatarImg.style.width = '100%';
+      avatarImg.style.height = '100%';
+      avatarImg.style.borderRadius = '50%';
+      avatarImg.style.objectFit = 'cover';
+      avatarInitials.style.display = 'none';
+      avatarImg.onerror = () => {
+        avatarImg.style.display = 'none';
+        avatarInitials.style.display = 'flex';
+      };
+    }
+
+    if ((updated.first_name || updated.last_name) && sidebarName) {
+      sidebarName.textContent =
+        `${updated.first_name || ''} ${updated.last_name || ''}`.trim() || sidebarName.textContent;
+    }
   });
 }
 
@@ -1211,45 +1241,7 @@ function formatRelativeDate(dateString) {
   return formatDate(dateString);
 }
 
-/**
- * Show toast notification
- */
-function showToast(message, type = 'info') {
-  // Create toast element
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
 
-  // Add styles
-  Object.assign(toast.style, {
-    position: 'fixed',
-    top: '20px',
-    right: '20px',
-    padding: '12px 20px',
-    borderRadius: '6px',
-    color: 'white',
-    fontWeight: '500',
-    zIndex: '10000',
-    transform: 'translateX(100%)',
-    transition: 'transform 0.3s ease',
-    backgroundColor: type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6',
-  });
-
-  document.body.appendChild(toast);
-
-  // Animate in
-  setTimeout(() => {
-    toast.style.transform = 'translateX(0)';
-  }, 100);
-
-  // Remove after 3 seconds
-  setTimeout(() => {
-    toast.style.transform = 'translateX(100%)';
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 300);
-  }, 3000);
-}
 
 /**
  * Check if this is a new user and show helpful guidance
@@ -1259,14 +1251,16 @@ function checkForNewUser() {
   const savedProperties = JSON.parse(localStorage.getItem('savedProperties') || '[]');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  // If user has no applications and no saved properties, show welcome message
-  if (applications.length === 0 && savedProperties.length === 0) {
+  // If user has no applications and no saved properties, show welcome message (once only)
+  const welcomeShown = localStorage.getItem('welcomeToastShown');
+  if (applications.length === 0 && savedProperties.length === 0 && !welcomeShown) {
+    localStorage.setItem('welcomeToastShown', 'true');
     setTimeout(() => {
       showToast(
         `Welcome ${
           user.name || 'to Haven Space'
         }! Start by browsing properties to find your perfect room.`,
-        'info',
+        'success',
         8000
       );
     }, 2000);

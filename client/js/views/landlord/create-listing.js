@@ -93,10 +93,28 @@ export function initCreateListing() {
     initSidebar({
       role: 'landlord',
       user: {
-        name: user.full_name || user.name || 'Landlord',
-        initials: getInitials(user.full_name || user.name || 'L'),
+        name: user.full_name || user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Landlord',
+        initials: getInitials(user.full_name || user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'L'),
         role: 'landlord',
+        avatar_url: user.avatar_url || '',
       },
+    });
+
+    // Keep sidebar avatar/name in sync after profile updates
+    window.addEventListener('userProfileUpdated', e => {
+      const updated = e.detail || {};
+      const avatarImg = document.getElementById('sidebar-avatar-img');
+      const avatarInitials = document.getElementById('sidebar-avatar-initials');
+      const sidebarName = document.getElementById('sidebar-profile-name');
+      if (updated.avatar_url && avatarImg && avatarInitials) {
+        avatarImg.src = updated.avatar_url;
+        avatarImg.style.cssText = 'display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;';
+        avatarInitials.style.display = 'none';
+        avatarImg.onerror = () => { avatarImg.style.display = 'none'; avatarInitials.style.display = 'flex'; };
+      }
+      if ((updated.first_name || updated.last_name) && sidebarName) {
+        sidebarName.textContent = `${updated.first_name || ''} ${updated.last_name || ''}`.trim() || sidebarName.textContent;
+      }
     });
   }
 

@@ -112,7 +112,25 @@ export async function initBoarderDashboard() {
         initials,
         role: 'Boarder',
         email: updatedUser.email || '',
+        avatar_url: updatedUser.avatar_url || '',
       },
+    });
+
+    // Keep sidebar avatar/name in sync after profile updates
+    window.addEventListener('userProfileUpdated', e => {
+      const updated = e.detail || {};
+      const avatarImg = document.getElementById('sidebar-avatar-img');
+      const avatarInitials = document.getElementById('sidebar-avatar-initials');
+      const sidebarName = document.getElementById('sidebar-profile-name');
+      if (updated.avatar_url && avatarImg && avatarInitials) {
+        avatarImg.src = updated.avatar_url;
+        avatarImg.style.cssText = 'display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;';
+        avatarInitials.style.display = 'none';
+        avatarImg.onerror = () => { avatarImg.style.display = 'none'; avatarInitials.style.display = 'flex'; };
+      }
+      if ((updated.first_name || updated.last_name) && sidebarName) {
+        sidebarName.textContent = `${updated.first_name || ''} ${updated.last_name || ''}`.trim() || sidebarName.textContent;
+      }
     });
   }
 
