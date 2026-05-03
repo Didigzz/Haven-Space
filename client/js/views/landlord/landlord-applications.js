@@ -480,13 +480,11 @@ function showApplicationModal(application) {
 function initEventListeners() {
   // Prevent duplicate initialization using global flag
   if (window.__landlordApplicationsEventListenersInitialized) {
-    console.log(
-      '[LANDLORD-APPLICATIONS] Event listeners already initialized, skipping duplicate initialization'
-    );
+    // Console log removed for production
     return;
   }
   window.__landlordApplicationsEventListenersInitialized = true;
-  console.log('[LANDLORD-APPLICATIONS] Initializing event listeners for the first time');
+  // Console log removed for production
 
   // View details button
   document.addEventListener('click', e => {
@@ -528,13 +526,11 @@ function initEventListeners() {
 export async function initLandlordApplications() {
   // Prevent duplicate initialization using global flag
   if (window.__landlordApplicationsInitialized) {
-    console.log(
-      '[LANDLORD-APPLICATIONS] Applications already initialized, skipping duplicate initialization'
-    );
+    // Console log removed for production
     return;
   }
   window.__landlordApplicationsInitialized = true;
-  console.log('[LANDLORD-APPLICATIONS] Initializing applications for the first time');
+  // Console log removed for production
 
   // Fetch and render applications
   const applications = await fetchApplications();

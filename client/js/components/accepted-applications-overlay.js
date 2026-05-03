@@ -271,7 +271,7 @@ function openConfirmationStep(app) {
         throw new Error(errorData.error || 'Failed to confirm booking');
       }
 
-      const result = await response.json();
+      await response.json();
 
       // Update user's boarder_status in localStorage
       const user = JSON.parse(localStorage.getItem('user') || '{}');

@@ -1,6 +1,6 @@
 // Import CONFIG
 import CONFIG from '../config.js';
-import { showToast, showErrorToast } from '../shared/toast.js';
+import { showErrorToast } from '../shared/toast.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   const resetPasswordForm = document.getElementById('resetPasswordForm');

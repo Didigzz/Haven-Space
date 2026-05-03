@@ -66,7 +66,7 @@ function markdownToHtml(text) {
   let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Process bullet lists (lines starting with * or -)
-  html = html.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/^[-] (.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>.*<\/li>(\n|$))+/g, match => `<ul>${match}</ul>`);
 
   // Process numbered lists (lines starting with 1. 2. etc.)
@@ -202,7 +202,7 @@ function initAIDemo() {
 
   /** Update the property-count badge in the demo header */
   function updatePropertyBadge(count) {
-    let badge = document.querySelector('.demo-property-badge');
+    const badge = document.querySelector('.demo-property-badge');
     if (!badge) return;
     badge.textContent = count > 0 ? `${count} listing${count !== 1 ? 's' : ''} live` : '';
     badge.style.display = count > 0 ? 'inline-flex' : 'none';
@@ -269,9 +269,8 @@ function initAIDemo() {
   }
 
   /* ── Follow-up prompt heuristics ── */
-  function getFollowUpPrompts(question, answer) {
+  function getFollowUpPrompts(question, _answer) {
     const q = question.toLowerCase();
-    const a = answer.toLowerCase();
 
     // After a listing query → offer filters
     if (q.includes('show') || q.includes('list') || q.includes('find') || q.includes('all')) {

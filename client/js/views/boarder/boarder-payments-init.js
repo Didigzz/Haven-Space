@@ -754,8 +754,7 @@ async function handleBoarderExportGeneration(modal) {
         showToast('CSV statement downloaded successfully!', 'success');
         break;
       case 'preview':
-        showBoarderPreviewReport(data, userName, params);
-        showToast('Opening preview in new tab...', 'info');
+        showToast('Preview functionality coming soon!', 'info');
         break;
     }
 
@@ -796,7 +795,7 @@ function collectBoarderExportParameters(modal) {
  */
 async function fetchBoarderPaymentData(params) {
   const token = localStorage.getItem('token');
-  
+
   const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/history`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -828,40 +827,42 @@ function filterBoarderPayments(payments, params) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  let monthStart, threeMonthsAgo, sixMonthsAgo, yearStart, start, end;
+
   switch (params.timeRange) {
     case 'monthly':
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
       filtered = filtered.filter(p => new Date(p.due_date) >= monthStart);
       break;
-    
+
     case 'last3months':
-      const threeMonthsAgo = new Date(today);
+      threeMonthsAgo = new Date(today);
       threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
       filtered = filtered.filter(p => new Date(p.due_date) >= threeMonthsAgo);
       break;
-    
+
     case 'last6months':
-      const sixMonthsAgo = new Date(today);
+      sixMonthsAgo = new Date(today);
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
       filtered = filtered.filter(p => new Date(p.due_date) >= sixMonthsAgo);
       break;
-    
+
     case 'ytd':
-      const yearStart = new Date(today.getFullYear(), 0, 1);
+      yearStart = new Date(today.getFullYear(), 0, 1);
       filtered = filtered.filter(p => new Date(p.due_date) >= yearStart);
       break;
-    
+
     case 'custom':
       if (params.startDate && params.endDate) {
-        const start = new Date(params.startDate);
-        const end = new Date(params.endDate);
+        start = new Date(params.startDate);
+        end = new Date(params.endDate);
         filtered = filtered.filter(p => {
           const date = new Date(p.due_date);
           return date >= start && date <= end;
         });
       }
       break;
-    
+
     case 'all':
     default:
       // No time filter
@@ -897,11 +898,11 @@ function formatBoarderTimeRange(params) {
 /**
  * Generate PDF statement for boarder
  */
-async function generateBoarderStatementPDF(payments, userName) {
+async function generateBoarderStatementPDF(payments, userName, params = {}) {
   // Check if jsPDF is available
   if (typeof window.jspdf === 'undefined') {
     // Fallback to CSV if jsPDF not available
-    generateBoarderStatementCSV(payments, userName);
+    generateBoarderStatementCSV(payments, userName, params);
     return;
   }
 
@@ -929,6 +930,9 @@ async function generateBoarderStatementPDF(payments, userName) {
   doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
   doc.text(`Boarder: ${userName}`, 14, 45);
+  if (params.timeRange) {
+    doc.text(`Time Range: ${formatBoarderTimeRange(params)}`, 14, 51);
+  }
   doc.text(
     `Generated: ${new Date().toLocaleString('en-PH', {
       year: 'numeric',
@@ -938,10 +942,10 @@ async function generateBoarderStatementPDF(payments, userName) {
       minute: '2-digit',
     })}`,
     14,
-    51
+    params.timeRange ? 57 : 51
   );
 
-  let yPos = 61;
+  let yPos = params.timeRange ? 67 : 61;
 
   // Calculate summary
   const summary = {

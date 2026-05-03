@@ -285,13 +285,11 @@ class AIService {
   }
 
   /**
-   * Chat with Haven AI assistant (basic, no history)
+   * Chat with Haven AI assistant (single message, no history).
    * @param {string} message - User message
-   * @param {string} sessionId - Optional session ID
-   * @param {string} userId - Optional user ID
    * @returns {Promise<Object>} AI response
    */
-  static async chat(message, sessionId = null, userId = null) {
+  static async chat(message) {
     return AIService.chatWithHistory(message, []);
   }
 
