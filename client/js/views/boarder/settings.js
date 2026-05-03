@@ -421,21 +421,28 @@ function initLeavePropertyForm() {
 
         if (res.ok) {
           showToast(
-            'Leave request sent successfully. Your application has been cancelled.',
+            'Leave request sent successfully. You can now search for a new room.',
             'success'
           );
           closeModal();
           leaveForm?.reset();
 
-          // Update user data in localStorage to reflect new status
+          // Update user data in localStorage to reflect that they are now searching for a new room
           const user = JSON.parse(localStorage.getItem('user') || '{}');
           user.boarder_status = 'new';
           user.boarderStatus = 'new';
           localStorage.setItem('user', JSON.stringify(user));
 
-          // Redirect to applications dashboard after a short delay
+          // Notify other components of the status change
+          window.dispatchEvent(
+            new CustomEvent('userStatusUpdated', {
+              detail: { boarder_status: 'new' },
+            })
+          );
+
+          // Redirect to find-a-room page after 2 seconds
           setTimeout(() => {
-            window.location.href = '/views/boarder/applications-dashboard/index.html';
+            window.location.href = '/views/boarder/find-a-room/index.html';
           }, 2000);
         } else {
           showToast(data.error || 'Failed to send leave request', 'error');

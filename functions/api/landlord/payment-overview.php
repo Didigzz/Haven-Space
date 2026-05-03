@@ -40,6 +40,7 @@ try {
     $dueSoonEnd = date('Y-m-d', strtotime('+14 days'));
 
     // 1. Get On Track Payments (paid or due in future, not overdue)
+    // Exclude payments from cancelled or deleted applications
     $stmt = $pdo->prepare("
         SELECT
             p.id,
@@ -60,9 +61,12 @@ try {
         INNER JOIN users u ON p.boarder_id = u.id
         INNER JOIN rooms r ON p.room_id = r.id
         INNER JOIN properties pr ON p.property_id = pr.id
+        LEFT JOIN applications a ON a.boarder_id = p.boarder_id 
+            AND a.room_id = p.room_id
         WHERE p.landlord_id = ?
             AND p.status IN ('pending', 'paid')
             AND (p.due_date > ? OR p.status = 'paid')
+            AND (a.id IS NULL OR (a.status != 'cancelled' AND a.deleted_at IS NULL))
         ORDER BY p.due_date ASC
         LIMIT 10
     ");
@@ -70,6 +74,7 @@ try {
     $onTrackPayments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 2. Get Due Soon Payments (7-14 days from now)
+    // Exclude payments from cancelled or deleted applications
     $stmt = $pdo->prepare("
         SELECT
             p.id,
@@ -91,9 +96,12 @@ try {
         INNER JOIN users u ON p.boarder_id = u.id
         INNER JOIN rooms r ON p.room_id = r.id
         INNER JOIN properties pr ON p.property_id = pr.id
+        LEFT JOIN applications a ON a.boarder_id = p.boarder_id 
+            AND a.room_id = p.room_id
         WHERE p.landlord_id = ?
             AND p.status = 'pending'
             AND p.due_date BETWEEN ? AND ?
+            AND (a.id IS NULL OR (a.status != 'cancelled' AND a.deleted_at IS NULL))
         ORDER BY p.due_date ASC
         LIMIT 10
     ");
@@ -101,6 +109,7 @@ try {
     $dueSoonPayments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 3. Get Overdue Payments (past due date)
+    // Exclude payments from cancelled or deleted applications
     $stmt = $pdo->prepare("
         SELECT
             p.id,
@@ -123,8 +132,11 @@ try {
         INNER JOIN users u ON p.boarder_id = u.id
         INNER JOIN rooms r ON p.room_id = r.id
         INNER JOIN properties pr ON p.property_id = pr.id
+        LEFT JOIN applications a ON a.boarder_id = p.boarder_id 
+            AND a.room_id = p.room_id
         WHERE p.landlord_id = ?
             AND p.status = 'overdue'
+            AND (a.id IS NULL OR (a.status != 'cancelled' AND a.deleted_at IS NULL))
         ORDER BY p.due_date ASC
         LIMIT 10
     ");
@@ -132,13 +144,17 @@ try {
     $overduePayments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Count totals (without LIMIT)
+    // Exclude payments from cancelled or deleted applications
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as count
         FROM payments p
         INNER JOIN properties pr ON p.property_id = pr.id
+        LEFT JOIN applications a ON a.boarder_id = p.boarder_id 
+            AND a.room_id = p.room_id
         WHERE p.landlord_id = ?
             AND p.status IN ('pending', 'paid')
             AND (p.due_date > ? OR p.status = 'paid')
+            AND (a.id IS NULL OR (a.status != 'cancelled' AND a.deleted_at IS NULL))
     ");
     $stmt->execute([$landlordId, $today]);
     $onTrackCount = intval($stmt->fetch(PDO::FETCH_ASSOC)['count']);
@@ -146,9 +162,12 @@ try {
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as count
         FROM payments p
+        LEFT JOIN applications a ON a.boarder_id = p.boarder_id 
+            AND a.room_id = p.room_id
         WHERE p.landlord_id = ?
             AND p.status = 'pending'
             AND p.due_date BETWEEN ? AND ?
+            AND (a.id IS NULL OR (a.status != 'cancelled' AND a.deleted_at IS NULL))
     ");
     $stmt->execute([$landlordId, $today, $dueSoonEnd]);
     $dueSoonCount = intval($stmt->fetch(PDO::FETCH_ASSOC)['count']);
@@ -156,8 +175,11 @@ try {
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as count
         FROM payments p
+        LEFT JOIN applications a ON a.boarder_id = p.boarder_id 
+            AND a.room_id = p.room_id
         WHERE p.landlord_id = ?
             AND p.status = 'overdue'
+            AND (a.id IS NULL OR (a.status != 'cancelled' AND a.deleted_at IS NULL))
     ");
     $stmt->execute([$landlordId]);
     $overdueCount = intval($stmt->fetch(PDO::FETCH_ASSOC)['count']);

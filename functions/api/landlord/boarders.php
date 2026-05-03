@@ -53,6 +53,7 @@ if ($method === 'GET') {
         }
 
         // Fetch boarders via accepted applications with extended profile information
+        // Include leave request status to show boarders who are planning to leave
         $stmt = $pdo->prepare("
             SELECT
                 a.id            AS application_id,
@@ -67,7 +68,14 @@ if ($method === 'GET') {
                 r.price         AS rent,
                 a.created_at    AS move_in_date,
                 a.message       AS application_message,
-                'active'        AS status,
+                CASE 
+                    WHEN a.leave_request_status = 'pending' THEN 'leaving'
+                    WHEN a.leave_request_status = 'approved' THEN 'leaving_approved'
+                    ELSE 'active'
+                END             AS status,
+                a.leave_request_status,
+                a.intended_leave_date,
+                a.leave_request_reason,
                 'paid'          AS payment_status,
                 NULL            AS deposit,
                 15              AS payment_due_day,
@@ -103,6 +111,9 @@ if ($method === 'GET') {
                 'move_in_date'     => $row['move_in_date'],
                 'application_message' => $row['application_message'] ?? null,
                 'status'           => $row['status'],
+                'leave_request_status' => $row['leave_request_status'] ?? 'none',
+                'intended_leave_date' => $row['intended_leave_date'] ?? null,
+                'leave_request_reason' => $row['leave_request_reason'] ?? null,
                 'payment_status'   => $row['payment_status'],
                 'payment_due_day'  => (int) $row['payment_due_day'],
                 'last_payment_date'=> $row['last_payment_date'],

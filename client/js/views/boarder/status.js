@@ -17,7 +17,7 @@ const STATUS_TEMPLATES = {
     timeline: 'Expected response within 3-5 business days',
     actions: [
       { label: 'View Application', href: './applications/index.html', type: 'outline' },
-      { label: 'Continue Browsing', href: '../public/find-a-room.html', type: 'secondary' },
+      { label: 'Continue Browsing', href: '../find-a-room/index.html', type: 'secondary' },
     ],
   },
   pending_confirmation: {
@@ -38,7 +38,7 @@ const STATUS_TEMPLATES = {
     actions: [
       {
         label: 'Find Available Rooms',
-        href: '../public/find-a-room.html',
+        href: '../find-a-room/index.html',
         type: 'primary',
         icon: 'search',
       },

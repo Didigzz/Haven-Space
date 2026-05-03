@@ -253,8 +253,7 @@ function openConfirmationStep(app) {
 
     try {
       // Call API to confirm the booking
-      const paymentMethod =
-        overlay.querySelector('input[name="payment-method"]:checked')?.value || 'GCash';
+      const paymentMethod = 'GCash'; // Default payment method
 
       const response = await fetch(
         `${CONFIG.API_BASE_URL}/api/boarder/applications/${app.application_id}/confirm`,
@@ -268,19 +267,31 @@ function openConfirmationStep(app) {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to confirm booking');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to confirm booking');
       }
+
+      const result = await response.json();
+
+      // Update user's boarder_status in localStorage
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      user.boarder_status = 'accepted';
+      user.boarderStatus = 'accepted';
+      localStorage.setItem('user', JSON.stringify(user));
 
       closeConfirmationOverlay(overlay);
       showToast('Booking confirmed! Welcome to your new boarding house.', 'success');
 
-      // Redirect to dashboard or messages
+      // Redirect to boarder dashboard
       setTimeout(() => {
-        window.location.href = '../dashboard/index.html';
+        const basePath = window.location.pathname.includes('github.io')
+          ? '/Haven-Space/client/views/'
+          : '/views/';
+        window.location.href = `${basePath}boarder/index.html`;
       }, 1500);
     } catch (error) {
       console.error('Failed to confirm booking:', error);
-      showToast('Failed to confirm booking. Please try again.', 'error');
+      showToast(error.message || 'Failed to confirm booking. Please try again.', 'error');
       confirmBtn.disabled = false;
       confirmBtn.innerHTML = `${getIcon('check', { width: 20, height: 20 })} Confirm Booking`;
     }
