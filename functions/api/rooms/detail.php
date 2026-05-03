@@ -294,8 +294,11 @@ try {
     // Build room types string
     $roomTypes = [];
     foreach ($rooms as $room) {
-        if (!in_array($room['room_type'], $roomTypes)) {
-            $roomTypes[] = $room['room_type'];
+        $roomType = $room['room_type'];
+        // Skip generic "Room" type and only include specific types
+        if (!empty($roomType) && strtolower($roomType) !== 'room' && !in_array($roomType, $roomTypes)) {
+            // Capitalize first letter of each room type
+            $roomTypes[] = ucfirst(strtolower($roomType));
         }
     }
     $roomTypesString = !empty($roomTypes) ? implode(' & ', $roomTypes) : 'Available';
