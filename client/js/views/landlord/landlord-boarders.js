@@ -24,6 +24,7 @@ let currentProperty = null;
 let currentBoarder = null;
 let boardersData = [];
 let propertyData = null;
+let roomsData = [];
 
 // Move these functions to main scope so they can be called from initLandlordBoarders
 function showLoadingState() {
@@ -76,9 +77,8 @@ function loadPropertyData(propertyId) {
     document.getElementById('stat-available').textContent = availableRooms;
     document.getElementById('stat-revenue').textContent = `₱${monthlyRevenue.toLocaleString()}`;
 
-    populateRoomFilter(totalRooms);
-    populateRoomSelect(totalRooms);
-    populateEditRoomSelect(totalRooms);
+    // Fetch actual room data for the property
+    fetchRoomsForProperty(propertyId);
   });
 }
 
@@ -110,17 +110,34 @@ function loadBoarders(propertyId) {
     } else {
       grid.style.display = 'grid';
       renderBoarders(boardersData);
+      // Populate room filter with actual room data from boarders
+      populateRoomFilter(boardersData);
     }
   });
 }
 
 function setupEventListeners() {
-  const btnFilter = document.getElementById('btn-filter');
-  if (btnFilter) {
-    btnFilter.addEventListener('click', () => {
-      const filterBar = document.getElementById('filter-bar');
-      if (filterBar) {
-        filterBar.style.display = filterBar.style.display === 'none' ? 'block' : 'none';
+  // Room filter dropdown - use event delegation for reliability
+  const btnRoomFilter = document.getElementById('btn-room-filter');
+  const roomFilterMenu = document.getElementById('room-filter-menu');
+
+  if (btnRoomFilter && roomFilterMenu) {
+    // Remove any existing listeners by cloning
+    const newBtn = btnRoomFilter.cloneNode(true);
+    btnRoomFilter.parentNode.replaceChild(newBtn, btnRoomFilter);
+
+    // Add click listener to the new button
+    newBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isVisible = roomFilterMenu.style.display === 'block';
+      roomFilterMenu.style.display = isVisible ? 'none' : 'block';
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', e => {
+      const currentBtn = document.getElementById('btn-room-filter');
+      if (currentBtn && !currentBtn.contains(e.target) && !roomFilterMenu.contains(e.target)) {
+        roomFilterMenu.style.display = 'none';
       }
     });
   }
@@ -224,27 +241,133 @@ async function fetchBoardersFromApi(propertyId) {
 
     return [];
   } catch (error) {
+    console.error('Fetch boarders error:', error);
     return [];
   }
 }
 
-function populateRoomFilter(totalRooms) {
-  const roomSelect = document.getElementById('filter-room');
-  if (!roomSelect) {
-    return;
-  }
+async function fetchRoomsForProperty(propertyId) {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
 
-  roomSelect.innerHTML = '<option value="all">All Rooms</option>';
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/rooms.php?propertyId=${propertyId}`,
+      {
+        credentials: 'include',
+        headers,
+      }
+    );
 
-  for (let i = 1; i <= totalRooms; i++) {
-    const option = document.createElement('option');
-    option.value = i;
-    option.textContent = `Room ${i}`;
-    roomSelect.appendChild(option);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.data && result.data.rooms) {
+      roomsData = result.data.rooms;
+      // Populate room selects with actual room data
+      populateRoomSelect(roomsData);
+      populateEditRoomSelect(roomsData);
+      return result.data.rooms;
+    }
+
+    return [];
+  } catch (error) {
+    return [];
   }
 }
 
-function populateRoomSelect(totalRooms) {
+function populateRoomFilter(boarders) {
+  const roomFilterMenu = document.getElementById('room-filter-menu');
+  if (!roomFilterMenu) {
+    return;
+  }
+
+  // Clear existing options except "All Rooms"
+  roomFilterMenu.innerHTML = `
+    <div class="room-filter-option active" data-room-id="all">
+      <span>All Rooms</span>
+    </div>
+  `;
+
+  // Extract unique rooms from boarders data
+  const uniqueRooms = new Map();
+  boarders.forEach(boarder => {
+    if (boarder.room_id && boarder.room_title) {
+      uniqueRooms.set(boarder.room_id, boarder.room_title);
+    }
+  });
+
+  // Sort by room_id and populate dropdown
+  Array.from(uniqueRooms.entries())
+    .sort((a, b) => a[0] - b[0])
+    .forEach(([roomId, roomTitle]) => {
+      const option = document.createElement('div');
+      option.className = 'room-filter-option';
+      option.dataset.roomId = roomId;
+      option.innerHTML = `<span>${roomTitle}</span>`;
+
+      // Add click handler for filtering
+      option.addEventListener('click', () => {
+        filterByRoom(roomId, roomTitle);
+
+        // Update active state
+        roomFilterMenu.querySelectorAll('.room-filter-option').forEach(opt => {
+          opt.classList.remove('active');
+        });
+        option.classList.add('active');
+
+        // Close dropdown
+        roomFilterMenu.style.display = 'none';
+      });
+
+      roomFilterMenu.appendChild(option);
+    });
+
+  // Add click handler for "All Rooms" option
+  const allRoomsOption = roomFilterMenu.querySelector('[data-room-id="all"]');
+  if (allRoomsOption) {
+    allRoomsOption.addEventListener('click', () => {
+      filterByRoom('all', 'Filter Room Name');
+
+      // Update active state
+      roomFilterMenu.querySelectorAll('.room-filter-option').forEach(opt => {
+        opt.classList.remove('active');
+      });
+      allRoomsOption.classList.add('active');
+
+      // Close dropdown
+      roomFilterMenu.style.display = 'none';
+    });
+  }
+}
+
+// Add new function to filter boarders by room
+function filterByRoom(roomId, roomTitle) {
+  const roomFilterLabel = document.getElementById('room-filter-label');
+
+  if (roomId === 'all') {
+    // Show all boarders
+    renderBoarders(boardersData);
+    if (roomFilterLabel) {
+      roomFilterLabel.textContent = 'Filter Room Name';
+    }
+  } else {
+    // Filter boarders by room
+    const filtered = boardersData.filter(boarder => boarder.room_id === parseInt(roomId));
+    renderBoarders(filtered);
+    if (roomFilterLabel) {
+      roomFilterLabel.textContent = roomTitle;
+    }
+  }
+}
+
+function populateRoomSelect(rooms) {
   const roomSelect = document.getElementById('boarder-room');
   if (!roomSelect) {
     return;
@@ -252,15 +375,17 @@ function populateRoomSelect(totalRooms) {
 
   roomSelect.innerHTML = '<option value="">Select a room</option>';
 
-  for (let i = 1; i <= totalRooms; i++) {
-    const option = document.createElement('option');
-    option.value = i;
-    option.textContent = `Room ${i}`;
-    roomSelect.appendChild(option);
+  if (Array.isArray(rooms) && rooms.length > 0) {
+    rooms.forEach(room => {
+      const option = document.createElement('option');
+      option.value = room.id;
+      option.textContent = room.room_number || `Room ${room.id}`;
+      roomSelect.appendChild(option);
+    });
   }
 }
 
-function populateEditRoomSelect(totalRooms) {
+function populateEditRoomSelect(rooms) {
   const roomSelect = document.getElementById('edit-boarder-room');
   if (!roomSelect) {
     return;
@@ -268,11 +393,13 @@ function populateEditRoomSelect(totalRooms) {
 
   roomSelect.innerHTML = '<option value="">Select a room</option>';
 
-  for (let i = 1; i <= totalRooms; i++) {
-    const option = document.createElement('option');
-    option.value = i;
-    option.textContent = `Room ${i}`;
-    roomSelect.appendChild(option);
+  if (Array.isArray(rooms) && rooms.length > 0) {
+    rooms.forEach(room => {
+      const option = document.createElement('option');
+      option.value = room.id;
+      option.textContent = room.room_number || `Room ${room.id}`;
+      roomSelect.appendChild(option);
+    });
   }
 }
 
@@ -311,7 +438,8 @@ function openBoarderDetailModal(boarder) {
     boarder.status === 'active' ? 'Active' : boarder.status === 'pending' ? 'Pending' : 'Inactive';
   statusEl.className = `status-badge status-${boarder.status}`;
 
-  document.getElementById('detail-room').textContent = `Room ${boarder.room_id || '--'}`;
+  document.getElementById('detail-room').textContent =
+    boarder.room_title || `Room ${boarder.room_id}` || '--';
   document.getElementById('detail-move-in').textContent = formatDate(boarder.move_in_date);
   document.getElementById('detail-duration').textContent = calculateDuration(boarder.move_in_date);
   document.getElementById('detail-rent').textContent = `₱${(boarder.rent || 0).toLocaleString()}`;
@@ -356,9 +484,9 @@ function editBoarder(boarder) {
   document.getElementById('edit-boarder-payment-due').value = boarder.payment_due_day || 15;
   document.getElementById('edit-boarder-status').value = boarder.status || 'active';
 
-  // Populate room select with all rooms
-  if (propertyData) {
-    populateEditRoomSelect(propertyData.total_rooms);
+  // Populate room select with actual room data
+  if (roomsData && roomsData.length > 0) {
+    populateEditRoomSelect(roomsData);
     // Set the current room after populating
     document.getElementById('edit-boarder-room').value = boarder.room_id || '';
   }
@@ -546,7 +674,9 @@ function createBoarderCard(boarder) {
   <div class="boarder-card-body">
     <div class="boarder-info-row">
       <span class="boarder-info-label">Room</span>
-      <span class="boarder-info-value">Room ${boarder.room_id || '--'}</span>
+      <span class="boarder-info-value">${
+        boarder.room_title || `Room ${boarder.room_id}` || '--'
+      }</span>
     </div>
     <div class="boarder-info-row">
       <span class="boarder-info-label">Rent</span>
@@ -902,7 +1032,11 @@ export function initLandlordBoarders() {
 
   loadPropertyData(propertyId);
   loadBoarders(propertyId);
-  setupEventListeners();
+
+  // Setup event listeners after a short delay to ensure DOM is ready
+  setTimeout(() => {
+    setupEventListeners();
+  }, 100);
 
   // Inject icons
   setTimeout(() => injectIcons(), 100);

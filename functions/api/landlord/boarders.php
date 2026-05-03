@@ -65,7 +65,7 @@ if ($method === 'GET') {
                 u.phone_number,
                 f.file_url      AS avatar_url,
                 a.room_id,
-                r.title         AS room_title,
+                r.room_number   AS room_title,
                 r.price         AS rent,
                 r.deposit       AS deposit,
                 a.created_at    AS move_in_date,
