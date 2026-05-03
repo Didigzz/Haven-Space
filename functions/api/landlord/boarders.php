@@ -65,19 +65,18 @@ if ($method === 'GET') {
                 a.room_id,
                 r.title         AS room_title,
                 r.price         AS rent,
+                r.deposit       AS deposit,
                 a.created_at    AS move_in_date,
                 a.message       AS application_message,
                 'active'        AS status,
                 'paid'          AS payment_status,
-                NULL            AS deposit,
                 15              AS payment_due_day,
                 NULL            AS last_payment_date
             FROM applications a
             JOIN users u  ON a.boarder_id  = u.id
-            LEFT JOIN rooms r ON a.room_id = r.id
+            JOIN rooms r ON a.room_id = r.id
             LEFT JOIN files f ON u.avatar_file_id = f.id
-            JOIN properties p ON r.property_id = p.id
-            WHERE p.id = ?
+            WHERE r.property_id = ?
               AND a.landlord_id = ?
               AND a.status      = 'accepted'
               AND a.deleted_at  IS NULL
@@ -162,10 +161,10 @@ if ($method === 'POST') {
         if ($existingUser) {
             $boarderUserId = (int) $existingUser['id'];
         } else {
-            // Create a placeholder boarder account
+            // Create a placeholder boarder account (role_id 1 = boarder)
             $createStmt = $pdo->prepare("
-                INSERT INTO users (first_name, last_name, email, role, is_verified, account_status)
-                VALUES (?, ?, ?, 'boarder', 0, 'active')
+                INSERT INTO users (first_name, last_name, email, role_id, is_verified, account_status)
+                VALUES (?, ?, ?, 1, 0, 'active')
             ");
             $createStmt->execute([
                 $input['first_name'],
@@ -178,15 +177,14 @@ if ($method === 'POST') {
         // Create an accepted application record
         $appStmt = $pdo->prepare("
             INSERT INTO applications
-                (boarder_id, landlord_id, room_id, property_id, status, created_at)
-            VALUES (?, ?, ?, ?, 'accepted', ?)
+                (boarder_id, landlord_id, room_id, status, created_at)
+            VALUES (?, ?, ?, 'accepted', ?)
         ");
         $moveInDate = $input['move_in_date'] ?? date('Y-m-d');
         $appStmt->execute([
             $boarderUserId,
             $landlordId,
             (int) $input['room_id'],
-            $propertyId,
             $moveInDate,
         ]);
 
