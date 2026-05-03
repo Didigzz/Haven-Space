@@ -978,7 +978,7 @@ async function generateBoarderStatementPDF(payments, userName, params = {}) {
         }
       }, 100);
     }).catch(() => {
-      showBoarderToast('PDF library not available. Please refresh and try again.', 'error');
+      showToast('PDF library not available. Please refresh and try again.', 'error');
       throw new Error('jsPDF not available');
     });
   }
