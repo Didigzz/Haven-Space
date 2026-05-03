@@ -99,14 +99,15 @@ if ($method === 'GET') {
             $paidStmt->execute([$userId]);
             $paidData = $paidStmt->fetch(PDO::FETCH_ASSOC);
 
-            // Get next payment (current month or upcoming)
+            // Get next payment (current month or upcoming) - only unpaid payments
             $nextPaymentStmt = $pdo->prepare("
                 SELECT 
                     id,
                     amount,
                     due_date,
                     status,
-                    late_fee
+                    late_fee,
+                    paid_date
                 FROM payments
                 WHERE boarder_id = ? AND status IN ('pending', 'overdue')
                 ORDER BY due_date ASC

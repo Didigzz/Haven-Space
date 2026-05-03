@@ -195,45 +195,45 @@ function _showErrorState() {
 
 /**
  * Send payment reminder to tenant
- * @param {number} _paymentId - Payment ID
+ * @param {number} paymentId - Payment ID
+ * @param {string} tenantName - Tenant's name
  */
-export async function sendPaymentReminder(_paymentId) {
-  // TODO: Implement API call to send payment reminder
-  // Example:
-  // try {
-  //   const response = await fetch('/api/payments/send-reminder', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ paymentId })
-  //   });
-  //   const result = await response.json();
-  //   showNotification('Reminder sent successfully', 'success');
-  // } catch (error) {
-  //   console.error('Failed to send reminder:', error);
-  //   showNotification('Failed to send reminder', 'error');
-  // }
+export async function sendPaymentReminder(paymentId, tenantName) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/send-reminder.php`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ payment_id: paymentId }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to send reminder');
+    }
+
+    // Show success message
+    alert(`Payment reminder sent successfully to ${tenantName}`);
+
+    // Reload payment overview to show updated reminder status
+    loadPaymentOverview();
+  } catch (error) {
+    console.error('Failed to send reminder:', error);
+    alert(`Failed to send reminder: ${error.message}`);
+  }
 }
 
 /**
  * Record a payment
- * @param {number} _paymentId - Payment ID
+ * @param {number} paymentId - Payment ID
  */
-export async function recordPayment(_paymentId) {
-  // TODO: Implement API call to record payment
-  // Example:
-  // try {
-  //   const response = await fetch('/api/payments/record', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ paymentId })
-  //   });
-  //   const result = await response.json();
-  //   showNotification('Payment recorded successfully', 'success');
-  //   return result;
-  // } catch (error) {
-  //   console.error('Failed to record payment:', error);
-  //   showNotification('Failed to record payment', 'error');
-  // }
+export async function recordPayment(paymentId) {
+  // Redirect to payment recording page
+  window.location.href = `payments/record.html?id=${paymentId}`;
 }
 
 /**
@@ -547,6 +547,15 @@ function renderPaymentOverview(data, container) {
 
   // Render Due Soon Payments
   if (due_soon.count > 0) {
+    // Calculate the range of days until due for display
+    const daysUntilDue = due_soon.payments.map(p => p.days_until_due || 0);
+    const minDays = Math.min(...daysUntilDue);
+    const maxDays = Math.max(...daysUntilDue);
+    const daysLabel =
+      minDays === maxDays
+        ? `${minDays} day${minDays !== 1 ? 's' : ''}`
+        : `${minDays}-${maxDays} days`;
+
     html += `
       <div class="landlord-payment-status-card landlord-payment-yellow">
         <div class="landlord-payment-status-header">
@@ -554,7 +563,7 @@ function renderPaymentOverview(data, container) {
             <span class="landlord-traffic-light landlord-light-yellow"></span>
             <span class="landlord-payment-status-label">Due Soon</span>
           </div>
-          <span class="landlord-payment-count">7-14 days</span>
+          <span class="landlord-payment-count">${daysLabel}</span>
         </div>
         <div class="landlord-payment-status-body">
           ${due_soon.payments

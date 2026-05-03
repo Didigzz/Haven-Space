@@ -398,6 +398,141 @@
       </div>
     </div>
 
+    <!-- Edit Boarder Modal -->
+    <div id="edit-boarder-modal" class="add-boarder-modal">
+      <div class="modal-overlay"></div>
+      <div class="add-modal-content">
+        <div class="modal-header">
+          <h2>Edit Boarder</h2>
+          <button type="button" class="modal-close" id="edit-modal-close" aria-label="Close">
+            <img src="../../../assets/svg/close.svg" alt="Close" width="20" height="20" />
+          </button>
+        </div>
+        <form id="edit-boarder-form" class="add-boarder-form">
+          <input type="hidden" id="edit-boarder-id" name="boarderId" />
+          <div class="modal-body">
+            <!-- Personal Information -->
+            <div class="form-section">
+              <h3 class="section-title">Personal Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-boarder-first-name">First Name *</label>
+                  <input
+                    type="text"
+                    id="edit-boarder-first-name"
+                    name="firstName"
+                    placeholder="Juan"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="edit-boarder-last-name">Last Name *</label>
+                  <input
+                    type="text"
+                    id="edit-boarder-last-name"
+                    name="lastName"
+                    placeholder="Dela Cruz"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit-boarder-email">Email Address *</label>
+                <input
+                  type="email"
+                  id="edit-boarder-email"
+                  name="email"
+                  placeholder="juan@example.com"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="edit-boarder-phone">Phone Number *</label>
+                <input
+                  type="tel"
+                  id="edit-boarder-phone"
+                  name="phone"
+                  placeholder="+63 9XX XXX XXXX"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Room Assignment -->
+            <div class="form-section">
+              <h3 class="section-title">Room Assignment</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-boarder-room">Room Number *</label>
+                  <select id="edit-boarder-room" name="roomId" required>
+                    <option value="">Select a room</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="edit-boarder-start-date">Move-in Date *</label>
+                  <input type="date" id="edit-boarder-start-date" name="startDate" required />
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="form-section">
+              <h3 class="section-title">Payment Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-boarder-rent">Monthly Rent (₱) *</label>
+                  <input
+                    type="number"
+                    id="edit-boarder-rent"
+                    name="rent"
+                    placeholder="5000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="edit-boarder-deposit">Security Deposit (₱)</label>
+                  <input
+                    type="number"
+                    id="edit-boarder-deposit"
+                    name="deposit"
+                    placeholder="5000"
+                    min="0"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit-boarder-payment-due">Payment Due Day</label>
+                <select id="edit-boarder-payment-due" name="paymentDueDay">
+                  <option value="1">1st of the month</option>
+                  <option value="5">5th of the month</option>
+                  <option value="10">10th of the month</option>
+                  <option value="15">15th of the month</option>
+                  <option value="20">20th of the month</option>
+                  <option value="25">25th of the month</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="edit-boarder-status">Status</label>
+                <select id="edit-boarder-status" name="status">
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-outline" id="edit-cancel">Cancel</button>
+            <button type="submit" class="btn-primary">
+              <img src="../../../assets/svg/check.svg" alt="Confirm" width="18" height="18" />
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Remove Boarder Confirmation Modal -->
     <div id="remove-boarder-modal" class="remove-boarder-modal">
       <div class="modal-overlay"></div>

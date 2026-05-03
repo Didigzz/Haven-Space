@@ -3,6 +3,7 @@
  * Landlord Boarders API
  * GET    /api/landlord/boarders.php?propertyId={id} - List boarders for a property
  * POST   /api/landlord/boarders.php                 - Add a boarder (manual entry)
+ * PUT    /api/landlord/boarders.php                 - Update a boarder's information
  * DELETE /api/landlord/boarders.php?id={id}         - Remove a boarder (soft-delete application)
  *
  * "Boarders" are users with accepted applications for the landlord's property.
@@ -199,6 +200,117 @@ if ($method === 'POST') {
     } catch (Exception $e) {
         error_log('Add boarder error: ' . $e->getMessage());
         json_response(500, ['error' => 'Failed to add boarder']);
+    }
+}
+
+// ============================================================
+// PUT - Update a boarder's information
+// ============================================================
+if ($method === 'PUT') {
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $required = ['id', 'property_id', 'first_name', 'last_name', 'email', 'room_id'];
+        foreach ($required as $field) {
+            if (empty($input[$field])) {
+                json_response(400, ['error' => "Missing required field: $field"]);
+            }
+        }
+
+        $boarderUserId = (int) $input['id'];
+        $propertyId = (int) $input['property_id'];
+
+        $pdo = Connection::getInstance()->getPdo();
+
+        // Verify property ownership
+        $checkStmt = $pdo->prepare("
+            SELECT id FROM properties
+            WHERE id = ? AND landlord_id = ? AND deleted_at IS NULL
+        ");
+        $checkStmt->execute([$propertyId, $landlordId]);
+        if (!$checkStmt->fetch()) {
+            json_response(404, ['error' => 'Property not found']);
+        }
+
+        // Verify the boarder has an accepted application for this landlord
+        $appStmt = $pdo->prepare("
+            SELECT a.id, a.room_id
+            FROM applications a
+            JOIN rooms r ON a.room_id = r.id
+            WHERE a.boarder_id = ?
+              AND a.landlord_id = ?
+              AND a.status = 'accepted'
+              AND a.deleted_at IS NULL
+              AND r.property_id = ?
+            LIMIT 1
+        ");
+        $appStmt->execute([$boarderUserId, $landlordId, $propertyId]);
+        $application = $appStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$application) {
+            json_response(404, ['error' => 'Boarder not found']);
+        }
+
+        $applicationId = (int) $application['id'];
+
+        // Update user information
+        $updateUserStmt = $pdo->prepare("
+            UPDATE users
+            SET first_name = ?,
+                last_name = ?,
+                email = ?,
+                phone_number = ?
+            WHERE id = ? AND deleted_at IS NULL
+        ");
+        $updateUserStmt->execute([
+            $input['first_name'],
+            $input['last_name'],
+            $input['email'],
+            $input['phone'] ?? null,
+            $boarderUserId,
+        ]);
+
+        // Update application information (room_id, move_in_date)
+        $updateAppStmt = $pdo->prepare("
+            UPDATE applications
+            SET room_id = ?,
+                created_at = ?
+            WHERE id = ?
+        ");
+        $moveInDate = $input['move_in_date'] ?? date('Y-m-d');
+        $updateAppStmt->execute([
+            (int) $input['room_id'],
+            $moveInDate,
+            $applicationId,
+        ]);
+
+        // Update room information (rent, deposit)
+        // Note: This updates the room itself, which affects all boarders in that room
+        // If you want per-boarder pricing, you'd need to store it in the applications table
+        $updateRoomStmt = $pdo->prepare("
+            UPDATE rooms
+            SET price = ?,
+                deposit = ?
+            WHERE id = ? AND property_id = ?
+        ");
+        $updateRoomStmt->execute([
+            isset($input['rent']) ? (float) $input['rent'] : 0,
+            isset($input['deposit']) ? (float) $input['deposit'] : 0,
+            (int) $input['room_id'],
+            $propertyId,
+        ]);
+
+        json_response(200, [
+            'success' => true,
+            'data'    => [
+                'message'    => 'Boarder updated successfully',
+                'boarder_id' => $boarderUserId,
+            ],
+        ]);
+
+    } catch (Exception $e) {
+        error_log('Update boarder error: ' . $e->getMessage());
+        json_response(500, ['error' => 'Failed to update boarder']);
     }
 }
 

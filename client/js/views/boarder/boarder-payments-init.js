@@ -45,10 +45,13 @@ export async function initBoarderPaymentsPage() {
 async function fetchPaymentOverview() {
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/overview`, {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/overview?t=${Date.now()}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
       credentials: 'include',
     });

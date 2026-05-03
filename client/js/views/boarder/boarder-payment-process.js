@@ -703,8 +703,8 @@ function hideErrorModal() {
  */
 function handleDone() {
   hideSuccessModal();
-  // Navigate back to payments page
-  window.location.href = 'index.html';
+  // Navigate back to payments page with cache-busting parameter to force refresh
+  window.location.href = 'index.html?refresh=' + Date.now();
 }
 
 /**

@@ -21,7 +21,7 @@ function injectIcons() {
 }
 
 let currentProperty = null;
-const currentBoarder = null;
+let currentBoarder = null;
 let boardersData = [];
 let propertyData = null;
 
@@ -78,6 +78,7 @@ function loadPropertyData(propertyId) {
 
     populateRoomFilter(totalRooms);
     populateRoomSelect(totalRooms);
+    populateEditRoomSelect(totalRooms);
   });
 }
 
@@ -259,6 +260,22 @@ function populateRoomSelect(totalRooms) {
   }
 }
 
+function populateEditRoomSelect(totalRooms) {
+  const roomSelect = document.getElementById('edit-boarder-room');
+  if (!roomSelect) {
+    return;
+  }
+
+  roomSelect.innerHTML = '<option value="">Select a room</option>';
+
+  for (let i = 1; i <= totalRooms; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = `Room ${i}`;
+    roomSelect.appendChild(option);
+  }
+}
+
 function renderBoarders(boarders) {
   const grid = document.getElementById('boarders-grid');
   if (!grid) {
@@ -274,6 +291,7 @@ function renderBoarders(boarders) {
 }
 
 function openBoarderDetailModal(boarder) {
+  currentBoarder = boarder;
   const modal = document.getElementById('boarder-detail-modal');
   if (!modal) {
     return;
@@ -311,11 +329,46 @@ function openBoarderDetailModal(boarder) {
   document.body.style.overflow = 'hidden';
 }
 
-function editBoarder(_boarder) {
-  alert('Edit boarder functionality will be implemented soon.');
+function editBoarder(boarder) {
+  currentBoarder = boarder;
+  const modal = document.getElementById('edit-boarder-modal');
+  if (!modal) {
+    return;
+  }
+
+  // Populate form with boarder data
+  document.getElementById('edit-boarder-id').value = boarder.id;
+  document.getElementById('edit-boarder-first-name').value = boarder.first_name || '';
+  document.getElementById('edit-boarder-last-name').value = boarder.last_name || '';
+  document.getElementById('edit-boarder-email').value = boarder.email || '';
+  document.getElementById('edit-boarder-phone').value = boarder.phone || '';
+  document.getElementById('edit-boarder-room').value = boarder.room_id || '';
+
+  // Format date for input field (YYYY-MM-DD)
+  if (boarder.move_in_date) {
+    const date = new Date(boarder.move_in_date);
+    const formattedDate = date.toISOString().split('T')[0];
+    document.getElementById('edit-boarder-start-date').value = formattedDate;
+  }
+
+  document.getElementById('edit-boarder-rent').value = boarder.rent || 0;
+  document.getElementById('edit-boarder-deposit').value = boarder.deposit || 0;
+  document.getElementById('edit-boarder-payment-due').value = boarder.payment_due_day || 15;
+  document.getElementById('edit-boarder-status').value = boarder.status || 'active';
+
+  // Populate room select with all rooms
+  if (propertyData) {
+    populateEditRoomSelect(propertyData.total_rooms);
+    // Set the current room after populating
+    document.getElementById('edit-boarder-room').value = boarder.room_id || '';
+  }
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
 function confirmRemoveBoarder(boarder) {
+  currentBoarder = boarder;
   const modal = document.getElementById('remove-boarder-modal');
   if (!modal) {
     return;
@@ -354,12 +407,16 @@ async function addNewBoarder(event) {
   };
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/boarders.php`, {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(newBoarderData),
     });
 
@@ -378,17 +435,79 @@ async function addNewBoarder(event) {
   }
 }
 
+async function updateBoarder(event) {
+  event.preventDefault();
+
+  if (!currentProperty || !currentBoarder) {
+    return;
+  }
+
+  const form = event.target;
+  const formData = new FormData(form);
+
+  const updatedBoarderData = {
+    id: parseInt(formData.get('boarderId')),
+    property_id: currentProperty.id,
+    first_name: formData.get('firstName'),
+    last_name: formData.get('lastName'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    room_id: parseInt(formData.get('roomId')),
+    move_in_date: formData.get('startDate'),
+    rent: parseFloat(formData.get('rent')) || 0,
+    deposit: parseFloat(formData.get('deposit')) || 0,
+    payment_due_day: parseInt(formData.get('paymentDueDay')) || 15,
+    status: formData.get('status') || 'active',
+  };
+
+  try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/boarders.php`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers,
+      body: JSON.stringify(updatedBoarderData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    closeEditBoarderModal();
+    closeBoarderDetailModal();
+    loadBoarders(currentProperty.id);
+    loadPropertyData(currentProperty.id);
+    alert(
+      `Boarder "${updatedBoarderData.first_name} ${updatedBoarderData.last_name}" has been updated successfully.`
+    );
+  } catch (error) {
+    alert('Failed to update boarder. Please try again.');
+  }
+}
+
 async function removeBoarder() {
   if (!currentBoarder) {
     return;
   }
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/boarders.php?id=${currentBoarder.id}`,
       {
         method: 'DELETE',
         credentials: 'include',
+        headers,
       }
     );
 
@@ -589,6 +708,16 @@ function closeAddBoarderModal() {
   document.body.style.overflow = '';
 }
 
+function closeEditBoarderModal() {
+  const modal = document.getElementById('edit-boarder-modal');
+  if (!modal) {
+    return;
+  }
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+  currentBoarder = null;
+}
+
 function closeBoarderDetailModal() {
   const modal = document.getElementById('boarder-detail-modal');
   if (!modal) {
@@ -662,10 +791,32 @@ function setupModalHandlers() {
     }
   }
 
+  const editModal = document.getElementById('edit-boarder-modal');
+  if (editModal) {
+    const closeBtn = document.getElementById('edit-modal-close');
+    const cancelBtn = document.getElementById('edit-cancel');
+    const overlay = editModal.querySelector('.modal-overlay');
+    const form = document.getElementById('edit-boarder-form');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeEditBoarderModal);
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeEditBoarderModal);
+    }
+    if (overlay) {
+      overlay.addEventListener('click', closeEditBoarderModal);
+    }
+    if (form) {
+      form.addEventListener('submit', updateBoarder);
+    }
+  }
+
   const detailModal = document.getElementById('boarder-detail-modal');
   if (detailModal) {
     const closeBtn = document.getElementById('detail-modal-close');
     const cancelBtn = document.getElementById('detail-cancel');
+    const editBtn = document.getElementById('detail-edit');
     const overlay = detailModal.querySelector('.modal-overlay');
 
     if (closeBtn) {
@@ -673,6 +824,13 @@ function setupModalHandlers() {
     }
     if (cancelBtn) {
       cancelBtn.addEventListener('click', closeBoarderDetailModal);
+    }
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        if (currentBoarder) {
+          editBoarder(currentBoarder);
+        }
+      });
     }
     if (overlay) {
       overlay.addEventListener('click', closeBoarderDetailModal);
@@ -699,6 +857,7 @@ function setupModalHandlers() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeAddBoarderModal();
+      closeEditBoarderModal();
       closeBoarderDetailModal();
       closeRemoveBoarderModal();
     }
