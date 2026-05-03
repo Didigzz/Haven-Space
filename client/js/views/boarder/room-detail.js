@@ -1191,47 +1191,82 @@ function setupRoomModalListeners(room, property, _modal) {
   // Close button
   const closeBtn = document.getElementById('close-room-modal');
   if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
+    // Remove old event listeners by cloning
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+    newCloseBtn.addEventListener('click', () => {
       modalOverlay.classList.remove('active');
     });
   }
-
-  // Close on overlay click
-  modalOverlay.addEventListener('click', e => {
-    if (e.target === modalOverlay) {
-      modalOverlay.classList.remove('active');
-    }
-  });
 
   // Apply button
   const applyBtn = document.getElementById('modal-apply-btn');
   if (applyBtn) {
-    applyBtn.addEventListener('click', () => {
-      // Check if user is logged in
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+    // Check if room is occupied and is a single room
+    const roomType = (room.room_type || room.roomType || '').toLowerCase();
+    const roomStatus = (room.status || '').toLowerCase();
+    const isSingleRoom = roomType.includes('single');
+    const isOccupied = roomStatus === 'occupied';
 
-      if (!user || !user.id || user.role !== 'boarder') {
-        const redirectUrl = encodeURIComponent(window.location.href);
-        window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
-        return;
-      }
+    // Remove old event listeners by cloning
+    const newApplyBtn = applyBtn.cloneNode(true);
 
-      // Get room type from the correct property
-      const roomType = room.room_type || room.roomType || 'Room';
+    // Disable button if single room is occupied
+    if (isSingleRoom && isOccupied) {
+      newApplyBtn.disabled = true;
+      newApplyBtn.style.opacity = '0.5';
+      newApplyBtn.style.cursor = 'not-allowed';
+      newApplyBtn.style.backgroundColor = '#9ca3af';
+      newApplyBtn.title = 'This room is currently occupied';
+    } else {
+      newApplyBtn.disabled = false;
+      newApplyBtn.style.opacity = '1';
+      newApplyBtn.style.cursor = 'pointer';
+      newApplyBtn.style.backgroundColor = '';
+      newApplyBtn.title = '';
 
-      // Redirect to confirm-booking page with room details
-      const params = new URLSearchParams({
-        id: property.id || state.roomId,
-        title: property.title || 'Property',
-        price: room.price,
-        address: property.address || '',
-        landlordName: property.landlord?.name || 'Property Owner',
-        roomType: roomType,
+      newApplyBtn.addEventListener('click', () => {
+        // Check if user is logged in
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!user || !user.id || user.role !== 'boarder') {
+          const redirectUrl = encodeURIComponent(window.location.href);
+          window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
+          return;
+        }
+
+        // Get room type from the correct property
+        const roomType = room.room_type || room.roomType || 'Room';
+
+        // Redirect to confirm-booking page with room details
+        const params = new URLSearchParams({
+          id: property.id || state.roomId,
+          title: property.title || 'Property',
+          price: room.price,
+          address: property.address || '',
+          landlordName: property.landlord?.name || 'Property Owner',
+          roomType: roomType,
+        });
+
+        window.location.href = `../confirm-booking/index.html?${params.toString()}`;
       });
+    }
 
-      window.location.href = `../confirm-booking/index.html?${params.toString()}`;
-    });
+    // Replace the button in the DOM
+    applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
   }
+
+  // Close on overlay click (keep this on the original modal overlay)
+  const overlayClickHandler = e => {
+    if (e.target === modalOverlay) {
+      modalOverlay.classList.remove('active');
+    }
+  };
+
+  // Remove old listener and add new one
+  modalOverlay.removeEventListener('click', overlayClickHandler);
+  modalOverlay.addEventListener('click', overlayClickHandler);
 }
 
 /**

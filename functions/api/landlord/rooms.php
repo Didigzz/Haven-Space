@@ -138,22 +138,28 @@ if ($method === 'POST') {
     $status      = in_array($input['status'] ?? '', ['available', 'occupied', 'maintenance'])
                    ? $input['status'] : 'available';
     $capacity    = isset($input['capacity'])    ? intval($input['capacity'])    : 1;
+    $roomType    = isset($input['room_type']) && !empty($input['room_type']) ? $input['room_type'] : null;
+    $description = isset($input['description']) && !empty($input['description']) ? $input['description'] : '';
+    $size        = isset($input['size']) && !empty($input['size']) ? floatval($input['size']) : 0.00;
 
     try {
         $stmt = $pdo->prepare(
             "INSERT INTO rooms
-             (property_id, landlord_id, title, room_number, price, deposit, status, capacity, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
+             (property_id, landlord_id, title, room_number, room_type, price, deposit, status, capacity, description, size, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
         );
         $stmt->execute([
             $propertyId,
             $landlordId,
             $input['room_number'], // Use room_number as title for consistency
             $input['room_number'],
+            $roomType,
             floatval($input['price']),
             isset($input['deposit']) ? floatval($input['deposit']) : 0.00,
             $status,
             $capacity,
+            $description,
+            $size,
         ]);
         $newId = intval($pdo->lastInsertId());
 
