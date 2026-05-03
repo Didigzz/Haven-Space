@@ -17,6 +17,7 @@ export function initLandlordSettings() {
   initWelcomeMessageEditor();
   initDocumentUpload();
   initLeaveForm();
+  initPaymentMethods();
   loadAndDisplayProfile();
 }
 
@@ -852,4 +853,365 @@ function showToast(message, type = 'info') {
     toast.style.animation = 'slideIn 0.3s ease reverse';
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+// ─── Payment Methods ──────────────────────────────────────────────────────────
+
+let currentEditingPaymentMethodId = null;
+
+function initPaymentMethods() {
+  const addBtn = document.getElementById('add-payment-method-btn');
+  const modal = document.getElementById('payment-method-modal');
+  const closeBtn = document.getElementById('payment-method-modal-close-btn');
+  const cancelBtn = document.getElementById('payment-method-modal-cancel-btn');
+  const submitBtn = document.getElementById('payment-method-modal-submit-btn');
+  const methodTypeSelect = document.getElementById('payment-method-type');
+  const bankNameGroup = document.getElementById('payment-bank-name-group');
+  const accountHint = document.getElementById('payment-account-hint');
+
+  const openModal = (paymentMethod = null) => {
+    if (modal) {
+      modal.style.display = 'flex';
+      const modalTitle = document.getElementById('payment-method-modal-title');
+
+      if (paymentMethod) {
+        // Edit mode
+        currentEditingPaymentMethodId = paymentMethod.id;
+        if (modalTitle) modalTitle.textContent = 'Edit Payment Method';
+        document.getElementById('payment-method-type').value = paymentMethod.methodType;
+        document.getElementById('payment-account-name').value = paymentMethod.accountName;
+        document.getElementById('payment-account-number').value = paymentMethod.accountNumberMasked;
+        document.getElementById('payment-is-primary').checked = paymentMethod.isPrimary;
+        if (paymentMethod.bankName) {
+          document.getElementById('payment-bank-name').value = paymentMethod.bankName;
+        }
+        // Trigger change to show/hide bank name field
+        methodTypeSelect.dispatchEvent(new Event('change'));
+      } else {
+        // Add mode
+        currentEditingPaymentMethodId = null;
+        if (modalTitle) modalTitle.textContent = 'Add Payment Method';
+        document.getElementById('payment-method-form').reset();
+      }
+    }
+  };
+
+  const closeModal = () => {
+    if (modal) {
+      modal.style.display = 'none';
+      document.getElementById('payment-method-form').reset();
+      currentEditingPaymentMethodId = null;
+    }
+  };
+
+  addBtn?.addEventListener('click', () => openModal());
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Show/hide bank name field based on payment method type
+  methodTypeSelect?.addEventListener('change', e => {
+    const methodType = e.target.value;
+    if (methodType === 'Bank Transfer') {
+      bankNameGroup.style.display = 'block';
+      document.getElementById('payment-bank-name').required = true;
+      accountHint.textContent = 'Enter your bank account number';
+    } else {
+      bankNameGroup.style.display = 'none';
+      document.getElementById('payment-bank-name').required = false;
+      if (methodType === 'GCash' || methodType === 'PayMaya') {
+        accountHint.textContent = 'Enter your mobile number (e.g., 09123456789)';
+      } else {
+        accountHint.textContent = 'Enter your account number';
+      }
+    }
+  });
+
+  submitBtn?.addEventListener('click', async e => {
+    e.preventDefault();
+    await savePaymentMethod();
+  });
+
+  // Load payment methods on init
+  loadPaymentMethods();
+
+  // Expose openModal for edit functionality
+  window.openPaymentMethodModal = openModal;
+}
+
+async function loadPaymentMethods() {
+  const container = document.getElementById('payment-methods-list');
+  if (!container) return;
+
+  container.innerHTML = '<div class="loading-state">Loading payment methods...</div>';
+
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user.id;
+
+    if (!userId) {
+      container.innerHTML = '<div class="empty-state">Unable to load payment methods.</div>';
+      return;
+    }
+
+    const res = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php?userId=${userId}`,
+      {
+        method: 'GET',
+        headers: getAuthHeaders(false),
+        credentials: 'include',
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      container.innerHTML = '<div class="empty-state">Failed to load payment methods.</div>';
+      return;
+    }
+
+    const methods = data.data || [];
+
+    if (methods.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <p>No payment methods added yet.</p>
+          <p style="font-size: 14px; color: var(--text-gray); margin-top: 8px;">
+            Add a payment method so boarders know how to pay you.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    renderPaymentMethods(container, methods);
+  } catch (err) {
+    console.error('Load payment methods error:', err);
+    container.innerHTML = '<div class="empty-state">Failed to load payment methods.</div>';
+  }
+}
+
+function renderPaymentMethods(container, methods) {
+  container.innerHTML = methods
+    .map(method => {
+      const isPrimary = method.isPrimary;
+      const methodIcon = getPaymentMethodIcon(method.methodType);
+
+      return `
+        <div class="payment-method-item ${isPrimary ? 'primary' : ''}">
+          <div class="payment-method-item-left">
+            <div class="payment-method-icon-box">
+              ${methodIcon}
+            </div>
+            <div class="payment-method-info">
+              <div class="payment-method-header">
+                <h4 class="payment-method-title">${escapeHtml(method.methodType)}</h4>
+                ${isPrimary ? '<span class="payment-method-badge">Primary</span>' : ''}
+              </div>
+              <p class="payment-method-details">
+                ${escapeHtml(method.accountName)} • ${escapeHtml(method.accountNumberMasked)}
+                ${method.bankName ? ` • ${escapeHtml(method.bankName)}` : ''}
+              </p>
+            </div>
+          </div>
+          <div class="payment-method-actions">
+            ${
+              !isPrimary
+                ? `
+              <button class="btn btn-outline btn-sm payment-method-set-primary-btn" data-id="${method.id}">
+                Set as Primary
+              </button>
+            `
+                : ''
+            }
+            <button class="btn btn-outline btn-sm payment-method-delete-btn" data-id="${
+              method.id
+            }" style="color: #dc3545; border-color: #dc3545;">
+              Delete
+            </button>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  setupPaymentMethodActions();
+}
+
+function getPaymentMethodIcon(methodType) {
+  const icons = {
+    GCash: '<img src="../../../assets/svg/contact.svg" alt="GCash" width="24" height="24" />',
+    PayMaya: '<img src="../../../assets/svg/contact.svg" alt="PayMaya" width="24" height="24" />',
+    'Bank Transfer':
+      '<img src="../../../assets/svg/building.svg" alt="Bank" width="24" height="24" />',
+    PayPal: '<img src="../../../assets/svg/creditCard.svg" alt="PayPal" width="24" height="24" />',
+    GrabPay: '<img src="../../../assets/svg/contact.svg" alt="GrabPay" width="24" height="24" />',
+    Other: '<img src="../../../assets/svg/creditCard.svg" alt="Other" width="24" height="24" />',
+  };
+  return icons[methodType] || icons['Other'];
+}
+
+function setupPaymentMethodActions() {
+  // Set as primary buttons
+  document.querySelectorAll('.payment-method-set-primary-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const methodId = btn.dataset.id;
+      await setPaymentMethodAsPrimary(methodId);
+    });
+  });
+
+  // Delete buttons
+  document.querySelectorAll('.payment-method-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const methodId = btn.dataset.id;
+      if (confirm('Are you sure you want to delete this payment method?')) {
+        await deletePaymentMethod(methodId);
+      }
+    });
+  });
+}
+
+async function savePaymentMethod() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = user.id;
+
+  if (!userId) {
+    showToast('Unable to save payment method', 'error');
+    return;
+  }
+
+  const methodType = document.getElementById('payment-method-type').value;
+  const accountName = document.getElementById('payment-account-name').value.trim();
+  const accountNumber = document.getElementById('payment-account-number').value.trim();
+  const bankName = document.getElementById('payment-bank-name').value.trim();
+  const isPrimary = document.getElementById('payment-is-primary').checked;
+
+  if (!methodType || !accountName || !accountNumber) {
+    showToast('Please fill in all required fields', 'error');
+    return;
+  }
+
+  if (methodType === 'Bank Transfer' && !bankName) {
+    showToast('Bank name is required for bank transfers', 'error');
+    return;
+  }
+
+  const submitBtn = document.getElementById('payment-method-modal-submit-btn');
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const body = {
+      userId,
+      methodType,
+      accountName,
+      accountNumber,
+      bankName: methodType === 'Bank Transfer' ? bankName : null,
+      isPrimary,
+    };
+
+    if (currentEditingPaymentMethodId) {
+      body.paymentMethodId = currentEditingPaymentMethodId;
+    }
+
+    const method = currentEditingPaymentMethodId ? 'PATCH' : 'POST';
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php`, {
+      method,
+      headers: getAuthHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showToast(
+        currentEditingPaymentMethodId
+          ? 'Payment method updated successfully'
+          : 'Payment method added successfully',
+        'success'
+      );
+      document.getElementById('payment-method-modal').style.display = 'none';
+      document.getElementById('payment-method-form').reset();
+      currentEditingPaymentMethodId = null;
+      loadPaymentMethods();
+    } else {
+      showToast(data.error || 'Failed to save payment method', 'error');
+    }
+  } catch (err) {
+    console.error('Save payment method error:', err);
+    showToast('Failed to save payment method', 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+async function setPaymentMethodAsPrimary(methodId) {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = user.id;
+
+  if (!userId) {
+    showToast('Unable to update payment method', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({
+        userId,
+        paymentMethodId: parseInt(methodId),
+        isPrimary: true,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showToast('Primary payment method updated', 'success');
+      loadPaymentMethods();
+    } else {
+      showToast(data.error || 'Failed to update payment method', 'error');
+    }
+  } catch (err) {
+    console.error('Update payment method error:', err);
+    showToast('Failed to update payment method', 'error');
+  }
+}
+
+async function deletePaymentMethod(methodId) {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = user.id;
+
+  if (!userId) {
+    showToast('Unable to delete payment method', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({
+        userId,
+        paymentMethodId: parseInt(methodId),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showToast('Payment method deleted', 'success');
+      loadPaymentMethods();
+    } else {
+      showToast(data.error || 'Failed to delete payment method', 'error');
+    }
+  } catch (err) {
+    console.error('Delete payment method error:', err);
+    showToast('Failed to delete payment method', 'error');
+  }
 }

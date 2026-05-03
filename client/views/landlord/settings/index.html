@@ -74,6 +74,15 @@
               />
               Welcome Message
             </button>
+            <button class="settings-tab" data-tab="payment-methods">
+              <img
+                src="../../../assets/svg/creditCard.svg"
+                alt="Payment Icon"
+                width="24"
+                height="24"
+              />
+              Payment Methods
+            </button>
             <button class="settings-tab" data-tab="notifications">
               <img
                 src="../../../assets/svg/notification.svg"
@@ -318,6 +327,33 @@
                       <span>Save Template</span>
                     </button>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Methods Tab -->
+            <div class="settings-panel" id="payment-methods-panel">
+              <div class="settings-card">
+                <div class="settings-card-header-with-action">
+                  <div>
+                    <h2 class="settings-card-title">Payment Methods</h2>
+                    <p class="settings-card-description">
+                      Manage how you receive payments from your boarders
+                    </p>
+                  </div>
+                  <button class="btn btn-primary" id="add-payment-method-btn">
+                    <img
+                      src="../../../assets/svg/add_listing.svg"
+                      alt="Plus Icon"
+                      width="24"
+                      height="24"
+                    />
+                    <span>Add Payment Method</span>
+                  </button>
+                </div>
+
+                <div class="payment-methods-list" id="payment-methods-list">
+                  <div class="loading-state">Loading payment methods...</div>
                 </div>
               </div>
             </div>
@@ -593,6 +629,80 @@
             style="background-color: #dc3545; border-color: #dc3545"
           >
             Confirm & Submit
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Method Modal -->
+    <div class="modal" id="payment-method-modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="payment-method-modal-title">Add Payment Method</h2>
+          <button class="modal-close" id="payment-method-modal-close-btn">
+            <img src="../../../assets/svg/close.svg" alt="Close Icon" width="24" height="24" />
+          </button>
+        </div>
+        <form id="payment-method-form" class="modal-body">
+          <div class="form-group">
+            <label for="payment-method-type">Payment Method Type *</label>
+            <select id="payment-method-type" class="form-control" required>
+              <option value="">Select payment method</option>
+              <option value="GCash">GCash</option>
+              <option value="PayMaya">PayMaya</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="PayPal">PayPal</option>
+              <option value="GrabPay">GrabPay</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="payment-account-name">Account Name *</label>
+            <input
+              type="text"
+              id="payment-account-name"
+              class="form-control"
+              placeholder="e.g., Juan Dela Cruz"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="payment-account-number">Account Number *</label>
+            <input
+              type="text"
+              id="payment-account-number"
+              class="form-control"
+              placeholder="e.g., 09123456789"
+              required
+            />
+            <p class="form-hint" id="payment-account-hint">
+              Enter your mobile number for GCash/PayMaya
+            </p>
+          </div>
+
+          <div class="form-group" id="payment-bank-name-group" style="display: none">
+            <label for="payment-bank-name">Bank Name *</label>
+            <input
+              type="text"
+              id="payment-bank-name"
+              class="form-control"
+              placeholder="e.g., BDO, BPI, Metrobank"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="payment-is-primary" />
+              <span>Set as primary payment method</span>
+            </label>
+          </div>
+        </form>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="payment-method-modal-cancel-btn">Cancel</button>
+          <button class="btn btn-primary" id="payment-method-modal-submit-btn">
+            Save Payment Method
           </button>
         </div>
       </div>

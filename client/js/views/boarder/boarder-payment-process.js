@@ -15,6 +15,7 @@ const paymentState = {
   dueDate: null,
   qrTimer: null,
   qrTimeRemaining: 15 * 60, // 15 minutes in seconds
+  landlordPaymentInfo: null, // Store landlord's payment methods
 };
 
 /**
@@ -24,6 +25,9 @@ const paymentState = {
 export async function initPaymentPage() {
   // Initialize sidebar and navbar
   await initializeNavigation();
+
+  // Load landlord payment information first
+  await loadLandlordPaymentInfo();
 
   // Load current bill so the boarder pays the actual pending amount.
   await loadCurrentBill();
@@ -142,6 +146,83 @@ async function initializeNavigation() {
         notificationCount: 3,
       });
     });
+  }
+}
+
+/**
+ * Load landlord's payment information
+ */
+async function loadLandlordPaymentInfo() {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/landlord-payment-info`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load landlord payment information');
+    }
+
+    const result = await response.json();
+    paymentState.landlordPaymentInfo = result.data;
+
+    // Update payment methods display with landlord's actual methods
+    updatePaymentMethodsDisplay();
+  } catch (error) {
+    console.error('Failed to load landlord payment info:', error);
+    showToast('Unable to load payment methods. Please contact your landlord.', 'error');
+  }
+}
+
+/**
+ * Update payment methods display based on landlord's configured methods
+ */
+function updatePaymentMethodsDisplay() {
+  if (!paymentState.landlordPaymentInfo || !paymentState.landlordPaymentInfo.paymentMethods) {
+    return;
+  }
+
+  const methods = paymentState.landlordPaymentInfo.paymentMethods;
+
+  // Update GCash phone number if landlord has GCash configured
+  const gcashMethod = methods.find(m => m.methodType === 'GCash');
+  if (gcashMethod) {
+    const phoneNumberElements = document.querySelectorAll('.gcash-phone-number');
+    phoneNumberElements.forEach(el => {
+      el.textContent = gcashMethod.accountNumber;
+    });
+
+    // Update copy button handler
+    const copyPhoneBtn = document.getElementById('copyPhoneBtn');
+    if (copyPhoneBtn) {
+      copyPhoneBtn.onclick = () => handleCopyPhoneNumber(gcashMethod.accountNumber);
+    }
+  }
+
+  // Update bank transfer details if landlord has bank transfer configured
+  const bankMethod = methods.find(m => m.methodType === 'Bank Transfer');
+  if (bankMethod) {
+    const bankNameEl = document.querySelector('.bank-detail-value');
+    if (bankNameEl && bankMethod.bankName) {
+      bankNameEl.textContent = bankMethod.bankName;
+    }
+
+    const accountNameEls = document.querySelectorAll('.bank-detail-value');
+    if (accountNameEls[1]) {
+      accountNameEls[1].textContent = bankMethod.accountName;
+    }
+
+    const accountNumberEls = document.querySelectorAll('.bank-detail-value');
+    if (accountNumberEls[2]) {
+      accountNumberEls[2].textContent = bankMethod.accountNumber;
+    }
   }
 }
 
@@ -354,10 +435,16 @@ function setupFormInteractions() {
 /**
  * Handle Copy Phone Number
  */
-function handleCopyPhoneNumber() {
-  const phoneNumber = '0917-123-4567';
+function handleCopyPhoneNumber(phoneNumber = null) {
+  // Use provided phone number or get from landlord payment info
+  const number =
+    phoneNumber ||
+    paymentState.landlordPaymentInfo?.paymentMethods?.find(m => m.methodType === 'GCash')
+      ?.accountNumber ||
+    '0917-123-4567';
+
   navigator.clipboard
-    .writeText(phoneNumber)
+    .writeText(number)
     .then(() => {
       showToast('Phone number copied to clipboard');
     })
@@ -825,7 +912,7 @@ function generateReceiptPDF(data) {
           <h1 class="receipt-title">Payment Receipt</h1>
           <p class="receipt-subtitle">Thank you for your payment!</p>
         </div>
-        
+
         <div class="receipt-details">
           <div class="detail-row">
             <span class="detail-label">Reference Number:</span>
@@ -848,7 +935,7 @@ function generateReceiptPDF(data) {
             <span class="detail-value">${data.userName}</span>
           </div>
         </div>
-        
+
         <div class="receipt-footer">
           <p><span class="brand-name">Haven Space</span></p>
           <p>Your payment has been recorded and is now visible to your landlord.</p>

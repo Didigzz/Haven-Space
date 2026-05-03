@@ -357,6 +357,13 @@ Router::get('/api/boarder/tenancy', function() {
 });
 
 // ============================================
+// LANDLORD PAYMENT INFO - BOARDER
+// ============================================
+Router::get('/api/boarder/landlord-payment-info', function() {
+    require_once __DIR__ . '/boarder/landlord-payment-info.php';
+});
+
+// ============================================
 // PAYMENT ROUTES - LANDLORD
 // ============================================
 Router::get('/api/landlord/payments', function() {
