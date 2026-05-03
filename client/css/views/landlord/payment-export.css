@@ -3,25 +3,13 @@
  */
 
 .export-modal-content {
-  max-width: 900px;
+  max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
 }
 
 .export-modal-body {
   padding: 1.5rem;
-}
-
-/* Two-column layout */
-.export-modal-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-.export-left-section,
-.export-right-section {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -38,37 +26,24 @@
   margin-bottom: 1rem;
 }
 
-/* Generate button in right section */
-.export-generate-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--dashboard-border);
-}
-
-.export-generate-btn {
-  width: 100%;
-  justify-content: center;
-  padding: 0.875rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
 /* Radio Group */
 .export-radio-group {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .export-radio-label {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
   border: 1px solid var(--dashboard-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background-color: var(--dashboard-bg-primary);
+  white-space: nowrap;
 }
 
 .export-radio-label:hover {
@@ -81,6 +56,7 @@
   height: 18px;
   cursor: pointer;
   accent-color: var(--dashboard-primary);
+  flex-shrink: 0;
 }
 
 .export-radio-label input[type='radio']:checked + span {
@@ -135,29 +111,19 @@
 /* Filter Group */
 .export-filter-group {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.export-filter-group:last-child {
-  margin-bottom: 0;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .export-filter-group label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--dashboard-text-secondary);
-}
-
-.export-filter-group textarea.export-input {
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
+  white-space: nowrap;
 }
 
 .export-select {
-  padding: 0.625rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid var(--dashboard-border);
   border-radius: 6px;
   font-size: 0.95rem;
@@ -165,6 +131,7 @@
   background-color: var(--dashboard-bg-primary);
   cursor: pointer;
   transition: border-color 0.2s ease;
+  width: auto;
 }
 
 .export-select:focus {
@@ -176,13 +143,30 @@
   border-color: var(--dashboard-primary);
 }
 
-/* Modal Footer */
-.export-modal-content .modal-footer {
+/* Action Buttons */
+.export-actions {
   display: flex;
-  justify-content: flex-start;
+  align-items: center;
   gap: 1rem;
-  padding: 1.5rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--dashboard-border);
+}
+
+.export-download-btn {
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.export-cancel-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-left: auto;
 }
 
 /* Responsive */
@@ -190,11 +174,6 @@
   .export-modal-content {
     max-width: 95%;
     margin: 1rem;
-  }
-
-  .export-modal-layout {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
   }
 
   .export-custom-dates {
@@ -209,8 +188,12 @@
     padding: 0.625rem 0.875rem;
   }
 
-  .export-generate-btn {
-    font-size: 0.95rem;
-    padding: 0.75rem 1.25rem;
+  .export-actions {
+    flex-direction: column-reverse;
+  }
+
+  .export-download-btn,
+  .export-cancel-btn {
+    width: 100%;
   }
 }

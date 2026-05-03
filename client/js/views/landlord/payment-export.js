@@ -5,8 +5,6 @@
  */
 
 import CONFIG from '../../config.js';
-import { getAuthHeaders } from '../../shared/state.js';
-import * as XLSX from 'xlsx';
 
 /**
  * Show export modal
@@ -27,163 +25,94 @@ function createExportModal() {
   modal.innerHTML = `
     <div class="modal-content export-modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">Export Payment Report</h3>
+        <h3 class="modal-title">Download Payment Statement</h3>
         <button class="modal-close" id="closeExportModal">&times;</button>
       </div>
       <div class="modal-body export-modal-body">
-        <div class="export-modal-layout">
-          <!-- Left Section -->
-          <div class="export-left-section">
-            <!-- Time Range Selection -->
-            <div class="export-section">
-              <h4 class="export-section-title">Time Range</h4>
-              <div class="export-radio-group">
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="daily" />
-                  <span>Daily</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="weekly" />
-                  <span>Weekly</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="monthly" checked />
-                  <span>Monthly</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="ytd" />
-                  <span>Year-to-Date</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="custom" />
-                  <span>Custom Range</span>
-                </label>
-              </div>
-
-              <!-- Custom Date Range (hidden by default) -->
-              <div class="export-custom-dates" id="customDateRange" style="display: none;">
-                <div class="export-date-group">
-                  <label for="startDate">Start Date</label>
-                  <input type="date" id="startDate" class="export-input" />
-                </div>
-                <div class="export-date-group">
-                  <label for="endDate">End Date</label>
-                  <input type="date" id="endDate" class="export-input" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Report Type Selection -->
-            <div class="export-section">
-              <h4 class="export-section-title">Report Type</h4>
-              <div class="export-radio-group">
-                <label class="export-radio-label">
-                  <input type="radio" name="reportType" value="all" checked />
-                  <span>All Payments</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="reportType" value="outstanding" />
-                  <span>Outstanding Balances</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="reportType" value="overdue" />
-                  <span>Overdue Payments</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="reportType" value="summary" />
-                  <span>Summary Report</span>
-                </label>
-              </div>
-            </div>
+        <!-- Time Range Selection -->
+        <div class="export-section">
+          <h4 class="export-section-title">Time Range</h4>
+          <div class="export-radio-group">
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="all" checked />
+              <span>All Time</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="monthly" />
+              <span>This Month</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="last3months" />
+              <span>Last 3 Months</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="last6months" />
+              <span>Last 6 Months</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="ytd" />
+              <span>Year-to-Date</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="custom" />
+              <span>Custom Range</span>
+            </label>
           </div>
 
-          <!-- Right Section -->
-          <div class="export-right-section">
-            <!-- Filter Options -->
-            <div class="export-section">
-              <h4 class="export-section-title">Filters</h4>
-
-              <div class="export-filter-group">
-                <label for="exportPropertyFilter">Property</label>
-                <select id="exportPropertyFilter" class="export-select">
-                  <option value="all">All Properties</option>
-                </select>
-              </div>
-
-              <div class="export-filter-group">
-                <label for="exportTenantFilter">Tenant</label>
-                <select id="exportTenantFilter" class="export-select">
-                  <option value="all">All Tenants</option>
-                </select>
-              </div>
-
-              <div class="export-filter-group">
-                <label for="exportStatusFilter">Payment Status</label>
-                <select id="exportStatusFilter" class="export-select">
-                  <option value="all">All Status</option>
-                  <option value="paid">Paid</option>
-                  <option value="pending">Pending</option>
-                  <option value="overdue">Overdue</option>
-                </select>
-              </div>
+          <!-- Custom Date Range (hidden by default) -->
+          <div class="export-custom-dates" id="customDateRange" style="display: none;">
+            <div class="export-date-group">
+              <label for="startDate">Start Date</label>
+              <input type="date" id="startDate" class="export-input" />
             </div>
-
-            <!-- Output Format Selection -->
-            <div class="export-section">
-              <h4 class="export-section-title">Output Format</h4>
-              <div class="export-radio-group">
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="pdf" checked />
-                  <span>PDF (Professional Report)</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="excel" />
-                  <span>Excel (Spreadsheet)</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="csv" />
-                  <span>CSV (Data Export)</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="email" />
-                  <span>Email to Me</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="preview" />
-                  <span>Preview in Browser</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Email Options (shown when email format is selected) -->
-            <div class="export-section" id="emailOptions" style="display: none;">
-              <h4 class="export-section-title">Email Options</h4>
-              <div class="export-filter-group">
-                <label for="emailRecipient">Recipient Email</label>
-                <input type="email" id="emailRecipient" class="export-input" placeholder="your@email.com" />
-              </div>
-              <div class="export-filter-group">
-                <label for="emailSubject">Subject</label>
-                <input type="text" id="emailSubject" class="export-input" value="Payment Statement Report" />
-              </div>
-              <div class="export-filter-group">
-                <label for="emailMessage">Message (Optional)</label>
-                <textarea id="emailMessage" class="export-input" rows="3" placeholder="Add a custom message..."></textarea>
-              </div>
-            </div>
-
-            <!-- Generate Button in Right Section -->
-            <div class="export-generate-section">
-              <button class="landlord-btn landlord-btn-primary export-generate-btn" id="generateExport">
-                <img src="../../../assets/svg/export.svg" alt="" width="20" height="20" class="icon-no-bg" />
-                Generate Report
-              </button>
+            <div class="export-date-group">
+              <label for="endDate">End Date</label>
+              <input type="date" id="endDate" class="export-input" />
             </div>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="landlord-btn landlord-btn-outline" id="cancelExport">Cancel</button>
+
+        <!-- Filters -->
+        <div class="export-section">
+          <h4 class="export-section-title">Filters</h4>
+          <div class="export-filter-group">
+            <label for="exportStatusFilter">Payment Status</label>
+            <select id="exportStatusFilter" class="export-select">
+              <option value="all">All Status</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Output Format Selection -->
+        <div class="export-section">
+          <h4 class="export-section-title">Output Format</h4>
+          <div class="export-radio-group">
+            <label class="export-radio-label">
+              <input type="radio" name="outputFormat" value="pdf" checked />
+              <span>PDF (Professional Report)</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="outputFormat" value="csv" />
+              <span>CSV (Spreadsheet)</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="outputFormat" value="preview" />
+              <span>Preview in Browser</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="export-actions">
+          <button class="landlord-btn landlord-btn-primary export-download-btn" id="generateExport">
+            <img src="../../../assets/svg/arrowDownTray.svg" alt="" width="20" height="20" class="icon-no-bg" />
+            Download Statement
+          </button>
+          <button class="landlord-btn landlord-btn-outline export-cancel-btn" id="cancelExport">Cancel</button>
+        </div>
       </div>
     </div>
   `;
@@ -221,33 +150,9 @@ function initExportModalListeners(modal) {
     });
   });
 
-  // Toggle email options
-  const outputFormatInputs = modal.querySelectorAll('input[name="outputFormat"]');
-  const emailOptions = modal.querySelector('#emailOptions');
-  const emailRecipient = modal.querySelector('#emailRecipient');
-
-  // Pre-fill email with user's email
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (user.email && emailRecipient) {
-    emailRecipient.value = user.email;
-  }
-
-  outputFormatInputs.forEach(input => {
-    input.addEventListener('change', e => {
-      if (e.target.value === 'email') {
-        emailOptions.style.display = 'block';
-      } else {
-        emailOptions.style.display = 'none';
-      }
-    });
-  });
-
   // Generate export
   const generateBtn = modal.querySelector('#generateExport');
   generateBtn?.addEventListener('click', () => handleExportGeneration(modal));
-
-  // Populate filters
-  populateExportFilters(modal);
 }
 
 /**
@@ -256,66 +161,6 @@ function initExportModalListeners(modal) {
 function closeExportModal(modal) {
   modal.classList.remove('active');
   setTimeout(() => modal.remove(), 300);
-}
-
-/**
- * Populate export filter dropdowns
- */
-async function populateExportFilters(modal) {
-  try {
-    const token = localStorage.getItem('token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    // Fetch payments to get unique properties and tenants
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payments.php`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-
-    if (!response.ok) return;
-
-    const result = await response.json();
-    if (!result.data || !Array.isArray(result.data)) return;
-
-    const payments = result.data;
-
-    // Populate properties
-    const propertyFilter = modal.querySelector('#exportPropertyFilter');
-    const properties = [...new Set(payments.map(p => p.property_title))];
-    properties.forEach(property => {
-      const option = document.createElement('option');
-      option.value = property;
-      option.textContent = property;
-      propertyFilter.appendChild(option);
-    });
-
-    // Populate tenants
-    const tenantFilter = modal.querySelector('#exportTenantFilter');
-    const tenants = [
-      ...new Set(
-        payments.map(p => ({
-          id: p.boarder_id,
-          name: `${p.boarder_first_name} ${p.boarder_last_name}`,
-        }))
-      ),
-    ];
-
-    // Remove duplicates by ID
-    const uniqueTenants = Array.from(new Map(tenants.map(t => [t.id, t])).values());
-
-    uniqueTenants.forEach(tenant => {
-      const option = document.createElement('option');
-      option.value = tenant.id;
-      option.textContent = tenant.name;
-      tenantFilter.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Failed to populate export filters:', error);
-  }
 }
 
 /**
@@ -358,14 +203,8 @@ async function handleExportGeneration(modal) {
       case 'pdf':
         await generatePDFReport(data, params);
         break;
-      case 'excel':
-        await generateExcelReport(data, params);
-        break;
       case 'csv':
         generateCSVReport(data, params);
-        break;
-      case 'email':
-        await sendEmailReport(data, params, modal);
         break;
       case 'preview':
         showPreviewReport(data, params);
@@ -386,25 +225,17 @@ async function handleExportGeneration(modal) {
  * Collect export parameters from modal
  */
 function collectExportParameters(modal) {
-  const timeRange = modal.querySelector('input[name="timeRange"]:checked')?.value || 'monthly';
-  const reportType = modal.querySelector('input[name="reportType"]:checked')?.value || 'all';
+  const timeRange = modal.querySelector('input[name="timeRange"]:checked')?.value || 'all';
   const outputFormat = modal.querySelector('input[name="outputFormat"]:checked')?.value || 'pdf';
 
   const params = {
     timeRange,
-    reportType,
+    reportType: 'all', // Default to all payments
     outputFormat,
-    property: modal.querySelector('#exportPropertyFilter')?.value || 'all',
-    tenant: modal.querySelector('#exportTenantFilter')?.value || 'all',
+    property: 'all',
+    tenant: 'all',
     status: modal.querySelector('#exportStatusFilter')?.value || 'all',
   };
-
-  // Add email options if email format is selected
-  if (outputFormat === 'email') {
-    params.emailRecipient = modal.querySelector('#emailRecipient')?.value;
-    params.emailSubject = modal.querySelector('#emailSubject')?.value;
-    params.emailMessage = modal.querySelector('#emailMessage')?.value;
-  }
 
   // Add custom date range if selected
   if (timeRange === 'custom') {
@@ -692,204 +523,6 @@ async function generatePDFReport(data, params) {
 }
 
 /**
- * Generate Excel report
- * Uses SheetJS library for Excel generation
- */
-async function generateExcelReport(data, params) {
-  // Check if SheetJS is available
-  if (typeof XLSX === 'undefined') {
-    // Fallback to CSV if SheetJS is not available
-    console.warn('SheetJS library not loaded. Falling back to CSV export.');
-    generateCSVReport(data, params);
-    return;
-  }
-
-  try {
-    const summary = calculateSummary(data);
-
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-
-    // Summary sheet
-    const summaryData = [
-      ['Haven Space - Payment Statement Report'],
-      [],
-      ['Report Type:', formatReportType(params.reportType)],
-      ['Time Range:', formatTimeRange(params)],
-      ['Generated:', new Date().toLocaleString('en-PH')],
-      [],
-      ['Summary Statistics'],
-      ['Total Payments:', summary.totalCount],
-      [
-        'Total Amount:',
-        `₱${summary.totalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
-      ],
-      ['Paid Count:', summary.paidCount],
-      [
-        'Paid Amount:',
-        `₱${summary.paidAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
-      ],
-      ['Pending Count:', summary.pendingCount],
-      [
-        'Pending Amount:',
-        `₱${summary.pendingAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
-      ],
-      ['Overdue Count:', summary.overdueCount],
-      [
-        'Overdue Amount:',
-        `₱${summary.overdueAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
-      ],
-    ];
-
-    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
-
-    // Payments detail sheet
-    const paymentsData = [
-      [
-        'Tenant Name',
-        'Email',
-        'Property',
-        'Room',
-        'Amount',
-        'Late Fee',
-        'Total',
-        'Due Date',
-        'Paid Date',
-        'Status',
-        'Payment Method',
-        'Reference Number',
-        'Notes',
-      ],
-    ];
-
-    data.forEach(payment => {
-      const amount = parseFloat(payment.amount);
-      const lateFee = parseFloat(payment.late_fee || 0);
-      const total = amount + lateFee;
-
-      paymentsData.push([
-        `${payment.boarder_first_name} ${payment.boarder_last_name}`,
-        payment.boarder_email,
-        payment.property_title,
-        payment.room_title,
-        amount,
-        lateFee,
-        total,
-        payment.due_date,
-        payment.paid_date || '',
-        payment.status.charAt(0).toUpperCase() + payment.status.slice(1),
-        payment.payment_method || '',
-        payment.reference_number || '',
-        payment.notes || '',
-      ]);
-    });
-
-    const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);
-
-    // Set column widths
-    wsPayments['!cols'] = [
-      { wch: 20 }, // Tenant Name
-      { wch: 25 }, // Email
-      { wch: 25 }, // Property
-      { wch: 15 }, // Room
-      { wch: 12 }, // Amount
-      { wch: 10 }, // Late Fee
-      { wch: 12 }, // Total
-      { wch: 12 }, // Due Date
-      { wch: 12 }, // Paid Date
-      { wch: 10 }, // Status
-      { wch: 15 }, // Payment Method
-      { wch: 20 }, // Reference Number
-      { wch: 30 }, // Notes
-    ];
-
-    XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');
-
-    // Generate and download
-    const filename = `payment-statement-${Date.now()}.xlsx`;
-    XLSX.writeFile(wb, filename);
-
-    showToast('Excel report generated successfully!', 'success');
-  } catch (error) {
-    console.error('Excel generation failed:', error);
-    alert('Failed to generate Excel report. Please try CSV export instead.');
-  }
-}
-
-/**
- * Send email report
- */
-async function sendEmailReport(data, params) {
-  // Validate email
-  if (!params.emailRecipient) {
-    alert('Please enter a recipient email address');
-    return;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(params.emailRecipient)) {
-    alert('Please enter a valid email address');
-    return;
-  }
-
-  try {
-    const summary = calculateSummary(data);
-
-    // Prepare email data
-    const emailData = {
-      recipient: params.emailRecipient,
-      subject: params.emailSubject || 'Payment Statement Report',
-      message: params.emailMessage || '',
-      reportType: params.reportType,
-      timeRange: formatTimeRange(params),
-      summary: {
-        totalCount: summary.totalCount,
-        totalAmount: summary.totalAmount,
-        paidCount: summary.paidCount,
-        paidAmount: summary.paidAmount,
-        pendingCount: summary.pendingCount,
-        pendingAmount: summary.pendingAmount,
-        overdueCount: summary.overdueCount,
-        overdueAmount: summary.overdueAmount,
-      },
-      payments: data.map(payment => ({
-        tenant: `${payment.boarder_first_name} ${payment.boarder_last_name}`,
-        email: payment.boarder_email,
-        property: payment.property_title,
-        room: payment.room_title,
-        amount: parseFloat(payment.amount) + parseFloat(payment.late_fee || 0),
-        dueDate: payment.due_date,
-        paidDate: payment.paid_date,
-        status: payment.status,
-      })),
-    };
-
-    // Send to backend
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payments/email-report`, {
-      method: 'POST',
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(emailData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to send email');
-    }
-
-    showToast(`Report sent successfully to ${params.emailRecipient}!`, 'success');
-  } catch (error) {
-    console.error('Email send failed:', error);
-    alert(`Failed to send email: ${error.message}`);
-    throw error;
-  }
-}
-
-/**
  * Generate CSV report with enhanced formatting
  */
 function generateCSVReport(data, params) {
@@ -1127,9 +760,12 @@ function formatTimeRange(params) {
   }
 
   const ranges = {
+    all: 'All Time',
     daily: 'Today',
     weekly: 'This Week',
     monthly: 'This Month',
+    last3months: 'Last 3 Months',
+    last6months: 'Last 6 Months',
     ytd: 'Year-to-Date',
   };
   return ranges[params.timeRange] || params.timeRange;
