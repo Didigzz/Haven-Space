@@ -147,6 +147,37 @@ export function initBoarderFindARoomAuth() {
       window.initIconElements();
     }
   }, 500);
+
+  // Check for accepted applications and show confirmation modal
+  checkForAcceptedApplications();
+}
+
+/**
+ * Check for accepted applications and show confirmation modal
+ */
+async function checkForAcceptedApplications() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+
+    // Only check if boarder is not yet accepted (hasn't confirmed a booking)
+    if (boarderStatus === 'accepted') {
+      return;
+    }
+
+    // Import and use the accepted applications overlay
+    const { openAcceptedApplicationsOverlay } = await import(
+      '../../components/accepted-applications-overlay.js'
+    );
+    const { hasAcceptedApplications } = await import('../../shared/notifications.js');
+
+    const hasAccepted = await hasAcceptedApplications();
+    if (hasAccepted) {
+      openAcceptedApplicationsOverlay();
+    }
+  } catch (error) {
+    console.error('Error checking for accepted applications:', error);
+  }
 }
 
 /**

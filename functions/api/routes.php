@@ -214,6 +214,7 @@ Router::post('/api/users/avatar', function() {
 Router::get('/api/boarder/applications', [ApplicationController::class, 'index']);
 Router::get('/api/boarder/applications/{id}', [ApplicationController::class, 'show']);
 Router::post('/api/boarder/applications', [ApplicationController::class, 'store']);
+Router::post('/api/boarder/applications/{id}/confirm', [ApplicationController::class, 'confirmBooking']);
 Router::delete('/api/boarder/applications/{id}', [ApplicationController::class, 'destroy']);
 
 // ============================================

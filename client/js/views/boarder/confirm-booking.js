@@ -73,7 +73,7 @@ function showMissingDataError() {
       })}
       <h2>Application Data Not Found</h2>
       <p>We couldn't find the application details. Please try again from the Find a Room page.</p>
-      <a href="../../public/find-a-room.html" class="confirm-booking-error-btn">
+      <a href="../find-a-room/index.html" class="confirm-booking-error-btn">
         ${getIcon('arrow-left', { width: 20, height: 20 })}
         <span>Back to Find a Room</span>
       </a>
@@ -259,7 +259,7 @@ function setupMovingDateEventListeners(application) {
   // Back to search
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      window.location.href = '../../public/find-a-room.html';
+      window.location.href = '../find-a-room/index.html';
     });
   }
 }
@@ -441,7 +441,7 @@ function showApplicationSubmittedSuccess(application) {
         <p>The landlord will review your application and respond within 1-3 business days. You'll receive a notification when they make a decision.</p>
       </div>
       <div class="application-success-actions">
-        <button class="confirm-btn confirm-btn-secondary" onclick="window.location.href='../../public/find-a-room.html'">
+        <button class="confirm-btn confirm-btn-secondary" onclick="window.location.href='../find-a-room/index.html'">
           <span data-icon="search" data-icon-width="20" data-icon-height="20"></span>
           Browse More Properties
         </button>
@@ -682,7 +682,7 @@ function showSuccessModal(booking) {
 function handleDeclineBooking(_application) {
   // Keep status as 'pending_confirmation' or revert to 'applied_pending'
   // User can continue browsing rooms
-  window.location.href = '../../public/find-a-room.html';
+  window.location.href = '../find-a-room/index.html';
 }
 
 /**

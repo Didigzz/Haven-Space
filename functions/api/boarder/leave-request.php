@@ -175,26 +175,33 @@ try {
     $stmt->execute([$conversationId, $boarderId, $messageText]);
     $messageId = $pdo->lastInsertId();
     
-    // Cancel/delete the application since the boarder is leaving
+    // Cancel the application immediately since the boarder is leaving
+    // This allows them to search for new rooms right away
     $applicationId = $tenancy['application_id'];
     $cancelApplicationQuery = "
         UPDATE applications 
-        SET status = 'cancelled', 
-            updated_at = CURRENT_TIMESTAMP,
-            deleted_at = CURRENT_TIMESTAMP
+        SET status = 'cancelled',
+            leave_request_status = 'completed',
+            leave_request_date = CURRENT_DATE,
+            leave_request_reason = ?,
+            intended_leave_date = ?,
+            deleted_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = ? AND boarder_id = ?
     ";
     $stmt = $pdo->prepare($cancelApplicationQuery);
-    $stmt->execute([$applicationId, $boarderId]);
+    $stmt->execute([$reason, $leaveDate, $applicationId, $boarderId]);
     
-    // Reset boarder status to 'new' so they can browse and apply again
-    $updateBoarderStatusQuery = "
-        UPDATE users 
-        SET boarder_status = 'new',
+    // Cancel all pending payments for this boarder
+    // Payments should not remain active after a boarder leaves
+    $cancelPaymentsQuery = "
+        UPDATE payments 
+        SET status = 'cancelled',
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        WHERE boarder_id = ?
+        AND status IN ('pending', 'overdue')
     ";
-    $stmt = $pdo->prepare($updateBoarderStatusQuery);
+    $stmt = $pdo->prepare($cancelPaymentsQuery);
     $stmt->execute([$boarderId]);
     
     // Return success response
@@ -207,8 +214,7 @@ try {
             'message_id' => $messageId,
             'landlord_name' => $tenancy['landlord_first_name'] . ' ' . $tenancy['landlord_last_name'],
             'property_name' => $propertyName,
-            'leave_date' => $leaveDateFormatted,
-            'boarder_status' => 'new'
+            'leave_date' => $leaveDateFormatted
         ]
     ]);
     

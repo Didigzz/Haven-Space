@@ -55,6 +55,76 @@
 
 Whenever a recurring bug appears across prompts, and a fix has been identified and implemented, the fix should be documented in AGENTS.md. This ensures that when a similar issue arises in the future, the solution is already recorded, helping to avoid repeating the same mistake.
 
+### Fixed: Leave Request Navigation and Application Cancellation (2026-05-04)
+
+**Problem**: When a boarder submitted a leave request from the settings page, they experienced navigation errors and had to log out and log back in to access pages properly. The boarder would also disappear from the landlord's dashboard immediately.
+
+**Root Cause**: The original implementation had inconsistent behavior where the application status and user session state were not properly synchronized after submitting a leave request.
+
+**Files Affected**:
+
+- `functions/api/boarder/leave-request.php` - Leave request API endpoint
+- `client/js/views/boarder/settings.js` - Settings page frontend logic
+
+**Solution Pattern**: Implement immediate application cancellation with proper redirect flow:
+
+```javascript
+// Frontend: Update user status and redirect to find-a-room
+if (res.ok) {
+  showToast('Leave request sent successfully. You can now search for a new room.', 'success');
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  user.boarder_status = 'new';
+  user.boarderStatus = 'new';
+  localStorage.setItem('user', JSON.stringify(user));
+
+  window.dispatchEvent(
+    new CustomEvent('userStatusUpdated', {
+      detail: { boarder_status: 'new' },
+    })
+  );
+
+  setTimeout(() => {
+    window.location.href = '/views/boarder/find-a-room/index.html';
+  }, 2000);
+}
+```
+
+```php
+// Backend: Immediately cancel and soft-delete application
+$cancelApplicationQuery = "
+    UPDATE applications
+    SET status = 'cancelled',
+        leave_request_status = 'completed',
+        leave_request_date = CURRENT_DATE,
+        leave_request_reason = ?,
+        intended_leave_date = ?,
+        deleted_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ? AND boarder_id = ?
+";
+```
+
+**Expected Behavior**:
+
+1. Boarder submits leave request from settings page
+2. Success toast appears: "Leave request sent successfully. You can now search for a new room."
+3. After 2 seconds, automatic redirect to `/views/boarder/find-a-room/index.html`
+4. Boarder can immediately browse and apply to new rooms
+5. Landlord receives message with leave request details
+6. Boarder disappears from landlord's boarders list
+7. No navigation errors or need to re-login
+
+**Documentation**: See `LEAVE-REQUEST-FINAL-IMPLEMENTATION.md` for complete details and `TEST-LEAVE-REQUEST.md` for testing guide.
+
+**Prevention**: When implementing features that change user status or tenancy state, ensure:
+
+- Frontend localStorage is updated with correct status
+- Other components are notified via events (`userStatusUpdated`)
+- Backend immediately updates all related records
+- Redirect happens after a brief delay to show success message
+- User can access the redirected page without re-authentication
+
 ### Fixed: Missing Authorization Headers in API Requests (2026-04-27)
 
 **Problem**: Several frontend JavaScript files were making API requests without including the required Authorization header with JWT token, resulting in 401 Unauthorized errors.

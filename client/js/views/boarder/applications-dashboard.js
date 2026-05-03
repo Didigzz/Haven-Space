@@ -74,6 +74,37 @@ export async function initApplicationsDashboard() {
 
   // Show a helpful message if the user is new
   checkForNewUser();
+
+  // Check for accepted applications and show confirmation modal
+  await checkForAcceptedApplications();
+}
+
+/**
+ * Check for accepted applications and show confirmation modal
+ */
+async function checkForAcceptedApplications() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+
+    // Only check if boarder is not yet accepted (hasn't confirmed a booking)
+    if (boarderStatus === 'accepted') {
+      return;
+    }
+
+    // Import and use the accepted applications overlay
+    const { openAcceptedApplicationsOverlay } = await import(
+      '../../components/accepted-applications-overlay.js'
+    );
+    const { hasAcceptedApplications } = await import('../../shared/notifications.js');
+
+    const hasAccepted = await hasAcceptedApplications();
+    if (hasAccepted) {
+      openAcceptedApplicationsOverlay();
+    }
+  } catch (error) {
+    console.error('Error checking for accepted applications:', error);
+  }
 }
 
 /**
@@ -312,7 +343,7 @@ async function loadRecentApplications() {
           <span class="icon-placeholder" data-icon="clipboardList"></span>
           <h3>No Applications Yet</h3>
           <p>Start by browsing properties and submitting your first application</p>
-          <a href="../public/find-a-room.html" class="boarder-btn boarder-btn-primary">
+          <a href="../find-a-room/index.html" class="boarder-btn boarder-btn-primary">
             <span class="icon-placeholder" data-icon="search"></span>
             Find Properties
           </a>
@@ -413,7 +444,7 @@ async function loadRecentApplications() {
           <span class="icon-placeholder" data-icon="clipboardList"></span>
           <h3>No Applications Yet</h3>
           <p>Start by browsing properties and submitting your first application</p>
-          <a href="../public/find-a-room.html" class="boarder-btn boarder-btn-primary">
+          <a href="../find-a-room/index.html" class="boarder-btn boarder-btn-primary">
             <span class="icon-placeholder" data-icon="search"></span>
             Find Properties
           </a>
