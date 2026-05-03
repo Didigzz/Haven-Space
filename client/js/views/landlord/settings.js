@@ -16,6 +16,7 @@ export function initLandlordSettings() {
   initAvatarUpload();
   initWelcomeMessageEditor();
   initDocumentUpload();
+  initLeaveForm();
   loadAndDisplayProfile();
 }
 
@@ -655,6 +656,145 @@ function setupDocumentActions() {
       }
     });
   });
+}
+
+// ─── Leave Form ───────────────────────────────────────────────────────────────
+
+function initLeaveForm() {
+  const leaveForm = document.getElementById('leave-form');
+  const leaveReasonSelect = document.getElementById('leave-reason');
+  const customReasonGroup = document.getElementById('custom-reason-group');
+  const customReasonTextarea = document.getElementById('custom-reason');
+  const leaveDateInput = document.getElementById('leave-date');
+  const confirmModal = document.getElementById('leave-confirmation-modal');
+  const confirmReasonSpan = document.getElementById('confirm-reason');
+  const confirmDateSpan = document.getElementById('confirm-date');
+  const modalCloseBtn = document.getElementById('leave-modal-close-btn');
+  const modalCancelBtn = document.getElementById('leave-modal-cancel-btn');
+  const modalConfirmBtn = document.getElementById('leave-modal-confirm-btn');
+
+  // Set minimum date to 30 days from today
+  if (leaveDateInput) {
+    const today = new Date();
+    const minDate = new Date(today);
+    minDate.setDate(today.getDate() + 30);
+    leaveDateInput.min = minDate.toISOString().split('T')[0];
+  }
+
+  // Show/hide custom reason field
+  if (leaveReasonSelect && customReasonGroup) {
+    leaveReasonSelect.addEventListener('change', () => {
+      if (leaveReasonSelect.value === 'Other') {
+        customReasonGroup.style.display = 'block';
+        customReasonTextarea.required = true;
+      } else {
+        customReasonGroup.style.display = 'none';
+        customReasonTextarea.required = false;
+        customReasonTextarea.value = '';
+      }
+    });
+  }
+
+  // Handle form submission
+  if (leaveForm) {
+    leaveForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const reason = leaveReasonSelect?.value;
+      const customReason = customReasonTextarea?.value?.trim();
+      const leaveDate = leaveDateInput?.value;
+      const additionalNotes = document.getElementById('additional-notes')?.value?.trim();
+
+      // Validate date is at least 30 days from today
+      const selectedDate = new Date(leaveDate);
+      const today = new Date();
+      const minDate = new Date(today);
+      minDate.setDate(today.getDate() + 30);
+
+      if (selectedDate < minDate) {
+        showToast('Please provide at least 30 days notice', 'error');
+        return;
+      }
+
+      // Validate custom reason if "Other" is selected
+      if (reason === 'Other' && !customReason) {
+        showToast('Please specify your reason for leaving', 'error');
+        return;
+      }
+
+      // Store form data for confirmation
+      const leaveData = {
+        reason: reason === 'Other' ? customReason : reason,
+        leave_date: leaveDate,
+        additional_notes: additionalNotes,
+      };
+
+      // Show confirmation modal
+      if (confirmReasonSpan && confirmDateSpan && confirmModal) {
+        confirmReasonSpan.textContent = leaveData.reason;
+        confirmDateSpan.textContent = new Date(leaveDate).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+        confirmModal.style.display = 'flex';
+
+        // Store data for final submission
+        confirmModal.dataset.leaveData = JSON.stringify(leaveData);
+      }
+    });
+  }
+
+  // Close modal handlers
+  const closeModal = () => {
+    if (confirmModal) confirmModal.style.display = 'none';
+  };
+
+  modalCloseBtn?.addEventListener('click', closeModal);
+  modalCancelBtn?.addEventListener('click', closeModal);
+  confirmModal?.addEventListener('click', e => {
+    if (e.target === confirmModal) closeModal();
+  });
+
+  // Confirm and submit leave request
+  if (modalConfirmBtn) {
+    modalConfirmBtn.addEventListener('click', async () => {
+      const leaveData = JSON.parse(confirmModal.dataset.leaveData || '{}');
+
+      modalConfirmBtn.disabled = true;
+      modalConfirmBtn.textContent = 'Submitting...';
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/leave-request`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+          body: JSON.stringify(leaveData),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast('Leave request submitted successfully', 'success');
+          closeModal();
+          leaveForm?.reset();
+
+          // Redirect to find a room page after a short delay
+          setTimeout(() => {
+            window.location.href = '/views/boarder/find-a-room.html';
+          }, 2000);
+        } else {
+          showToast(data.error || 'Failed to submit leave request', 'error');
+        }
+      } catch (err) {
+        console.error('Leave request error:', err);
+        showToast('Failed to submit leave request', 'error');
+      } finally {
+        modalConfirmBtn.disabled = false;
+        modalConfirmBtn.textContent = 'Confirm & Submit';
+      }
+    });
+  }
 }
 
 // ─── Utilities ────────────────────────────────────────────────────────────────

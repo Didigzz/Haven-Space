@@ -14,6 +14,7 @@ export function initSettingsPage() {
   initNotificationSettings();
   initPasswordForm();
   initAvatarUpload();
+  initLeavePropertyForm();
   loadAndDisplayProfile();
 }
 
@@ -292,6 +293,160 @@ function initPasswordForm() {
   if (enable2faBtn) {
     enable2faBtn.addEventListener('click', () => {
       showToast('2FA setup coming soon', 'info');
+    });
+  }
+}
+
+// ─── Leave Property ───────────────────────────────────────────────────────────
+
+function initLeavePropertyForm() {
+  const leaveForm = document.getElementById('leave-property-form');
+  const leaveReasonSelect = document.getElementById('leave-reason');
+  const customReasonGroup = document.getElementById('custom-leave-reason-group');
+  const customReasonTextarea = document.getElementById('custom-leave-reason');
+  const leaveDateInput = document.getElementById('intended-leave-date');
+  const confirmModal = document.getElementById('leave-confirmation-modal');
+  const confirmReasonSpan = document.getElementById('confirm-leave-reason');
+  const confirmDateSpan = document.getElementById('confirm-leave-date');
+  const modalCloseBtn = document.getElementById('leave-modal-close-btn');
+  const modalCancelBtn = document.getElementById('leave-modal-cancel-btn');
+  const modalConfirmBtn = document.getElementById('leave-modal-confirm-btn');
+
+  // Set minimum date to 30 days from today
+  if (leaveDateInput) {
+    const today = new Date();
+    const minDate = new Date(today);
+    minDate.setDate(today.getDate() + 30);
+    leaveDateInput.min = minDate.toISOString().split('T')[0];
+  }
+
+  // Show/hide custom reason field
+  if (leaveReasonSelect && customReasonGroup) {
+    leaveReasonSelect.addEventListener('change', () => {
+      if (leaveReasonSelect.value === 'Other') {
+        customReasonGroup.style.display = 'block';
+        customReasonTextarea.required = true;
+      } else {
+        customReasonGroup.style.display = 'none';
+        customReasonTextarea.required = false;
+        customReasonTextarea.value = '';
+      }
+    });
+  }
+
+  // Handle form submission
+  if (leaveForm) {
+    leaveForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const reason = leaveReasonSelect?.value;
+      const customReason = customReasonTextarea?.value?.trim();
+      const leaveDate = leaveDateInput?.value;
+      const leaveMessage = document.getElementById('leave-message')?.value?.trim();
+
+      // Validate date is at least 30 days from today
+      const selectedDate = new Date(leaveDate);
+      const today = new Date();
+      const minDate = new Date(today);
+      minDate.setDate(today.getDate() + 30);
+
+      if (selectedDate < minDate) {
+        showToast('Please provide at least 30 days notice', 'error');
+        return;
+      }
+
+      // Validate custom reason if "Other" is selected
+      if (reason === 'Other' && !customReason) {
+        showToast('Please specify your reason for leaving', 'error');
+        return;
+      }
+
+      if (!leaveMessage) {
+        showToast('Please write a message to your landlord', 'error');
+        return;
+      }
+
+      // Store form data for confirmation
+      const leaveData = {
+        reason: reason === 'Other' ? customReason : reason,
+        leave_date: leaveDate,
+        message: leaveMessage,
+      };
+
+      // Show confirmation modal
+      if (confirmReasonSpan && confirmDateSpan && confirmModal) {
+        confirmReasonSpan.textContent = leaveData.reason;
+        confirmDateSpan.textContent = new Date(leaveDate).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+        confirmModal.classList.add('show');
+
+        // Store data for final submission
+        confirmModal.dataset.leaveData = JSON.stringify(leaveData);
+      }
+    });
+  }
+
+  // Close modal handlers
+  const closeModal = () => {
+    if (confirmModal) confirmModal.classList.remove('show');
+  };
+
+  modalCloseBtn?.addEventListener('click', closeModal);
+  modalCancelBtn?.addEventListener('click', closeModal);
+  confirmModal?.addEventListener('click', e => {
+    if (e.target === confirmModal) closeModal();
+  });
+
+  // Confirm and submit leave request
+  if (modalConfirmBtn) {
+    modalConfirmBtn.addEventListener('click', async () => {
+      const leaveData = JSON.parse(confirmModal.dataset.leaveData || '{}');
+
+      modalConfirmBtn.disabled = true;
+      const originalText = modalConfirmBtn.textContent;
+      modalConfirmBtn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/leave-request`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+          body: JSON.stringify(leaveData),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(
+            'Leave request sent successfully. Your application has been cancelled.',
+            'success'
+          );
+          closeModal();
+          leaveForm?.reset();
+
+          // Update user data in localStorage to reflect new status
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.boarder_status = 'new';
+          user.boarderStatus = 'new';
+          localStorage.setItem('user', JSON.stringify(user));
+
+          // Redirect to applications dashboard after a short delay
+          setTimeout(() => {
+            window.location.href = '/views/boarder/applications-dashboard/index.html';
+          }, 2000);
+        } else {
+          showToast(data.error || 'Failed to send leave request', 'error');
+        }
+      } catch (err) {
+        console.error('Leave request error:', err);
+        showToast('Failed to send leave request', 'error');
+      } finally {
+        modalConfirmBtn.disabled = false;
+        modalConfirmBtn.textContent = originalText;
+      }
     });
   }
 }

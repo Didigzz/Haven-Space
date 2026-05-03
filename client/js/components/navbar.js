@@ -443,8 +443,23 @@ function setupUserMenuHandlers(user) {
   if (profileBtn) {
     profileBtn.addEventListener('click', e => {
       e.preventDefault();
-      window.dispatchEvent(new CustomEvent('navbar:user:profile:click'));
       closeUserMenu();
+
+      // Check boarder status before navigating
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.role === 'boarder') {
+        const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+
+        // Only accepted boarders can access main settings
+        if (boarderStatus === 'accepted') {
+          window.location.href = '../settings/index.html#profile';
+        } else {
+          // Non-accepted boarders go to applications dashboard
+          window.location.href = '../applications-dashboard/index.html';
+        }
+      } else {
+        window.dispatchEvent(new CustomEvent('navbar:user:profile:click'));
+      }
     });
   }
 
@@ -453,8 +468,23 @@ function setupUserMenuHandlers(user) {
   if (settingsBtn) {
     settingsBtn.addEventListener('click', e => {
       e.preventDefault();
-      window.dispatchEvent(new CustomEvent('navbar:user:settings:click'));
       closeUserMenu();
+
+      // Check boarder status before navigating
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.role === 'boarder') {
+        const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+
+        // Only accepted boarders can access main settings
+        if (boarderStatus === 'accepted') {
+          window.location.href = '../settings/index.html';
+        } else {
+          // Non-accepted boarders go to applications dashboard
+          window.location.href = '../applications-dashboard/index.html';
+        }
+      } else {
+        window.dispatchEvent(new CustomEvent('navbar:user:settings:click'));
+      }
     });
   }
 

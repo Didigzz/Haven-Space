@@ -61,6 +61,10 @@
               />
               Privacy & Security
             </button>
+            <button class="settings-tab" data-tab="leave">
+              <img src="../../../assets/svg/alert.svg" alt="alert" width="20" height="20" />
+              Leave Property
+            </button>
             <button class="settings-tab" data-tab="documents">
               <img src="../../../assets/svg/document.svg" alt="document" width="20" height="20" />
               Documents
@@ -451,6 +455,68 @@
               </div>
             </div>
 
+            <!-- Leave Property Tab -->
+            <div class="settings-panel" id="leave-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Leave Property Request</h2>
+                <p class="settings-card-description">
+                  Submit a request to leave your current property. Your landlord will be notified
+                  via message.
+                </p>
+
+                <form class="settings-form" id="leave-property-form">
+                  <div class="form-group">
+                    <label for="leave-reason">Reason for Leaving</label>
+                    <select id="leave-reason" class="form-control" required>
+                      <option value="">Select a reason</option>
+                      <option value="Relocation">Relocation</option>
+                      <option value="Financial Reasons">Financial Reasons</option>
+                      <option value="Property Issues">Property Issues</option>
+                      <option value="Found Better Accommodation">Found Better Accommodation</option>
+                      <option value="Personal Reasons">Personal Reasons</option>
+                      <option value="Other">Other (Please specify below)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group" id="custom-leave-reason-group" style="display: none">
+                    <label for="custom-leave-reason">Please Specify Your Reason</label>
+                    <textarea
+                      id="custom-leave-reason"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Please provide more details about your reason for leaving..."
+                    ></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="intended-leave-date">Intended Leave Date</label>
+                    <input type="date" id="intended-leave-date" class="form-control" required />
+                    <small class="form-text text-muted">
+                      Please provide at least 30 days notice from today's date
+                    </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="leave-message">Message to Landlord</label>
+                    <textarea
+                      id="leave-message"
+                      class="form-control"
+                      rows="5"
+                      placeholder="Write a message to your landlord explaining your situation..."
+                      required
+                    ></textarea>
+                    <small class="form-text text-muted">
+                      This message will be sent directly to your landlord
+                    </small>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit Leave Request</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
             <!-- Documents Tab -->
             <div class="settings-panel" id="documents-panel">
               <div class="settings-card">
@@ -537,6 +603,64 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Leave Confirmation Modal -->
+    <div class="modal" id="leave-confirmation-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Confirm Leave Request</h2>
+          <button class="modal-close" id="leave-modal-close-btn">
+            <img src="../../../assets/svg/close.svg" alt="close" width="20" height="20" />
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="confirmation-message" style="text-align: center">
+            <img
+              src="../../../assets/svg/alert.svg"
+              alt="alert"
+              width="48"
+              height="48"
+              style="color: #f59e0b; margin-bottom: 16px"
+            />
+            <h3 style="margin-bottom: 12px; font-size: 18px; font-weight: 600">
+              Are you sure you want to leave?
+            </h3>
+            <p style="color: #6b7280; margin-bottom: 24px; line-height: 1.6">
+              This will send a leave request message to your landlord. Once confirmed, you will be
+              redirected to find a new room.
+            </p>
+            <div
+              class="leave-summary"
+              style="
+                background: #f9fafb;
+                padding: 16px;
+                border-radius: 8px;
+                text-align: left;
+                margin-bottom: 24px;
+              "
+            >
+              <p style="margin-bottom: 8px">
+                <strong>Reason:</strong> <span id="confirm-leave-reason"></span>
+              </p>
+              <p style="margin-bottom: 8px">
+                <strong>Leave Date:</strong> <span id="confirm-leave-date"></span>
+              </p>
+              <p style="margin: 0"><strong>Status:</strong> Pending Landlord Response</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="leave-modal-cancel-btn">Cancel</button>
+          <button
+            class="btn btn-primary"
+            id="leave-modal-confirm-btn"
+            style="background-color: #dc3545; border-color: #dc3545"
+          >
+            Confirm & Send to Landlord
+          </button>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="../../../js/main.js?v=1777136032299"></script>

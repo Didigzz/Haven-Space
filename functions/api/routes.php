@@ -473,6 +473,11 @@ Router::post('/api/boarder/update-onboarding', function() {
     require_once __DIR__ . '/boarder/update-onboarding.php';
 });
 
+// Boarder leave request
+Router::post('/api/boarder/leave-request', function() {
+    require_once __DIR__ . '/boarder/leave-request.php';
+});
+
 // ============================================
 // AI POWERED FEATURES
 // ============================================

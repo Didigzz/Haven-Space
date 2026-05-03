@@ -15,6 +15,16 @@ import CONFIG from '../../config.js';
  * Initialize the applications dashboard
  */
 export async function initApplicationsDashboard() {
+  // Check for invalid/test tokens and clear them
+  const token = localStorage.getItem('token');
+  if (token && (token === 'google-oauth-token' || token.startsWith('test-google-oauth-token'))) {
+    console.warn('Invalid test token detected, clearing and redirecting to login');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '../../public/auth/login.html';
+    return;
+  }
+
   // Check boarder status and redirect if accepted
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const boarderStatus = user.boarder_status || user.boarderStatus || 'new';

@@ -4,6 +4,7 @@
  */
 
 import { initFindARoomEnhanced } from '../public/find-a-room.js';
+import { getUser } from '../../shared/user-utils.js';
 
 /**
  * Handle Google OAuth redirect with user data in hash fragment
@@ -47,14 +48,26 @@ function handleGoogleOAuthRedirect() {
  * Initialize boarder find-a-room with forced authentication
  */
 export function initBoarderFindARoomAuth() {
+  // Check for invalid/test tokens and clear them
+  const token = localStorage.getItem('token');
+  if (token && (token === 'google-oauth-token' || token.startsWith('test-google-oauth-token'))) {
+    console.warn('Invalid test token detected, clearing and redirecting to login');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '../../public/auth/login.html';
+    return;
+  }
+
   // Handle Google OAuth redirect first
   const googleUserData = handleGoogleOAuthRedirect();
 
   // Get user from localStorage (either from Google OAuth or existing)
-  const user = googleUserData || JSON.parse(localStorage.getItem('user') || '{}');
+  // Use getUser() utility which handles JWT token fallback
+  const user = googleUserData || getUser();
 
+  // Final check - if still no user data, redirect to login
   if (!user || !user.id) {
-    // Redirect to login if not authenticated
+    console.warn('No user data found, redirecting to login');
     window.location.href = '../../public/auth/login.html';
     return;
   }
@@ -273,6 +286,33 @@ function ensureDropdownsWork() {
         } else {
           // For non-boarders, navigate to settings
           window.location.href = '../settings/index.html#profile';
+        }
+      });
+    }
+
+    // Handle settings menu item click - route to appropriate page based on status
+    const profileMenuSettings = document.getElementById('profile-menu-settings');
+    if (profileMenuSettings) {
+      profileMenuSettings.addEventListener('click', e => {
+        e.preventDefault();
+        profileDropdownMenu.classList.remove('show');
+
+        // Check boarder status and redirect to appropriate page
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.role === 'boarder') {
+          const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+
+          // Redirect based on boarder status
+          if (boarderStatus === 'accepted') {
+            // If accepted, go to main settings
+            window.location.href = '../settings/index.html';
+          } else {
+            // If not yet accepted, stay in applications dashboard
+            window.location.href = '../applications-dashboard/index.html';
+          }
+        } else {
+          // For non-boarders, navigate to settings
+          window.location.href = '../settings/index.html';
         }
       });
     }
