@@ -462,9 +462,9 @@ function updateUserInfo(user) {
   const roleEl = document.getElementById('sidebar-profile-role');
 
   if (avatar && avatarImg && avatarInitials) {
-    // Check if user has an avatar file ID or direct avatar URL
-    if (user.avatar_file_id || (user.avatar_url && user.avatar_url.includes('/uploads/avatars/'))) {
-      // Fetch avatar URL from profile-utils.js (handles both formats)
+    // Check if user has an avatar file ID, direct avatar URL, or Google profile picture
+    if (user.avatar_file_id || user.avatar_url) {
+      // Fetch avatar URL from profile-utils.js (handles all formats including Google)
       const avatarUrl = getAvatarUrl(user);
       if (avatarUrl) {
         avatarImg.src = avatarUrl;

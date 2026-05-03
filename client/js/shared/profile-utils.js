@@ -4,6 +4,20 @@
  */
 
 /**
+ * Check if a string is a valid URL
+ * @param {string} url - URL string to validate
+ * @returns {boolean} True if valid URL
+ */
+function isValidUrl(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * Get user's display name from profile data
  * @param {Object} user - User object
  * @returns {string} Full display name
@@ -83,6 +97,11 @@ export function getAvatarUrl(user, basePath = '') {
 
   // Priority 1: Direct avatar_url from avatar upload API (format: /uploads/avatars/filename.png)
   if (user.avatar_url && user.avatar_url.includes('/uploads/avatars/')) {
+    return user.avatar_url;
+  }
+
+  // Priority 1.5: Google profile picture URL (direct URL from Google OAuth)
+  if (user.avatar_url && isValidUrl(user.avatar_url)) {
     return user.avatar_url;
   }
 
