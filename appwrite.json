@@ -38,5 +38,22 @@
       "runtimeSpecification": "s-0.5vcpu-512mb",
       "deploymentRetention": 0
     }
+  ],
+  "sites": [
+    {
+      "$id": "69eaecb100082b7d8deb",
+      "name": "Haven-Space",
+      "logging": true,
+      "framework": "other",
+      "timeout": 30,
+      "installCommand": "",
+      "buildCommand": "",
+      "outputDirectory": "./",
+      "specification": "s-1vcpu-512mb",
+      "buildRuntime": "node-22",
+      "adapter": "static",
+      "fallbackFile": "index.html",
+      "path": "dist"
+    }
   ]
 }
