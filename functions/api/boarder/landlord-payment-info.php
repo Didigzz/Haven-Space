@@ -33,15 +33,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // Get boarder's application to find their landlord
         $stmt = $db->prepare("
             SELECT 
-                a.landlord_id,
+                lp.id as landlord_profile_id,
                 lp.boarding_house_name,
                 u.first_name as landlord_first_name,
                 u.last_name as landlord_last_name
             FROM applications a
-            INNER JOIN landlord_profiles lp ON a.landlord_id = lp.id
-            INNER JOIN users u ON lp.user_id = u.id
-            WHERE a.boarder_id = (SELECT id FROM boarder_profiles WHERE user_id = ?)
-                AND a.status = 'confirmed'
+            INNER JOIN landlord_profiles lp ON a.landlord_id = lp.user_id
+            INNER JOIN users u ON a.landlord_id = u.id
+            WHERE a.boarder_id = ?
+                AND a.status IN ('confirmed', 'accepted')
                 AND a.deleted_at IS NULL
             LIMIT 1
         ");
@@ -52,12 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             http_response_code(404);
             echo json_encode([
                 'success' => false,
-                'error' => 'No active rental found. You must have a confirmed application to view payment information.'
+                'error' => 'No active rental found. You must have an accepted or confirmed application to view payment information.'
             ]);
             exit;
         }
 
-        $landlordId = $application['landlord_id'];
+        $landlordProfileId = $application['landlord_profile_id'];
 
         // Get landlord's payment methods (only primary or all active methods)
         $stmt = $db->prepare("
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             WHERE landlord_id = ?
             ORDER BY is_primary DESC, created_at DESC
         ");
-        $stmt->execute([$landlordId]);
+        $stmt->execute([$landlordProfileId]);
         $paymentMethods = $stmt->fetchAll();
 
         if (empty($paymentMethods)) {

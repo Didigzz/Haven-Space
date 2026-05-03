@@ -45,7 +45,7 @@
               </div>
               <div class="page-text-content">
                 <h1 class="page-title">Settings</h1>
-                <p class="page-subtitle">Manage your account, documents, and preferences</p>
+                <p class="page-subtitle">Manage your account and preferences</p>
               </div>
             </div>
           </div>
@@ -55,15 +55,6 @@
             <button class="settings-tab active" data-tab="profile">
               <img src="../../../assets/svg/user.svg" alt="User Icon" width="24" height="24" />
               Profile
-            </button>
-            <button class="settings-tab" data-tab="documents">
-              <img
-                src="../../../assets/svg/document.svg"
-                alt="Document Icon"
-                width="24"
-                height="24"
-              />
-              Documents
             </button>
             <button class="settings-tab" data-tab="welcome">
               <img
@@ -176,45 +167,6 @@
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                   </div>
                 </form>
-              </div>
-            </div>
-
-            <!-- Documents Tab -->
-            <div class="settings-panel" id="documents-panel">
-              <div class="settings-card">
-                <div class="settings-card-header-with-action">
-                  <div>
-                    <h2 class="settings-card-title">Document Management</h2>
-                    <p class="settings-card-description">
-                      Upload and manage documents for boarder onboarding
-                    </p>
-                  </div>
-                  <button class="btn btn-primary" id="upload-document-btn">
-                    <img
-                      src="../../../assets/svg/add_listing.svg"
-                      alt="Plus Icon"
-                      width="24"
-                      height="24"
-                    />
-                    <span>Upload Document</span>
-                  </button>
-                </div>
-
-                <div class="document-categories">
-                  <button class="category-tab active" data-category="all">All Documents</button>
-                  <button class="category-tab" data-category="House Rules">House Rules</button>
-                  <button class="category-tab" data-category="Community Guidelines">
-                    Community Guidelines
-                  </button>
-                  <button class="category-tab" data-category="Emergency Contacts">
-                    Emergency Contacts
-                  </button>
-                  <button class="category-tab" data-category="Custom">Custom</button>
-                </div>
-
-                <div class="documents-list" id="landlord-documents-list">
-                  <div class="loading-state">Loading documents...</div>
-                </div>
               </div>
             </div>
 
@@ -533,49 +485,6 @@
       </main>
     </div>
 
-    <!-- Upload Document Modal -->
-    <div class="modal" id="upload-modal" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">Upload Document</h2>
-          <button class="modal-close" id="modal-close-btn">
-            <img src="../../../assets/svg/close.svg" alt="Close Icon" width="24" height="24" />
-          </button>
-        </div>
-        <form id="upload-form" class="modal-body">
-          <div class="form-group">
-            <label for="document-category">Category</label>
-            <select id="document-category" class="form-control" required>
-              <option value="House Rules">House Rules</option>
-              <option value="Community Guidelines">Community Guidelines</option>
-              <option value="Emergency Contacts">Emergency Contacts</option>
-              <option value="Custom">Custom</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="document-file">Document File (PDF only, max 10MB)</label>
-            <input type="file" id="document-file" class="form-control" accept=".pdf" required />
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="auto-send-toggle" />
-              <span>Auto-send to new boarders</span>
-            </label>
-            <p class="form-hint">
-              When enabled, this document will be automatically sent to new boarders during
-              onboarding
-            </p>
-          </div>
-        </form>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
-          <button class="btn btn-primary" id="upload-submit-btn">Upload Document</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Leave Confirmation Modal -->
     <div class="modal" id="leave-confirmation-modal" style="display: none">
       <div class="modal-content">
@@ -635,18 +544,16 @@
     </div>
 
     <!-- Payment Method Modal -->
-    <div class="modal" id="payment-method-modal" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
+    <div class="landlord-modal-overlay" id="payment-method-modal">
+      <div class="landlord-payment-method-form-container">
+        <div class="landlord-form-header">
           <h2 class="modal-title" id="payment-method-modal-title">Add Payment Method</h2>
-          <button class="modal-close" id="payment-method-modal-close-btn">
-            <img src="../../../assets/svg/close.svg" alt="Close Icon" width="24" height="24" />
-          </button>
+          <button class="landlord-close-form" id="payment-method-modal-close-btn">✕</button>
         </div>
-        <form id="payment-method-form" class="modal-body">
-          <div class="form-group">
+        <form id="payment-method-form" class="landlord-form">
+          <div class="landlord-form-group">
             <label for="payment-method-type">Payment Method Type *</label>
-            <select id="payment-method-type" class="form-control" required>
+            <select id="payment-method-type" class="landlord-form-select" required>
               <option value="">Select payment method</option>
               <option value="GCash">GCash</option>
               <option value="PayMaya">PayMaya</option>
@@ -657,54 +564,65 @@
             </select>
           </div>
 
-          <div class="form-group">
+          <div class="landlord-form-group">
             <label for="payment-account-name">Account Name *</label>
             <input
               type="text"
               id="payment-account-name"
-              class="form-control"
+              class="landlord-form-input"
               placeholder="e.g., Juan Dela Cruz"
               required
             />
           </div>
 
-          <div class="form-group">
+          <div class="landlord-form-group">
             <label for="payment-account-number">Account Number *</label>
             <input
               type="text"
               id="payment-account-number"
-              class="form-control"
+              class="landlord-form-input"
               placeholder="e.g., 09123456789"
               required
             />
-            <p class="form-hint" id="payment-account-hint">
+            <p class="landlord-form-hint" id="payment-account-hint">
               Enter your mobile number for GCash/PayMaya
             </p>
           </div>
 
-          <div class="form-group" id="payment-bank-name-group" style="display: none">
+          <div class="landlord-form-group" id="payment-bank-name-group" style="display: none">
             <label for="payment-bank-name">Bank Name *</label>
             <input
               type="text"
               id="payment-bank-name"
-              class="form-control"
+              class="landlord-form-input"
               placeholder="e.g., BDO, BPI, Metrobank"
             />
           </div>
 
-          <div class="form-group">
-            <label class="checkbox-label">
+          <div class="landlord-form-group">
+            <label class="landlord-checkbox-label">
               <input type="checkbox" id="payment-is-primary" />
               <span>Set as primary payment method</span>
             </label>
           </div>
+
+          <div class="landlord-form-actions">
+            <button
+              type="button"
+              class="landlord-btn landlord-btn-outline"
+              id="payment-method-modal-cancel-btn"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="landlord-btn landlord-btn-primary"
+              id="payment-method-modal-submit-btn"
+            >
+              Save Payment Method
+            </button>
+          </div>
         </form>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="payment-method-modal-cancel-btn">Cancel</button>
-          <button class="btn btn-primary" id="payment-method-modal-submit-btn">
-            Save Payment Method
-          </button>
-        </div>
       </div>
     </div>
 

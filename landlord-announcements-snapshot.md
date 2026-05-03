@@ -1,0 +1,86 @@
+- generic [ref=e2]:
+  - complementary [ref=e11]:
+    - link "Haven Space Haven Space" [ref=e13] [cursor=pointer]:
+      - /url: /views/public/index.html
+      - img "Haven Space" [ref=e14]
+      - generic [ref=e15]: Haven Space
+    - navigation [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Main
+        - link "Dashboard" [ref=e19] [cursor=pointer]:
+          - /url: /views/landlord/index.html
+          - img [ref=e20]
+          - generic [ref=e21]: Dashboard
+        - generic [ref=e23] [cursor=pointer]:
+          - img [ref=e24]
+          - generic [ref=e25]: Properties
+          - img [ref=e26]
+        - link "Messages 5" [ref=e27] [cursor=pointer]:
+          - /url: /views/landlord/messages/index.html
+          - img [ref=e28]
+          - generic [ref=e29]: Messages
+          - generic [ref=e30]: "5"
+        - link "Payments" [ref=e31] [cursor=pointer]:
+          - /url: /views/landlord/payments/index.html
+          - img [ref=e32]
+          - generic [ref=e33]: Payments
+        - link "Announcements" [ref=e34] [cursor=pointer]:
+          - /url: /views/landlord/announcements/index.html
+          - img [ref=e35]
+          - generic [ref=e36]: Announcements
+      - generic [ref=e37]:
+        - generic [ref=e38]: Management
+        - link "Calendar" [ref=e39] [cursor=pointer]:
+          - /url: /views/landlord/calendar/index.html
+          - img [ref=e40]
+          - generic [ref=e41]: Calendar
+      - generic [ref=e42]:
+        - generic [ref=e43]: Account
+        - link "Settings" [ref=e44] [cursor=pointer]:
+          - /url: /views/landlord/settings/index.html
+          - img [ref=e45]
+          - generic [ref=e46]: Settings
+    - generic [ref=e48]:
+      - img "Profile Avatar" [ref=e50]
+      - generic [ref=e51]:
+        - generic [ref=e52]: Frenstein Nicole Cascabel
+        - generic [ref=e53]: Landlord
+  - main [ref=e3]:
+    - generic [ref=e55]:
+      - button "Toggle sidebar" [ref=e57] [cursor=pointer]:
+        - img "Collapse sidebar" [ref=e58]
+      - generic [ref=e59]:
+        - button "Switch to dark mode" [ref=e60] [cursor=pointer]:
+          - img "Switch to dark mode" [ref=e61]
+        - button "Notifications" [ref=e62] [cursor=pointer]:
+          - generic [ref=e63]: "2"
+        - img "Frenstein Nicole Cascabel Avatar" [ref=e65] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - heading "Announcements" [level=1] [ref=e7]
+          - paragraph [ref=e8]: Create and manage announcements for your boarders
+        - button "Create Announcement" [ref=e10] [cursor=pointer]
+      - option "General" [selected]
+      - option "Urgent"
+      - option "Reminder"
+      - option "Event"
+      - option "Low"
+      - option "Medium" [selected]
+      - option "High"
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - generic [ref=e71]: urgent
+              - generic [ref=e72]: high
+            - heading "Hi" [level=3] [ref=e73]
+          - generic [ref=e74]:
+            - button "Edit" [ref=e75] [cursor=pointer]
+            - button "Delete" [ref=e76] [cursor=pointer]
+        - paragraph [ref=e78]: hellow world
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]: May 3, 2026
+            - generic [ref=e82]: All Properties
+          - generic [ref=e84]: 0 views

@@ -145,11 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // If this is set as primary, unset other primary methods
         if ($isPrimary) {
-            $stmt = $db->prepare("\
-                UPDATE payment_methods_landlord
-                SET is_primary = 0
-                WHERE landlord_id = ?
-            ");
+            $stmt = $db->prepare("UPDATE payment_methods_landlord SET is_primary = 0 WHERE landlord_id = ?");
             $stmt->execute([$landlordId]);
         }
 
@@ -158,14 +154,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $encryptedAccountNumber = $accountNumber; // TODO: Implement encryption
 
         // Insert new payment method
-        $stmt = $db->prepare("\
-            INSERT INTO payment_methods_landlord
-            (landlord_id, method_type, account_number, account_name, bank_name, is_primary, is_verified)
-            VALUES (?, ?, ?, ?, ?, ?, 0)
-        ");
+        // Use empty string for bank_name if not provided (since column is NOT NULL)
+        $bankNameValue = $bankName ?? '';
+        $stmt = $db->prepare("INSERT INTO payment_methods_landlord (landlord_id, method_type, account_number, account_name, bank_name, is_primary, is_verified) VALUES (?, ?, ?, ?, ?, ?, 0)");
         $stmt->execute([
             $landlordId, $methodType, $encryptedAccountNumber,
-            $accountName, $bankName, $isPrimary
+            $accountName, $bankNameValue, $isPrimary
         ]);
 
         $paymentMethodId = $db->lastInsertId();
@@ -216,13 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $db = getDB();
 
-        $stmt = $db->prepare("\
-            SELECT pm.*
-            FROM payment_methods_landlord pm
-            INNER JOIN landlord_profiles lp ON pm.landlord_id = lp.id
-            WHERE lp.user_id = ?
-            ORDER BY pm.is_primary DESC, pm.created_at DESC
-        ");
+        $stmt = $db->prepare("SELECT pm.* FROM payment_methods_landlord pm INNER JOIN landlord_profiles lp ON pm.landlord_id = lp.id WHERE lp.user_id = ? ORDER BY pm.is_primary DESC, pm.created_at DESC");
         $stmt->execute([$userId]);
         $paymentMethods = $stmt->fetchAll();
 
@@ -340,11 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         if ($isPrimary !== null) {
             // If setting as primary, unset others first
             if ($isPrimary) {
-                $stmt = $db->prepare("\
-                    UPDATE payment_methods_landlord
-                    SET is_primary = 0
-                    WHERE landlord_id = ? AND id != ?
-                ");
+                $stmt = $db->prepare("UPDATE payment_methods_landlord SET is_primary = 0 WHERE landlord_id = ? AND id != ?");
                 $stmt->execute([$landlordId, $paymentMethodId]);
             }
 
@@ -459,12 +443,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
         // If deleting primary, set another as primary
         if ($paymentMethod['is_primary']) {
-            $stmt = $db->prepare("\
-                UPDATE payment_methods_landlord
-                SET is_primary = 1
-                WHERE landlord_id = ? AND id != ?
-                LIMIT 1
-            ");
+            $stmt = $db->prepare("UPDATE payment_methods_landlord SET is_primary = 1 WHERE landlord_id = ? AND id != ? LIMIT 1");
             $stmt->execute([$landlordId, $paymentMethodId]);
         }
 

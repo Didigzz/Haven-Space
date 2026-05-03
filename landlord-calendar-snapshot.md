@@ -1,0 +1,230 @@
+- generic [ref=e2]:
+  - complementary [ref=e58]:
+    - link "Haven Space Haven Space" [ref=e60] [cursor=pointer]:
+      - /url: /views/public/index.html
+      - img "Haven Space" [ref=e61]
+      - generic [ref=e62]: Haven Space
+    - navigation [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]: Main
+        - link "Dashboard" [ref=e66] [cursor=pointer]:
+          - /url: /views/landlord/index.html
+          - img [ref=e67]
+          - generic [ref=e68]: Dashboard
+        - generic [ref=e70] [cursor=pointer]:
+          - img [ref=e71]
+          - generic [ref=e72]: Properties
+          - img [ref=e73]
+        - link "Messages 5" [ref=e74] [cursor=pointer]:
+          - /url: /views/landlord/messages/index.html
+          - img [ref=e75]
+          - generic [ref=e76]: Messages
+          - generic [ref=e77]: "5"
+        - link "Payments" [ref=e78] [cursor=pointer]:
+          - /url: /views/landlord/payments/index.html
+          - img [ref=e79]
+          - generic [ref=e80]: Payments
+        - link "Announcements" [ref=e81] [cursor=pointer]:
+          - /url: /views/landlord/announcements/index.html
+          - img [ref=e82]
+          - generic [ref=e83]: Announcements
+      - generic [ref=e84]:
+        - generic [ref=e85]: Management
+        - link "Calendar" [ref=e86] [cursor=pointer]:
+          - /url: /views/landlord/calendar/index.html
+          - img [ref=e87]
+          - generic [ref=e88]: Calendar
+      - generic [ref=e89]:
+        - generic [ref=e90]: Account
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /views/landlord/settings/index.html
+          - img [ref=e92]
+          - generic [ref=e93]: Settings
+    - generic [ref=e95]:
+      - img "Profile Avatar" [ref=e97]
+      - generic [ref=e98]:
+        - generic [ref=e99]: Frenstein Nicole Cascabel
+        - generic [ref=e100]: Landlord
+  - main [ref=e3]:
+    - generic [ref=e102]:
+      - button "Toggle sidebar" [ref=e104] [cursor=pointer]:
+        - img "Collapse sidebar" [ref=e105]
+      - generic [ref=e106]:
+        - button "Switch to dark mode" [ref=e107] [cursor=pointer]:
+          - img "Switch to dark mode" [ref=e108]
+        - button "Notifications" [ref=e109] [cursor=pointer]:
+          - generic [ref=e110]: "2"
+        - img "Frenstein Nicole Cascabel Avatar" [ref=e112] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - heading "Calendar" [level=1] [ref=e7]
+          - paragraph [ref=e8]: Track payments and tenancy events
+        - generic [ref=e10]:
+          - button "Today" [ref=e11] [cursor=pointer]
+          - button "Month" [ref=e12] [cursor=pointer]
+          - button "Week" [ref=e13] [cursor=pointer]
+      - generic [ref=e14]:
+        - button "Previous month" [ref=e15] [cursor=pointer]:
+          - img [ref=e113]
+        - heading "May 2026" [level=2] [ref=e19]
+        - button "Next month" [ref=e20] [cursor=pointer]:
+          - img [ref=e115]
+      - generic [ref=e25]:
+        - generic [ref=e26]: Sun
+        - generic [ref=e27]: Mon
+        - generic [ref=e28]: Tue
+        - generic [ref=e29]: Wed
+        - generic [ref=e30]: Thu
+        - generic [ref=e31]: Fri
+        - generic [ref=e32]: Sat
+        - generic [ref=e33]:
+          - generic:
+            - generic: "26"
+          - generic:
+            - generic: "27"
+          - generic:
+            - generic: "28"
+          - generic:
+            - generic: "29"
+          - generic:
+            - generic: "30"
+          - generic [ref=e118] [cursor=pointer]: "1"
+          - generic [ref=e120] [cursor=pointer]: "2"
+          - generic [ref=e122] [cursor=pointer]: "3"
+          - generic [ref=e123] [cursor=pointer]:
+            - generic [ref=e124]: "4"
+            - generic [ref=e125]:
+              - generic [ref=e126]: Tenancy Start - Frenstein Nicole Cascabel
+              - generic [ref=e127]: Tenancy Start - Alistair Ybañez
+          - generic [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]: "5"
+            - generic [ref=e130]:
+              - generic [ref=e131]: Payment Received - Alistair Ybañez
+              - generic [ref=e132]: Rent Due - Alistair Ybañez
+          - generic [ref=e134] [cursor=pointer]: "6"
+          - generic [ref=e136] [cursor=pointer]: "7"
+          - generic [ref=e138] [cursor=pointer]: "8"
+          - generic [ref=e140] [cursor=pointer]: "9"
+          - generic [ref=e142] [cursor=pointer]: "10"
+          - generic [ref=e144] [cursor=pointer]: "11"
+          - generic [ref=e146] [cursor=pointer]: "12"
+          - generic [ref=e148] [cursor=pointer]: "13"
+          - generic [ref=e150] [cursor=pointer]: "14"
+          - generic [ref=e152] [cursor=pointer]: "15"
+          - generic [ref=e154] [cursor=pointer]: "16"
+          - generic [ref=e156] [cursor=pointer]: "17"
+          - generic [ref=e158] [cursor=pointer]: "18"
+          - generic [ref=e160] [cursor=pointer]: "19"
+          - generic [ref=e162] [cursor=pointer]: "20"
+          - generic [ref=e164] [cursor=pointer]: "21"
+          - generic [ref=e166] [cursor=pointer]: "22"
+          - generic [ref=e168] [cursor=pointer]: "23"
+          - generic [ref=e170] [cursor=pointer]: "24"
+          - generic [ref=e172] [cursor=pointer]: "25"
+          - generic [ref=e174] [cursor=pointer]: "26"
+          - generic [ref=e176] [cursor=pointer]: "27"
+          - generic [ref=e178] [cursor=pointer]: "28"
+          - generic [ref=e180] [cursor=pointer]: "29"
+          - generic [ref=e182] [cursor=pointer]: "30"
+          - generic [ref=e184] [cursor=pointer]: "31"
+          - generic:
+            - generic: "1"
+          - generic:
+            - generic: "2"
+          - generic:
+            - generic: "3"
+          - generic:
+            - generic: "4"
+          - generic:
+            - generic: "5"
+          - generic:
+            - generic: "6"
+      - generic [ref=e37]:
+        - heading "Event Types" [level=3] [ref=e38]
+        - generic [ref=e39]:
+          - generic [ref=e42]: Payment Due / Received
+          - generic [ref=e45]: Tenancy Start
+          - generic [ref=e48]: Overdue / Urgent
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - heading "Upcoming Events" [level=2] [ref=e51]
+          - link "View payments" [ref=e52] [cursor=pointer]:
+            - /url: ../payments/index.html
+            - text: View payments
+            - img [ref=e185]
+        - generic [ref=e56]:
+          - button "Tenancy Start - Frenstein Nicole Cascabel" [ref=e187] [cursor=pointer]:
+            - generic [ref=e189]:
+              - generic [ref=e190]:
+                - heading "Tenancy Start - Frenstein Nicole Cascabel" [level=3] [ref=e191]
+                - generic [ref=e193]: Tenancy
+              - generic [ref=e194]:
+                - generic [ref=e195]:
+                  - img [ref=e197]
+                  - generic [ref=e199]: May 4, 2026
+                - generic [ref=e200]:
+                  - img [ref=e202]
+                  - generic [ref=e206]: Test Boarding House - Playwright 123 - Room 1
+                - generic [ref=e207]:
+                  - img [ref=e209]
+                  - generic [ref=e211]: Frenstein Nicole Cascabel
+              - paragraph [ref=e212]: Tenancy begins for Test Boarding House - Playwright 123 - Room 1
+          - button "Tenancy Start - Alistair Ybañez" [ref=e213] [cursor=pointer]:
+            - generic [ref=e215]:
+              - generic [ref=e216]:
+                - heading "Tenancy Start - Alistair Ybañez" [level=3] [ref=e217]
+                - generic [ref=e219]: Tenancy
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - img [ref=e223]
+                  - generic [ref=e225]: May 4, 2026
+                - generic [ref=e226]:
+                  - img [ref=e228]
+                  - generic [ref=e232]: Test Boarding House - Playwright 123 - Room 1
+                - generic [ref=e233]:
+                  - img [ref=e235]
+                  - generic [ref=e237]: Alistair Ybañez
+              - paragraph [ref=e238]: Tenancy begins for Test Boarding House - Playwright 123 - Room 1
+          - button "Payment Received - Alistair Ybañez" [ref=e239] [cursor=pointer]:
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - heading "Payment Received - Alistair Ybañez" [level=3] [ref=e243]
+                - generic [ref=e244]:
+                  - generic [ref=e245]: Payment
+                  - generic [ref=e246]: Paid
+              - generic [ref=e247]:
+                - generic [ref=e248]:
+                  - img [ref=e250]
+                  - generic [ref=e252]: May 5, 2026
+                - generic [ref=e253]:
+                  - img [ref=e255]
+                  - generic [ref=e259]: Test Boarding House - Playwright 123 - Room 1
+                - generic [ref=e260]:
+                  - img [ref=e262]
+                  - generic [ref=e264]: Alistair Ybañez
+                - generic [ref=e265]:
+                  - img [ref=e267]
+                  - generic [ref=e269]: ₱1,500.00
+              - paragraph [ref=e270]: Monthly rent payment of ₱1,500.00 for Test Boarding House - Playwright 123 - Room 1
+          - button "Rent Due - Alistair Ybañez" [ref=e271] [cursor=pointer]:
+            - generic [ref=e273]:
+              - generic [ref=e274]:
+                - heading "Rent Due - Alistair Ybañez" [level=3] [ref=e275]
+                - generic [ref=e276]:
+                  - generic [ref=e277]: Payment
+                  - generic [ref=e278]: Pending
+              - generic [ref=e279]:
+                - generic [ref=e280]:
+                  - img [ref=e282]
+                  - generic [ref=e284]: May 5, 2026
+                - generic [ref=e285]:
+                  - img [ref=e287]
+                  - generic [ref=e291]: Test Boarding House - Playwright 123 - Room 1
+                - generic [ref=e292]:
+                  - img [ref=e294]
+                  - generic [ref=e296]: Alistair Ybañez
+                - generic [ref=e297]:
+                  - img [ref=e299]
+                  - generic [ref=e301]: ₱1,500.00
+              - paragraph [ref=e302]: Monthly rent payment of ₱1,500.00 for Test Boarding House - Playwright 123 - Room 1

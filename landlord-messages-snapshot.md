@@ -1,0 +1,71 @@
+- generic [ref=e2]:
+  - complementary [ref=e31]:
+    - link "Haven Space Haven Space" [ref=e33] [cursor=pointer]:
+      - /url: /views/public/index.html
+      - img "Haven Space" [ref=e34]
+      - generic [ref=e35]: Haven Space
+    - navigation [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]: Main
+        - link "Dashboard" [ref=e39] [cursor=pointer]:
+          - /url: /views/landlord/index.html
+          - img [ref=e40]
+          - generic [ref=e41]: Dashboard
+        - generic [ref=e43] [cursor=pointer]:
+          - img [ref=e44]
+          - generic [ref=e45]: Properties
+          - img [ref=e46]
+        - link "Messages 5" [ref=e47] [cursor=pointer]:
+          - /url: /views/landlord/messages/index.html
+          - img [ref=e48]
+          - generic [ref=e49]: Messages
+          - generic [ref=e50]: "5"
+        - link "Payments" [ref=e51] [cursor=pointer]:
+          - /url: /views/landlord/payments/index.html
+          - img [ref=e52]
+          - generic [ref=e53]: Payments
+        - link "Announcements" [ref=e54] [cursor=pointer]:
+          - /url: /views/landlord/announcements/index.html
+          - img [ref=e55]
+          - generic [ref=e56]: Announcements
+      - generic [ref=e57]:
+        - generic [ref=e58]: Management
+        - link "Calendar" [ref=e59] [cursor=pointer]:
+          - /url: /views/landlord/calendar/index.html
+          - img [ref=e60]
+          - generic [ref=e61]: Calendar
+      - generic [ref=e62]:
+        - generic [ref=e63]: Account
+        - link "Settings" [ref=e64] [cursor=pointer]:
+          - /url: /views/landlord/settings/index.html
+          - img [ref=e65]
+          - generic [ref=e66]: Settings
+    - generic [ref=e68]:
+      - img "Profile Avatar" [ref=e70]
+      - generic [ref=e71]:
+        - generic [ref=e72]: Frenstein Nicole Cascabel
+        - generic [ref=e73]: Landlord
+  - main [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Messages" [level=1] [ref=e8]
+        - generic [ref=e10]:
+          - img [ref=e74]
+          - textbox "Search messages..." [ref=e12]
+        - generic [ref=e14]: Loading conversations...
+      - generic [ref=e15]:
+        - generic [ref=e17]:
+          - img "Avatar" [ref=e19]
+          - generic [ref=e20]:
+            - heading "Select a conversation" [level=2] [ref=e21]
+            - generic [ref=e22]: Select a message from the list to start chatting
+        - generic [ref=e24]: Select a conversation to view messages
+        - generic [ref=e25]:
+          - button "Attach file" [ref=e26] [cursor=pointer]:
+            - img [ref=e77]
+          - generic [ref=e27]:
+            - textbox "Type a message..." [ref=e28]
+            - button "Emoji" [ref=e29] [cursor=pointer]:
+              - img [ref=e80]
+          - button "Send message" [ref=e30] [cursor=pointer]:
+            - img [ref=e83]

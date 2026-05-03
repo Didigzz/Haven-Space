@@ -178,7 +178,7 @@ function createApplicationCard(application) {
 function renderApplications(applications) {
   const container = document.getElementById('applicationQueueContainer');
   if (!container) {
-    console.error('Application queue container not found');
+    // Container doesn't exist on this page, which is expected for non-dashboard pages
     return;
   }
 

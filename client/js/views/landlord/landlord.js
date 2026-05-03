@@ -57,10 +57,18 @@ export function initLandlordDashboard(config = {}) {
     // Load properties
     loadProperties();
 
-    // Dynamically import and initialize applications only on dashboard
-    import(`./landlord-applications.js?v=${Date.now()}`).then(({ initLandlordApplications }) => {
-      initLandlordApplications();
-    });
+    // Dynamically import and initialize applications ONLY on the main dashboard
+    const isDashboardPage =
+      window.location.pathname.includes('/views/landlord/index.html') ||
+      window.location.pathname.endsWith('/views/landlord/') ||
+      window.location.pathname === '/views/landlord/' ||
+      window.location.pathname === '/views/landlord/index.html';
+
+    if (isDashboardPage) {
+      import(`./landlord-applications.js?v=${Date.now()}`).then(({ initLandlordApplications }) => {
+        initLandlordApplications();
+      });
+    }
   }
 }
 

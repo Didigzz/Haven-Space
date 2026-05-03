@@ -15,7 +15,6 @@ export function initLandlordSettings() {
   initPasswordForm();
   initAvatarUpload();
   initWelcomeMessageEditor();
-  initDocumentUpload();
   initLeaveForm();
   initPaymentMethods();
   loadAndDisplayProfile();
@@ -449,216 +448,6 @@ async function saveWelcomeSettings(message, file) {
 
 // ─── Documents ────────────────────────────────────────────────────────────────
 
-function initDocumentUpload() {
-  const uploadBtn = document.getElementById('upload-document-btn');
-  const modal = document.getElementById('upload-modal');
-  const closeBtn = document.getElementById('modal-close-btn');
-  const cancelBtn = document.getElementById('modal-cancel-btn');
-  const submitBtn = document.getElementById('upload-submit-btn');
-  const form = document.getElementById('upload-form');
-
-  const openModal = () => {
-    if (modal) modal.style.display = 'flex';
-  };
-  const closeModal = () => {
-    if (modal) modal.style.display = 'none';
-    form?.reset();
-  };
-
-  uploadBtn?.addEventListener('click', openModal);
-  closeBtn?.addEventListener('click', closeModal);
-  cancelBtn?.addEventListener('click', closeModal);
-  modal?.addEventListener('click', e => {
-    if (e.target === modal) closeModal();
-  });
-
-  submitBtn?.addEventListener('click', async e => {
-    e.preventDefault();
-
-    const category = document.getElementById('document-category')?.value;
-    const fileInput = document.getElementById('document-file');
-    const file = fileInput?.files[0];
-    const autoSend = document.getElementById('auto-send-toggle')?.checked;
-
-    if (!file) {
-      showToast('Please select a file to upload', 'error');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('File must be less than 10MB', 'error');
-      return;
-    }
-    if (file.type !== 'application/pdf') {
-      showToast('Only PDF files are allowed', 'error');
-      return;
-    }
-
-    submitBtn.disabled = true;
-
-    try {
-      const formData = new FormData();
-      formData.append('document', file);
-      formData.append('category', category);
-      formData.append('auto_send', autoSend ? 'true' : 'false');
-
-      const token = localStorage.getItem('token');
-      const headers = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/documents`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Document uploaded successfully', 'success');
-        closeModal();
-        loadDocuments();
-      } else {
-        showToast(data.error || 'Failed to upload document', 'error');
-      }
-    } catch (err) {
-      console.error('Document upload error:', err);
-      showToast('Failed to upload document', 'error');
-    } finally {
-      submitBtn.disabled = false;
-    }
-  });
-
-  loadDocuments();
-}
-
-async function loadDocuments() {
-  const container = document.getElementById('landlord-documents-list');
-  if (!container) return;
-
-  container.innerHTML = '<div class="loading-state">Loading documents...</div>';
-
-  try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/documents`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-      credentials: 'include',
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      container.innerHTML = '<div class="empty-state">Failed to load documents.</div>';
-      return;
-    }
-
-    const documents = data.data || [];
-
-    if (documents.length === 0) {
-      container.innerHTML = '<div class="empty-state">No documents uploaded yet.</div>';
-      setupCategoryFilters();
-      return;
-    }
-
-    renderDocuments(container, documents);
-    setupCategoryFilters();
-  } catch (err) {
-    console.error('Load documents error:', err);
-    container.innerHTML = '<div class="empty-state">Failed to load documents.</div>';
-  }
-}
-
-function renderDocuments(container, documents) {
-  container.innerHTML = documents
-    .map(doc => {
-      const uploadedAt = doc.created_at
-        ? new Date(doc.created_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })
-        : 'Unknown date';
-      const category = doc.category || doc.document_type || 'Custom';
-      const autoSend = doc.auto_send_to_new_boarders || doc.auto_send || false;
-
-      return `
-    <div class="document-item" data-category="${category}" data-id="${doc.id}">
-      <div class="document-item-left">
-        <div class="document-icon-box">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-          </svg>
-        </div>
-        <div class="document-info">
-          <h4 class="document-title">${escapeHtml(doc.title || doc.file_name || 'Document')}</h4>
-          <p class="document-meta">Uploaded on ${uploadedAt} • PDF${
-        autoSend ? ' • Auto-sent to new boarders' : ''
-      }</p>
-        </div>
-      </div>
-      <div class="document-actions">
-        <button class="btn btn-outline btn-sm document-delete-btn" data-id="${
-          doc.id
-        }" style="color: #dc3545; border-color: #dc3545;">
-          Delete
-        </button>
-      </div>
-    </div>`;
-    })
-    .join('');
-
-  setupDocumentActions();
-}
-
-function setupCategoryFilters() {
-  const categoryTabs = document.querySelectorAll('.category-tab');
-  categoryTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const category = tab.dataset.category;
-      categoryTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      document.querySelectorAll('.document-item').forEach(item => {
-        item.style.display =
-          category === 'all' || item.dataset.category === category ? 'flex' : 'none';
-      });
-    });
-  });
-}
-
-function setupDocumentActions() {
-  document.querySelectorAll('.document-delete-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const docId = btn.dataset.id;
-      if (!confirm('Are you sure you want to delete this document?')) return;
-
-      btn.disabled = true;
-      try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/documents/${docId}`, {
-          method: 'DELETE',
-          headers: getAuthHeaders(),
-          credentials: 'include',
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          btn.closest('.document-item')?.remove();
-          showToast('Document deleted', 'success');
-          const container = document.getElementById('landlord-documents-list');
-          if (container && !container.querySelector('.document-item')) {
-            container.innerHTML = '<div class="empty-state">No documents uploaded yet.</div>';
-          }
-        } else {
-          showToast(data.error || 'Failed to delete document', 'error');
-          btn.disabled = false;
-        }
-      } catch (err) {
-        console.error('Delete document error:', err);
-        showToast('Failed to delete document', 'error');
-        btn.disabled = false;
-      }
-    });
-  });
-}
-
 // ─── Leave Form ───────────────────────────────────────────────────────────────
 
 function initLeaveForm() {
@@ -858,6 +647,7 @@ function showToast(message, type = 'info') {
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
 let currentEditingPaymentMethodId = null;
+let paymentMethodCloseModal = null; // Global reference to closeModal function
 
 function initPaymentMethods() {
   const addBtn = document.getElementById('add-payment-method-btn');
@@ -871,7 +661,7 @@ function initPaymentMethods() {
 
   const openModal = (paymentMethod = null) => {
     if (modal) {
-      modal.style.display = 'flex';
+      modal.classList.add('active');
       const modalTitle = document.getElementById('payment-method-modal-title');
 
       if (paymentMethod) {
@@ -898,17 +688,32 @@ function initPaymentMethods() {
 
   const closeModal = () => {
     if (modal) {
-      modal.style.display = 'none';
-      document.getElementById('payment-method-form').reset();
-      currentEditingPaymentMethodId = null;
+      modal.classList.remove('active');
+      // Wait for CSS transition to finish before resetting form
+      setTimeout(() => {
+        document.getElementById('payment-method-form').reset();
+        currentEditingPaymentMethodId = null;
+      }, 300);
     }
   };
+
+  // Store closeModal function globally so savePaymentMethod can access it
+  paymentMethodCloseModal = closeModal;
 
   addBtn?.addEventListener('click', () => openModal());
   closeBtn?.addEventListener('click', closeModal);
   cancelBtn?.addEventListener('click', closeModal);
+
+  // Close on backdrop click
   modal?.addEventListener('click', e => {
     if (e.target === modal) closeModal();
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+      closeModal();
+    }
   });
 
   // Show/hide bank name field based on payment method type
@@ -1132,9 +937,7 @@ async function savePaymentMethod() {
           : 'Payment method added successfully',
         'success'
       );
-      document.getElementById('payment-method-modal').style.display = 'none';
-      document.getElementById('payment-method-form').reset();
-      currentEditingPaymentMethodId = null;
+      paymentMethodCloseModal();
       loadPaymentMethods();
     } else {
       showToast(data.error || 'Failed to save payment method', 'error');
