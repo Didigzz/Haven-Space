@@ -6,7 +6,7 @@
   top: 65px;
   left: 0;
   right: 0;
-  z-index: 90;
+  z-index: 110;
   padding: 1rem 2rem;
   background: var(--white);
   border-bottom: 1px solid var(--border-color);
