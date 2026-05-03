@@ -113,6 +113,68 @@
   gap: 0.75rem;
 }
 
+/* Room Filter Dropdown */
+.room-filter-dropdown {
+  position: relative;
+}
+
+.room-filter-dropdown .btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 200px;
+  justify-content: space-between;
+}
+
+.room-filter-dropdown .dropdown-icon {
+  transition: transform 0.2s ease;
+}
+
+.room-filter-dropdown .btn-secondary:hover .dropdown-icon {
+  transform: translateY(2px);
+}
+
+.room-filter-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  min-width: 100%;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.room-filter-option {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.room-filter-option:last-child {
+  border-bottom: none;
+}
+
+.room-filter-option:hover {
+  background-color: var(--bg-light);
+}
+
+.room-filter-option.active {
+  background-color: var(--primary-green-light);
+  color: var(--primary-green);
+  font-weight: 500;
+}
+
+.room-filter-option span {
+  display: block;
+}
+
 /* Property Stats Bar */
 .property-stats-bar {
   display: grid;
