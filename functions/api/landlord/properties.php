@@ -204,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
                 FROM properties p
                 LEFT JOIN addresses a ON p.address_id = a.id
-                LEFT JOIN rooms r ON p.id = r.property_id
+                LEFT JOIN rooms r ON p.id = r.property_id AND r.deleted_at IS NULL
                 WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL
                 GROUP BY p.id, p.title, p.description, p.property_type, p.gender_preference, a.address_line_1, a.latitude, a.longitude, a.city, a.province, p.price, p.deposit, p.advance, p.min_stay, p.property_rules, p.status, p.listing_moderation_status, p.created_at
             ");
@@ -313,10 +313,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     lp.property_type as property_type,
                     (SELECT COUNT(*) FROM applications app 
                      JOIN rooms rm ON app.room_id = rm.id 
-                     WHERE rm.property_id = p.id AND app.status = 'pending' AND app.deleted_at IS NULL) as pending_applications
+                     WHERE rm.property_id = p.id AND app.status = 'pending' AND app.deleted_at IS NULL AND rm.deleted_at IS NULL) as pending_applications
                 FROM properties p
                 LEFT JOIN addresses a ON p.address_id = a.id
-                LEFT JOIN rooms r ON p.id = r.property_id
+                LEFT JOIN rooms r ON p.id = r.property_id AND r.deleted_at IS NULL
                 LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
                 -- property_type is now VARCHAR in landlord_profiles
                 WHERE p.landlord_id = ? AND p.deleted_at IS NULL

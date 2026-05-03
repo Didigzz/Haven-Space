@@ -58,7 +58,7 @@ export function initLandlordDashboard(config = {}) {
     loadProperties();
 
     // Dynamically import and initialize applications only on dashboard
-    import('./landlord-applications.js').then(({ initLandlordApplications }) => {
+    import(`./landlord-applications.js?v=${Date.now()}`).then(({ initLandlordApplications }) => {
       initLandlordApplications();
     });
   }

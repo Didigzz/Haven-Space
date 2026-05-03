@@ -350,8 +350,13 @@ async function updateApplicationStatus(applicationId, status) {
  * @param {Object} application - Application data
  */
 function showApplicationModal(application) {
+  // Remove any existing modals first to prevent duplicates
+  const existingOverlays = document.querySelectorAll('[data-application-modal-overlay]');
+  existingOverlays.forEach(overlay => overlay.remove());
+
   // Create modal overlay
   const overlay = document.createElement('div');
+  overlay.setAttribute('data-application-modal-overlay', 'true');
   overlay.style.position = 'fixed';
   overlay.style.top = '0';
   overlay.style.left = '0';
@@ -384,8 +389,9 @@ function showApplicationModal(application) {
   closeBtn.style.fontSize = '1.5rem';
   closeBtn.style.cursor = 'pointer';
   closeBtn.textContent = '×';
-  closeBtn.onclick = () => {
-    document.body.removeChild(overlay);
+  closeBtn.onclick = e => {
+    e.stopPropagation(); // Prevent event from bubbling to overlay
+    overlay.remove(); // Use remove() instead of removeChild
   };
 
   // Create modal content
@@ -455,10 +461,15 @@ function showApplicationModal(application) {
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  // Close when clicking outside modal
+  // Prevent clicks inside modal from closing it
+  modal.onclick = e => {
+    e.stopPropagation();
+  };
+
+  // Close when clicking outside modal (on overlay)
   overlay.onclick = e => {
     if (e.target === overlay) {
-      document.body.removeChild(overlay);
+      overlay.remove(); // Use remove() instead of removeChild
     }
   };
 }
@@ -467,6 +478,16 @@ function showApplicationModal(application) {
  * Initialize event listeners
  */
 function initEventListeners() {
+  // Prevent duplicate initialization using global flag
+  if (window.__landlordApplicationsEventListenersInitialized) {
+    console.log(
+      '[LANDLORD-APPLICATIONS] Event listeners already initialized, skipping duplicate initialization'
+    );
+    return;
+  }
+  window.__landlordApplicationsEventListenersInitialized = true;
+  console.log('[LANDLORD-APPLICATIONS] Initializing event listeners for the first time');
+
   // View details button
   document.addEventListener('click', e => {
     if (e.target.classList.contains('view-details-btn') || e.target.closest('.view-details-btn')) {
@@ -505,6 +526,16 @@ function initEventListeners() {
  * Initialize landlord applications
  */
 export async function initLandlordApplications() {
+  // Prevent duplicate initialization using global flag
+  if (window.__landlordApplicationsInitialized) {
+    console.log(
+      '[LANDLORD-APPLICATIONS] Applications already initialized, skipping duplicate initialization'
+    );
+    return;
+  }
+  window.__landlordApplicationsInitialized = true;
+  console.log('[LANDLORD-APPLICATIONS] Initializing applications for the first time');
+
   // Fetch and render applications
   const applications = await fetchApplications();
   renderApplications(applications);
@@ -522,11 +553,5 @@ export async function refreshApplications() {
   renderApplications(applications);
 }
 
-// Auto-initialize if loaded directly
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    initLandlordApplications();
-  });
-} else {
-  initLandlordApplications();
-}
+// NOTE: Initialization is handled by landlord.js via dynamic import
+// Do NOT auto-initialize here to prevent duplicate initialization

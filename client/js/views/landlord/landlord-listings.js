@@ -586,36 +586,21 @@ function filterAndSortProperties(searchQuery = '') {
 
     switch (sortOption) {
       case 'newest':
-        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        return (
+          new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0)
+        );
       case 'oldest':
-        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+        return (
+          new Date(a.created_at || a.createdAt || 0) - new Date(b.created_at || b.createdAt || 0)
+        );
       case 'name':
         return (a.name || '').localeCompare(b.name || '');
       case 'occupancy':
-        return bOccupied / bRooms - aOccupied / aRooms;
+        return (bOccupied / bRooms || 0) - (aOccupied / aRooms || 0);
       case 'price-high':
         return (b.price || 0) - (a.price || 0);
       case 'price-low':
         return (a.price || 0) - (b.price || 0);
-      default:
-        return 0;
-    }
-  });
-
-  filtered.sort((a, b) => {
-    switch (sortOption) {
-      case 'newest':
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      case 'oldest':
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      case 'name':
-        return a.name.localeCompare(b.name);
-      case 'occupancy':
-        return b.occupied / b.rooms - a.occupied / a.rooms;
-      case 'price-high':
-        return b.price - a.price;
-      case 'price-low':
-        return a.price - b.price;
       default:
         return 0;
     }
