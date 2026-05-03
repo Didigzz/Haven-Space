@@ -14,13 +14,6 @@
     <link rel="stylesheet" href="../../css/global.css?v=1777136032299" />
     <link rel="stylesheet" href="../../css/views/public/public.css?v=1777136032299" />
     <link rel="stylesheet" href="../../css/views/public/team.css?v=1777136032299" />
-
-    <script type="module">
-      import { initIconElements } from '../../js/shared/icons.js';
-      document.addEventListener('DOMContentLoaded', () => {
-        initIconElements();
-      });
-    </script>
   </head>
   <body data-view="public">
     <!-- Navigation -->
@@ -46,8 +39,6 @@
 
     <!-- Team Section -->
     <main class="team-container">
-      <!-- Dashed Top Fade Grid -->
-      <div class="vision-grid-background"></div>
       <header class="team-header">
         <h1>DEVELOPMENT TEAM</h1>
         <p class="team-subtitle">BSIT 2B – The team behind Haven Space</p>
@@ -59,7 +50,7 @@
         <div class="team-card" data-member="1">
           <div class="card-number">01</div>
           <div class="card-image">
-            <img src="../../../assets/teams/digal.png" alt="John Paul Digal" />
+            <img src="../../../assets/teams/digal.png" alt="John Paul Digal" loading="lazy" />
           </div>
           <div class="card-details">
             <h2 class="member-name">JOHN PAUL DIGAL</h2>
@@ -75,7 +66,7 @@
               <span class="tag">Team Coordination</span>
               <span class="tag">Documentation</span>
             </div>
-            <button class="collapse-btn">← Collapse</button>
+            <button class="collapse-btn">Collapse</button>
           </div>
         </div>
 
@@ -83,7 +74,7 @@
         <div class="team-card" data-member="2">
           <div class="card-number">02</div>
           <div class="card-image">
-            <img src="../../../assets/teams/ybanez.jpeg" alt="Alistair Ybanez" />
+            <img src="../../../assets/teams/ybanez.jpeg" alt="Alistair Ybanez" loading="lazy" />
           </div>
           <div class="card-details">
             <h2 class="member-name">ALISTAIR YBANEZ</h2>
@@ -99,7 +90,7 @@
               <span class="tag">Responsive Design</span>
               <span class="tag">Front-End Dev</span>
             </div>
-            <button class="collapse-btn">← Collapse</button>
+            <button class="collapse-btn">Collapse</button>
           </div>
         </div>
 
@@ -107,7 +98,7 @@
         <div class="team-card" data-member="3">
           <div class="card-number">03</div>
           <div class="card-image">
-            <img src="../../../assets/teams/ybanez1.jpg" alt="Alistair Ybanez" />
+            <img src="../../../assets/teams/ybanez1.jpg" alt="Alistair Ybanez" loading="lazy" />
           </div>
           <div class="card-details">
             <h2 class="member-name">ALISTAIR YBANEZ</h2>
@@ -123,7 +114,7 @@
               <span class="tag">Database Design</span>
               <span class="tag">API Integration</span>
             </div>
-            <button class="collapse-btn">← Collapse</button>
+            <button class="collapse-btn">Collapse</button>
           </div>
         </div>
 
@@ -131,7 +122,11 @@
         <div class="team-card" data-member="4">
           <div class="card-number">04</div>
           <div class="card-image">
-            <img src="../../../assets/teams/palmares.png" alt="Melvis Alfonse Palmares" />
+            <img
+              src="../../../assets/teams/palmares.png"
+              alt="Melvis Alfonse Palmares"
+              loading="lazy"
+            />
           </div>
           <div class="card-details">
             <h2 class="member-name">MELVIS ALFONSE PALMARES</h2>
@@ -147,7 +142,7 @@
               <span class="tag">Bug Tracking</span>
               <span class="tag">Documentation</span>
             </div>
-            <button class="collapse-btn">← Collapse</button>
+            <button class="collapse-btn">Collapse</button>
           </div>
         </div>
       </div>
@@ -172,15 +167,15 @@
           <div class="mission-values">
             <div class="value-item">
               <span class="value-number">01</span>
-              <span class="value-text"> transparency in every listing</span>
+              <span class="value-text">transparency in every listing</span>
             </div>
             <div class="value-item">
               <span class="value-number">02</span>
-              <span class="value-text"> trust through verified properties</span>
+              <span class="value-text">trust through verified properties</span>
             </div>
             <div class="value-item">
               <span class="value-number">03</span>
-              <span class="value-text"> community over transactions</span>
+              <span class="value-text">community over transactions</span>
             </div>
           </div>
         </div>
@@ -204,7 +199,7 @@
               <h3 class="challenge-heading">Manual Inquiry Process</h3>
               <p class="challenge-text">
                 Traditional boarding searches relied on phone calls and physical visits. We
-                digitized the entireprocess—application, verification, and communication.
+                digitized the entire process—application, verification, and communication.
               </p>
             </div>
             <div class="challenge-card">
@@ -267,7 +262,7 @@
                 <span class="phase-badge">PHASE 3</span>
                 <h3 class="phase-title">Mobile Application</h3>
                 <p class="phase-text">
-                  Native iOS and Android apps withPush notifications and offline access.
+                  Native iOS and Android apps with push notifications and offline access.
                 </p>
               </div>
             </div>
@@ -279,7 +274,7 @@
                 <span class="phase-badge">PHASE 4</span>
                 <h3 class="phase-title">AI Integration</h3>
                 <p class="phase-text">
-                  Smart recommendations, chat support, and automated Property verification using
+                  Smart recommendations, chat support, and automated property verification using
                   AI/ML.
                 </p>
               </div>
@@ -444,8 +439,6 @@
     </footer>
 
     <script type="module" src="../../js/views/public/team.js?v=1777136032299"></script>
-
-    <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js?v=1777136032299"></script>
   </body>
 </html>
