@@ -559,101 +559,90 @@ function createBoarderExportModal() {
         <button class="modal-close" id="closeBoarderExportModal">&times;</button>
       </div>
       <div class="modal-body export-modal-body">
-        <div class="export-modal-layout">
-          <!-- Left Section -->
-          <div class="export-left-section">
-            <!-- Time Range Selection -->
-            <div class="export-section">
-              <h4 class="export-section-title">Time Range</h4>
-              <div class="export-radio-group">
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="all" checked />
-                  <span>All Time</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="monthly" />
-                  <span>This Month</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="last3months" />
-                  <span>Last 3 Months</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="last6months" />
-                  <span>Last 6 Months</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="ytd" />
-                  <span>Year-to-Date</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="timeRange" value="custom" />
-                  <span>Custom Range</span>
-                </label>
-              </div>
-
-              <!-- Custom Date Range (hidden by default) -->
-              <div class="export-custom-dates" id="boarderCustomDateRange" style="display: none;">
-                <div class="export-date-group">
-                  <label for="boarderStartDate">Start Date</label>
-                  <input type="date" id="boarderStartDate" class="export-input" />
-                </div>
-                <div class="export-date-group">
-                  <label for="boarderEndDate">End Date</label>
-                  <input type="date" id="boarderEndDate" class="export-input" />
-                </div>
-              </div>
-            </div>
+        <!-- Time Range Selection -->
+        <div class="export-section">
+          <h4 class="export-section-title">Time Range</h4>
+          <div class="export-radio-group">
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="all" checked />
+              <span>All Time</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="monthly" />
+              <span>This Month</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="last3months" />
+              <span>Last 3 Months</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="last6months" />
+              <span>Last 6 Months</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="ytd" />
+              <span>Year-to-Date</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="timeRange" value="custom" />
+              <span>Custom Range</span>
+            </label>
           </div>
 
-          <!-- Right Section -->
-          <div class="export-right-section">
-            <!-- Filter Options -->
-            <div class="export-section">
-              <h4 class="export-section-title">Filters</h4>
-
-              <div class="export-filter-group">
-                <label for="boarderStatusFilter">Payment Status</label>
-                <select id="boarderStatusFilter" class="export-select">
-                  <option value="all">All Status</option>
-                  <option value="paid">Paid</option>
-                  <option value="pending">Pending</option>
-                  <option value="overdue">Overdue</option>
-                </select>
-              </div>
+          <!-- Custom Date Range (hidden by default) -->
+          <div class="export-custom-dates" id="boarderCustomDateRange" style="display: none;">
+            <div class="export-date-group">
+              <label for="boarderStartDate">Start Date</label>
+              <input type="date" id="boarderStartDate" class="export-input" />
             </div>
-
-            <!-- Output Format Selection -->
-            <div class="export-section">
-              <h4 class="export-section-title">Output Format</h4>
-              <div class="export-radio-group">
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="pdf" checked />
-                  <span>PDF (Professional Report)</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="csv" />
-                  <span>CSV (Spreadsheet)</span>
-                </label>
-                <label class="export-radio-label">
-                  <input type="radio" name="outputFormat" value="preview" />
-                  <span>Preview in Browser</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Generate Button in Right Section -->
-            <div class="export-generate-section">
-              <button class="landlord-btn landlord-btn-primary export-generate-btn" id="generateBoarderExport">
-                <img src="../../../assets/svg/arrowDownTray.svg" alt="" width="20" height="20" class="icon-no-bg" />
-                Download Statement
-              </button>
+            <div class="export-date-group">
+              <label for="boarderEndDate">End Date</label>
+              <input type="date" id="boarderEndDate" class="export-input" />
             </div>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="landlord-btn landlord-btn-outline" id="cancelBoarderExport">Cancel</button>
+
+        <!-- Filters -->
+        <div class="export-section">
+          <h4 class="export-section-title">Filters</h4>
+          <div class="export-filter-group">
+            <label for="boarderStatusFilter">Payment Status</label>
+            <select id="boarderStatusFilter" class="export-select">
+              <option value="all">All Status</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Output Format Selection -->
+        <div class="export-section">
+          <h4 class="export-section-title">Output Format</h4>
+          <div class="export-radio-group">
+            <label class="export-radio-label">
+              <input type="radio" name="outputFormat" value="pdf" checked />
+              <span>PDF (Professional Report)</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="outputFormat" value="csv" />
+              <span>CSV (Spreadsheet)</span>
+            </label>
+            <label class="export-radio-label">
+              <input type="radio" name="outputFormat" value="preview" />
+              <span>Preview in Browser</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="export-actions">
+          <button class="landlord-btn landlord-btn-primary export-download-btn" id="generateBoarderExport">
+            <img src="../../../assets/svg/arrowDownTray.svg" alt="" width="20" height="20" class="icon-no-bg" />
+            Download Statement
+          </button>
+          <button class="landlord-btn landlord-btn-outline export-cancel-btn" id="cancelBoarderExport">Cancel</button>
+        </div>
       </div>
     </div>
   `;
