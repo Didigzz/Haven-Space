@@ -530,32 +530,212 @@ function handlePayNow() {
 }
 
 /**
- * Handle download statement
+ * Handle download statement - Show modal with options
  */
 async function handleDownloadStatement() {
-  try {
-    // Show loading toast
-    showToast('Generating your payment statement...', 'info');
+  showBoarderExportModal();
+}
 
-    // Fetch payment data
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/history`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+/**
+ * Show boarder export modal
+ */
+function showBoarderExportModal() {
+  const modal = createBoarderExportModal();
+  document.body.appendChild(modal);
+  initBoarderExportModalListeners(modal);
+}
+
+/**
+ * Create boarder export modal HTML
+ */
+function createBoarderExportModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay active';
+  modal.id = 'boarderExportModal';
+  modal.innerHTML = `
+    <div class="modal-content export-modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Download Payment Statement</h3>
+        <button class="modal-close" id="closeBoarderExportModal">&times;</button>
+      </div>
+      <div class="modal-body export-modal-body">
+        <div class="export-modal-layout">
+          <!-- Left Section -->
+          <div class="export-left-section">
+            <!-- Time Range Selection -->
+            <div class="export-section">
+              <h4 class="export-section-title">Time Range</h4>
+              <div class="export-radio-group">
+                <label class="export-radio-label">
+                  <input type="radio" name="timeRange" value="all" checked />
+                  <span>All Time</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="timeRange" value="monthly" />
+                  <span>This Month</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="timeRange" value="last3months" />
+                  <span>Last 3 Months</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="timeRange" value="last6months" />
+                  <span>Last 6 Months</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="timeRange" value="ytd" />
+                  <span>Year-to-Date</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="timeRange" value="custom" />
+                  <span>Custom Range</span>
+                </label>
+              </div>
+
+              <!-- Custom Date Range (hidden by default) -->
+              <div class="export-custom-dates" id="boarderCustomDateRange" style="display: none;">
+                <div class="export-date-group">
+                  <label for="boarderStartDate">Start Date</label>
+                  <input type="date" id="boarderStartDate" class="export-input" />
+                </div>
+                <div class="export-date-group">
+                  <label for="boarderEndDate">End Date</label>
+                  <input type="date" id="boarderEndDate" class="export-input" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Section -->
+          <div class="export-right-section">
+            <!-- Filter Options -->
+            <div class="export-section">
+              <h4 class="export-section-title">Filters</h4>
+
+              <div class="export-filter-group">
+                <label for="boarderStatusFilter">Payment Status</label>
+                <select id="boarderStatusFilter" class="export-select">
+                  <option value="all">All Status</option>
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="overdue">Overdue</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Output Format Selection -->
+            <div class="export-section">
+              <h4 class="export-section-title">Output Format</h4>
+              <div class="export-radio-group">
+                <label class="export-radio-label">
+                  <input type="radio" name="outputFormat" value="pdf" checked />
+                  <span>PDF (Professional Report)</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="outputFormat" value="csv" />
+                  <span>CSV (Spreadsheet)</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="outputFormat" value="preview" />
+                  <span>Preview in Browser</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Generate Button in Right Section -->
+            <div class="export-generate-section">
+              <button class="landlord-btn landlord-btn-primary export-generate-btn" id="generateBoarderExport">
+                <img src="../../../assets/svg/arrowDownTray.svg" alt="" width="20" height="20" class="icon-no-bg" />
+                Download Statement
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="landlord-btn landlord-btn-outline" id="cancelBoarderExport">Cancel</button>
+      </div>
+    </div>
+  `;
+  return modal;
+}
+
+/**
+ * Initialize boarder export modal event listeners
+ */
+function initBoarderExportModalListeners(modal) {
+  // Close modal
+  const closeBtn = modal.querySelector('#closeBoarderExportModal');
+  const cancelBtn = modal.querySelector('#cancelBoarderExport');
+
+  closeBtn?.addEventListener('click', () => closeBoarderExportModal(modal));
+  cancelBtn?.addEventListener('click', () => closeBoarderExportModal(modal));
+
+  modal.addEventListener('click', e => {
+    if (e.target === modal) {
+      closeBoarderExportModal(modal);
+    }
+  });
+
+  // Toggle custom date range
+  const timeRangeInputs = modal.querySelectorAll('input[name="timeRange"]');
+  const customDateRange = modal.querySelector('#boarderCustomDateRange');
+
+  timeRangeInputs.forEach(input => {
+    input.addEventListener('change', e => {
+      if (e.target.value === 'custom') {
+        customDateRange.style.display = 'grid';
+      } else {
+        customDateRange.style.display = 'none';
+      }
     });
+  });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch payment data');
+  // Generate export
+  const generateBtn = modal.querySelector('#generateBoarderExport');
+  generateBtn?.addEventListener('click', () => handleBoarderExportGeneration(modal));
+}
+
+/**
+ * Close boarder export modal
+ */
+function closeBoarderExportModal(modal) {
+  modal.classList.remove('active');
+  setTimeout(() => modal.remove(), 300);
+}
+
+/**
+ * Handle boarder export generation
+ */
+async function handleBoarderExportGeneration(modal) {
+  const generateBtn = modal.querySelector('#generateBoarderExport');
+  const originalText = generateBtn.innerHTML;
+
+  try {
+    // Disable button and show loading
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = 'Generating...';
+
+    // Collect export parameters
+    const params = collectBoarderExportParameters(modal);
+
+    // Validate custom date range
+    if (params.timeRange === 'custom') {
+      if (!params.startDate || !params.endDate) {
+        showToast('Please select both start and end dates for custom range', 'error');
+        return;
+      }
+      if (new Date(params.startDate) > new Date(params.endDate)) {
+        showToast('Start date must be before end date', 'error');
+        return;
+      }
     }
 
-    const result = await response.json();
-    const payments = result.data || [];
+    // Fetch payment data
+    const data = await fetchBoarderPaymentData(params);
 
-    if (payments.length === 0) {
-      showToast('No payment history to download', 'info');
+    if (!data || data.length === 0) {
+      showToast('No payment data found for the selected criteria', 'info');
       return;
     }
 
@@ -563,14 +743,155 @@ async function handleDownloadStatement() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userName = user.name || 'Boarder';
 
-    // Generate PDF
-    await generateBoarderStatementPDF(payments, userName);
+    // Generate export based on format
+    switch (params.outputFormat) {
+      case 'pdf':
+        await generateBoarderStatementPDF(data, userName, params);
+        showToast('PDF statement downloaded successfully!', 'success');
+        break;
+      case 'csv':
+        generateBoarderStatementCSV(data, userName, params);
+        showToast('CSV statement downloaded successfully!', 'success');
+        break;
+      case 'preview':
+        showBoarderPreviewReport(data, userName, params);
+        showToast('Opening preview in new tab...', 'info');
+        break;
+    }
 
-    showToast('Statement downloaded successfully!', 'success');
+    closeBoarderExportModal(modal);
   } catch (error) {
-    console.error('Failed to download statement:', error);
-    showToast('Failed to download statement. Please try again.', 'error');
+    console.error('Export generation failed:', error);
+    showToast('Failed to generate statement. Please try again.', 'error');
+  } finally {
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = originalText;
   }
+}
+
+/**
+ * Collect boarder export parameters from modal
+ */
+function collectBoarderExportParameters(modal) {
+  const timeRange = modal.querySelector('input[name="timeRange"]:checked')?.value || 'all';
+  const outputFormat = modal.querySelector('input[name="outputFormat"]:checked')?.value || 'pdf';
+
+  const params = {
+    timeRange,
+    outputFormat,
+    status: modal.querySelector('#boarderStatusFilter')?.value || 'all',
+  };
+
+  // Add custom date range if selected
+  if (timeRange === 'custom') {
+    params.startDate = modal.querySelector('#boarderStartDate')?.value;
+    params.endDate = modal.querySelector('#boarderEndDate')?.value;
+  }
+
+  return params;
+}
+
+/**
+ * Fetch boarder payment data with filters
+ */
+async function fetchBoarderPaymentData(params) {
+  const token = localStorage.getItem('token');
+  
+  const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/history`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch payment data');
+  }
+
+  const result = await response.json();
+  let payments = result.data || [];
+
+  // Apply filters
+  payments = filterBoarderPayments(payments, params);
+
+  return payments;
+}
+
+/**
+ * Filter boarder payments based on parameters
+ */
+function filterBoarderPayments(payments, params) {
+  let filtered = [...payments];
+
+  // Filter by time range
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  switch (params.timeRange) {
+    case 'monthly':
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      filtered = filtered.filter(p => new Date(p.due_date) >= monthStart);
+      break;
+    
+    case 'last3months':
+      const threeMonthsAgo = new Date(today);
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      filtered = filtered.filter(p => new Date(p.due_date) >= threeMonthsAgo);
+      break;
+    
+    case 'last6months':
+      const sixMonthsAgo = new Date(today);
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      filtered = filtered.filter(p => new Date(p.due_date) >= sixMonthsAgo);
+      break;
+    
+    case 'ytd':
+      const yearStart = new Date(today.getFullYear(), 0, 1);
+      filtered = filtered.filter(p => new Date(p.due_date) >= yearStart);
+      break;
+    
+    case 'custom':
+      if (params.startDate && params.endDate) {
+        const start = new Date(params.startDate);
+        const end = new Date(params.endDate);
+        filtered = filtered.filter(p => {
+          const date = new Date(p.due_date);
+          return date >= start && date <= end;
+        });
+      }
+      break;
+    
+    case 'all':
+    default:
+      // No time filter
+      break;
+  }
+
+  // Filter by status
+  if (params.status !== 'all') {
+    filtered = filtered.filter(p => p.status === params.status);
+  }
+
+  return filtered;
+}
+
+/**
+ * Format time range for display
+ */
+function formatBoarderTimeRange(params) {
+  if (params.timeRange === 'custom') {
+    return `${params.startDate} to ${params.endDate}`;
+  }
+
+  const ranges = {
+    all: 'All Time',
+    monthly: 'This Month',
+    last3months: 'Last 3 Months',
+    last6months: 'Last 6 Months',
+    ytd: 'Year-to-Date',
+  };
+  return ranges[params.timeRange] || params.timeRange;
 }
 
 /**
