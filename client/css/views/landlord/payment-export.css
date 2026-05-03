@@ -185,7 +185,11 @@
   }
 
   .export-radio-label {
-    padding: 0.625rem 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .export-filter-group {
+    flex-wrap: wrap;
   }
 
   .export-actions {
@@ -195,5 +199,6 @@
   .export-download-btn,
   .export-cancel-btn {
     width: 100%;
+    margin-left: 0;
   }
 }
