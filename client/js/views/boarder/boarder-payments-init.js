@@ -29,6 +29,7 @@ export async function initBoarderPaymentsPage() {
     renderFinancialOverview();
     renderCurrentBill();
     renderPaymentMethods();
+    populatePaymentHistoryFilter();
     renderPaymentHistory();
 
     // Initialize event listeners
@@ -370,11 +371,13 @@ function renderPaymentMethods() {
 /**
  * Render payment history timeline
  */
-function renderPaymentHistory() {
+function renderPaymentHistory(filteredPayments = null) {
   const timeline = document.querySelector('.payment-timeline');
   if (!timeline) return;
 
-  if (paymentHistory.length === 0) {
+  const paymentsToRender = filteredPayments || paymentHistory;
+
+  if (paymentsToRender.length === 0) {
     timeline.innerHTML = `
       <div class="timeline-empty">
         <p>No payment history available yet.</p>
@@ -383,7 +386,7 @@ function renderPaymentHistory() {
     return;
   }
 
-  timeline.innerHTML = paymentHistory
+  timeline.innerHTML = paymentsToRender
     .map(payment => {
       const isPaid = payment.status === 'paid';
       const markerClass = isPaid
@@ -446,6 +449,70 @@ function renderPaymentHistory() {
     `;
     })
     .join('');
+}
+
+/**
+ * Populate payment history filter dropdown with available years
+ */
+function populatePaymentHistoryFilter() {
+  const filterSelect = document.querySelector('.payments-filter-select');
+  if (!filterSelect) return;
+
+  // Extract unique years from payment history
+  const years = new Set();
+  paymentHistory.forEach(payment => {
+    const date = new Date(payment.due_date || payment.payment_date);
+    if (!isNaN(date.getTime())) {
+      years.add(date.getFullYear());
+    }
+  });
+
+  // Sort years in descending order
+  const sortedYears = Array.from(years).sort((a, b) => b - a);
+
+  // Build dropdown options
+  let options = `
+    <option value="all">All Time</option>
+    <option value="6months">Last 6 Months</option>
+  `;
+
+  sortedYears.forEach(year => {
+    options += `<option value="${year}">${year}</option>`;
+  });
+
+  filterSelect.innerHTML = options;
+}
+
+/**
+ * Filter payment history based on selected time range
+ */
+function filterPaymentHistory(filterValue) {
+  if (filterValue === 'all') {
+    renderPaymentHistory(paymentHistory);
+    return;
+  }
+
+  const now = new Date();
+  let filteredPayments = [];
+
+  if (filterValue === '6months') {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+    filteredPayments = paymentHistory.filter(payment => {
+      const paymentDate = new Date(payment.due_date || payment.payment_date);
+      return paymentDate >= sixMonthsAgo;
+    });
+  } else {
+    // Filter by specific year
+    const year = parseInt(filterValue);
+    filteredPayments = paymentHistory.filter(payment => {
+      const paymentDate = new Date(payment.due_date || payment.payment_date);
+      return paymentDate.getFullYear() === year;
+    });
+  }
+
+  renderPaymentHistory(filteredPayments);
 }
 
 /**
@@ -519,6 +586,14 @@ function initEventListeners() {
   );
   if (currentBillPayBtn) {
     currentBillPayBtn.addEventListener('click', handlePayNow);
+  }
+
+  // Payment history filter dropdown
+  const paymentFilterSelect = document.querySelector('.payments-filter-select');
+  if (paymentFilterSelect) {
+    paymentFilterSelect.addEventListener('change', e => {
+      filterPaymentHistory(e.target.value);
+    });
   }
 }
 
@@ -888,11 +963,24 @@ function formatBoarderTimeRange(params) {
  * Generate PDF statement for boarder
  */
 async function generateBoarderStatementPDF(payments, userName, params = {}) {
-  // Check if jsPDF is available
+  // Wait for jsPDF to be available (it loads via CDN script tag)
   if (typeof window.jspdf === 'undefined') {
-    // Fallback to CSV if jsPDF not available
-    generateBoarderStatementCSV(payments, userName, params);
-    return;
+    await new Promise((resolve, reject) => {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (typeof window.jspdf !== 'undefined') {
+          clearInterval(interval);
+          resolve();
+        } else if (attempts > 20) {
+          clearInterval(interval);
+          reject(new Error('jsPDF library failed to load'));
+        }
+      }, 100);
+    }).catch(() => {
+      showBoarderToast('PDF library not available. Please refresh and try again.', 'error');
+      throw new Error('jsPDF not available');
+    });
   }
 
   const { jsPDF } = window.jspdf;

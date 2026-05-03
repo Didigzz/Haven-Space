@@ -286,10 +286,24 @@ async function fetchExportData(params) {
  * Note: Requires jsPDF library to be loaded
  */
 async function generatePDFReport(data, params) {
-  // Check if jsPDF is available
+  // Wait for jsPDF to be available (it loads via CDN script tag)
   if (typeof window.jspdf === 'undefined') {
-    alert('PDF library not loaded. Please refresh the page and try again.');
-    return;
+    await new Promise((resolve, reject) => {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (typeof window.jspdf !== 'undefined') {
+          clearInterval(interval);
+          resolve();
+        } else if (attempts > 20) {
+          clearInterval(interval);
+          reject(new Error('jsPDF library failed to load'));
+        }
+      }, 100);
+    }).catch(() => {
+      showToast('PDF library not available. Please refresh and try again.', 'error');
+      throw new Error('jsPDF not available');
+    });
   }
 
   const { jsPDF } = window.jspdf;
