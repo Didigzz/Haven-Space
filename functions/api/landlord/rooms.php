@@ -214,14 +214,14 @@ if ($method === 'PUT') {
     }
 
     // Build dynamic SET clause from provided fields
-    $allowed = ['room_number', 'price', 'deposit', 'status', 'capacity'];
+    $allowed = ['room_number', 'room_type', 'price', 'deposit', 'status', 'capacity', 'description', 'size'];
     $sets    = ['updated_at = NOW()'];
     $params  = [];
 
     foreach ($allowed as $field) {
         if (array_key_exists($field, $input)) {
             $sets[]   = "$field = ?";
-            $params[] = ($field === 'price' || $field === 'deposit') ? floatval($input[$field])
+            $params[] = ($field === 'price' || $field === 'deposit' || $field === 'size') ? floatval($input[$field])
                       : ($field === 'capacity' ? intval($input[$field])
                       : $input[$field]);
         }
@@ -325,10 +325,13 @@ function formatRoom(array $room): array {
         'id'          => intval($room['id']),
         'property_id' => intval($room['property_id']),
         'room_number' => $room['room_number'] ?? '',
+        'room_type'   => $room['room_type'] ?? null,
+        'description' => $room['description'] ?? null,
         'price'       => floatval($room['price']),
         'deposit'     => floatval($room['deposit'] ?? 0),
         'status'      => $room['status'] ?? 'available',
         'capacity'    => intval($room['capacity'] ?? 1),
+        'size'        => isset($room['size']) ? floatval($room['size']) : null,
         'cover_photo' => $coverPhoto,
         'photos'      => array_map(function($p) {
             return [

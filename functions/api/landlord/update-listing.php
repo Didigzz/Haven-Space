@@ -96,9 +96,11 @@ try {
             description = ?,
             price = ?,
             deposit = ?,
+            advance = ?,
             min_stay = ?,
             property_rules = ?,
             property_type = ?,
+            gender_preference = ?,
             status = ?,
             updated_at = NOW()
         WHERE id = ? AND landlord_id = ?
@@ -113,13 +115,29 @@ try {
     }
 
     // Get current property data for fallback values
-    $currentPropStmt = $pdo->prepare("SELECT title, description, price, deposit, min_stay, property_rules, property_type FROM properties WHERE id = ?");
+    $currentPropStmt = $pdo->prepare("SELECT title, description, price, deposit, advance, min_stay, property_rules, property_type, gender_preference FROM properties WHERE id = ?");
     $currentPropStmt->execute([$propertyId]);
     $currentProp = $currentPropStmt->fetch(PDO::FETCH_ASSOC);
 
-    // Map min_stay from frontend format to database format
+    // Handle payment terms - map from edit form field names
+    // monthlyPayment -> price
+    $price = floatval($input['monthlyPayment'] ?? $input['price'] ?? $input['propertyPrice'] ?? $currentProp['price']);
+    
+    // monthlyDeposit -> deposit
+    $deposit = isset($input['monthlyDeposit']) ? strval($input['monthlyDeposit']) : 
+               (isset($input['deposit']) ? strval($input['deposit']) : $currentProp['deposit']);
+    
+    // advancePayment -> advance (this is the correct column for advance payment)
+    $advance = $currentProp['advance'];
+    if (isset($input['advancePayment']) && $input['advancePayment'] !== '') {
+        // Direct value from edit form (already in correct format: "1 month", "2 months", "None", etc.)
+        $advance = $input['advancePayment'];
+    }
+    
+    // min_stay is separate from advance payment
     $minStay = $currentProp['min_stay'];
     if (isset($input['min_stay'])) {
+        // Map from create form format
         $minStayMap = [
             'no-minimum' => 'No minimum',
             '1-month' => '1 month',
@@ -130,14 +148,19 @@ try {
         $minStay = $minStayMap[$input['min_stay']] ?? $input['min_stay'];
     }
 
+    // Handle gender_preference
+    $genderPreference = $input['gender_preference'] ?? $input['genderPreference'] ?? $currentProp['gender_preference'] ?? 'any';
+
     $stmt->execute([
         $input['name'] ?? $input['propertyName'] ?? $currentProp['title'],
         $input['description'] ?? $input['propertyDescription'] ?? $currentProp['description'],
-        floatval($input['price'] ?? $input['propertyPrice'] ?? $currentProp['price']),
-        isset($input['deposit']) ? strval($input['deposit']) : $currentProp['deposit'],
+        $price,
+        $deposit,
+        $advance,
         $minStay,
         $input['rules'] ?? $input['propertyRules'] ?? $currentProp['property_rules'],
         $input['type'] ?? $input['propertyType'] ?? $currentProp['property_type'],
+        $genderPreference,
         $status,
         $propertyId,
         $landlordId,

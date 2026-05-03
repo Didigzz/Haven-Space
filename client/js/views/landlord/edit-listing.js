@@ -84,6 +84,7 @@ async function loadPropertyData() {
 function populateForm(property) {
   document.getElementById('property-name').value = property.name || '';
   document.getElementById('property-type').value = property.type || 'boarding-house';
+  document.getElementById('gender-preference').value = property.gender_preference || 'any';
   document.getElementById('property-description').value = property.description || '';
   document.getElementById('property-status').value = property.status || 'active';
   document.getElementById('property-address').value = property.address || '';
@@ -96,6 +97,22 @@ function populateForm(property) {
   const rulesField = document.getElementById('property-rules');
   if (rulesField) {
     rulesField.value = property.rules || '';
+  }
+
+  // Set payment terms
+  const monthlyPaymentField = document.getElementById('monthly-payment');
+  if (monthlyPaymentField) {
+    monthlyPaymentField.value = property.monthlyPayment || property.price || '';
+  }
+
+  const monthlyDepositField = document.getElementById('monthly-deposit');
+  if (monthlyDepositField) {
+    monthlyDepositField.value = property.monthlyDeposit || property.deposit || '';
+  }
+
+  const advancePaymentField = document.getElementById('advance-payment');
+  if (advancePaymentField) {
+    advancePaymentField.value = property.advancePayment || property.min_stay || '';
   }
 
   // Set amenities
@@ -367,6 +384,7 @@ async function handleFormSubmit(e) {
     id: propertyId,
     name: formData.get('propertyName'),
     type: formData.get('propertyType'),
+    gender_preference: formData.get('genderPreference') || 'any',
     description: formData.get('propertyDescription'),
     status: formData.get('propertyStatus'),
     address: formData.get('propertyAddress'),
@@ -379,6 +397,10 @@ async function handleFormSubmit(e) {
     custom_amenities: customAmenitiesList,
     photos: existingPhotos,
     photos_to_delete: photosToDelete,
+    // Payment terms
+    monthlyPayment: formData.get('monthlyPayment') || null,
+    monthlyDeposit: formData.get('monthlyDeposit') || null,
+    advancePayment: formData.get('advancePayment') || null,
   };
 
   // Handle new photo uploads

@@ -436,12 +436,16 @@
                     <span>Available: <strong id="booking-availability">Now</strong></span>
                   </div>
                   <div class="booking-info-item">
-                    <span data-icon="clock" data-icon-width="18" data-icon-height="18"></span>
-                    <span>Min. stay: <strong>6 months</strong></span>
-                  </div>
-                  <div class="booking-info-item">
                     <span data-icon="banknotes" data-icon-width="18" data-icon-height="18"></span>
                     <span>Deposit: <strong>2 months</strong></span>
+                  </div>
+                  <div class="booking-info-item">
+                    <span
+                      data-icon="currencyDollar"
+                      data-icon-width="18"
+                      data-icon-height="18"
+                    ></span>
+                    <span>Advance: <strong id="booking-advance">1 month</strong></span>
                   </div>
                 </div>
 
@@ -612,10 +616,17 @@
                 </div>
               </div>
               <div class="room-modal-detail-item">
-                <span data-icon="square" data-icon-width="20" data-icon-height="20"></span>
+                <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
                 <div>
-                  <span class="room-modal-detail-label">Size</span>
-                  <span class="room-modal-detail-value" id="modal-room-size">-</span>
+                  <span class="room-modal-detail-label">Status</span>
+                  <span class="room-modal-detail-value" id="modal-room-status-value">-</span>
+                </div>
+              </div>
+              <div class="room-modal-detail-item">
+                <span data-icon="banknotes" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Deposit</span>
+                  <span class="room-modal-detail-value" id="modal-room-deposit">-</span>
                 </div>
               </div>
               <div class="room-modal-detail-item">

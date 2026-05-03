@@ -1013,7 +1013,12 @@ function renderRoomsList() {
     roomEl.className = `room-item ${room.status}`;
     roomEl.dataset.roomId = room.id;
 
-    const statusLabel = room.status === 'available' ? 'Available' : 'Occupied';
+    const statusLabel =
+      room.status === 'available'
+        ? 'Available'
+        : room.status === 'occupied'
+        ? 'Occupied'
+        : 'Maintenance';
     const imageCount = room.images ? room.images.length : 0;
 
     roomEl.innerHTML = `
@@ -1030,6 +1035,9 @@ function renderRoomsList() {
             <option value="occupied" ${
               room.status === 'occupied' ? 'selected' : ''
             }>Occupied</option>
+            <option value="maintenance" ${
+              room.status === 'maintenance' ? 'selected' : ''
+            }>Maintenance</option>
           </select>
           ${
             room.status === 'available'
