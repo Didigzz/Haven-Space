@@ -51,7 +51,9 @@ async function fetchEvents() {
     }
 
     const response = await fetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/calendar?start_date=${startDate}&end_date=${endDate}`,
+      `${
+        CONFIG.API_BASE_URL
+      }/api/landlord/calendar?start_date=${startDate}&end_date=${endDate}&t=${Date.now()}`,
       {
         method: 'GET',
         headers,

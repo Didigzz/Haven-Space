@@ -62,6 +62,14 @@ async function fetchPaymentOverview() {
 
     const result = await response.json();
     paymentOverview = result.data;
+
+    // Debug log to help trace payment status
+    console.log('Payment Overview Loaded:', {
+      current_bill_status: paymentOverview.current_bill?.status,
+      current_bill_period: paymentOverview.current_bill?.period,
+      days_until_due: paymentOverview.days_until_due,
+      next_payment_date: paymentOverview.next_payment_date,
+    });
   } catch (error) {
     console.error('Error fetching payment overview:', error);
     throw error;
@@ -248,25 +256,50 @@ function renderCurrentBill() {
     dueDateEl.textContent = formatDate(bill.due_date);
   }
 
-  // Update time remaining
+  // Update time remaining - handle paid status
   const timeRemainingEl = document.querySelector(
     '.current-bill-date-item.warning .current-bill-date-value'
   );
-  if (timeRemainingEl && paymentOverview.days_until_due !== null) {
-    const daysText = paymentOverview.days_until_due === 1 ? 'day' : 'days';
+  if (timeRemainingEl) {
     const svgIcon = timeRemainingEl.querySelector('svg');
-    timeRemainingEl.innerHTML = `${svgIcon ? svgIcon.outerHTML : ''}${
-      paymentOverview.days_until_due
-    } ${daysText}`;
+
+    // If bill is paid, show "Paid" instead of days remaining
+    if (bill.status === 'paid') {
+      timeRemainingEl.innerHTML = `${
+        svgIcon ? svgIcon.outerHTML : ''
+      }<span style="color: var(--primary-green);">Paid</span>`;
+      // Remove warning class if present
+      const warningItem = timeRemainingEl.closest('.current-bill-date-item');
+      if (warningItem) {
+        warningItem.classList.remove('warning');
+      }
+    } else if (paymentOverview.days_until_due !== null) {
+      const daysText = paymentOverview.days_until_due === 1 ? 'day' : 'days';
+      timeRemainingEl.innerHTML = `${svgIcon ? svgIcon.outerHTML : ''}${
+        paymentOverview.days_until_due
+      } ${daysText}`;
+    }
   }
 
   // Update pay button
   const payButton = document.querySelector('.payments-current-bill-card .payments-btn-primary');
   if (payButton) {
     const svgIcon = payButton.querySelector('svg');
-    payButton.innerHTML = `${svgIcon ? svgIcon.outerHTML : ''}Pay ${formatCurrency(
-      bill.total
-    )} Now`;
+
+    // If bill is paid, disable the button and change text
+    if (bill.status === 'paid') {
+      payButton.disabled = true;
+      payButton.innerHTML = `${svgIcon ? svgIcon.outerHTML : ''}<span>Paid</span>`;
+      payButton.style.opacity = '0.6';
+      payButton.style.cursor = 'not-allowed';
+    } else {
+      payButton.disabled = false;
+      payButton.innerHTML = `${svgIcon ? svgIcon.outerHTML : ''}Pay ${formatCurrency(
+        bill.total
+      )} Now`;
+      payButton.style.opacity = '1';
+      payButton.style.cursor = 'pointer';
+    }
   }
 }
 

@@ -239,6 +239,23 @@
 .financial-card-gradient-2 {
   background: var(--payments-gradient-2);
   color: var(--white);
+  transition: all 0.3s ease;
+}
+
+/* Dynamic gradient colors based on payment status */
+.financial-card-gradient-2.status-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+}
+
+.financial-card-gradient-2.status-orange {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+.financial-card-gradient-2.status-green {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
 }
 
 .financial-card-gradient-2 .financial-card-icon {
@@ -701,6 +718,23 @@
   border: 1px solid var(--payments-border);
   border-radius: 16px;
   padding: 24px;
+  transition: all 0.3s ease;
+}
+
+/* Dynamic color system for current bill card based on payment status */
+.payments-current-bill-card.status-red {
+  border-left: 4px solid var(--payments-red);
+  background: linear-gradient(to right, rgba(239, 68, 68, 0.05) 0%, var(--payments-surface) 100%);
+}
+
+.payments-current-bill-card.status-orange {
+  border-left: 4px solid var(--payments-orange);
+  background: linear-gradient(to right, rgba(245, 158, 11, 0.05) 0%, var(--payments-surface) 100%);
+}
+
+.payments-current-bill-card.status-green {
+  border-left: 4px solid var(--payments-green);
+  background: linear-gradient(to right, rgba(34, 197, 94, 0.05) 0%, var(--payments-surface) 100%);
 }
 
 .current-bill-header {
@@ -732,16 +766,35 @@
   border-radius: 20px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  transition: all 0.3s ease;
 }
 
+/* Status color system - Overdue (Red) */
+.current-bill-status.status-overdue,
+.current-bill-status.status-red {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--payments-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Status color system - Due Soon/Today (Orange) */
+.current-bill-status.status-due-today,
+.current-bill-status.status-upcoming,
+.current-bill-status.status-orange,
 .current-bill-status.unpaid {
-  background-color: rgba(245, 158, 11, 0.1);
+  background-color: rgba(245, 158, 11, 0.15);
   color: var(--payments-orange);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
+/* Status color system - Paid/On Track (Green) */
+.current-bill-status.status-paid,
+.current-bill-status.status-current,
+.current-bill-status.status-green,
 .current-bill-status.paid {
-  background-color: rgba(34, 197, 94, 0.1);
+  background-color: rgba(34, 197, 94, 0.15);
   color: var(--payments-green);
+  border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .current-bill-breakdown {
@@ -804,11 +857,24 @@
   background-color: var(--bg-cream);
   border-radius: 10px;
   flex: 1;
+  transition: all 0.3s ease;
 }
 
-.current-bill-date-item.warning {
-  background-color: rgba(245, 158, 11, 0.05);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+/* Dynamic color for date items based on status */
+.current-bill-date-item.warning,
+.current-bill-date-item.status-orange {
+  background-color: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.current-bill-date-item.status-red {
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.current-bill-date-item.status-green {
+  background-color: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 .current-bill-date-label {
@@ -825,6 +891,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  transition: color 0.3s ease;
 }
 
 .current-bill-date-value img {
@@ -833,8 +900,19 @@
   color: var(--payments-orange);
 }
 
-.current-bill-date-item.warning .current-bill-date-value {
+/* Dynamic text color based on status */
+.current-bill-date-item.warning .current-bill-date-value,
+.current-bill-date-item.status-orange .current-bill-date-value {
   color: var(--payments-orange);
+}
+
+.current-bill-date-item.status-red .current-bill-date-value {
+  color: var(--payments-red);
+  font-weight: 700;
+}
+
+.current-bill-date-item.status-green .current-bill-date-value {
+  color: var(--payments-green);
 }
 
 /* ===== Payment History Timeline ===== */
@@ -918,17 +996,62 @@
   color: var(--payments-border);
 }
 
+/* Completed/Paid - Green */
 .timeline-marker.completed {
   border-color: var(--payments-green);
   background-color: var(--payments-green);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
 }
 
 .timeline-marker.completed img {
   color: var(--white);
 }
 
+/* Overdue - Red */
+.timeline-marker.overdue {
+  border-color: var(--payments-red);
+  background-color: var(--payments-red);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  animation: pulse-red 2s infinite;
+}
+
+.timeline-marker.overdue img {
+  color: var(--white);
+}
+
+/* Upcoming/Due Soon - Orange */
+.timeline-marker.upcoming {
+  border-color: var(--payments-orange);
+  background-color: var(--payments-orange);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+}
+
+.timeline-marker.upcoming img {
+  color: var(--white);
+}
+
+/* Current/On Track - Light Green Border */
+.timeline-marker.current {
+  border-color: var(--payments-green);
+  background-color: var(--payments-surface);
+}
+
+.timeline-marker.current img {
+  color: var(--payments-green);
+}
+
 .timeline-marker:hover {
   transform: scale(1.1);
+}
+
+@keyframes pulse-red {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.2);
+  }
 }
 
 .timeline-content {
@@ -1005,6 +1128,7 @@
   font-weight: 600;
   width: fit-content;
   margin-top: 8px;
+  transition: all 0.3s ease;
 }
 
 .timeline-status img {
@@ -1012,9 +1136,37 @@
   height: 12px;
 }
 
-.timeline-status.paid {
+/* Paid - Green */
+.timeline-status.paid,
+.timeline-status.status-paid,
+.timeline-status.status-green {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--payments-green);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Overdue - Red */
+.timeline-status.status-overdue,
+.timeline-status.status-red {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--payments-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Due Soon/Today - Orange */
+.timeline-status.status-due-today,
+.timeline-status.status-upcoming,
+.timeline-status.status-orange {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--payments-orange);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Current/On Track - Light Green */
+.timeline-status.status-current {
   background-color: rgba(34, 197, 94, 0.1);
   color: var(--payments-green);
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .timeline-details-note {

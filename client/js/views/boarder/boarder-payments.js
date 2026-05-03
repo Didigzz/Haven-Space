@@ -173,6 +173,10 @@ export function applyPaymentStatusColors() {
       const paidDate = paidDateEl?.dataset.paidDate || null;
       const status = getPaymentStatus(dueDate, paidDate);
 
+      // Apply color class to the entire bill card
+      currentBillCard.classList.remove('status-red', 'status-orange', 'status-green');
+      currentBillCard.classList.add(`status-${status.color}`);
+
       if (statusEl) {
         applyStatusToElement(statusEl, status);
       }
@@ -180,14 +184,13 @@ export function applyPaymentStatusColors() {
       // Update the warning class on the time remaining item
       const timeRemainingItem = currentBillCard.querySelector('.current-bill-date-item.warning');
       if (timeRemainingItem) {
-        timeRemainingItem.classList.remove('warning');
-        if (
-          status.status === 'overdue' ||
-          status.status === 'due-today' ||
-          status.status === 'upcoming'
-        ) {
-          timeRemainingItem.classList.add('warning');
-        }
+        timeRemainingItem.classList.remove(
+          'warning',
+          'status-red',
+          'status-orange',
+          'status-green'
+        );
+        timeRemainingItem.classList.add(`status-${status.color}`);
       }
 
       // Update time remaining text

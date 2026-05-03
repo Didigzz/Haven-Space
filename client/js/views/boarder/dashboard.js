@@ -744,15 +744,39 @@ function renderDashboardPayments(payments) {
           (new Date(payment.due_date) - new Date()) / (1000 * 60 * 60 * 24)
         );
 
+        // Determine status color based on days left
+        let statusClass = 'status-green';
+        let statusBadgeClass = 'unpaid';
+        let daysLeftClass = 'highlight status-green';
+
+        if (daysLeft < 0) {
+          // Overdue
+          statusClass = 'status-red';
+          statusBadgeClass = 'overdue status-red';
+          daysLeftClass = 'highlight status-red';
+        } else if (daysLeft <= 3) {
+          // Due very soon
+          statusClass = 'status-red';
+          statusBadgeClass = 'unpaid status-orange';
+          daysLeftClass = 'highlight status-red';
+        } else if (daysLeft <= 7) {
+          // Due soon
+          statusClass = 'status-orange';
+          statusBadgeClass = 'unpaid status-orange';
+          daysLeftClass = 'highlight status-orange';
+        }
+
         // Check if this payment includes deposit
         const includesDeposit = payment.includes_deposit && payment.deposit > 0;
         const depositAmount = includesDeposit ? payment.deposit : 0;
 
         return `
-        <div class="boarder-payment-simple-card current">
+        <div class="boarder-payment-simple-card current ${statusClass}">
           <div class="boarder-payment-simple-header">
             <span class="boarder-payment-period">${period}</span>
-            <span class="boarder-payment-status-badge unpaid">Unpaid</span>
+            <span class="boarder-payment-status-badge ${statusBadgeClass}">${
+          daysLeft < 0 ? 'Overdue' : 'Unpaid'
+        }</span>
           </div>
           <div class="boarder-payment-simple-body">
             <div class="boarder-payment-row">
@@ -774,8 +798,8 @@ function renderDashboardPayments(payments) {
               <span class="boarder-payment-value">${formattedDate}</span>
             </div>
             <div class="boarder-payment-row">
-              <span class="boarder-payment-label">Days Left</span>
-              <span class="boarder-payment-value highlight">${daysLeft} days</span>
+              <span class="boarder-payment-label">Days ${daysLeft < 0 ? 'Overdue' : 'Left'}</span>
+              <span class="boarder-payment-value ${daysLeftClass}">${Math.abs(daysLeft)} days</span>
             </div>
           </div>
           <a href="./payments/pay.html" class="boarder-btn boarder-btn-primary boarder-btn-full">Pay Now</a>

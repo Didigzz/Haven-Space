@@ -1737,12 +1737,37 @@
   border: 1px solid var(--dashboard-border);
   border-radius: 12px;
   padding: 16px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
+/* Dynamic color system for payment cards based on status */
 .boarder-payment-simple-card.current {
   border-color: var(--dashboard-warning);
   background-color: rgba(245, 158, 11, 0.05);
+}
+
+/* Overdue - Red */
+.boarder-payment-simple-card.status-overdue,
+.boarder-payment-simple-card.status-red {
+  border-left: 4px solid var(--dashboard-red);
+  border-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(to right, rgba(239, 68, 68, 0.08) 0%, var(--dashboard-surface) 100%);
+}
+
+/* Due Soon/Today - Orange */
+.boarder-payment-simple-card.status-due-soon,
+.boarder-payment-simple-card.status-orange {
+  border-left: 4px solid var(--dashboard-warning);
+  border-color: rgba(245, 158, 11, 0.3);
+  background: linear-gradient(to right, rgba(245, 158, 11, 0.08) 0%, var(--dashboard-surface) 100%);
+}
+
+/* On Track - Green */
+.boarder-payment-simple-card.status-on-track,
+.boarder-payment-simple-card.status-green {
+  border-left: 4px solid var(--dashboard-success);
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(to right, rgba(34, 197, 94, 0.08) 0%, var(--dashboard-surface) 100%);
 }
 
 .boarder-payment-simple-card.history {
@@ -1770,16 +1795,44 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
+  transition: all 0.3s ease;
 }
 
-.boarder-payment-status-badge.paid {
-  background-color: rgba(34, 197, 94, 0.1);
+/* Paid - Green */
+.boarder-payment-status-badge.paid,
+.boarder-payment-status-badge.status-paid {
+  background-color: rgba(34, 197, 94, 0.15);
   color: var(--dashboard-success);
+  border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
-.boarder-payment-status-badge.unpaid {
-  background-color: rgba(245, 158, 11, 0.1);
+/* Unpaid/Due Soon - Orange */
+.boarder-payment-status-badge.unpaid,
+.boarder-payment-status-badge.status-due-soon,
+.boarder-payment-status-badge.status-orange {
+  background-color: rgba(245, 158, 11, 0.15);
   color: var(--dashboard-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Overdue - Red */
+.boarder-payment-status-badge.overdue,
+.boarder-payment-status-badge.status-overdue,
+.boarder-payment-status-badge.status-red {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--dashboard-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+  }
 }
 
 .boarder-payment-simple-body {
@@ -1809,6 +1862,19 @@
 .boarder-payment-value.highlight {
   color: var(--dashboard-warning);
   font-weight: 700;
+}
+
+/* Dynamic color for days left based on urgency */
+.boarder-payment-value.highlight.status-red {
+  color: var(--dashboard-red);
+}
+
+.boarder-payment-value.highlight.status-orange {
+  color: var(--dashboard-warning);
+}
+
+.boarder-payment-value.highlight.status-green {
+  color: var(--dashboard-success);
 }
 
 /* ===== Responsive Design ===== */
