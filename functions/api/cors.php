@@ -47,9 +47,10 @@ if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin =
         header("Access-Control-Allow-Origin: http://localhost");
     }
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Id');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Id, Cache-Control, Pragma, Expires, Accept, Accept-Language, Content-Language');
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Max-Age: 86400');
+    header('Access-Control-Expose-Headers: Content-Length, Content-Type, Date, Server, X-Request-Id');
 } else {
     // Log unauthorized origin in debug mode
     if (isDebugMode()) {

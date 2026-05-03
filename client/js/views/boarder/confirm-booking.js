@@ -207,10 +207,10 @@ function showMovingDateSetup(application) {
         </h2>
       </div>
       <div class="message-content">
-        <textarea 
-          id="application-message" 
-          class="application-message-input" 
-          placeholder="Tell the landlord a bit about yourself, your occupation, or any questions you have about the property..."
+        <textarea
+          id="application-message"
+          class="application-message-input"
+          placeholder="Tell the landlord a bit about yourself or any questions you have about the property..."
           rows="4"
         ></textarea>
       </div>

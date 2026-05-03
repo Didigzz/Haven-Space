@@ -64,12 +64,6 @@ async function fetchPaymentOverview() {
     paymentOverview = result.data;
 
     // Debug log to help trace payment status
-    console.log('Payment Overview Loaded:', {
-      current_bill_status: paymentOverview.current_bill?.status,
-      current_bill_period: paymentOverview.current_bill?.period,
-      days_until_due: paymentOverview.days_until_due,
-      next_payment_date: paymentOverview.next_payment_date,
-    });
   } catch (error) {
     console.error('Error fetching payment overview:', error);
     throw error;
@@ -538,8 +532,329 @@ function handlePayNow() {
 /**
  * Handle download statement
  */
-function handleDownloadStatement() {
-  showToast('Statement download coming soon.', 'info');
+async function handleDownloadStatement() {
+  try {
+    // Show loading toast
+    showToast('Generating your payment statement...', 'info');
+
+    // Fetch payment data
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/history`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment data');
+    }
+
+    const result = await response.json();
+    const payments = result.data || [];
+
+    if (payments.length === 0) {
+      showToast('No payment history to download', 'info');
+      return;
+    }
+
+    // Get user info
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userName = user.name || 'Boarder';
+
+    // Generate PDF
+    await generateBoarderStatementPDF(payments, userName);
+
+    showToast('Statement downloaded successfully!', 'success');
+  } catch (error) {
+    console.error('Failed to download statement:', error);
+    showToast('Failed to download statement. Please try again.', 'error');
+  }
+}
+
+/**
+ * Generate PDF statement for boarder
+ */
+async function generateBoarderStatementPDF(payments, userName) {
+  // Check if jsPDF is available
+  if (typeof window.jspdf === 'undefined') {
+    // Fallback to CSV if jsPDF not available
+    generateBoarderStatementCSV(payments, userName);
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Add header with branding
+  doc.setFillColor(76, 175, 80); // Green header
+  doc.rect(0, 0, 210, 35, 'F');
+
+  // Add logo/title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont(undefined, 'bold');
+  doc.text('Haven Space', 14, 15);
+
+  doc.setFontSize(14);
+  doc.setFont(undefined, 'normal');
+  doc.text('Payment Statement', 14, 25);
+
+  // Reset text color
+  doc.setTextColor(0, 0, 0);
+
+  // Add boarder info
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Boarder: ${userName}`, 14, 45);
+  doc.text(
+    `Generated: ${new Date().toLocaleString('en-PH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })}`,
+    14,
+    51
+  );
+
+  let yPos = 61;
+
+  // Calculate summary
+  const summary = {
+    totalPayments: payments.length,
+    totalAmount: 0,
+    paidAmount: 0,
+    pendingAmount: 0,
+    overdueAmount: 0,
+  };
+
+  payments.forEach(payment => {
+    const amount = parseFloat(payment.amount || 0) + parseFloat(payment.late_fee || 0);
+    summary.totalAmount += amount;
+
+    if (payment.status === 'paid') {
+      summary.paidAmount += amount;
+    } else if (payment.status === 'overdue') {
+      summary.overdueAmount += amount;
+    } else {
+      summary.pendingAmount += amount;
+    }
+  });
+
+  // Add summary box
+  doc.setFillColor(245, 245, 245);
+  doc.rect(14, yPos, 182, 35, 'F');
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Summary', 18, yPos + 8);
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Total Payments: ${summary.totalPayments}`, 18, yPos + 16);
+  doc.text(
+    `Total Amount: ₱${summary.totalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    18,
+    yPos + 22
+  );
+
+  doc.setTextColor(76, 175, 80); // Green
+  doc.text(
+    `Paid: ₱${summary.paidAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    18,
+    yPos + 28
+  );
+
+  doc.setTextColor(255, 152, 0); // Orange
+  doc.text(
+    `Pending: ₱${summary.pendingAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    90,
+    yPos + 28
+  );
+
+  doc.setTextColor(244, 67, 54); // Red
+  doc.text(
+    `Overdue: ₱${summary.overdueAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    140,
+    yPos + 28
+  );
+
+  doc.setTextColor(0, 0, 0); // Reset
+
+  yPos += 45;
+
+  // Add payment details table
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Payment History', 14, yPos);
+
+  yPos += 8;
+
+  // Table header
+  doc.setFillColor(76, 175, 80);
+  doc.rect(14, yPos - 5, 182, 8, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'bold');
+  doc.text('Property', 16, yPos);
+  doc.text('Room', 70, yPos);
+  doc.text('Amount', 100, yPos);
+  doc.text('Due Date', 130, yPos);
+  doc.text('Status', 165, yPos);
+
+  yPos += 8;
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, 'normal');
+
+  // Table rows
+  payments.forEach((payment, index) => {
+    if (yPos > 270) {
+      doc.addPage();
+      yPos = 20;
+
+      // Repeat header
+      doc.setFillColor(76, 175, 80);
+      doc.rect(14, yPos - 5, 182, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont(undefined, 'bold');
+      doc.text('Property', 16, yPos);
+      doc.text('Room', 70, yPos);
+      doc.text('Amount', 100, yPos);
+      doc.text('Due Date', 130, yPos);
+      doc.text('Status', 165, yPos);
+      yPos += 8;
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, 'normal');
+    }
+
+    // Alternate row colors
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(14, yPos - 5, 182, 7, 'F');
+    }
+
+    const property = payment.property_title || 'N/A';
+    const room = payment.room_title || 'N/A';
+    const amount = parseFloat(payment.amount || 0) + parseFloat(payment.late_fee || 0);
+    const dueDate = new Date(payment.due_date).toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+    const status = payment.status
+      ? payment.status.charAt(0).toUpperCase() + payment.status.slice(1)
+      : 'N/A';
+
+    doc.text(property.substring(0, 22), 16, yPos);
+    doc.text(room.substring(0, 12), 70, yPos);
+    doc.text(`₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`, 100, yPos);
+    doc.text(dueDate, 130, yPos);
+
+    // Status with color
+    if (payment.status === 'paid') {
+      doc.setTextColor(76, 175, 80);
+    } else if (payment.status === 'overdue') {
+      doc.setTextColor(244, 67, 54);
+    } else {
+      doc.setTextColor(255, 152, 0);
+    }
+    doc.text(status, 165, yPos);
+    doc.setTextColor(0, 0, 0);
+
+    yPos += 7;
+  });
+
+  // Add footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text(
+      `Page ${i} of ${pageCount} | Haven Space Payment Statement | ${new Date().toLocaleDateString(
+        'en-PH'
+      )}`,
+      14,
+      287
+    );
+  }
+
+  // Save PDF
+  const filename = `payment-statement-${Date.now()}.pdf`;
+  doc.save(filename);
+}
+
+/**
+ * Generate CSV statement as fallback
+ */
+function generateBoarderStatementCSV(payments, userName) {
+  // CSV headers
+  const headers = [
+    'Property',
+    'Room',
+    'Amount',
+    'Late Fee',
+    'Total',
+    'Due Date',
+    'Paid Date',
+    'Status',
+    'Payment Method',
+    'Reference Number',
+  ];
+
+  // Metadata
+  const metadata = [
+    ['Haven Space - Payment Statement'],
+    [],
+    ['Boarder', userName],
+    ['Generated', new Date().toLocaleString('en-PH')],
+    [],
+    [],
+  ];
+
+  // Convert data to CSV rows
+  const rows = payments.map(payment => {
+    const amount = parseFloat(payment.amount || 0);
+    const lateFee = parseFloat(payment.late_fee || 0);
+    const total = amount + lateFee;
+
+    return [
+      payment.property_title || 'N/A',
+      payment.room_title || 'N/A',
+      amount.toFixed(2),
+      lateFee.toFixed(2),
+      total.toFixed(2),
+      payment.due_date || '',
+      payment.paid_date || '',
+      payment.status || 'N/A',
+      payment.payment_method || '',
+      payment.reference_number || '',
+    ];
+  });
+
+  // Combine all parts
+  const csvContent = [
+    ...metadata.map(row => row.join(',')),
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
+  ].join('\n');
+
+  // Create download link
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+
+  link.setAttribute('href', url);
+  link.setAttribute('download', `payment-statement-${Date.now()}.csv`);
+  link.style.visibility = 'hidden';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 /* ============================================================

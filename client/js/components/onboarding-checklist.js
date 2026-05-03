@@ -120,12 +120,12 @@ class OnboardingChecklist {
             Your application has been accepted! Complete these steps to get started with your tenancy.
           </p>
         </div>
-        
+
         <div class="onboarding-body">
           <ul class="onboarding-checklist">
             ${this.renderChecklistItems()}
           </ul>
-          
+
           <div class="onboarding-progress">
             <div class="onboarding-progress-label">
               <span>Progress</span>
@@ -136,7 +136,7 @@ class OnboardingChecklist {
             </div>
           </div>
         </div>
-        
+
         <div class="onboarding-footer">
           <button class="onboarding-btn onboarding-btn-secondary" data-action="dismiss">
             I'll do this later
@@ -178,14 +178,7 @@ class OnboardingChecklist {
         locked: false,
         action: './settings/index.html#payment-methods',
       },
-      {
-        id: 'profile_completed',
-        title: 'Complete Profile',
-        description: 'Add your bio and occupation details',
-        badge: 'optional',
-        locked: false,
-        action: './settings/index.html#profile',
-      },
+
       {
         id: 'house_rules_read',
         title: 'Read House Rules',
@@ -204,7 +197,7 @@ class OnboardingChecklist {
         return `
         <li class="onboarding-checklist-item ${isCompleted ? 'completed' : ''} ${
           isLocked ? 'locked' : ''
-        }" 
+        }"
             data-item-id="${item.id}"
             ${item.action && !isCompleted ? `data-action="${item.action}"` : ''}>
           <div class="onboarding-checkbox">

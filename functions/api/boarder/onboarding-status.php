@@ -42,11 +42,7 @@ try {
     // Get onboarding status from boarder_profiles
     $stmt = $pdo->prepare('
         SELECT
-            onboarding_completed,
-            onboarding_payment_method_added,
-            onboarding_profile_completed,
-            onboarding_house_rules_read,
-            onboarding_dismissed_at
+            move_in_date
         FROM boarder_profiles
         WHERE user_id = ?
     ');
@@ -58,24 +54,14 @@ try {
         $createStmt = $pdo->prepare('
             INSERT INTO boarder_profiles (
                 user_id,
-                budget_min,
-                budget_max,
-                preferred_location,
-                move_in_date,
-                occupation,
-                bio,
-                onboarding_completed
+                move_in_date
             )
-            VALUES (?, 0, 0, "", "1970-01-01", "", "", FALSE)
+            VALUES (?, "1970-01-01")
         ');
         $createStmt->execute([$userId]);
 
         $profile = [
-            'onboarding_completed' => false,
-            'onboarding_payment_method_added' => false,
-            'onboarding_profile_completed' => false,
-            'onboarding_house_rules_read' => false,
-            'onboarding_dismissed_at' => null
+            'move_in_date' => '1970-01-01'
         ];
     }
 
@@ -105,24 +91,22 @@ try {
     // Calculate checklist items
     $checklist = [
         'application_accepted' => true, // Always true if we got here
-        'payment_method_added' => $hasPaymentMethod || (bool)$profile['onboarding_payment_method_added'],
-        'profile_completed' => $isProfileCompleted || (bool)$profile['onboarding_profile_completed'],
-        'house_rules_read' => (bool)$profile['onboarding_house_rules_read']
+        'payment_method_added' => $hasPaymentMethod,
+        'profile_completed' => $isProfileCompleted,
+        'house_rules_read' => false // No longer tracked
     ];
 
     // Determine if onboarding should be shown
     $allCompleted = $checklist['payment_method_added'] &&
-                    $checklist['house_rules_read'];
+                    $checklist['profile_completed'];
 
-    $showOnboarding = !$allCompleted &&
-                      !(bool)$profile['onboarding_completed'] &&
-                      $profile['onboarding_dismissed_at'] === null;
+    $showOnboarding = !$allCompleted;
 
     echo json_encode([
         'show_onboarding' => $showOnboarding,
         'checklist' => $checklist,
-        'onboarding_completed' => (bool)$profile['onboarding_completed'],
-        'dismissed_at' => $profile['onboarding_dismissed_at']
+        'onboarding_completed' => false,
+        'dismissed_at' => null
     ]);
 
 } catch (Exception $e) {

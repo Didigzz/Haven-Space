@@ -1,9 +1,12 @@
 /**
  * Payment Export Module
  * Handles export report functionality with multiple formats and filters
+ * Enhanced with email delivery, Excel export, and professional templates
  */
 
 import CONFIG from '../../config.js';
+import { getAuthHeaders } from '../../shared/state.js';
+import * as XLSX from 'xlsx';
 
 /**
  * Show export modal
@@ -134,13 +137,38 @@ function createExportModal() {
                   <span>PDF (Professional Report)</span>
                 </label>
                 <label class="export-radio-label">
+                  <input type="radio" name="outputFormat" value="excel" />
+                  <span>Excel (Spreadsheet)</span>
+                </label>
+                <label class="export-radio-label">
                   <input type="radio" name="outputFormat" value="csv" />
-                  <span>CSV (Spreadsheet)</span>
+                  <span>CSV (Data Export)</span>
+                </label>
+                <label class="export-radio-label">
+                  <input type="radio" name="outputFormat" value="email" />
+                  <span>Email to Me</span>
                 </label>
                 <label class="export-radio-label">
                   <input type="radio" name="outputFormat" value="preview" />
                   <span>Preview in Browser</span>
                 </label>
+              </div>
+            </div>
+
+            <!-- Email Options (shown when email format is selected) -->
+            <div class="export-section" id="emailOptions" style="display: none;">
+              <h4 class="export-section-title">Email Options</h4>
+              <div class="export-filter-group">
+                <label for="emailRecipient">Recipient Email</label>
+                <input type="email" id="emailRecipient" class="export-input" placeholder="your@email.com" />
+              </div>
+              <div class="export-filter-group">
+                <label for="emailSubject">Subject</label>
+                <input type="text" id="emailSubject" class="export-input" value="Payment Statement Report" />
+              </div>
+              <div class="export-filter-group">
+                <label for="emailMessage">Message (Optional)</label>
+                <textarea id="emailMessage" class="export-input" rows="3" placeholder="Add a custom message..."></textarea>
               </div>
             </div>
 
@@ -189,6 +217,27 @@ function initExportModalListeners(modal) {
         customDateRange.style.display = 'grid';
       } else {
         customDateRange.style.display = 'none';
+      }
+    });
+  });
+
+  // Toggle email options
+  const outputFormatInputs = modal.querySelectorAll('input[name="outputFormat"]');
+  const emailOptions = modal.querySelector('#emailOptions');
+  const emailRecipient = modal.querySelector('#emailRecipient');
+
+  // Pre-fill email with user's email
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.email && emailRecipient) {
+    emailRecipient.value = user.email;
+  }
+
+  outputFormatInputs.forEach(input => {
+    input.addEventListener('change', e => {
+      if (e.target.value === 'email') {
+        emailOptions.style.display = 'block';
+      } else {
+        emailOptions.style.display = 'none';
       }
     });
   });
@@ -309,8 +358,14 @@ async function handleExportGeneration(modal) {
       case 'pdf':
         await generatePDFReport(data, params);
         break;
+      case 'excel':
+        await generateExcelReport(data, params);
+        break;
       case 'csv':
         generateCSVReport(data, params);
+        break;
+      case 'email':
+        await sendEmailReport(data, params, modal);
         break;
       case 'preview':
         showPreviewReport(data, params);
@@ -343,6 +398,13 @@ function collectExportParameters(modal) {
     tenant: modal.querySelector('#exportTenantFilter')?.value || 'all',
     status: modal.querySelector('#exportStatusFilter')?.value || 'all',
   };
+
+  // Add email options if email format is selected
+  if (outputFormat === 'email') {
+    params.emailRecipient = modal.querySelector('#emailRecipient')?.value;
+    params.emailSubject = modal.querySelector('#emailSubject')?.value;
+    params.emailMessage = modal.querySelector('#emailMessage')?.value;
+  }
 
   // Add custom date range if selected
   if (timeRange === 'custom') {
@@ -389,7 +451,7 @@ async function fetchExportData(params) {
 }
 
 /**
- * Generate PDF report
+ * Generate PDF report with enhanced formatting and branding
  * Note: Requires jsPDF library to be loaded
  */
 async function generatePDFReport(data, params) {
@@ -402,70 +464,468 @@ async function generatePDFReport(data, params) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Add title
-  doc.setFontSize(18);
-  doc.text('Payment Report', 14, 20);
+  // Get user info for branding
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const landlordName = user.name || 'Landlord';
 
-  // Add report info
-  doc.setFontSize(10);
-  doc.text(`Report Type: ${formatReportType(params.reportType)}`, 14, 30);
-  doc.text(`Time Range: ${formatTimeRange(params)}`, 14, 36);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 42);
+  // Add header with branding
+  doc.setFillColor(76, 175, 80); // Green header
+  doc.rect(0, 0, 210, 35, 'F');
 
-  // Add summary statistics
-  const summary = calculateSummary(data);
-  doc.setFontSize(12);
-  doc.text('Summary', 14, 52);
-  doc.setFontSize(10);
-  doc.text(`Total Payments: ${summary.totalCount}`, 14, 58);
-  doc.text(`Total Amount: ₱${summary.totalAmount.toLocaleString()}`, 14, 64);
-  doc.text(`Paid: ${summary.paidCount} (₱${summary.paidAmount.toLocaleString()})`, 14, 70);
-  doc.text(`Pending: ${summary.pendingCount} (₱${summary.pendingAmount.toLocaleString()})`, 14, 76);
-  doc.text(`Overdue: ${summary.overdueCount} (₱${summary.overdueAmount.toLocaleString()})`, 14, 82);
-
-  // Add table
-  let yPos = 92;
-  doc.setFontSize(10);
+  // Add logo/title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
   doc.setFont(undefined, 'bold');
-  doc.text('Tenant', 14, yPos);
-  doc.text('Property', 60, yPos);
-  doc.text('Amount', 120, yPos);
-  doc.text('Due Date', 150, yPos);
-  doc.text('Status', 180, yPos);
+  doc.text('Haven Space', 14, 15);
 
-  yPos += 6;
+  doc.setFontSize(14);
+  doc.setFont(undefined, 'normal');
+  doc.text('Payment Statement Report', 14, 25);
+
+  // Reset text color
+  doc.setTextColor(0, 0, 0);
+
+  // Add report metadata
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Landlord: ${landlordName}`, 14, 45);
+  doc.text(`Report Type: ${formatReportType(params.reportType)}`, 14, 51);
+  doc.text(`Time Range: ${formatTimeRange(params)}`, 14, 57);
+  doc.text(
+    `Generated: ${new Date().toLocaleString('en-PH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })}`,
+    14,
+    63
+  );
+
+  // Add filters if applied
+  let yPos = 69;
+  if (params.property !== 'all') {
+    doc.text(`Property Filter: ${params.property}`, 14, yPos);
+    yPos += 6;
+  }
+  if (params.tenant !== 'all') {
+    doc.text(`Tenant Filter: ${params.tenant}`, 14, yPos);
+    yPos += 6;
+  }
+  if (params.status !== 'all') {
+    doc.text(
+      `Status Filter: ${params.status.charAt(0).toUpperCase() + params.status.slice(1)}`,
+      14,
+      yPos
+    );
+    yPos += 6;
+  }
+
+  yPos += 5;
+
+  // Add summary statistics box
+  const summary = calculateSummary(data);
+  doc.setFillColor(245, 245, 245);
+  doc.rect(14, yPos, 182, 40, 'F');
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Summary', 18, yPos + 8);
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Total Payments: ${summary.totalCount}`, 18, yPos + 16);
+  doc.text(
+    `Total Amount: ₱${summary.totalAmount.toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`,
+    18,
+    yPos + 22
+  );
+
+  doc.setTextColor(76, 175, 80); // Green for paid
+  doc.text(
+    `Paid: ${summary.paidCount} (₱${summary.paidAmount.toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })})`,
+    18,
+    yPos + 28
+  );
+
+  doc.setTextColor(255, 152, 0); // Orange for pending
+  doc.text(
+    `Pending: ${summary.pendingCount} (₱${summary.pendingAmount.toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })})`,
+    18,
+    yPos + 34
+  );
+
+  doc.setTextColor(244, 67, 54); // Red for overdue
+  doc.text(
+    `Overdue: ${summary.overdueCount} (₱${summary.overdueAmount.toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })})`,
+    110,
+    yPos + 28
+  );
+
+  doc.setTextColor(0, 0, 0); // Reset color
+
+  yPos += 50;
+
+  // Add detailed payment table
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text('Payment Details', 14, yPos);
+
+  yPos += 8;
+
+  // Table header
+  doc.setFillColor(76, 175, 80);
+  doc.rect(14, yPos - 5, 182, 8, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'bold');
+  doc.text('Tenant', 16, yPos);
+  doc.text('Property', 60, yPos);
+  doc.text('Amount', 110, yPos);
+  doc.text('Due Date', 140, yPos);
+  doc.text('Status', 170, yPos);
+
+  yPos += 8;
+  doc.setTextColor(0, 0, 0);
   doc.setFont(undefined, 'normal');
 
-  data.forEach(payment => {
+  // Table rows
+  data.forEach((payment, index) => {
     if (yPos > 270) {
       doc.addPage();
       yPos = 20;
+
+      // Repeat header on new page
+      doc.setFillColor(76, 175, 80);
+      doc.rect(14, yPos - 5, 182, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont(undefined, 'bold');
+      doc.text('Tenant', 16, yPos);
+      doc.text('Property', 60, yPos);
+      doc.text('Amount', 110, yPos);
+      doc.text('Due Date', 140, yPos);
+      doc.text('Status', 170, yPos);
+      yPos += 8;
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, 'normal');
+    }
+
+    // Alternate row colors
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(14, yPos - 5, 182, 7, 'F');
     }
 
     const tenantName = `${payment.boarder_first_name} ${payment.boarder_last_name}`;
-    const amount = `₱${parseFloat(payment.amount).toLocaleString()}`;
-    const dueDate = new Date(payment.due_date).toLocaleDateString();
+    const amount = parseFloat(payment.amount) + parseFloat(payment.late_fee || 0);
+    const dueDate = new Date(payment.due_date).toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
     const status = payment.status.charAt(0).toUpperCase() + payment.status.slice(1);
 
-    doc.text(tenantName.substring(0, 20), 14, yPos);
-    doc.text(payment.property_title.substring(0, 25), 60, yPos);
-    doc.text(amount, 120, yPos);
-    doc.text(dueDate, 150, yPos);
-    doc.text(status, 180, yPos);
+    // Set status color
+    if (payment.status === 'paid') {
+      doc.setTextColor(76, 175, 80);
+    } else if (payment.status === 'overdue') {
+      doc.setTextColor(244, 67, 54);
+    } else {
+      doc.setTextColor(255, 152, 0);
+    }
 
-    yPos += 6;
+    doc.text(tenantName.substring(0, 18), 16, yPos);
+    doc.setTextColor(0, 0, 0);
+    doc.text(payment.property_title.substring(0, 20), 60, yPos);
+    doc.text(`₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`, 110, yPos);
+    doc.text(dueDate, 140, yPos);
+
+    // Status with color
+    if (payment.status === 'paid') {
+      doc.setTextColor(76, 175, 80);
+    } else if (payment.status === 'overdue') {
+      doc.setTextColor(244, 67, 54);
+    } else {
+      doc.setTextColor(255, 152, 0);
+    }
+    doc.text(status, 170, yPos);
+    doc.setTextColor(0, 0, 0);
+
+    yPos += 7;
   });
 
+  // Add footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text(
+      `Page ${i} of ${pageCount} | Generated by Haven Space | ${new Date().toLocaleDateString(
+        'en-PH'
+      )}`,
+      14,
+      287
+    );
+  }
+
   // Save PDF
-  const filename = `payment-report-${Date.now()}.pdf`;
+  const filename = `payment-statement-${Date.now()}.pdf`;
   doc.save(filename);
+
+  // Show success message
+  showToast('PDF report generated successfully!', 'success');
 }
 
 /**
- * Generate CSV report
+ * Generate Excel report
+ * Uses SheetJS library for Excel generation
  */
-function generateCSVReport(data) {
-  // CSV headers
+async function generateExcelReport(data, params) {
+  // Check if SheetJS is available
+  if (typeof XLSX === 'undefined') {
+    // Fallback to CSV if SheetJS is not available
+    console.warn('SheetJS library not loaded. Falling back to CSV export.');
+    generateCSVReport(data, params);
+    return;
+  }
+
+  try {
+    const summary = calculateSummary(data);
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+
+    // Summary sheet
+    const summaryData = [
+      ['Haven Space - Payment Statement Report'],
+      [],
+      ['Report Type:', formatReportType(params.reportType)],
+      ['Time Range:', formatTimeRange(params)],
+      ['Generated:', new Date().toLocaleString('en-PH')],
+      [],
+      ['Summary Statistics'],
+      ['Total Payments:', summary.totalCount],
+      [
+        'Total Amount:',
+        `₱${summary.totalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+      ],
+      ['Paid Count:', summary.paidCount],
+      [
+        'Paid Amount:',
+        `₱${summary.paidAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+      ],
+      ['Pending Count:', summary.pendingCount],
+      [
+        'Pending Amount:',
+        `₱${summary.pendingAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+      ],
+      ['Overdue Count:', summary.overdueCount],
+      [
+        'Overdue Amount:',
+        `₱${summary.overdueAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+      ],
+    ];
+
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+    // Payments detail sheet
+    const paymentsData = [
+      [
+        'Tenant Name',
+        'Email',
+        'Property',
+        'Room',
+        'Amount',
+        'Late Fee',
+        'Total',
+        'Due Date',
+        'Paid Date',
+        'Status',
+        'Payment Method',
+        'Reference Number',
+        'Notes',
+      ],
+    ];
+
+    data.forEach(payment => {
+      const amount = parseFloat(payment.amount);
+      const lateFee = parseFloat(payment.late_fee || 0);
+      const total = amount + lateFee;
+
+      paymentsData.push([
+        `${payment.boarder_first_name} ${payment.boarder_last_name}`,
+        payment.boarder_email,
+        payment.property_title,
+        payment.room_title,
+        amount,
+        lateFee,
+        total,
+        payment.due_date,
+        payment.paid_date || '',
+        payment.status.charAt(0).toUpperCase() + payment.status.slice(1),
+        payment.payment_method || '',
+        payment.reference_number || '',
+        payment.notes || '',
+      ]);
+    });
+
+    const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);
+
+    // Set column widths
+    wsPayments['!cols'] = [
+      { wch: 20 }, // Tenant Name
+      { wch: 25 }, // Email
+      { wch: 25 }, // Property
+      { wch: 15 }, // Room
+      { wch: 12 }, // Amount
+      { wch: 10 }, // Late Fee
+      { wch: 12 }, // Total
+      { wch: 12 }, // Due Date
+      { wch: 12 }, // Paid Date
+      { wch: 10 }, // Status
+      { wch: 15 }, // Payment Method
+      { wch: 20 }, // Reference Number
+      { wch: 30 }, // Notes
+    ];
+
+    XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');
+
+    // Generate and download
+    const filename = `payment-statement-${Date.now()}.xlsx`;
+    XLSX.writeFile(wb, filename);
+
+    showToast('Excel report generated successfully!', 'success');
+  } catch (error) {
+    console.error('Excel generation failed:', error);
+    alert('Failed to generate Excel report. Please try CSV export instead.');
+  }
+}
+
+/**
+ * Send email report
+ */
+async function sendEmailReport(data, params) {
+  // Validate email
+  if (!params.emailRecipient) {
+    alert('Please enter a recipient email address');
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(params.emailRecipient)) {
+    alert('Please enter a valid email address');
+    return;
+  }
+
+  try {
+    const summary = calculateSummary(data);
+
+    // Prepare email data
+    const emailData = {
+      recipient: params.emailRecipient,
+      subject: params.emailSubject || 'Payment Statement Report',
+      message: params.emailMessage || '',
+      reportType: params.reportType,
+      timeRange: formatTimeRange(params),
+      summary: {
+        totalCount: summary.totalCount,
+        totalAmount: summary.totalAmount,
+        paidCount: summary.paidCount,
+        paidAmount: summary.paidAmount,
+        pendingCount: summary.pendingCount,
+        pendingAmount: summary.pendingAmount,
+        overdueCount: summary.overdueCount,
+        overdueAmount: summary.overdueAmount,
+      },
+      payments: data.map(payment => ({
+        tenant: `${payment.boarder_first_name} ${payment.boarder_last_name}`,
+        email: payment.boarder_email,
+        property: payment.property_title,
+        room: payment.room_title,
+        amount: parseFloat(payment.amount) + parseFloat(payment.late_fee || 0),
+        dueDate: payment.due_date,
+        paidDate: payment.paid_date,
+        status: payment.status,
+      })),
+    };
+
+    // Send to backend
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payments/email-report`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(emailData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to send email');
+    }
+
+    showToast(`Report sent successfully to ${params.emailRecipient}!`, 'success');
+  } catch (error) {
+    console.error('Email send failed:', error);
+    alert(`Failed to send email: ${error.message}`);
+    throw error;
+  }
+}
+
+/**
+ * Generate CSV report with enhanced formatting
+ */
+function generateCSVReport(data, params) {
+  const summary = calculateSummary(data);
+
+  // CSV headers with metadata
+  const metadata = [
+    ['Haven Space - Payment Statement Report'],
+    [],
+    ['Report Type', formatReportType(params.reportType)],
+    ['Time Range', formatTimeRange(params)],
+    ['Generated', new Date().toLocaleString('en-PH')],
+    [],
+    ['Summary Statistics'],
+    ['Total Payments', summary.totalCount],
+    [
+      'Total Amount',
+      `₱${summary.totalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    ],
+    ['Paid Count', summary.paidCount],
+    ['Paid Amount', `₱${summary.paidAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`],
+    ['Pending Count', summary.pendingCount],
+    [
+      'Pending Amount',
+      `₱${summary.pendingAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    ],
+    ['Overdue Count', summary.overdueCount],
+    [
+      'Overdue Amount',
+      `₱${summary.overdueAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    ],
+    [],
+    [],
+  ];
+
+  // CSV headers for payment data
   const headers = [
     'Tenant Name',
     'Email',
@@ -473,6 +933,7 @@ function generateCSVReport(data) {
     'Room',
     'Amount',
     'Late Fee',
+    'Total Amount',
     'Due Date',
     'Paid Date',
     'Status',
@@ -482,23 +943,31 @@ function generateCSVReport(data) {
   ];
 
   // Convert data to CSV rows
-  const rows = data.map(payment => [
-    `${payment.boarder_first_name} ${payment.boarder_last_name}`,
-    payment.boarder_email,
-    payment.property_title,
-    payment.room_title,
-    payment.amount,
-    payment.late_fee || 0,
-    payment.due_date,
-    payment.paid_date || '',
-    payment.status,
-    payment.payment_method || '',
-    payment.reference_number || '',
-    payment.notes || '',
-  ]);
+  const rows = data.map(payment => {
+    const amount = parseFloat(payment.amount);
+    const lateFee = parseFloat(payment.late_fee || 0);
+    const total = amount + lateFee;
 
-  // Combine headers and rows
+    return [
+      `${payment.boarder_first_name} ${payment.boarder_last_name}`,
+      payment.boarder_email,
+      payment.property_title,
+      payment.room_title,
+      amount.toFixed(2),
+      lateFee.toFixed(2),
+      total.toFixed(2),
+      payment.due_date,
+      payment.paid_date || '',
+      payment.status.charAt(0).toUpperCase() + payment.status.slice(1),
+      payment.payment_method || '',
+      payment.reference_number || '',
+      payment.notes || '',
+    ];
+  });
+
+  // Combine all parts
   const csvContent = [
+    ...metadata.map(row => row.join(',')),
     headers.join(','),
     ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
   ].join('\n');
@@ -509,12 +978,14 @@ function generateCSVReport(data) {
   const url = URL.createObjectURL(blob);
 
   link.setAttribute('href', url);
-  link.setAttribute('download', `payment-report-${Date.now()}.csv`);
+  link.setAttribute('download', `payment-statement-${Date.now()}.csv`);
   link.style.visibility = 'hidden';
 
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  showToast('CSV report generated successfully!', 'success');
 }
 
 /**
@@ -662,4 +1133,111 @@ function formatTimeRange(params) {
     ytd: 'Year-to-Date',
   };
   return ranges[params.timeRange] || params.timeRange;
+}
+
+/**
+ * Show toast notification
+ * @param {string} message - Message to display
+ * @param {string} type - Type of toast (success, error, info)
+ */
+function showToast(message, type = 'info') {
+  // Check if toast container exists, create if not
+  let toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-container';
+    toastContainer.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+
+  const colors = {
+    success: '#4CAF50',
+    error: '#f44336',
+    info: '#2196F3',
+    warning: '#ff9800',
+  };
+
+  toast.style.cssText = `
+    background-color: ${colors[type] || colors.info};
+    color: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 300px;
+    max-width: 500px;
+    animation: slideIn 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  `;
+
+  // Add icon based on type
+  const icons = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ',
+    warning: '⚠',
+  };
+
+  toast.innerHTML = `
+    <span style="font-size: 20px; font-weight: bold;">${icons[type] || icons.info}</span>
+    <span>${message}</span>
+  `;
+
+  // Add animation keyframes if not already added
+  if (!document.getElementById('toast-animations')) {
+    const style = document.createElement('style');
+    style.id = 'toast-animations';
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  toastContainer.appendChild(toast);
+
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    toast.style.animation = 'slideOut 0.3s ease-out';
+    setTimeout(() => {
+      toast.remove();
+      // Remove container if empty
+      if (toastContainer.children.length === 0) {
+        toastContainer.remove();
+      }
+    }, 300);
+  }, 4000);
 }

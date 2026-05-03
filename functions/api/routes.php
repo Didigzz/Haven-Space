@@ -375,6 +375,10 @@ Router::get('/api/landlord/payments/export', function() {
     require_once __DIR__ . '/landlord/payments-export.php';
 });
 
+Router::post('/api/landlord/payments/email-report', function() {
+    require_once __DIR__ . '/landlord/payments-email-report.php';
+});
+
 // ============================================
 // PAYMENT ROUTES - SHARED
 // ============================================

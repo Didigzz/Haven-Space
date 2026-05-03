@@ -8,7 +8,6 @@
 
 -- addresses table
 UPDATE addresses SET address_line_2 = '' WHERE address_line_2 IS NULL;
-UPDATE addresses SET postal_code = '' WHERE postal_code IS NULL;
 UPDATE addresses SET latitude = 0.0 WHERE latitude IS NULL;
 UPDATE addresses SET longitude = 0.0 WHERE longitude IS NULL;
 
@@ -42,12 +41,7 @@ UPDATE landlord_profiles SET welcome_message = '' WHERE welcome_message IS NULL;
 UPDATE payment_methods_landlord SET bank_name = '' WHERE bank_name IS NULL;
 
 -- boarder_profiles table
-UPDATE boarder_profiles SET budget_min = 0.00 WHERE budget_min IS NULL;
-UPDATE boarder_profiles SET budget_max = 0.00 WHERE budget_max IS NULL;
-UPDATE boarder_profiles SET preferred_location = '' WHERE preferred_location IS NULL;
 UPDATE boarder_profiles SET move_in_date = '1970-01-01' WHERE move_in_date IS NULL;
-UPDATE boarder_profiles SET occupation = '' WHERE occupation IS NULL;
-UPDATE boarder_profiles SET bio = '' WHERE bio IS NULL;
 
 -- conversations table
 -- property_id will remain nullable as it's an optional FK
@@ -102,7 +96,6 @@ UPDATE rooms SET description = '' WHERE description IS NULL;
 -- addresses table
 ALTER TABLE addresses
     MODIFY COLUMN address_line_2 VARCHAR(255) NOT NULL DEFAULT '',
-    MODIFY COLUMN postal_code VARCHAR(20) NOT NULL DEFAULT '',
     MODIFY COLUMN latitude DECIMAL(10, 8) NOT NULL DEFAULT 0.0,
     MODIFY COLUMN longitude DECIMAL(11, 8) NOT NULL DEFAULT 0.0;
 
@@ -141,12 +134,7 @@ ALTER TABLE payment_methods_landlord
 
 -- boarder_profiles table
 ALTER TABLE boarder_profiles
-    MODIFY COLUMN budget_min DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-    MODIFY COLUMN budget_max DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-    MODIFY COLUMN preferred_location VARCHAR(255) NOT NULL DEFAULT '',
-    MODIFY COLUMN move_in_date DATE NOT NULL DEFAULT '1970-01-01',
-    MODIFY COLUMN occupation VARCHAR(255) NOT NULL DEFAULT '',
-    MODIFY COLUMN bio TEXT NOT NULL;
+    MODIFY COLUMN move_in_date DATE NOT NULL DEFAULT '1970-01-01';
 
 -- conversation_participants table
 ALTER TABLE conversation_participants

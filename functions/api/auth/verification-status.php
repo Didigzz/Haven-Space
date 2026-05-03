@@ -27,7 +27,7 @@ $pdo = Connection::getInstance()->getPdo();
 try {
     // Get user verification status
     $stmt = $pdo->prepare('
-        SELECT 
+        SELECT
             u.email_verified,
             u.account_status,
             u.verification_status,
@@ -59,7 +59,7 @@ try {
     if ($userStatus['role'] === 'landlord') {
         // Get landlord profile verification status
         $stmt = $pdo->prepare('
-            SELECT 
+            SELECT
                 lp.verification_status as profile_verification_status,
                 lp.verification_submitted_at,
                 lp.verification_reviewed_at,
@@ -79,7 +79,7 @@ try {
 
         // Get uploaded documents status
         $stmt = $pdo->prepare('
-            SELECT 
+            SELECT
                 document_type,
                 upload_status,
                 rejection_reason,
@@ -118,16 +118,8 @@ try {
 
         $response['nextSteps'] = $nextSteps;
     } elseif ($userStatus['role'] === 'boarder') {
-        // Get boarder profile completion status
-        $stmt = $pdo->prepare('
-            SELECT profile_completed
-            FROM boarder_profiles
-            WHERE user_id = ?
-        ');
-        $stmt->execute([$user['user_id']]);
-        $profileStatus = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $response['profileCompleted'] = $profileStatus ? (bool)$profileStatus['profile_completed'] : false;
+        // Profile completion is no longer tracked
+        $response['profileCompleted'] = true;
 
         // Determine next steps for boarders
         $nextSteps = [];

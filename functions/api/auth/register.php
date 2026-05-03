@@ -173,10 +173,10 @@ try {
     } elseif ($role === 'boarder') {
         // Create basic boarder profile
         $stmt = $pdo->prepare('
-            INSERT INTO boarder_profiles (user_id, profile_completed)
-            VALUES (?, ?)
+            INSERT INTO boarder_profiles (user_id)
+            VALUES (?)
         ');
-        $stmt->execute([$userId, false]);
+        $stmt->execute([$userId]);
     }
 
     // Commit transaction

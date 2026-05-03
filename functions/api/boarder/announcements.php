@@ -75,11 +75,9 @@ if ($method === 'GET') {
                 a.view_count,
                 a.created_at,
                 u.first_name,
-                u.last_name,
-                av.viewed_at
+                u.last_name
             FROM announcements a
             LEFT JOIN users u ON a.landlord_id = u.id
-            LEFT JOIN announcement_views av ON a.id = av.announcement_id AND av.user_id = ?
             LEFT JOIN announcement_properties ap ON a.id = ap.announcement_id
             WHERE a.deleted_at IS NULL
             AND a.landlord_id IN ($landlordPlaceholders)
@@ -90,8 +88,8 @@ if ($method === 'GET') {
             AND a.publish_date <= CURDATE()
             ORDER BY a.publish_date DESC, a.created_at DESC
         ");
-        
-        $params = array_merge([$boarderId], $landlordIds, $propertyIds);
+
+        $params = array_merge($landlordIds, $propertyIds);
         $stmt->execute($params);
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -106,8 +104,8 @@ if ($method === 'GET') {
                 'publish_date' => $announcement['publish_date'],
                 'view_count' => intval($announcement['view_count']),
                 'landlord_name' => htmlspecialchars($announcement['first_name'] . ' ' . $announcement['last_name']),
-                'is_viewed' => $announcement['viewed_at'] !== null,
-                'viewed_at' => $announcement['viewed_at'],
+                'is_viewed' => false,
+                'viewed_at' => null,
                 'created_at' => $announcement['created_at']
             ];
         }, $announcements);
@@ -141,22 +139,9 @@ if ($method === 'POST') {
         $pdo = Connection::getInstance()->getPdo();
         $pdo->beginTransaction();
 
-        // Insert view record (ignore if already exists)
-        $stmt = $pdo->prepare("
-            INSERT IGNORE INTO announcement_views (announcement_id, user_id)
-            VALUES (?, ?)
-        ");
-        $stmt->execute([$announcementId, $boarderId]);
-
-        // Update view count
-        $updateStmt = $pdo->prepare("
-            UPDATE announcements 
-            SET view_count = (
-                SELECT COUNT(*) FROM announcement_views WHERE announcement_id = ?
-            )
-            WHERE id = ?
-        ");
-        $updateStmt->execute([$announcementId, $announcementId]);
+        // Update view count by incrementing
+        $updateStmt = $pdo->prepare("UPDATE announcements SET view_count = view_count + 1 WHERE id = ?");
+        $updateStmt->execute([$announcementId]);
 
         $pdo->commit();
 

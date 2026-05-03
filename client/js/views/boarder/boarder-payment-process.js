@@ -708,11 +708,203 @@ function handleDone() {
 }
 
 /**
+ * Generate Receipt PDF
+ * @param {Object} data - Receipt data
+ */
+function generateReceiptPDF(data) {
+  // Create a printable receipt HTML
+  const receiptHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Payment Receipt - ${data.referenceNumber}</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          padding: 40px;
+          background: white;
+          color: #1a1a1a;
+        }
+        .receipt-container {
+          max-width: 600px;
+          margin: 0 auto;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 40px;
+        }
+        .receipt-header {
+          text-align: center;
+          margin-bottom: 40px;
+          padding-bottom: 30px;
+          border-bottom: 2px solid #e5e7eb;
+        }
+        .success-icon {
+          width: 80px;
+          height: 80px;
+          margin: 0 auto 20px;
+          background: #d1fae5;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .success-icon svg {
+          width: 40px;
+          height: 40px;
+          stroke: #10b981;
+        }
+        .receipt-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-bottom: 10px;
+        }
+        .receipt-subtitle {
+          font-size: 16px;
+          color: #6b7280;
+        }
+        .receipt-details {
+          margin-bottom: 30px;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 16px 0;
+          border-bottom: 1px solid #f3f4f6;
+        }
+        .detail-label {
+          font-size: 14px;
+          color: #6b7280;
+          font-weight: 500;
+        }
+        .detail-value {
+          font-size: 16px;
+          color: #1a1a1a;
+          font-weight: 600;
+          text-align: right;
+        }
+        .receipt-footer {
+          text-align: center;
+          padding-top: 30px;
+          border-top: 2px solid #e5e7eb;
+          color: #6b7280;
+          font-size: 14px;
+        }
+        .receipt-footer p {
+          margin-bottom: 8px;
+        }
+        .brand-name {
+          font-weight: 700;
+          color: #10b981;
+        }
+        @media print {
+          body {
+            padding: 0;
+          }
+          .receipt-container {
+            border: none;
+            box-shadow: none;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt-container">
+        <div class="receipt-header">
+          <div class="success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 class="receipt-title">Payment Receipt</h1>
+          <p class="receipt-subtitle">Thank you for your payment!</p>
+        </div>
+        
+        <div class="receipt-details">
+          <div class="detail-row">
+            <span class="detail-label">Reference Number:</span>
+            <span class="detail-value">${data.referenceNumber}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Amount:</span>
+            <span class="detail-value">${data.amount}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Payment Method:</span>
+            <span class="detail-value">${data.paymentMethod}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value">${data.date}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Paid By:</span>
+            <span class="detail-value">${data.userName}</span>
+          </div>
+        </div>
+        
+        <div class="receipt-footer">
+          <p><span class="brand-name">Haven Space</span></p>
+          <p>Your payment has been recorded and is now visible to your landlord.</p>
+          <p>For questions or concerns, please contact your landlord directly.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Create a new window for printing
+  const printWindow = window.open('', '_blank', 'width=800,height=600');
+  if (!printWindow) {
+    showToast('Please allow pop-ups to download receipt', 'error');
+    return;
+  }
+
+  printWindow.document.write(receiptHTML);
+  printWindow.document.close();
+
+  // Wait for content to load, then trigger print dialog
+  printWindow.onload = function () {
+    setTimeout(() => {
+      printWindow.print();
+      // Close the window after printing (user can cancel)
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
+    }, 250);
+  };
+}
+
+/**
  * Handle Download Receipt
  */
 function handleDownloadReceipt() {
-  // TODO: Generate and download receipt PDF
-  showToast('Receipt download initiated');
+  // Get payment data from the success modal
+  const refNumber = document.getElementById('modalRefNumber')?.textContent || 'N/A';
+  const amount = document.getElementById('modalAmount')?.textContent || '₱0.00';
+  const method = document.getElementById('modalMethod')?.textContent || 'N/A';
+  const date = document.getElementById('modalDate')?.textContent || new Date().toLocaleDateString();
+
+  // Get user info from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Boarder';
+
+  // Generate and download receipt
+  generateReceiptPDF({
+    referenceNumber: refNumber,
+    amount: amount,
+    paymentMethod: method,
+    date: date,
+    userName: userName,
+  });
+
+  showToast('Receipt download initiated', 'success');
 }
 
 /**
