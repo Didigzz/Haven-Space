@@ -186,7 +186,7 @@ function buildRoomCard(room) {
     </div>
     <div class="room-card-body">
       <div class="room-card-header">
-        <h3 class="room-number">Room ${escHtml(room.room_number)}</h3>
+        <h3 class="room-number">${escHtml(room.room_number)}</h3>
         <span class="room-price">₱${Number(room.price).toLocaleString()}/mo</span>
       </div>
       <div class="room-details">
@@ -260,7 +260,7 @@ function openEditModal(roomId) {
   if (!room) return;
 
   editingRoomId = roomId;
-  setText('modal-title', `Edit Room ${room.room_number}`);
+  setText('modal-title', `Edit ${room.room_number}`);
 
   setVal('room-number', room.room_number);
   setVal('room-price', room.price);
@@ -469,7 +469,7 @@ function openDeleteModal(roomId) {
   if (!room) return;
 
   pendingDeleteId = roomId;
-  setText('delete-room-name', `Room ${room.room_number}`);
+  setText('delete-room-name', `${room.room_number}`);
   openModal('delete-room-modal');
 }
 
