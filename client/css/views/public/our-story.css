@@ -7,6 +7,20 @@
   --story-accent: #7cb342;
 }
 
+/* Fade-in Animation */
+.fade-in-element {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s forwards ease-out;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Hero Section */
 .story-hero {
   display: flex;
@@ -200,6 +214,28 @@
   transform: translateY(-50%);
 }
 
+.timeline-interview {
+  flex: 0 0 150px;
+  height: 100px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.timeline-interview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.timeline-interview.left-interview {
+  order: -1;
+}
+
+.timeline-item:nth-child(even) .timeline-interview.left-interview {
+  order: 1;
+}
+
 .timeline-item:nth-child(odd) .timeline-content::before {
   right: -6px;
 }
@@ -289,6 +325,11 @@
 .impact-container {
   max-width: 89rem;
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  flex-wrap: wrap;
 }
 
 .impact-content {
@@ -297,6 +338,21 @@
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+  flex: 1;
+  min-width: 300px;
+}
+
+.impact-image {
+  flex: 1;
+  max-width: 50%;
+  margin: 2rem auto;
+}
+
+.impact-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .impact-stats {
@@ -357,6 +413,21 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+}
+
+.testimonial-interview {
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.testimonial-interview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .testimonial-content {
@@ -541,6 +612,26 @@
 
   .timeline-item:nth-child(even) {
     flex-direction: column;
+  }
+
+  .timeline-interview {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 1rem;
+    order: 0 !important;
+  }
+
+  .timeline-interview.left-interview {
+    order: 0 !important;
+  }
+
+  .impact-container {
+    flex-direction: column;
+  }
+
+  .impact-image {
+    max-width: 100%;
+    margin: 1rem auto;
   }
 
   .timeline-content::before {
