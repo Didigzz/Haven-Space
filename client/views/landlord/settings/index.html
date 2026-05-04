@@ -87,10 +87,6 @@
               <img src="../../../assets/svg/shield.svg" alt="Shield Icon" width="24" height="24" />
               Privacy & Security
             </button>
-            <button class="settings-tab" data-tab="leave">
-              <img src="../../../assets/svg/alert.svg" alt="Leave Icon" width="24" height="24" />
-              Leave
-            </button>
           </div>
 
           <!-- Tab Content -->
@@ -372,64 +368,6 @@
               </div>
             </div>
 
-            <!-- Leave Tab -->
-            <div class="settings-panel" id="leave-panel">
-              <div class="settings-card">
-                <h2 class="settings-card-title">Leave Property</h2>
-                <p class="settings-card-description">
-                  Submit a request to leave your current property. This action requires landlord
-                  approval.
-                </p>
-
-                <form class="settings-form" id="leave-form">
-                  <div class="form-group">
-                    <label for="leave-reason">Reason for Leaving</label>
-                    <select id="leave-reason" class="form-control" required>
-                      <option value="">Select a reason</option>
-                      <option value="Relocation">Relocation</option>
-                      <option value="Financial Reasons">Financial Reasons</option>
-                      <option value="Property Issues">Property Issues</option>
-                      <option value="Found Better Accommodation">Found Better Accommodation</option>
-                      <option value="Personal Reasons">Personal Reasons</option>
-                      <option value="Other">Other (Please specify below)</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group" id="custom-reason-group" style="display: none">
-                    <label for="custom-reason">Please Specify</label>
-                    <textarea
-                      id="custom-reason"
-                      class="form-control"
-                      rows="3"
-                      placeholder="Please provide more details about your reason for leaving..."
-                    ></textarea>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="leave-date">Intended Leave Date</label>
-                    <input type="date" id="leave-date" class="form-control" required />
-                    <p class="form-hint">
-                      Please provide at least 30 days notice from today's date
-                    </p>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="additional-notes">Additional Notes (Optional)</label>
-                    <textarea
-                      id="additional-notes"
-                      class="form-control"
-                      rows="4"
-                      placeholder="Any additional information you'd like to share..."
-                    ></textarea>
-                  </div>
-
-                  <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Submit Leave Request</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-
             <!-- Privacy & Security Tab -->
             <div class="settings-panel" id="privacy-panel">
               <div class="settings-card">
@@ -483,64 +421,6 @@
           </div>
         </div>
       </main>
-    </div>
-
-    <!-- Leave Confirmation Modal -->
-    <div class="modal" id="leave-confirmation-modal" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">Confirm Leave Request</h2>
-          <button class="modal-close" id="leave-modal-close-btn">
-            <img src="../../../assets/svg/close.svg" alt="Close Icon" width="24" height="24" />
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="confirmation-message">
-            <img
-              src="../../../assets/svg/alert.svg"
-              alt="Alert Icon"
-              width="48"
-              height="48"
-              style="color: #f59e0b; margin-bottom: 16px"
-            />
-            <h3 style="margin-bottom: 12px; font-size: 18px; font-weight: 600">
-              Are you sure you want to leave?
-            </h3>
-            <p style="color: #6b7280; margin-bottom: 24px; line-height: 1.6">
-              This will submit a leave request to your landlord. Once approved, you will need to
-              find a new room. This action cannot be undone.
-            </p>
-            <div
-              class="leave-summary"
-              style="
-                background: #f9fafb;
-                padding: 16px;
-                border-radius: 8px;
-                text-align: left;
-                margin-bottom: 24px;
-              "
-            >
-              <p style="margin-bottom: 8px">
-                <strong>Reason:</strong> <span id="confirm-reason"></span>
-              </p>
-              <p style="margin-bottom: 8px">
-                <strong>Leave Date:</strong> <span id="confirm-date"></span>
-              </p>
-              <p style="margin: 0"><strong>Status:</strong> Pending Approval</p>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="leave-modal-cancel-btn">Cancel</button>
-          <button
-            class="btn btn-primary"
-            id="leave-modal-confirm-btn"
-            style="background-color: #dc3545; border-color: #dc3545"
-          >
-            Confirm & Submit
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Payment Method Modal -->

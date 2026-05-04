@@ -107,7 +107,6 @@ const NAV_CONFIG = {
           href: '../boarder/house-rules/index.html',
           icon: 'book',
         },
-        { label: 'Contact Management', href: '../boarder/contacts/index.html', icon: 'users' },
       ],
     },
     {
