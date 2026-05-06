@@ -452,6 +452,9 @@ function populateRoomData(room) {
 
   // Load similar properties
   loadSimilarProperties(room.id);
+
+  // Update main Apply Now button based on room availability
+  updateMainApplyButton(room);
 }
 
 /**
@@ -702,6 +705,49 @@ function setupEventListeners(room) {
       scrollToAvailableRooms();
     });
   });
+}
+
+/**
+ * Update main Apply Now button based on room availability
+ */
+function updateMainApplyButton(property) {
+  const applyBtn = document.getElementById('apply-now-btn');
+  if (!applyBtn) return;
+
+  // Check if there are any available rooms
+  const hasAvailableRooms =
+    property.rooms &&
+    property.rooms.some(room => room.status && room.status.toLowerCase() === 'available');
+
+  if (!hasAvailableRooms) {
+    // Disable the button if no rooms are available
+    applyBtn.disabled = true;
+    applyBtn.style.opacity = '0.5';
+    applyBtn.style.cursor = 'not-allowed';
+    applyBtn.style.backgroundColor = '#9ca3af';
+    applyBtn.style.color = '#ffffff';
+    applyBtn.title = 'No rooms currently available';
+
+    // Update button text
+    const buttonText = applyBtn.querySelector('span:not([data-icon])') || applyBtn;
+    if (buttonText.textContent) {
+      buttonText.textContent = 'No Rooms Available';
+    }
+  } else {
+    // Enable the button if rooms are available
+    applyBtn.disabled = false;
+    applyBtn.style.opacity = '1';
+    applyBtn.style.cursor = 'pointer';
+    applyBtn.style.backgroundColor = '';
+    applyBtn.style.color = '';
+    applyBtn.title = '';
+
+    // Reset button text
+    const buttonText = applyBtn.querySelector('span:not([data-icon])') || applyBtn;
+    if (buttonText.textContent && buttonText.textContent.includes('No Rooms')) {
+      buttonText.textContent = 'Apply Now';
+    }
+  }
 }
 
 /**
@@ -1002,10 +1048,23 @@ function loadAvailableRooms(property, filter = 'all') {
 
   // Add click event listeners to room cards
   document.querySelectorAll('.available-room-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const roomData = JSON.parse(card.dataset.room);
-      showRoomDetailModal(roomData, property);
-    });
+    const roomData = JSON.parse(card.dataset.room);
+    const isOccupied = roomData.status && roomData.status.toLowerCase() === 'occupied';
+
+    if (isOccupied) {
+      // Make occupied rooms non-clickable
+      card.style.cursor = 'not-allowed';
+      card.style.opacity = '0.7';
+      card.title = 'This room is currently occupied';
+
+      // Add occupied styling
+      card.classList.add('room-occupied');
+    } else {
+      // Add click event listener for available rooms
+      card.addEventListener('click', () => {
+        showRoomDetailModal(roomData, property);
+      });
+    }
   });
 }
 
@@ -1203,27 +1262,27 @@ function setupRoomModalListeners(room, property, _modal) {
   // Apply button
   const applyBtn = document.getElementById('modal-apply-btn');
   if (applyBtn) {
-    // Check if room is occupied and is a single room
-    const roomType = (room.room_type || room.roomType || '').toLowerCase();
+    // Check if room is occupied
     const roomStatus = (room.status || '').toLowerCase();
-    const isSingleRoom = roomType.includes('single');
     const isOccupied = roomStatus === 'occupied';
 
     // Remove old event listeners by cloning
     const newApplyBtn = applyBtn.cloneNode(true);
 
-    // Disable button if single room is occupied
-    if (isSingleRoom && isOccupied) {
+    // Disable button if room is occupied
+    if (isOccupied) {
       newApplyBtn.disabled = true;
       newApplyBtn.style.opacity = '0.5';
       newApplyBtn.style.cursor = 'not-allowed';
       newApplyBtn.style.backgroundColor = '#9ca3af';
+      newApplyBtn.style.color = '#ffffff';
       newApplyBtn.title = 'This room is currently occupied';
     } else {
       newApplyBtn.disabled = false;
       newApplyBtn.style.opacity = '1';
       newApplyBtn.style.cursor = 'pointer';
       newApplyBtn.style.backgroundColor = '';
+      newApplyBtn.style.color = '';
       newApplyBtn.title = '';
 
       newApplyBtn.addEventListener('click', () => {
