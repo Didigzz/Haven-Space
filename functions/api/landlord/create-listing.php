@@ -73,13 +73,11 @@ try {
             address_line_1,
             city,
             province,
-            country,
             latitude,
             longitude,
             created_at,
             updated_at
         ) VALUES (
-            ?,
             ?,
             ?,
             ?,
@@ -93,7 +91,6 @@ try {
     $propertyAddress = trim($input['propertyAddress']);
     $propertyCity = trim($input['propertyCity']);
     $propertyProvince = trim($input['propertyProvince']);
-    $countryId = !empty($input['propertyCountryId']) ? intval($input['propertyCountryId']) : 1; // Default to Philippines
     $latitude = !empty($input['propertyLatitude']) ? floatval($input['propertyLatitude']) : null;
     $longitude = !empty($input['propertyLongitude']) ? floatval($input['propertyLongitude']) : null;
 
@@ -101,7 +98,6 @@ try {
         $propertyAddress,
         $propertyCity,
         $propertyProvince,
-        $countryId,
         $latitude,
         $longitude,
     ]);
@@ -177,9 +173,9 @@ try {
     // Create rooms for the property
     // Check if custom rooms data is provided from frontend
     $customRooms = isset($input['rooms']) && is_array($input['rooms']) ? $input['rooms'] : [];
-    
+
     $createdRoomIds = []; // Track created room IDs
-    
+
     if (!empty($customRooms)) {
         // Use custom room data from frontend
         $roomStmt = $pdo->prepare("
@@ -201,18 +197,18 @@ try {
         ");
 
         foreach ($customRooms as $index => $roomData) {
-            $roomName = isset($roomData['name']) && trim($roomData['name']) !== '' 
-                ? trim($roomData['name']) 
+            $roomName = isset($roomData['name']) && trim($roomData['name']) !== ''
+                ? trim($roomData['name'])
                 : "Room " . ($index + 1);
-            
+
             $roomCapacity = isset($roomData['capacity']) ? intval($roomData['capacity']) : 1;
             $roomPrice = floatval($input['propertyPrice']);
-            
+
             // Get room type from frontend, or determine based on capacity as fallback
-            $roomType = isset($roomData['roomType']) && !empty($roomData['roomType']) 
-                ? $roomData['roomType'] 
+            $roomType = isset($roomData['roomType']) && !empty($roomData['roomType'])
+                ? $roomData['roomType']
                 : ($roomCapacity === 1 ? 'single' : 'shared');
-            
+
             $roomStmt->execute([
                 $propertyId,
                 $landlordId,
@@ -222,7 +218,7 @@ try {
                 $roomType,
                 $roomCapacity
             ]);
-            
+
             $createdRoomIds[] = intval($pdo->lastInsertId());
         }
     } else {
@@ -230,11 +226,11 @@ try {
         $roomsCount = intval($input['propertyRooms']);
         $roomCapacity = intval($input['propertyCapacity']);
         $roomPrice = floatval($input['propertyPrice']);
-        
+
         // Determine room type based on capacity
         $roomType = $roomCapacity === 1 ? 'single' : 'shared';
         $roomTypeDisplay = $roomCapacity === 1 ? 'Single Room' : "Shared Room ({$roomCapacity} persons)";
-        
+
         if ($roomsCount > 0) {
             $roomStmt = $pdo->prepare("
                 INSERT INTO rooms (
@@ -257,7 +253,7 @@ try {
             for ($i = 1; $i <= $roomsCount; $i++) {
                 $roomNumber = "Room {$i}";
                 $roomTitle = "{$roomTypeDisplay} - {$roomNumber}";
-                
+
                 $roomStmt->execute([
                     $propertyId,
                     $landlordId,
@@ -267,7 +263,7 @@ try {
                     $roomType,
                     $roomCapacity
                 ]);
-                
+
                 $createdRoomIds[] = intval($pdo->lastInsertId());
             }
         }
@@ -280,7 +276,7 @@ try {
             VALUES (?, ?, NOW())
             ON DUPLICATE KEY UPDATE amenity_name = VALUES(amenity_name)
         ");
-        
+
         foreach ($input['amenities'] as $amenity) {
             $amenityName = trim($amenity);
             if (!empty($amenityName)) {

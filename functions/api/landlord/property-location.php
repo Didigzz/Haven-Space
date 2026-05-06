@@ -78,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $city = isset($addressParts[2]) ? trim($addressParts[2]) : null;
     $province = isset($addressParts[3]) ? trim($addressParts[3]) : null;
     $postalCode = isset($addressParts[4]) ? trim($addressParts[4]) : null;
-    $country = end($addressParts) ? trim(end($addressParts)) : 'Philippines';
 
     try {
         $pdo = Connection::getInstance()->getPdo();
@@ -170,8 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $location['address_line_2'],
             $location['city'],
             $location['province'],
-            $location['postal_code'],
-            $location['country']
+            $location['postal_code']
         ]);
         $fullAddress = implode(', ', $addressParts);
 

@@ -42,9 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // First insert address
         $addressStmt = $pdo->prepare("
-            INSERT INTO addresses 
-            (address_line_1, city, province, country, latitude, longitude, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+            INSERT INTO addresses
+            (address_line_1, city, province, latitude, longitude, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, NOW(), NOW())
         ");
 
         $status = isset($input['propertyStatus']) ? $input['propertyStatus'] : 'available';
@@ -52,13 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $longitude = isset($input['propertyLongitude']) && $input['propertyLongitude'] !== '' ? floatval($input['propertyLongitude']) : null;
         $city = isset($input['propertyCity']) ? $input['propertyCity'] : 'Unknown';
         $province = isset($input['propertyProvince']) ? $input['propertyProvince'] : 'Unknown';
-        $country = isset($input['propertyCountry']) && $input['propertyCountry'] !== '' ? $input['propertyCountry'] : 'Philippines'; // Default to Philippines
 
         $addressStmt->execute([
             $input['propertyAddress'],
             $city,
             $province,
-            $country,
             $latitude,
             $longitude
         ]);
@@ -110,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
     // Get property ID from query parameter
     $propertyId = $_GET['id'] ?? null;
-    
+
     if (!$propertyId) {
         json_response(400, ['error' => 'Property ID is required']);
     }
@@ -181,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($propertyId) {
             // Get single property with full details
             $stmt = $pdo->prepare("
-                SELECT 
+                SELECT
                     p.id,
                     p.title,
                     p.description,
@@ -241,9 +239,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'Apartment' => 'apartment',
                 'Dormitory' => 'dormitory',
             ];
-            
+
             $propertyType = $property['property_type'] ?? 'boarding-house';
-            
+
             // If it's already in the correct format (lowercase with hyphens), use it directly
             // Otherwise, try to map it from legacy format
             if (isset($typeMapping[$propertyType])) {
@@ -294,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } else {
             // List all properties
             $stmt = $pdo->prepare("
-                SELECT 
+                SELECT
                     p.id,
                     p.title,
                     p.description,
@@ -311,8 +309,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
                     COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue,
                     lp.property_type as property_type,
-                    (SELECT COUNT(*) FROM applications app 
-                     JOIN rooms rm ON app.room_id = rm.id 
+                    (SELECT COUNT(*) FROM applications app
+                     JOIN rooms rm ON app.room_id = rm.id
                      WHERE rm.property_id = p.id AND app.status = 'pending' AND app.deleted_at IS NULL AND rm.deleted_at IS NULL) as pending_applications
                 FROM properties p
                 LEFT JOIN addresses a ON p.address_id = a.id
@@ -387,8 +385,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'Apartment' => 'apartment',
                     'Dormitory' => 'dormitory',
                 ];
-                $type = isset($typeMapping[$property['property_type']]) 
-                    ? $typeMapping[$property['property_type']] 
+                $type = isset($typeMapping[$property['property_type']])
+                    ? $typeMapping[$property['property_type']]
                     : 'boarding-house';
 
                 return [
