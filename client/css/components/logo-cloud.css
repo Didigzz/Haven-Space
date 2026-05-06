@@ -77,9 +77,9 @@
 }
 
 .logo-track img {
-  height: 1rem; /* h-4 */
+  height: 3rem; /* 48px */
   width: auto;
-  max-width: 120px;
+  max-width: 200px;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
@@ -87,6 +87,7 @@
 
 @media (min-width: 768px) {
   .logo-track img {
-    height: 1.25rem; /* md:h-5 */
+    height: 4rem; /* 64px */
+    max-width: 250px;
   }
 }
