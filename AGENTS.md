@@ -190,16 +190,6 @@ const response = await fetch(url, {
 
 **Prevention**: Before adding columns to the `users` table, check if the data belongs in role-specific profile tables or normalized reference tables. Keep the base `users` table minimal with only authentication and core identity fields. Don't duplicate data that's already available through foreign keys.
 
-## landlord credentials
-
-qwenzy23062@gmail.com
-Kenjigwapo_123
-
-Boarder Credentials
-
-alistairybaez574@gmail.com
-Kenjigwapo_123
-
 When making multi-file string replacements that would fail with shell regex escaping (e.g., PHP $variable['key'] patterns), write a temporary Python script to a file, run it with python <file>, verify the output, then delete the script. Use str.replace() for exact matches and raw strings (r'...') for Windows paths.
 
 ## Appwrite CLI Usage
