@@ -39,6 +39,8 @@ client/uploads/
 
 # Local storage and property uploads
 functions/storage/
+functions/api/storage/
+functions/uploads/
 
 # Backup files
 backups/
