@@ -1,7 +1,0 @@
-- files - Generic file storage (used by ALL users, not just landlords)
-- documents - Document metadata linking files to entities
-- document_types - Lookup table for document categories
-- landlord_profiles - Landlord business information
-- landlord_verification_data - Verification form data
-- landlord_verification_log - Admin action audit trail
-- landlord_documents - Landlord-specific documents for boarders
