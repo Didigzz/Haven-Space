@@ -24,6 +24,10 @@ const ROOT = join(__dirname, '..');
 const SRC = join(ROOT, 'client');
 const DIST = join(ROOT, 'dist');
 
+// Base path for GitHub Pages deployment (e.g., '/Haven-Space/' or '/' for root)
+// Can be set via environment variable: BASE_PATH=/Haven-Space/ bun run build
+const BASE_PATH = process.env.BASE_PATH || '/';
+
 // --- Helpers ---
 
 /**
@@ -75,45 +79,44 @@ function copyFile(srcRelative, destRelative, srcBase, distBase) {
  * `depth` = how many levels up from the file to the root (for ../ prefix).
  */
 function fixPaths(htmlContent, depth) {
-  const prefix = '../'.repeat(depth);
+  // Normalize BASE_PATH to ensure it starts and ends with /
+  let basePath = BASE_PATH;
+  if (!basePath.startsWith('/')) basePath = '/' + basePath;
+  if (!basePath.endsWith('/')) basePath = basePath + '/';
+  if (basePath === '//') basePath = '/';
 
-  // Fix CSS paths (../../css/ -> ../css/ or css/)
-  let fixed = htmlContent.replace(/(href=["'])(\.\.\/)*(css\/[^"']+\.css["'])/g, `$1${prefix}$3`);
+  // For root deployment, use relative paths
+  // For subdirectory deployment (GitHub Pages), use absolute paths with base
+  const prefix = basePath === '/' ? '../'.repeat(depth) : basePath;
 
-  // Fix JS paths (../../js/ -> ../js/ or js/)
-  fixed = fixed.replace(/(src=["'])(\.\.\/)*(js\/[^"']+\.js["'])/g, `$1${prefix}$3`);
+  // Fix CSS paths - match any number of ../ followed by css/
+  let fixed = htmlContent.replace(/(href=["'])(?:\.\.\/)+css\//g, `$1${prefix}css/`);
 
-  // Fix inline script imports (import { ... } from '../../../js/...' -> 'js/...')
-  fixed = fixed.replace(
-    /(import\s+[^"']*from\s+["'])(\.\.\/)*(js\/[^"']+\.js["'])/g,
-    `$1${prefix}$3`
-  );
+  // Fix JS paths - match any number of ../ followed by js/
+  fixed = fixed.replace(/(src=["'])(?:\.\.\/)+js\//g, `$1${prefix}js/`);
 
-  // Fix image paths (../../assets/ -> ../assets/ or assets/)
-  fixed = fixed.replace(
-    /(src=["'])(\.\.\/)*(assets\/[^"']+\.(png|jpg|svg|webp|jpeg|gif|ico|webm)["'])/g,
-    `$1${prefix}$3`
-  );
+  // Fix inline script imports
+  fixed = fixed.replace(/(import\s+[^"']*from\s+["'])(?:\.\.\/)+js\//g, `$1${prefix}js/`);
 
-  // Fix favicon and other asset links in href attributes
-  fixed = fixed.replace(
-    /(href=["'])(\.\.\/)*(assets\/[^"']+\.(png|jpg|svg|webp|jpeg|gif|ico|webm)["'])/g,
-    `$1${prefix}$3`
-  );
+  // Fix image src paths - match any number of ../ followed by assets/
+  fixed = fixed.replace(/(src=["'])(?:\.\.\/)+assets\//g, `$1${prefix}assets/`);
+
+  // Fix asset href paths (favicon, etc)
+  fixed = fixed.replace(/(href=["'])(?:\.\.\/)+assets\//g, `$1${prefix}assets/`);
 
   // Fix auth page links
-  fixed = fixed.replace(/(href=["'])(\.\.\/)*auth\//g, `$1${prefix}auth/`);
+  fixed = fixed.replace(/(href=["'])(?:\.\.\/)*auth\//g, `$1${prefix}auth/`);
 
   // Fix maps.html link
   fixed = fixed.replace(/(href=["'])maps\.html(["'])/g, `$1${prefix}maps.html$2`);
 
   // Fix role dashboard links (boarder/, landlord/, admin/)
-  fixed = fixed.replace(/(href=["'])(\.\.\/)*(boarder\/)/g, `$1${prefix}boarder/`);
-  fixed = fixed.replace(/(href=["'])(\.\.\/)*(landlord\/)/g, `$1${prefix}landlord/`);
-  fixed = fixed.replace(/(href=["'])(\.\.\/)*(admin\/)/g, `$1${prefix}admin/`);
+  fixed = fixed.replace(/(href=["'])(?:\.\.\/)*boarder\//g, `$1${prefix}boarder/`);
+  fixed = fixed.replace(/(href=["'])(?:\.\.\/)*landlord\//g, `$1${prefix}landlord/`);
+  fixed = fixed.replace(/(href=["'])(?:\.\.\/)*admin\//g, `$1${prefix}admin/`);
 
   // Fix index.html root links
-  fixed = fixed.replace(/(href=["'])(\.\.\/)+(index\.html)/g, `$1${prefix}$3`);
+  fixed = fixed.replace(/(href=["'])(?:\.\.\/)+index\.html/g, `$1${prefix}index.html`);
 
   return fixed;
 }
