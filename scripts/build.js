@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 
 /**
  * Build script for production deployment
  * Automatically scans all files under client/ and copies them to dist/
- * with a flat structure suitable for GitHub Pages root deployment.
+ * with a flat structure suitable for Cloudflare Pages root deployment.
  */
 
 import {
@@ -24,8 +24,8 @@ const ROOT = join(__dirname, '..');
 const SRC = join(ROOT, 'client');
 const DIST = join(ROOT, 'dist');
 
-// Base path for GitHub Pages deployment (e.g., '/Haven-Space/' or '/' for root)
-// Can be set via environment variable: BASE_PATH=/Haven-Space/ bun run build
+// Base path for Cloudflare Pages deployment. Keep '/' for the production project.
+// Can be set via environment variable: BASE_PATH=/preview/ bun run build
 const BASE_PATH = process.env.BASE_PATH || '/';
 
 // --- Helpers ---
@@ -66,7 +66,7 @@ function copyFile(srcRelative, destRelative, srcBase, distBase) {
   const destPath = join(distBase, destRelative);
 
   if (!existsSync(srcPath)) {
-    console.warn(`⚠️  Warning: ${srcPath} not found, skipping...`);
+    console.warn(`âš ï¸  Warning: ${srcPath} not found, skipping...`);
     return;
   }
 
@@ -86,7 +86,7 @@ function fixPaths(htmlContent, depth) {
   if (basePath === '//') basePath = '/';
 
   // For root deployment, use relative paths
-  // For subdirectory deployment (GitHub Pages), use absolute paths with base
+  // For subdirectory deployment, use absolute paths with base
   const prefix = basePath === '/' ? '../'.repeat(depth) : basePath;
 
   // Fix CSS paths - match any number of ../ followed by css/
@@ -126,8 +126,8 @@ function fixPaths(htmlContent, depth) {
  */
 function depthToRoot(filePath) {
   // Count directory separators to determine depth
-  // e.g., 'boarder/applications/index.html' → depth 2
-  // e.g., 'index.html' → depth 0
+  // e.g., 'boarder/applications/index.html' â†’ depth 2
+  // e.g., 'index.html' â†’ depth 0
   // Normalize to forward slashes for cross-platform compatibility
   const normalizedPath = filePath.replace(/\\/g, '/');
   const parts = normalizedPath.split('/');
@@ -144,7 +144,7 @@ if (existsSync(DIST)) {
     rmSync(DIST, { recursive: true, force: true });
   } catch (error) {
     console.warn(
-      `⚠️  Warning: Could not delete ${DIST}, will attempt to overwrite: ${error.message}`
+      `âš ï¸  Warning: Could not delete ${DIST}, will attempt to overwrite: ${error.message}`
     );
   }
 }
@@ -187,7 +187,7 @@ htmlFiles.forEach(file => {
 
   const srcPath = join(SRC, 'views', file);
   if (!existsSync(srcPath)) {
-    console.warn(`⚠️  Warning: ${srcPath} not found, skipping...`);
+    console.warn(`âš ï¸  Warning: ${srcPath} not found, skipping...`);
     return;
   }
 
@@ -200,22 +200,22 @@ htmlFiles.forEach(file => {
   const isRoleFolder = roleFolders.includes(role);
 
   if (!isRoleFolder) {
-    console.warn(`⚠️  Warning: Unknown role folder "${role}" in ${file}, skipping...`);
+    console.warn(`âš ï¸  Warning: Unknown role folder "${role}" in ${file}, skipping...`);
     return;
   }
 
   if (role === 'public') {
     if (lastFolder === 'auth') {
-      // Auth files → dist/auth/
+      // Auth files â†’ dist/auth/
       destPath = join(DIST, 'auth', fileName);
       depth = 1;
     } else {
-      // Other public files → dist root
+      // Other public files â†’ dist root
       destPath = join(DIST, fileName);
       depth = 0;
     }
   } else if (role === 'admin') {
-    // Admin files → dist/admin/...
+    // Admin files â†’ dist/admin/...
     if (parts.length === 2) {
       // Direct admin file (e.g., admin/index.html)
       destPath = join(DIST, 'admin', fileName);
@@ -259,83 +259,85 @@ htmlFiles.forEach(file => {
 
   // Calculate display path
   const displayDest = relative(DIST, destPath);
-  console.log(`✓ ${file} → ${displayDest}`);
+  console.log(`âœ“ ${file} â†’ ${displayDest}`);
 });
 
 console.log('');
 
-// ===== 3. Copy CSS files → dist/css/ =====
+// ===== 3. Copy CSS files â†’ dist/css/ =====
 
 cssFiles.forEach(file => {
   copyFile(file, `css/${file}`, join(SRC, 'css'), DIST);
-  console.log(`✓ css/${file}`);
+  console.log(`âœ“ css/${file}`);
 });
 
 console.log('');
 
-// ===== 4. Copy JS files → dist/js/ =====
+// ===== 4. Copy JS files â†’ dist/js/ =====
 
 jsFiles.forEach(file => {
   copyFile(file, `js/${file}`, join(SRC, 'js'), DIST);
-  console.log(`✓ js/${file}`);
+  console.log(`âœ“ js/${file}`);
 });
 
 console.log('');
 
-// ===== 5. Copy image files → dist/assets/ =====
+// ===== 5. Copy image files â†’ dist/assets/ =====
 
 imageFiles.forEach(file => {
   copyFile(file, `assets/${file}`, join(SRC, 'assets'), DIST);
-  console.log(`✓ assets/${file}`);
+  console.log(`âœ“ assets/${file}`);
 });
 
 console.log('');
 
-// ===== 6. Copy component HTML files → dist/components/ =====
+// ===== 6. Copy component HTML files â†’ dist/components/ =====
 
 componentFiles.forEach(file => {
   copyFile(file, `components/${file}`, join(SRC, 'components'), DIST);
-  console.log(`✓ components/${file}`);
+  console.log(`âœ“ components/${file}`);
 });
+
+writeFileSync(
+  join(DIST, '_headers'),
+  `/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+`
+);
+console.log('Cloudflare Pages _headers');
 
 // ===== Done =====
 
-console.log('\n✅ Build complete! Production files are in ./dist');
+console.log('\nâœ… Build complete! Production files are in ./dist');
 console.log(`\n   ${htmlFiles.length} HTML files processed`);
 console.log(`   ${cssFiles.length} CSS files copied`);
 console.log(`   ${jsFiles.length} JS files copied`);
 console.log(`   ${imageFiles.length} image files copied`);
 console.log(`   ${componentFiles.length} component files copied`);
-console.log('\nURLs will now be:');
+console.log('\nCloudflare Pages URLs will be:');
 console.log('\n  Public:');
-console.log('    havenspace.com/ → Homepage');
-console.log('    havenspace.com/maps.html → Map view');
-console.log('    havenspace.com/auth/login.html → Login page');
-console.log('    havenspace.com/auth/signup.html → Signup page');
-console.log('    havenspace.com/auth/forgot-password.html → Forgot Password');
+console.log('    https://haven-space.pages.dev/ -> Homepage');
+console.log('    https://haven-space.pages.dev/maps.html -> Map view');
+console.log('    https://haven-space.pages.dev/auth/login.html -> Login page');
+console.log('    https://haven-space.pages.dev/auth/signup.html -> Signup page');
+console.log('    https://haven-space.pages.dev/auth/forgot-password.html -> Forgot Password');
 console.log('\n  Admin:');
-console.log('    havenspace.com/admin/ → Admin Dashboard');
+console.log('    https://haven-space.pages.dev/admin/ -> Admin Dashboard');
 console.log('\n  Boarder:');
-console.log('    havenspace.com/boarder/ → Dashboard');
-console.log('    havenspace.com/boarder/maps/ → Map view');
-console.log('    havenspace.com/boarder/applications/ → Applications');
-console.log('    havenspace.com/boarder/maintenance/ → Maintenance');
-console.log('    havenspace.com/boarder/messages/ → Messages');
-console.log('    havenspace.com/boarder/notices/ → Notices');
-console.log('    havenspace.com/boarder/payments/ → Payments');
-console.log('    havenspace.com/boarder/profile/ → Profile');
-console.log('    havenspace.com/boarder/rooms/ → Rooms');
-console.log('    havenspace.com/boarder/find-a-room/ → Find a Room');
-console.log('    havenspace.com/boarder/tenancy/ → Tenancy');
+console.log('    https://haven-space.pages.dev/boarder/ -> Dashboard');
+console.log('    https://haven-space.pages.dev/boarder/maps/ -> Map view');
+console.log('    https://haven-space.pages.dev/boarder/applications/ -> Applications');
+console.log('    https://haven-space.pages.dev/boarder/messages/ -> Messages');
+console.log('    https://haven-space.pages.dev/boarder/payments/ -> Payments');
+console.log('    https://haven-space.pages.dev/boarder/find-a-room/ -> Find a Room');
+console.log('    https://haven-space.pages.dev/boarder/tenancy/ -> Tenancy');
 console.log('\n  Landlord:');
-console.log('    havenspace.com/landlord/ → Dashboard');
-console.log('    havenspace.com/landlord/maps/ → Map view');
-console.log('    havenspace.com/landlord/applications/ → Applications');
-console.log('    havenspace.com/landlord/boarders/ → Boarders');
-console.log('    havenspace.com/landlord/listings/ → Listings');
-console.log('    havenspace.com/landlord/maintenance/ → Maintenance');
-console.log('    havenspace.com/landlord/messages/ → Messages');
-console.log('    havenspace.com/landlord/myproperties/ → My Properties');
-console.log('    havenspace.com/landlord/payments/ → Payments');
-console.log('    havenspace.com/landlord/profile/ → Profile');
-console.log('    havenspace.com/landlord/reports/ → Reports');
+console.log('    https://haven-space.pages.dev/landlord/ -> Dashboard');
+console.log('    https://haven-space.pages.dev/landlord/maps/ -> Map view');
+console.log('    https://haven-space.pages.dev/landlord/applications/ -> Applications');
+console.log('    https://haven-space.pages.dev/landlord/boarders/ -> Boarders');
+console.log('    https://haven-space.pages.dev/landlord/listings/ -> Listings');
+console.log('    https://haven-space.pages.dev/landlord/messages/ -> Messages');
+console.log('    https://haven-space.pages.dev/landlord/payments/ -> Payments');
