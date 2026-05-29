@@ -1,6 +1,6 @@
 # Haven Space - Frontend
 
-The frontend for Haven Space is built with vanilla HTML5, CSS3, and JavaScript (ES6+). No frameworks or build tools are required.
+The frontend for Haven Space is built with vanilla HTML5, CSS3, and JavaScript (ES6+), then copied into `dist/` for Cloudflare Pages.
 
 ## Directory Structure
 
@@ -30,24 +30,17 @@ client/
 
 ### Running Locally
 
-Serve the frontend with any static file server:
+Build and serve the Cloudflare Pages output:
 
 ```bash
-# Using Node.js http-server
-npx http-server -p 3000
-
-# Using Python
-python -m http.server 3000
-
-# Using bun
-bun run --hot
+bun run cf:pages:dev
 ```
 
-Navigate to `http://localhost:3000/client/views/public/index.html`
+Navigate to `http://localhost:8788`.
 
 ### Entry Point
 
-- `index.html` - Redirects to `./views/public/index.html`
+- `views/public/index.html` - Source homepage copied to `dist/index.html`
 - `js/main.js` - Main JavaScript entry point
 
 ## Architecture

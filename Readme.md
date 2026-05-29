@@ -1,191 +1,113 @@
 # Haven Space
 
-<div align="center">
+Haven Space is a boarding house platform for boarders, landlords, and admins.
 
-<img src="client/assets/images/Haven_Space_Logo.png" alt="Haven Space Logo" width="180"/>
+## Stack
 
-**A boarding house management platform connecting boarders and landlords.**
+| Layer    | Technology                             |
+| -------- | -------------------------------------- |
+| Frontend | Cloudflare Pages static site           |
+| API      | TypeScript Cloudflare Worker with Hono |
+| Database | Cloudflare D1                          |
+| Uploads  | UploadThing                            |
+| Tooling  | Bun, Wrangler, ESLint, Prettier        |
 
-[![HTML](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
-[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
-[![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black)](https://prettier.io/)
-[![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)](https://eslint.org/)
+## Backend Status
 
-</div>
+The PHP `functions/` backend has been removed. The active API lives in [workers/api](./workers/api).
 
----
+Payments and messages are intentionally deferred for now. The Worker returns `501 FEATURE_DEFERRED` for those route groups until they are implemented.
 
-## Overview
+## Setup
 
-Haven Space is a full-stack boarding house platform that streamlines the rental experience for both landlords and boarders. Landlords can list and manage properties, track payments, and communicate with tenants. Boarders can discover rooms, submit applications, and manage their stay — all in one place.
-
-- **Frontend**: Vanilla HTML/CSS/JS served via Apache (`http://localhost`)
-- **Backend**: PHP REST API running at `http://localhost:8000`
-
----
-
-## Features
-
-### For Boarders
-
-- Browse and search available rooms
-- Submit rental applications
-- Track application status
-- Manage payments and view payment history
-- Submit maintenance requests
-- Communicate with landlords via messaging
-- Submit leave requests
-
-### For Landlords
-
-- List and manage properties and rooms
-- Review and approve/reject boarder applications
-- Track rent payments and generate reports
-- Post announcements to boarders
-- Manage maintenance requests
-- View analytics dashboard
-- Calendar and scheduling tools
-
-### For Admins
-
-- Platform-wide user and property oversight
-- Analytics and reporting
-
----
-
-## Tech Stack
-
-| Layer           | Technology                                   |
-| --------------- | -------------------------------------------- |
-| Frontend        | HTML5, CSS3, Vanilla JavaScript (ES Modules) |
-| UI Framework    | Bootstrap                                    |
-| Backend         | PHP 8+                                       |
-| Database        | MySQL                                        |
-| Package Manager | Bun                                          |
-| Code Quality    | ESLint, Prettier, Husky, commitlint          |
-
----
-
-## Project Structure
-
-```
-haven-space/
-├── client/               # Static frontend (HTML, CSS, JS, assets)
-│   ├── assets/           # Images, SVGs, icons
-│   ├── components/       # Reusable HTML component templates
-│   ├── css/              # Global and view-specific stylesheets
-│   ├── js/               # ES module JavaScript
-│   │   ├── components/   # Reusable UI component logic
-│   │   ├── shared/       # Auth helpers, state, utilities
-│   │   └── views/        # Page-level view initializers (by role)
-│   └── views/            # HTML pages organized by role
-│       ├── boarder/
-│       ├── landlord/
-│       ├── admin/
-│       └── public/
-├── functions/            # PHP backend
-│   ├── api/              # Route table and legacy endpoints
-│   ├── src/              # PSR-4 modules (Controllers/Services/Repositories)
-│   ├── config/           # Environment config
-│   └── database/         # SQL migrations and seeds
-├── scripts/              # Build, DB setup, and utility scripts
-└── docs/                 # Documentation and manuals
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) — JS package manager and task runner
-- [PHP 8+](https://www.php.net/) with Composer
-- [MySQL](https://www.mysql.com/) (via XAMPP or standalone)
-- [Apache](https://httpd.apache.org/) (via XAMPP) for serving the frontend
-
-### Installation
+Install dependencies:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/haven-space.git
-cd haven-space
-
-# 2. Install JS dev dependencies
 bun install
-
-# 3. Install PHP backend dependencies
-composer install --working-dir functions
-
-# 4. Set up the database
-bun run db:setup
+bun install --cwd workers/api
 ```
 
-### Running Locally
-
-Start Apache and MySQL via XAMPP (or your preferred stack), then:
+Run the Worker API locally:
 
 ```bash
-# The PHP API server should already be running at http://localhost:8000
-# Frontend is served from http://localhost via Apache
+bun run cf:api:dev
 ```
 
----
+The local API default is `http://localhost:8787`.
 
-## Available Scripts
-
-| Command                                 | Description                                 |
-| --------------------------------------- | ------------------------------------------- |
-| `bun run build`                         | Build deployable static frontend to `dist/` |
-| `bun run lint`                          | Lint frontend JavaScript                    |
-| `bun run lint:fix`                      | Auto-fix lint issues                        |
-| `bun run format`                        | Format all files with Prettier              |
-| `bun run format:check`                  | Check formatting without writing            |
-| `bun run db:setup`                      | Run database migrations                     |
-| `bun run db:reset`                      | Reset the database                          |
-| `composer test --working-dir functions` | Run backend tests                           |
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Commit using [Conventional Commits](https://www.conventionalcommits.org/): `git commit -m "feat: add room search filters"`
-4. Push and open a pull request
-
-Pre-PR checks:
+Run the Cloudflare Pages frontend locally:
 
 ```bash
-bun run lint && bun run format:check && bun run build
+bun run dev
 ```
 
----
+The local Pages URL is `http://localhost:8788`.
 
-## License
+Apply D1 migrations:
 
-This project is licensed under the [MIT License](LICENSE).
+```bash
+cd workers/api
+bunx wrangler d1 migrations apply haven-space --local
+bunx wrangler d1 migrations apply haven-space --remote
+```
 
----
+Required Worker secrets:
 
-## Documentation
+```bash
+cd workers/api
+bunx wrangler secret put JWT_SECRET --env=""
+bunx wrangler secret put UPLOADTHING_TOKEN --env=""
+```
 
-- [Setup Manual](docs/MANUAL.md) — step-by-step local setup guide
-- [Commit Guidelines](docs/COMMIT_GUIDELINES.md)
-- [Contributing](.github/CONTRIBUTING.md)
+## Frontend API URL
 
----
+The frontend defaults to:
 
-<div align="center">
-  Made with ❤️ by the Haven Space Team
-</div>
+- local: `http://localhost:8787`
+- production: `https://haven-space-api.floresaybaez574.workers.dev`
 
----
+Override it without editing files:
 
-## Preview
+```text
+?apiBaseUrl=https://your-worker-url.example
+```
 
-![Haven Space Screenshot](docs/assets/screenshot1.png)
+The override is saved in `localStorage.havenSpaceApiBaseUrl`.
+
+## Scripts
+
+| Command                    | Description                  |
+| -------------------------- | ---------------------------- |
+| `bun run cf:api:dev`       | Run the Worker locally       |
+| `bun run cf:api:test`      | Run Worker tests             |
+| `bun run cf:api:typecheck` | Typecheck Worker code        |
+| `bun run cf:api:deploy`    | Deploy the production Worker |
+| `bun run cf:pages:dev`     | Run Cloudflare Pages locally |
+| `bun run cf:pages:deploy`  | Deploy Cloudflare Pages      |
+| `bun run deploy`           | Deploy Worker and Pages      |
+| `bun run build`            | Build static frontend output |
+| `bun run lint`             | Lint frontend JavaScript     |
+| `bun run format`           | Format files with Prettier   |
+
+## Production Deploy
+
+Create the Pages project once if it does not exist yet:
+
+```bash
+bun run cf:pages:create
+```
+
+Deploy the full Cloudflare stack:
+
+```bash
+bun run deploy
+```
+
+The expected production frontend is `https://haven-space.pages.dev`. In Cloudflare Pages, set the project production branch to `main`.
+
+## Deferred Work
+
+- Implement payments in the Worker.
+- Implement messages in the Worker.
+- Add production email delivery for password reset codes.
+- Run a final browser/prod smoke pass when ready.

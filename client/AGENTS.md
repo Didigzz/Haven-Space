@@ -2,12 +2,12 @@
 
 ## Package Identity
 
-- `client/` contains the browser app served from Apache/XAMPP: HTML views, CSS, static components, and ES module JavaScript.
+- `client/` contains the browser app built into `dist/` for Cloudflare Pages: HTML views, CSS, static components, and ES module JavaScript.
 - There is no frontend framework. Routing is page-based and initialization flows through [main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js).
 
 ## Setup & Run
 
-- Frontend base URL: `http://localhost`
+- Frontend dev URL: `http://localhost:8788` via `bun run cf:pages:dev`
 - Lint JS: `bun run lint`
 - Format touched files: `bun run format`
 - Build deployable static output: `bun run build`
@@ -49,7 +49,7 @@
 
 ## Common Gotchas
 
-- `http://localhost` serves the frontend, while many JS modules talk to `http://localhost:8000`; keep both local and production URLs working.
+- `http://localhost` can serve the frontend, while API calls default to the Cloudflare Worker at `http://localhost:8787` locally; keep both local and production Worker URLs working.
 - `scripts/build.js` rewrites paths for `dist/`, so hardcoded relative paths can break production even if localhost works.
 - Authentication state is spread across `token`, `user`, `user_id`, and related flags in `localStorage`; changes usually need to stay consistent across all shared auth utilities.
 

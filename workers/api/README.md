@@ -2,7 +2,7 @@
 
 TypeScript Cloudflare Worker replacement for the existing PHP API.
 
-This package is intentionally side-by-side with `functions/` while endpoints are migrated in small groups. Do not delete a PHP endpoint until its Worker route has tests and the frontend route group has been checked against the Worker.
+This package is now the active backend. The former PHP `functions/` backend has been removed; payment and message route groups are intentionally deferred and currently return explicit `501 FEATURE_DEFERRED` TODO responses.
 
 ## Commands
 
@@ -26,14 +26,24 @@ Deploy production after Cloudflare authentication is configured:
 bun run cf:api:deploy
 ```
 
+Production CORS is configured for the Cloudflare Pages frontend at
+`https://haven-space.pages.dev`. If the Pages project gets a custom domain later,
+add that origin to `APP_ORIGIN` in `wrangler.jsonc` and redeploy the Worker.
+
 ## Secrets
 
 Copy `.dev.vars.example` to `.dev.vars` for local values. Keep real secrets out of git.
 
-Protected routes that accept PHP JWTs require the same `JWT_SECRET` as the PHP backend:
+Protected routes require `JWT_SECRET` for Worker-issued JWTs:
 
 ```bash
-bunx wrangler secret put JWT_SECRET
+bunx wrangler secret put JWT_SECRET --env=""
+```
+
+Photo upload routes require an UploadThing token:
+
+```bash
+bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 ```
 
 ## Current Routes
@@ -42,6 +52,32 @@ bunx wrangler secret put JWT_SECRET
 - `GET /test`
 - `GET /api/health`
 - `POST /auth/check-email`
+- `POST /auth/register`
+- `POST /auth/register.php`
+- `POST /api/auth/register`
+- `POST /api/auth/register.php`
+- `POST /auth/login`
+- `POST /auth/login.php`
+- `GET /auth/me`
+- `GET /auth/me.php`
+- `POST /auth/change-password`
+- `POST /auth/change-password.php`
+- `POST /auth/forgot-password`
+- `POST /auth/forgot-password.php`
+- `POST /auth/verify-reset-code`
+- `POST /auth/verify-reset-code.php`
+- `POST /auth/resend-reset-code`
+- `POST /auth/resend-reset-code.php`
+- `POST /auth/reset-password`
+- `POST /auth/reset-password.php`
+- `POST /auth/refresh-token`
+- `POST /auth/refresh-token.php`
+- `POST /auth/logout`
+- `POST /auth/logout.php`
+- `GET /api/users/profile`
+- `PUT /api/users/profile`
+- `PATCH /api/users/profile`
+- `POST /api/users/avatar`
 - `GET /api/rooms/popular-locations`
 - `GET /api/rooms/public`
 - `GET /api/rooms/detail`
@@ -52,19 +88,90 @@ bunx wrangler secret put JWT_SECRET
 - `GET /api/boarder/saved-listings?property_id=...`
 - `POST /api/boarder/saved-listings`
 - `DELETE /api/boarder/saved-listings`
+- `GET /api/boarder/onboarding-status`
+- `POST /api/boarder/update-onboarding`
+- `GET /api/boarder/tenancy`
+- `POST /api/boarder/leave-request`
 - `GET /api/boarder/applications`
 - `POST /api/boarder/applications`
 - `GET /api/boarder/applications/:id`
 - `DELETE /api/boarder/applications/:id`
 - `POST /api/boarder/applications/:id/confirm`
+- `GET /api/boarder/accepted-applications`
+- `GET /api/boarder/has-accepted-applications`
+- `GET /api/boarder/announcements`
+- `POST /api/boarder/announcements/:id/view`
+- `GET /api/notifications?limit=...&offset=...`
+- `GET /api/notifications/unread-count`
+- `PATCH /api/notifications/:id/read`
+- `PATCH /api/notifications/read-all`
+- `DELETE /api/notifications/:id`
+- `TODO /api/payments/*` returns `501 FEATURE_DEFERRED`
+- `TODO /api/messages/*` returns `501 FEATURE_DEFERRED`
 - `GET /api/landlord/applications`
 - `GET /api/landlord/applications/:id`
 - `PATCH /api/landlord/applications/:id/status`
+- `GET /api/landlord/dashboard-stats`
+- `GET /api/landlord/dashboard-stats.php`
+- `GET /api/landlord/dashboard/stats`
+- `GET /api/landlord/boarders?propertyId=...`
+- `GET /api/landlord/boarders.php?propertyId=...`
+- `POST /api/landlord/approve-leave-request`
+- `GET /api/landlord/announcements`
+- `POST /api/landlord/announcements`
+- `PUT /api/landlord/announcements/:id`
+- `DELETE /api/landlord/announcements/:id`
+- `POST /api/landlord/boarders`
+- `POST /api/landlord/boarders.php`
+- `PUT /api/landlord/boarders`
+- `PUT /api/landlord/boarders.php`
+- `DELETE /api/landlord/boarders?id=...`
+- `DELETE /api/landlord/boarders.php?id=...`
 - `GET /api/landlord/properties`
 - `GET /api/landlord/properties.php`
 - `GET /api/landlord/properties?id=...`
 - `GET /api/landlord/properties.php?id=...`
+- `POST /api/landlord/properties.php`
+- `DELETE /api/landlord/properties?id=...`
+- `DELETE /api/landlord/properties.php?id=...`
 - `POST /api/landlord/listings`
+- `PUT /api/landlord/listings/:id`
+- `POST /api/landlord/upload-photos`
+- `POST /api/landlord/upload-photos.php`
+- `POST /api/landlord/listings/:id/photos`
+- `GET /api/landlord/rooms?propertyId=...`
+- `GET /api/landlord/rooms.php?propertyId=...`
+- `GET /api/landlord/rooms?propertyId=...&id=...`
+- `GET /api/landlord/rooms.php?propertyId=...&id=...`
+- `POST /api/landlord/rooms`
+- `POST /api/landlord/rooms.php`
+- `POST /api/landlord/rooms/:id/photos`
+- `PATCH /api/landlord/rooms/:id/photos`
+- `DELETE /api/landlord/rooms/:id/photos`
+- `PUT /api/landlord/rooms?id=...`
+- `PUT /api/landlord/rooms.php?id=...`
+- `DELETE /api/landlord/rooms?id=...`
+- `DELETE /api/landlord/rooms.php?id=...`
+- `GET /api/admin/landlords?status=...`
+- `GET /api/admin/landlords.php?status=...`
+- `POST /api/admin/landlords`
+- `POST /api/admin/landlords.php`
+- `GET /api/admin/summary`
+- `GET /api/admin/summary.php`
+- `GET /api/admin/users?limit=...&offset=...&q=...&role=...`
+- `GET /api/admin/users.php?limit=...&offset=...&q=...&role=...`
+- `PATCH /api/admin/users`
+- `PATCH /api/admin/users.php`
+- `GET /api/admin/properties?moderation=...`
+- `GET /api/admin/properties.php?moderation=...`
+- `POST /api/admin/properties`
+- `POST /api/admin/properties.php`
+- `GET /api/admin/applications`
+- `GET /api/admin/applications.php`
+- `GET /api/admin/settings`
+- `GET /api/admin/settings.php`
+- `PATCH /api/admin/settings`
+- `PATCH /api/admin/settings.php`
 
 ## Shared Utilities
 
@@ -92,3 +199,27 @@ Apply migrations:
 bunx wrangler d1 migrations apply haven-space --local
 bunx wrangler d1 migrations apply haven-space --remote
 ```
+
+Phase 8 adds `0008_platform_settings.sql`, `0009_notifications.sql`, `0010_account_basics.sql`, `0011_tenancy_leave_requests.sql`, and `0012_announcements.sql`; apply them before using the Worker-backed admin dashboard, notification, profile, avatar, password, onboarding, tenancy, leave-request, and announcement routes remotely.
+
+Password reset routes currently persist and validate reset codes in D1. Outbound reset-code email delivery still needs a Worker-compatible transactional email provider before production password reset emails are complete.
+
+## UploadThing Setup
+
+Photo upload routes use UploadThing and store the returned CDN URLs in D1.
+
+Set the Worker secret before deploying upload routes:
+
+```bash
+bunx wrangler secret put UPLOADTHING_TOKEN --env=""
+```
+
+## Frontend API Override
+
+During Phase 7 testing, point the static frontend at a Worker API without editing files by opening any page with:
+
+```text
+?apiBaseUrl=http://localhost:8787
+```
+
+The value is saved to `localStorage.havenSpaceApiBaseUrl`. Clear that key to return to the default Worker API.
