@@ -33,6 +33,7 @@
 - [x] Phase 4g: Port landlord application status endpoint: `PATCH /api/landlord/applications/:id/status`.
 - [ ] Phase 5: Port landlord property, room, boarder, announcement, calendar, and welcome-setting routes.
 - [x] Phase 5a: Port landlord property read endpoints: `GET /api/landlord/properties` and `.php` aliases.
+- [x] Phase 5b: Port landlord listing creation endpoint: `POST /api/landlord/listings`.
 - [ ] Phase 6: Port payments, notifications, messages, uploads, and AI endpoints.
 - [ ] Phase 7: Switch frontend API base URL from PHP to the Worker only after parity tests pass.
 - [ ] Phase 8: Remove PHP endpoints after production traffic has been verified on Cloudflare.
@@ -466,9 +467,17 @@ Port these aliases:
 
 Create `workers/api/test/landlord.test.ts` for landlord property list/detail response shapes, `.php` alias behavior, empty lists, not-found behavior, photo URL normalization, and landlord-only authorization.
 
-- [ ] **Step 3: Port remaining landlord property write paths one at a time**
+- [x] **Step 3: Port `POST /api/landlord/listings`**
 
-Next endpoints: `POST /api/landlord/listings`, property photo uploads, room photo uploads, `PUT /api/landlord/listings/:id`, and property delete/update aliases.
+Extend `workers/api/src/repositories/landlord-properties.ts` and `workers/api/src/routes/landlord.ts`. Preserve PHP-compatible responses for missing required fields, successful property creation, initial room creation, and amenity insertion. Return created room IDs so the existing frontend can upload room photos after property creation.
+
+- [x] **Step 3a: Add landlord listing creation tests**
+
+Extend `workers/api/test/landlord.test.ts` for `POST /api/landlord/listings` response shape, validation errors, custom room creation, fallback room creation, amenity inserts, and landlord-only authorization.
+
+- [ ] **Step 4: Port remaining landlord property write paths one at a time**
+
+Next endpoints: property photo uploads, room photo uploads, `PUT /api/landlord/listings/:id`, and property delete/update aliases.
 
 ## Task 5: Frontend Cutover
 
