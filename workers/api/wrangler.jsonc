@@ -1,0 +1,31 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "haven-space-api",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-05-28",
+	"workers_dev": true,
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"APP_ENV": "production",
+		"APP_ORIGIN": "https://haven-space.github.io"
+	},
+	"env": {
+		"staging": {
+			"name": "haven-space-api-staging",
+			"vars": {
+				"APP_ENV": "staging",
+				"APP_ORIGIN": "https://haven-space.github.io"
+			}
+		}
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "haven-space",
+			"database_id": "bc45d25b-7e79-4418-9f8c-b53b206ffc44",
+			"remote": true
+		}
+	]
+}
