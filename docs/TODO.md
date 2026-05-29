@@ -1,0 +1,1 @@
+fix flow. from loging/signup as landlord, wait for admin approval. admin accept/ landlord create listing./ listidng displays on the find a room page. / boarder login signup/ boarder apply for listng. all go to dashboard.
