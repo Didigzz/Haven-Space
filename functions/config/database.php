@@ -55,32 +55,8 @@ function getDB() {
 }
 
 /**
- * Get Appwrite database service (used for specific features)
- * @return \Appwrite\Services\Databases
- */
-if (!function_exists('getAppwriteDB')) {
-function getAppwriteDB() {
-    static $appwriteDB = null;
-
-    if ($appwriteDB === null) {
-        require_once __DIR__ . '/../vendor/autoload.php';
-
-        $client = new \Appwrite\Client();
-        $client
-            ->setEndpoint(env('APPWRITE_ENDPOINT'))
-            ->setProject(env('APPWRITE_PROJECT_ID'))
-            ->setKey(env('APPWRITE_API_KEY'));
-
-        $appwriteDB = new \Appwrite\Services\Databases($client);
-    }
-
-    return $appwriteDB;
-}
-}
-
-/**
- * Get unified database adapter (recommended for new code)
- * Automatically switches between MySQL and Appwrite based on environment
+ * Get unified database adapter
+ * Always returns MySQL adapter as Appwrite has been removed
  * @return \App\Core\Database\DatabaseInterface
  */
 if (!function_exists('getUnifiedDB')) {
@@ -88,7 +64,6 @@ function getUnifiedDB() {
     require_once __DIR__ . '/../src/Core/Database/DatabaseManager.php';
     require_once __DIR__ . '/../src/Core/Database/DatabaseInterface.php';
     require_once __DIR__ . '/../src/Core/Database/MySQLAdapter.php';
-    require_once __DIR__ . '/../src/Core/Database/AppwriteAdapter.php';
 
     return \App\Core\Database\DatabaseManager::getAdapter();
 }

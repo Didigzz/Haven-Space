@@ -10,16 +10,11 @@ use App\Core\Database\Connection;
 
 /**
  * Helper to send a JSON response and stop execution.
- * In Appwrite function context, throws ResponseSentException instead of exit().
  */
 function _respond(int $code, array $data): void
 {
     http_response_code($code);
-    $body = json_encode($data);
-    echo $body;
-    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
-        throw new \ResponseSentException($code, $body);
-    }
+    echo json_encode($data);
     exit;
 }
 

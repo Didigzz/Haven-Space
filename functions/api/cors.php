@@ -5,19 +5,13 @@
  *
  * Loads allowed origins from .env file and handles cross-origin requests
  * between frontend and backend across different environments.
- *
- * In Appwrite function context, header() calls are skipped since CORS headers
- * are set by main.php via $res->text(). Only origin validation is performed.
  */
 
 // Load environment variables
 require_once __DIR__ . '/../config/app.php';
 
-// In Appwrite function context, CORS headers are handled by main.php — skip all header() calls
-$isAppwriteContext = defined('APPWRITE_FUNCTION_CONTEXT');
-
 // 1. Get allowed origins from environment variable (comma-separated)
-$allowedOriginsStr = env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000,http://localhost:8000');
+$allowedOriginsStr = env('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:8000,http://localhost');
 $allowed_origins = array_map('trim', explode(',', $allowedOriginsStr));
 
 // Add default localhost origins if not already present
@@ -26,7 +20,6 @@ $defaultOrigins = [
     'http://127.0.0.1:3000',
     'http://localhost',
     'http://127.0.0.1',
-    'https://haven-space.appwrite.network'
 ];
 $allowed_origins = array_unique(array_merge($allowed_origins, $defaultOrigins));
 
@@ -60,14 +53,10 @@ if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin =
     // Return 403 for unauthorized origin
     http_response_code(403);
     header('Content-Type: application/json');
-    $body = json_encode([
+    echo json_encode([
         'error' => 'Unauthorized origin',
         'message' => isDebugMode() ? "Origin '$origin' is not allowed" : 'CORS policy violation',
     ]);
-    echo $body;
-    if ($isAppwriteContext) {
-        throw new ResponseSentException(403, $body);
-    }
     exit;
 }
 

@@ -5,7 +5,7 @@ namespace App\Core\Database;
 /**
  * Database Interface
  * 
- * Provides a unified interface for both MySQL and Appwrite database operations
+ * Provides a standardized interface for database operations
  */
 interface DatabaseInterface
 {

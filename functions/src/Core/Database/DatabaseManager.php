@@ -3,24 +3,20 @@
 namespace App\Core\Database;
 
 use PDO;
-use Appwrite\Client;
-use Appwrite\Services\Databases;
 
 /**
  * Database Manager
  * 
- * Handles environment-specific database connections
- * - Local: MySQL via PDO
- * - Production: Appwrite Database
+ * Handles database connections
+ * - Uses MySQL via PDO
  */
 class DatabaseManager
 {
     private static $mysqlConnection = null;
-    private static $appwriteConnection = null;
     private static $unifiedAdapter = null;
 
     /**
-     * Get MySQL connection (always available)
+     * Get MySQL connection
      * @return PDO
      */
     public static function getMySQLConnection(): PDO
@@ -50,71 +46,35 @@ class DatabaseManager
     }
 
     /**
-     * Get Appwrite database connection
-     * @return Databases
-     */
-    public static function getAppwriteConnection(): Databases
-    {
-        if (self::$appwriteConnection === null) {
-            require_once __DIR__ . '/../../../config/app.php';
-            
-            $client = new Client();
-            $client
-                ->setEndpoint(env('APPWRITE_ENDPOINT'))
-                ->setProject(env('APPWRITE_PROJECT_ID'))
-                ->setKey(env('APPWRITE_API_KEY'));
-            
-            self::$appwriteConnection = new Databases($client);
-        }
-        
-        return self::$appwriteConnection;
-    }
-
-    /**
-     * Get unified database adapter based on environment
+     * Get unified database adapter
      * @return DatabaseInterface
      */
     public static function getAdapter(): DatabaseInterface
     {
         if (self::$unifiedAdapter === null) {
-            require_once __DIR__ . '/../../../config/app.php';
-            
-            if (self::isProduction()) {
-                $appwriteDb = self::getAppwriteConnection();
-                $databaseId = env('APPWRITE_DATABASE_ID');
-                self::$unifiedAdapter = new AppwriteAdapter($appwriteDb, $databaseId);
-            } else {
-                $mysqlPdo = self::getMySQLConnection();
-                self::$unifiedAdapter = new MySQLAdapter($mysqlPdo);
-            }
+            $mysqlPdo = self::getMySQLConnection();
+            self::$unifiedAdapter = new MySQLAdapter($mysqlPdo);
         }
         
         return self::$unifiedAdapter;
     }
 
     /**
-     * Get primary database connection based on environment
-     * @return PDO|Databases
+     * Get primary database connection
+     * @return PDO
      */
     public static function getPrimaryConnection()
     {
-        require_once __DIR__ . '/../../../config/app.php';
-        
-        if (self::isProduction()) {
-            return self::getAppwriteConnection();
-        } else {
-            return self::getMySQLConnection();
-        }
+        return self::getMySQLConnection();
     }
 
     /**
-     * Get database type based on environment
-     * @return string 'mysql' or 'appwrite'
+     * Get database type
+     * @return string 'mysql'
      */
     public static function getDatabaseType(): string
     {
-        require_once __DIR__ . '/../../../config/app.php';
-        return self::isProduction() ? 'appwrite' : 'mysql';
+        return 'mysql';
     }
 
     /**

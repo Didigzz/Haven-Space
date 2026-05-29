@@ -130,10 +130,5 @@ return [
     'refresh_token_expiration' => (int) env('REFRESH_TOKEN_EXPIRATION', 604800),
     'api_prefix' => '/api',
     'app_base_url' => env('APP_BASE_URL', 'http://localhost:8000'),
-    'allowed_origins' => explode(',', env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000,http://localhost:8000')),
-
-    // Appwrite
-    'appwrite_endpoint'   => env('APPWRITE_ENDPOINT', 'https://cloud.appwrite.io/v1'),
-    'appwrite_project_id' => env('APPWRITE_PROJECT_ID', ''),
-    'appwrite_api_key'    => env('APPWRITE_API_KEY', ''),
+    'allowed_origins' => explode(',', env('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:8000,http://localhost')),
 ];
