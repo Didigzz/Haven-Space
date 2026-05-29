@@ -41,6 +41,45 @@ export interface LandlordPropertyDetailRow {
   occupied_rooms: number;
 }
 
+export interface LandlordPropertyIdentityRow {
+  id: number;
+  title: string;
+}
+
+export interface LandlordPropertyUpdateRow {
+  id: number;
+  address_id: number | null;
+  title: string;
+  description: string | null;
+  price: number;
+  deposit: number | null;
+  advance: string | null;
+  min_stay: string | null;
+  property_rules: string | null;
+  property_type: string | null;
+  gender_preference: string | null;
+}
+
+export interface LandlordAddressRow {
+  address_line_1: string | null;
+  city: string | null;
+  province: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface LandlordRoomCountRow {
+  count: number;
+}
+
+export interface LandlordRoomIdRow {
+  id: number;
+}
+
+export interface PropertyPhotoDisplayOrderRow {
+  max_order: number | null;
+}
+
 export interface LandlordAmenityRow {
   property_id: number;
   amenity_name: string;
@@ -50,6 +89,10 @@ export interface LandlordPhotoRow {
   property_id: number;
   photo_url: string;
   is_cover?: number;
+}
+
+export interface LandlordPropertyPhotoUrlRow {
+  photo_url: string;
 }
 
 export interface LandlordPropertiesResult {
@@ -79,6 +122,15 @@ export interface CreateLandlordPropertyInput {
   propertyRules: string | null;
 }
 
+export interface CreateLandlordPropertyAliasInput {
+  landlordId: number;
+  title: string;
+  description: string;
+  addressId: number;
+  price: number;
+  status: string;
+}
+
 export interface CreateLandlordRoomInput {
   propertyId: number;
   landlordId: number;
@@ -88,6 +140,30 @@ export interface CreateLandlordRoomInput {
   roomNumber: string;
   roomType: string;
   capacity: number;
+}
+
+export interface UpdateLandlordAddressInput {
+  addressId: number;
+  address: string;
+  city: string;
+  province: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface UpdateLandlordPropertyInput {
+  propertyId: number;
+  landlordId: number;
+  title: string;
+  description: string;
+  price: number;
+  deposit: number;
+  advance: string;
+  minStay: string;
+  propertyRules: string;
+  propertyType: string;
+  genderPreference: string;
+  status: string;
 }
 
 function placeholders(length: number): string {
@@ -323,6 +399,38 @@ export async function createLandlordProperty(
   return insertedId(result, 'Property');
 }
 
+export async function createLandlordPropertyFromAlias(
+  db: D1Database,
+  input: CreateLandlordPropertyAliasInput
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        INSERT INTO properties (
+          landlord_id,
+          title,
+          description,
+          address_id,
+          price,
+          status,
+          listing_moderation_status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 'pending_review')
+      `
+    )
+    .bind(
+      input.landlordId,
+      input.title,
+      input.description,
+      input.addressId,
+      input.price,
+      input.status
+    )
+    .run();
+
+  return insertedId(result, 'Property');
+}
+
 export async function createLandlordRoom(
   db: D1Database,
   input: CreateLandlordRoomInput
@@ -367,6 +475,345 @@ export async function createLandlordAmenity(
   await db
     .prepare('INSERT INTO amenities (property_id, amenity_name) VALUES (?, ?)')
     .bind(propertyId, amenityName)
+    .run();
+}
+
+export async function getMaxPropertyPhotoDisplayOrder(
+  db: D1Database,
+  propertyId: number
+): Promise<number> {
+  const row = await db
+    .prepare(
+      `
+        SELECT COALESCE(MAX(display_order), -1) as max_order
+        FROM property_photos
+        WHERE property_id = ?
+      `
+    )
+    .bind(propertyId)
+    .first<PropertyPhotoDisplayOrderRow>();
+
+  return Number(row?.max_order ?? -1);
+}
+
+export async function createLandlordPropertyPhoto(
+  db: D1Database,
+  propertyId: number,
+  photoUrl: string,
+  isCover: number,
+  displayOrder: number
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        INSERT INTO property_photos (property_id, photo_url, is_cover, display_order, created_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+      `
+    )
+    .bind(propertyId, photoUrl, isCover, displayOrder)
+    .run();
+}
+
+export async function listLandlordPropertyPhotoUrls(
+  db: D1Database,
+  propertyId: number
+): Promise<string[]> {
+  const result = await db
+    .prepare(
+      `
+        SELECT photo_url
+        FROM property_photos
+        WHERE property_id = ?
+        ORDER BY display_order ASC, id ASC
+      `
+    )
+    .bind(propertyId)
+    .all<LandlordPropertyPhotoUrlRow>();
+
+  return (result.results ?? []).map(row => row.photo_url);
+}
+
+export async function deleteLandlordPropertyPhotoByUrl(
+  db: D1Database,
+  propertyId: number,
+  photoUrl: string
+): Promise<void> {
+  await db
+    .prepare('DELETE FROM property_photos WHERE property_id = ? AND photo_url = ?')
+    .bind(propertyId, photoUrl)
+    .run();
+}
+
+export async function updateLandlordPropertyPhotoOrder(
+  db: D1Database,
+  propertyId: number,
+  photoUrl: string,
+  isCover: number,
+  displayOrder: number
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        UPDATE property_photos
+        SET display_order = ?,
+            is_cover = ?
+        WHERE property_id = ?
+          AND photo_url = ?
+      `
+    )
+    .bind(displayOrder, isCover, propertyId, photoUrl)
+    .run();
+}
+
+export async function findLandlordPropertyForUpdate(
+  db: D1Database,
+  propertyId: number,
+  landlordId: number
+): Promise<LandlordPropertyUpdateRow | null> {
+  return await db
+    .prepare(
+      `
+        SELECT
+          id,
+          address_id,
+          title,
+          description,
+          price,
+          deposit,
+          advance,
+          min_stay,
+          property_rules,
+          property_type,
+          gender_preference
+        FROM properties
+        WHERE id = ?
+          AND landlord_id = ?
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    )
+    .bind(propertyId, landlordId)
+    .first<LandlordPropertyUpdateRow>();
+}
+
+export async function getLandlordAddress(
+  db: D1Database,
+  addressId: number
+): Promise<LandlordAddressRow | null> {
+  return await db
+    .prepare(
+      `
+        SELECT address_line_1, city, province, latitude, longitude
+        FROM addresses
+        WHERE id = ?
+        LIMIT 1
+      `
+    )
+    .bind(addressId)
+    .first<LandlordAddressRow>();
+}
+
+export async function updateLandlordAddress(
+  db: D1Database,
+  input: UpdateLandlordAddressInput
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        UPDATE addresses
+        SET address_line_1 = ?,
+            city = ?,
+            province = ?,
+            latitude = ?,
+            longitude = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `
+    )
+    .bind(
+      input.address,
+      input.city,
+      input.province,
+      input.latitude,
+      input.longitude,
+      input.addressId
+    )
+    .run();
+}
+
+export async function updateLandlordProperty(
+  db: D1Database,
+  input: UpdateLandlordPropertyInput
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        UPDATE properties
+        SET title = ?,
+            description = ?,
+            price = ?,
+            deposit = ?,
+            advance = ?,
+            min_stay = ?,
+            property_rules = ?,
+            property_type = ?,
+            gender_preference = ?,
+            status = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+          AND landlord_id = ?
+      `
+    )
+    .bind(
+      input.title,
+      input.description,
+      input.price,
+      input.deposit,
+      input.advance,
+      input.minStay,
+      input.propertyRules,
+      input.propertyType,
+      input.genderPreference,
+      input.status,
+      input.propertyId,
+      input.landlordId
+    )
+    .run();
+}
+
+export async function deleteLandlordAmenities(db: D1Database, propertyId: number): Promise<void> {
+  await db.prepare('DELETE FROM amenities WHERE property_id = ?').bind(propertyId).run();
+}
+
+export async function countLandlordRooms(db: D1Database, propertyId: number): Promise<number> {
+  const row = await db
+    .prepare('SELECT COUNT(*) as count FROM rooms WHERE property_id = ? AND deleted_at IS NULL')
+    .bind(propertyId)
+    .first<LandlordRoomCountRow>();
+
+  return Number(row?.count ?? 0);
+}
+
+export async function listLandlordRoomIdsForRemoval(
+  db: D1Database,
+  propertyId: number,
+  limit: number
+): Promise<number[]> {
+  if (limit <= 0) {
+    return [];
+  }
+
+  const result = await db
+    .prepare(
+      `
+        SELECT id
+        FROM rooms
+        WHERE property_id = ?
+          AND deleted_at IS NULL
+        ORDER BY id DESC
+        LIMIT ?
+      `
+    )
+    .bind(propertyId, limit)
+    .all<LandlordRoomIdRow>();
+
+  return (result.results ?? []).map(row => Number(row.id));
+}
+
+export async function softDeleteLandlordRoomsById(
+  db: D1Database,
+  roomIds: number[]
+): Promise<void> {
+  if (roomIds.length === 0) {
+    return;
+  }
+
+  await db
+    .prepare(
+      `
+        UPDATE rooms
+        SET deleted_at = CURRENT_TIMESTAMP
+        WHERE id IN (${placeholders(roomIds.length)})
+      `
+    )
+    .bind(...roomIds)
+    .run();
+}
+
+export async function updateLandlordActiveRooms(
+  db: D1Database,
+  propertyId: number,
+  capacity: number,
+  roomType: string,
+  price: number
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        UPDATE rooms
+        SET capacity = ?,
+            room_type = ?,
+            price = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE property_id = ?
+          AND deleted_at IS NULL
+      `
+    )
+    .bind(capacity, roomType, price, propertyId)
+    .run();
+}
+
+export async function findLandlordPropertyIdentity(
+  db: D1Database,
+  propertyId: number,
+  landlordId: number
+): Promise<LandlordPropertyIdentityRow | null> {
+  return await db
+    .prepare(
+      `
+        SELECT id, title
+        FROM properties
+        WHERE id = ?
+          AND landlord_id = ?
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    )
+    .bind(propertyId, landlordId)
+    .first<LandlordPropertyIdentityRow>();
+}
+
+export async function softDeleteLandlordProperty(
+  db: D1Database,
+  propertyId: number,
+  landlordId: number
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        UPDATE properties
+        SET deleted_at = CURRENT_TIMESTAMP, status = 'deleted'
+        WHERE id = ?
+          AND landlord_id = ?
+      `
+    )
+    .bind(propertyId, landlordId)
+    .run();
+}
+
+export async function softDeleteLandlordPropertyRooms(
+  db: D1Database,
+  propertyId: number
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        UPDATE rooms
+        SET deleted_at = CURRENT_TIMESTAMP, status = 'deleted'
+        WHERE property_id = ?
+      `
+    )
+    .bind(propertyId)
     .run();
 }
 

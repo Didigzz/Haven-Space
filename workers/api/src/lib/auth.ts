@@ -16,6 +16,7 @@ interface JwtPayload {
   user_id?: number | string;
   role?: string;
   exp?: number;
+  [key: string]: unknown;
 }
 
 function authorizationHeader(input: AuthInput): string | null {
@@ -63,7 +64,7 @@ export function authorizationHeaders(token: string): Headers {
   return headers;
 }
 
-function cookieValue(request: Request, name: string): string | null {
+export function cookieValue(request: Request, name: string): string | null {
   const cookie = request.headers.get('Cookie');
 
   if (!cookie) {
@@ -94,6 +95,20 @@ function base64UrlToBytes(value: string): Uint8Array {
   return bytes;
 }
 
+function bytesToBase64Url(bytes: Uint8Array): string {
+  let binary = '';
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function jsonToBase64Url(value: unknown): string {
+  return bytesToBase64Url(new TextEncoder().encode(JSON.stringify(value)));
+}
+
 function base64UrlToJson<T>(value: string): T | null {
   try {
     const json = new TextDecoder().decode(base64UrlToBytes(value));
@@ -117,7 +132,7 @@ function timingSafeEqual(left: Uint8Array, right: Uint8Array): boolean {
   return diff === 0;
 }
 
-async function verifyJwt(token: string, secret: string): Promise<JwtPayload | null> {
+export async function verifyJwt(token: string, secret: string): Promise<JwtPayload | null> {
   const parts = token.split('.');
 
   if (parts.length !== 3) {
@@ -148,6 +163,32 @@ async function verifyJwt(token: string, secret: string): Promise<JwtPayload | nu
   }
 
   return payloadData;
+}
+
+export async function signJwt(
+  payload: Record<string, unknown>,
+  secret: string,
+  expiresInSeconds: number
+): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const header = jsonToBase64Url({ typ: 'JWT', alg: 'HS256' });
+  const body = jsonToBase64Url({
+    ...payload,
+    iat: now,
+    exp: now + expiresInSeconds,
+  });
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = new Uint8Array(
+    await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${header}.${body}`))
+  );
+
+  return `${header}.${body}.${bytesToBase64Url(signature)}`;
 }
 
 function authenticatedUserFromRow(row: AuthenticatedUserRow): AuthenticatedUser {

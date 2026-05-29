@@ -7,11 +7,15 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --env=\"\"",
     "deploy:staging": "wrangler deploy --env staging",
+    "migrate:local": "wrangler d1 migrations apply haven-space --local",
+    "migrate:remote": "wrangler d1 migrations apply haven-space --remote",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
   "dependencies": {
-    "hono": "^4.8.12"
+    "bcryptjs": "^3.0.3",
+    "hono": "^4.8.12",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250803.0",
