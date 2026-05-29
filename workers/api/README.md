@@ -64,6 +64,7 @@ bunx wrangler secret put JWT_SECRET
 - `GET /api/landlord/properties.php`
 - `GET /api/landlord/properties?id=...`
 - `GET /api/landlord/properties.php?id=...`
+- `POST /api/landlord/listings`
 
 ## Shared Utilities
 

@@ -64,6 +64,32 @@ export interface LandlordPropertyDetailResult {
   photos: string[];
 }
 
+export interface CreateLandlordPropertyInput {
+  landlordId: number;
+  title: string;
+  propertyType: string;
+  description: string;
+  addressId: number;
+  price: number;
+  deposit: number;
+  advance: string;
+  minStay: string;
+  houseRules: string;
+  genderPreference: string;
+  propertyRules: string | null;
+}
+
+export interface CreateLandlordRoomInput {
+  propertyId: number;
+  landlordId: number;
+  title: string;
+  price: number;
+  description: string;
+  roomNumber: string;
+  roomType: string;
+  capacity: number;
+}
+
 function placeholders(length: number): string {
   return Array.from({ length }, () => '?').join(', ');
 }
@@ -219,6 +245,129 @@ export async function listLandlordProperties(
     amenities,
     photos,
   };
+}
+
+function insertedId(result: D1Result, label: string): number {
+  const id = Number(result.meta.last_row_id);
+
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error(`${label} insert did not return an ID`);
+  }
+
+  return id;
+}
+
+export async function createLandlordAddress(
+  db: D1Database,
+  address: string,
+  city: string,
+  province: string,
+  latitude: number | null,
+  longitude: number | null
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        INSERT INTO addresses (address_line_1, city, province, latitude, longitude)
+        VALUES (?, ?, ?, ?, ?)
+      `
+    )
+    .bind(address, city, province, latitude, longitude)
+    .run();
+
+  return insertedId(result, 'Address');
+}
+
+export async function createLandlordProperty(
+  db: D1Database,
+  input: CreateLandlordPropertyInput
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        INSERT INTO properties (
+          landlord_id,
+          title,
+          property_type,
+          description,
+          address_id,
+          price,
+          deposit,
+          advance,
+          min_stay,
+          house_rules,
+          gender_preference,
+          property_rules,
+          status,
+          listing_moderation_status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available', 'published')
+      `
+    )
+    .bind(
+      input.landlordId,
+      input.title,
+      input.propertyType,
+      input.description,
+      input.addressId,
+      input.price,
+      input.deposit,
+      input.advance,
+      input.minStay,
+      input.houseRules,
+      input.genderPreference,
+      input.propertyRules
+    )
+    .run();
+
+  return insertedId(result, 'Property');
+}
+
+export async function createLandlordRoom(
+  db: D1Database,
+  input: CreateLandlordRoomInput
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        INSERT INTO rooms (
+          property_id,
+          landlord_id,
+          title,
+          price,
+          description,
+          status,
+          room_number,
+          room_type,
+          capacity
+        )
+        VALUES (?, ?, ?, ?, ?, 'available', ?, ?, ?)
+      `
+    )
+    .bind(
+      input.propertyId,
+      input.landlordId,
+      input.title,
+      input.price,
+      input.description,
+      input.roomNumber,
+      input.roomType,
+      input.capacity
+    )
+    .run();
+
+  return insertedId(result, 'Room');
+}
+
+export async function createLandlordAmenity(
+  db: D1Database,
+  propertyId: number,
+  amenityName: string
+): Promise<void> {
+  await db
+    .prepare('INSERT INTO amenities (property_id, amenity_name) VALUES (?, ?)')
+    .bind(propertyId, amenityName)
+    .run();
 }
 
 export async function getLandlordPropertyDetail(

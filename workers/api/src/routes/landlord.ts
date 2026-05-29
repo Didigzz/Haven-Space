@@ -4,7 +4,12 @@ import type { Env } from '../env';
 import { authenticateUser, type AuthenticatedUser } from '../lib/auth';
 import { requireD1 } from '../lib/d1';
 import { errorResponse, jsonResponse } from '../lib/http';
+import { readJsonObject, type JsonRecord } from '../lib/validation';
 import {
+  createLandlordAddress,
+  createLandlordAmenity,
+  createLandlordProperty,
+  createLandlordRoom,
   getLandlordPropertyDetail,
   listLandlordProperties,
   type LandlordPropertyDetailResult,
@@ -12,6 +17,19 @@ import {
 } from '../repositories/landlord-properties';
 
 const landlordRoutes = new Hono<{ Bindings: Env }>();
+const createListingRequiredFields = [
+  'propertyName',
+  'propertyType',
+  'genderPreference',
+  'propertyDescription',
+  'propertyPrice',
+  'propertyDeposit',
+  'propertyRooms',
+  'propertyCapacity',
+  'propertyAddress',
+  'propertyCity',
+  'propertyProvince',
+] as const;
 
 function parsePositiveInt(value: string | undefined): number | null {
   if (!value) {
@@ -74,6 +92,90 @@ function mapDetailStatus(status: string): string {
   }
 
   return status;
+}
+
+function isPhpEmpty(value: unknown): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    value === 0 ||
+    value === '0' ||
+    value === false
+  );
+}
+
+function requiredFieldErrors(body: JsonRecord): Record<string, string> {
+  const errors: Record<string, string> = {};
+
+  for (const field of createListingRequiredFields) {
+    if (isPhpEmpty(body[field])) {
+      const message = `${field.replace('property', '') || field} is required`;
+      errors[field] = message.charAt(0).toUpperCase() + message.slice(1);
+    }
+  }
+
+  return errors;
+}
+
+function stringValue(body: JsonRecord, field: string, fallback = ''): string {
+  const value = body[field];
+
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+
+  return String(value).trim();
+}
+
+function numberValue(body: JsonRecord, field: string, fallback = 0): number {
+  const parsed = Number.parseFloat(String(body[field] ?? ''));
+
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function intValue(value: unknown, fallback = 0): number {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function listingRooms(body: JsonRecord) {
+  const customRooms = Array.isArray(body.rooms) ? body.rooms : [];
+
+  if (customRooms.length > 0) {
+    return customRooms.map((room, index) => {
+      const roomRecord =
+        room && typeof room === 'object' && !Array.isArray(room) ? (room as JsonRecord) : {};
+      const roomName = String(roomRecord.name ?? '').trim() || `Room ${index + 1}`;
+      const capacity = intValue(roomRecord.capacity, 1);
+      const roomTypeValue = String(roomRecord.roomType ?? '').trim();
+      const roomType = roomTypeValue || (capacity === 1 ? 'single' : 'shared');
+
+      return {
+        title: roomName,
+        roomNumber: roomName,
+        roomType,
+        capacity,
+      };
+    });
+  }
+
+  const roomsCount = intValue(body.propertyRooms);
+  const capacity = intValue(body.propertyCapacity, 1);
+  const roomType = capacity === 1 ? 'single' : 'shared';
+  const roomTypeDisplay = capacity === 1 ? 'Single Room' : `Shared Room (${capacity} persons)`;
+
+  return Array.from({ length: Math.max(roomsCount, 0) }, (_, index) => {
+    const roomNumber = `Room ${index + 1}`;
+
+    return {
+      title: `${roomTypeDisplay} - ${roomNumber}`,
+      roomNumber,
+      roomType,
+      capacity,
+    };
+  });
 }
 
 function formatLandlordPropertyListItem(
@@ -139,6 +241,90 @@ function formatLandlordPropertyDetail(result: LandlordPropertyDetailResult) {
   };
 }
 
+async function handleCreateListing(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const user = await requireLandlord(c);
+
+  if (user instanceof Response) {
+    return user;
+  }
+
+  const body = await readJsonObject(c.req.raw);
+  const errors = requiredFieldErrors(body);
+
+  if (Object.keys(errors).length > 0) {
+    return jsonResponse({ errors }, 400);
+  }
+
+  const latitude = isPhpEmpty(body.propertyLatitude) ? null : numberValue(body, 'propertyLatitude');
+  const longitude = isPhpEmpty(body.propertyLongitude)
+    ? null
+    : numberValue(body, 'propertyLongitude');
+  const addressId = await createLandlordAddress(
+    db,
+    stringValue(body, 'propertyAddress'),
+    stringValue(body, 'propertyCity'),
+    stringValue(body, 'propertyProvince'),
+    latitude,
+    longitude
+  );
+  const propertyName = stringValue(body, 'propertyName');
+  const propertyPrice = numberValue(body, 'propertyPrice');
+  const propertyId = await createLandlordProperty(db, {
+    landlordId: user.user_id,
+    title: propertyName,
+    propertyType: stringValue(body, 'propertyType', 'boarding-house'),
+    description: stringValue(body, 'propertyDescription'),
+    addressId,
+    price: propertyPrice,
+    deposit: numberValue(body, 'propertyDeposit'),
+    advance: stringValue(body, 'propertyAdvance', '1 month') || '1 month',
+    minStay: stringValue(body, 'propertyMinStay', '1 month') || '1 month',
+    houseRules: JSON.stringify([]),
+    genderPreference: stringValue(body, 'genderPreference', 'any') || 'any',
+    propertyRules: stringValue(body, 'propertyRules') || null,
+  });
+  const roomIds: number[] = [];
+
+  for (const room of listingRooms(body)) {
+    const roomId = await createLandlordRoom(db, {
+      propertyId,
+      landlordId: user.user_id,
+      title: room.title,
+      price: propertyPrice,
+      description: '',
+      roomNumber: room.roomNumber,
+      roomType: room.roomType,
+      capacity: room.capacity,
+    });
+
+    roomIds.push(roomId);
+  }
+
+  if (Array.isArray(body.amenities)) {
+    for (const amenity of body.amenities) {
+      const amenityName = String(amenity ?? '').trim();
+
+      if (amenityName) {
+        await createLandlordAmenity(db, propertyId, amenityName);
+      }
+    }
+  }
+
+  return jsonResponse(
+    {
+      message: 'Listing created successfully',
+      data: {
+        id: propertyId,
+        title: propertyName,
+        status: 'available',
+        room_ids: roomIds,
+      },
+    },
+    201
+  );
+}
+
 async function handleLandlordProperties(c: Context<{ Bindings: Env }>) {
   const db = requireD1(c.env);
   const user = await requireLandlord(c);
@@ -182,6 +368,7 @@ async function handleLandlordProperties(c: Context<{ Bindings: Env }>) {
   });
 }
 
+landlordRoutes.post('/api/landlord/listings', handleCreateListing);
 landlordRoutes.get('/api/landlord/properties', handleLandlordProperties);
 landlordRoutes.get('/api/landlord/properties.php', handleLandlordProperties);
 
