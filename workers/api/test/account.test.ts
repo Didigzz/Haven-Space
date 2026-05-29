@@ -307,7 +307,7 @@ describe('account, profile, password, and onboarding routes', () => {
     const refreshToken = await signJwt({ user_id: 2 }, 'test-secret', 60 * 60);
 
     const refresh = await app.request(
-      'http://localhost/auth/refresh-token.php',
+      'http://localhost/auth/refresh-token',
       {
         method: 'POST',
         headers: { Cookie: `refresh_token=${refreshToken}` },
@@ -322,7 +322,7 @@ describe('account, profile, password, and onboarding routes', () => {
     expect(refresh.headers.get('Set-Cookie')).toContain('access_token=');
 
     const logout = await app.request(
-      'http://localhost/auth/logout.php',
+      'http://localhost/auth/logout',
       { method: 'POST' },
       createEnv(sqlite)
     );

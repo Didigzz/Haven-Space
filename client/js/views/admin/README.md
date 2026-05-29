@@ -6,12 +6,12 @@ JavaScript modules for admin dashboard views.
 
 | File       | Description                   |
 | ---------- | ----------------------------- |
-| `admin.js` | Admin dashboard functionality |
+| `admin.ts` | Admin dashboard functionality |
 
 ## Exports
 
 ```javascript
-// admin.js
+// admin.ts
 export function initAdmin() {
   // Initialize admin dashboard
 }
@@ -20,5 +20,5 @@ export function initAdmin() {
 ## Usage
 
 ```html
-<script type="module" src="../../../js/views/admin/admin.js"></script>
+<script type="module" src="../../../js/views/admin/admin.ts"></script>
 ```

@@ -103,10 +103,10 @@ const boarderRow: LandlordBoarderRow = {
 };
 
 describe('landlord boarder routes', () => {
-  it('returns landlord boarders with the PHP response shape and .php alias', async () => {
+  it('returns landlord boarders with the PHP response shape and  alias', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/boarders.php?propertyId=10',
+      'http://localhost/api/landlord/boarders?propertyId=10',
       {
         headers: {
           'X-User-ID': '3',
@@ -175,7 +175,7 @@ describe('landlord boarder routes', () => {
 
   it('returns PHP-compatible validation and property errors', async () => {
     const missingPropertyId = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         headers: {
           'X-User-ID': '3',
@@ -184,7 +184,7 @@ describe('landlord boarder routes', () => {
       createSequenceEnv([{ first: landlordUser }])
     );
     const missingProperty = await app.request(
-      'http://localhost/api/landlord/boarders.php?propertyId=404',
+      'http://localhost/api/landlord/boarders?propertyId=404',
       {
         headers: {
           'X-User-ID': '3',
@@ -202,7 +202,7 @@ describe('landlord boarder routes', () => {
   it('creates a manual boarder with the PHP response shape', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         method: 'POST',
         headers: {
@@ -299,7 +299,7 @@ describe('landlord boarder routes', () => {
 
   it('returns PHP-compatible manual boarder create errors', async () => {
     const missingField = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         method: 'POST',
         headers: {
@@ -316,7 +316,7 @@ describe('landlord boarder routes', () => {
       createSequenceEnv([{ first: landlordUser }])
     );
     const missingRoom = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         method: 'POST',
         headers: {
@@ -343,7 +343,7 @@ describe('landlord boarder routes', () => {
   it('updates a manual boarder with the PHP response shape', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         method: 'PUT',
         headers: {
@@ -397,7 +397,7 @@ describe('landlord boarder routes', () => {
 
   it('returns PHP-compatible manual boarder update errors', async () => {
     const missingField = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         method: 'PUT',
         headers: {
@@ -415,7 +415,7 @@ describe('landlord boarder routes', () => {
       createSequenceEnv([{ first: landlordUser }])
     );
     const missingBoarder = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         method: 'PUT',
         headers: {
@@ -443,7 +443,7 @@ describe('landlord boarder routes', () => {
   it('removes a manual boarder with the PHP response shape', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/boarders.php?id=7',
+      'http://localhost/api/landlord/boarders?id=7',
       {
         method: 'DELETE',
         headers: {
@@ -471,7 +471,7 @@ describe('landlord boarder routes', () => {
 
   it('returns PHP-compatible manual boarder delete errors', async () => {
     const missingId = await app.request(
-      'http://localhost/api/landlord/boarders.php',
+      'http://localhost/api/landlord/boarders',
       {
         method: 'DELETE',
         headers: {
@@ -481,7 +481,7 @@ describe('landlord boarder routes', () => {
       createSequenceEnv([{ first: landlordUser }])
     );
     const missingBoarder = await app.request(
-      'http://localhost/api/landlord/boarders.php?id=404',
+      'http://localhost/api/landlord/boarders?id=404',
       {
         method: 'DELETE',
         headers: {
@@ -502,7 +502,7 @@ describe('landlord boarder routes', () => {
 
   it('requires a landlord role for landlord boarders', async () => {
     const response = await app.request(
-      'http://localhost/api/landlord/boarders.php?propertyId=10',
+      'http://localhost/api/landlord/boarders?propertyId=10',
       {
         headers: {
           'X-User-ID': '7',

@@ -90,7 +90,7 @@ describe('phase 7 flow smoke test', () => {
     const env = createEnv(sqlite);
 
     const landlordSignup = await app.request(
-      'http://localhost/auth/register.php',
+      'http://localhost/auth/register',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,7 +157,7 @@ describe('phase 7 flow smoke test', () => {
       .run('Ada', 'Admin', 'admin@example.com', adminPasswordHash);
 
     const adminLogin = await app.request(
-      'http://localhost/auth/login.php',
+      'http://localhost/auth/login',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -170,7 +170,7 @@ describe('phase 7 flow smoke test', () => {
     expect(adminLogin.status).toBe(200);
 
     const pendingLandlords = await app.request(
-      'http://localhost/api/admin/landlords.php?status=pending',
+      'http://localhost/api/admin/landlords?status=pending',
       {
         headers: { Authorization: `Bearer ${adminLoginBody.access_token}` },
       },
@@ -186,7 +186,7 @@ describe('phase 7 flow smoke test', () => {
     );
 
     const approval = await app.request(
-      'http://localhost/api/admin/landlords.php',
+      'http://localhost/api/admin/landlords',
       {
         method: 'POST',
         headers: authHeaders(adminLoginBody.access_token),
@@ -201,7 +201,7 @@ describe('phase 7 flow smoke test', () => {
     });
 
     const landlordMe = await app.request(
-      'http://localhost/auth/me.php',
+      'http://localhost/auth/me',
       {
         headers: { Authorization: `Bearer ${landlordSignupBody.access_token}` },
       },
@@ -246,7 +246,7 @@ describe('phase 7 flow smoke test', () => {
     );
 
     const boarderSignup = await app.request(
-      'http://localhost/api/auth/register.php',
+      'http://localhost/api/auth/register',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -307,7 +307,7 @@ describe('phase 7 flow smoke test', () => {
     expect(boarderApplicationsBody.data[0].property_title).toBe('Flow House');
 
     const boarderLoginAfterApply = await app.request(
-      'http://localhost/auth/login.php',
+      'http://localhost/auth/login',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

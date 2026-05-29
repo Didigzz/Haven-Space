@@ -6,23 +6,23 @@ JavaScript modules for public-facing views.
 
 This directory is reserved for future public view logic. Currently, public page functionality is handled by:
 
-- `main.js` - Global components (logo cloud, sidebar, floating header)
+- `main.ts` - Global components (logo cloud, sidebar, floating header)
 - `js/auth/` - Authentication page logic
 
 ## Planned Files
 
 | File        | Description                   |
 | ----------- | ----------------------------- |
-| `public.js` | Homepage interactions         |
-| `maps.js`   | Interactive map functionality |
+| `public.ts` | Homepage interactions         |
+| `maps.ts`   | Interactive map functionality |
 
 ## Exports (Planned)
 
 ```javascript
-// public.js
+// public.ts
 export function initPublic() {}
 
-// maps.js
+// maps.ts
 export function initMaps() {}
 ```
 
@@ -30,8 +30,8 @@ export function initMaps() {}
 
 ```html
 <!-- Homepage -->
-<script type="module" src="../../../js/views/public/public.js"></script>
+<script type="module" src="../../../js/views/public/public.ts"></script>
 
 <!-- Maps -->
-<script type="module" src="../../../js/views/public/maps.js"></script>
+<script type="module" src="../../../js/views/public/maps.ts"></script>
 ```

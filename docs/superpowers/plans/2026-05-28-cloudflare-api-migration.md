@@ -32,19 +32,19 @@
 - [x] Phase 4f: Port boarder booking confirmation endpoint: `POST /api/boarder/applications/:id/confirm`.
 - [x] Phase 4g: Port landlord application status endpoint: `PATCH /api/landlord/applications/:id/status`.
 - [ ] Phase 5: Port landlord property, room, boarder, announcement, calendar, and welcome-setting routes.
-- [x] Phase 5a: Port landlord property read endpoints: `GET /api/landlord/properties` and `.php` aliases.
+- [x] Phase 5a: Port landlord property read endpoints: `GET /api/landlord/properties` and `` aliases.
 - [x] Phase 5b: Port landlord listing creation endpoint: `POST /api/landlord/listings`.
-- [x] Phase 5c: Port landlord property soft delete endpoints: `DELETE /api/landlord/properties` and `.php` alias.
+- [x] Phase 5c: Port landlord property soft delete endpoints: `DELETE /api/landlord/properties` and `` alias.
 - [x] Phase 5d: Port landlord listing update endpoint: `PUT /api/landlord/listings/:id`.
-- [x] Phase 5e: Port landlord room CRUD/status endpoints: `/api/landlord/rooms` and `.php` aliases.
+- [x] Phase 5e: Port landlord room CRUD/status endpoints: `/api/landlord/rooms` and `` aliases.
 - [x] Phase 5f: Use UploadThing and port property photo upload endpoint: `POST /api/landlord/listings/:id/photos`.
 - [x] Phase 5g: Use UploadThing and port room photo upload endpoint: `POST /api/landlord/rooms/:id/photos`.
 - [x] Phase 5h: Port room photo cover/delete endpoints: `PATCH` and `DELETE /api/landlord/rooms/:id/photos`.
 - [x] Phase 5i: Port temporary property photo upload and listing photo reconciliation for edit flows.
-- [x] Phase 5j: Port draft publish property alias: `POST /api/landlord/properties.php`.
-- [x] Phase 5k: Port landlord dashboard stats: `GET /api/landlord/dashboard-stats.php`.
-- [x] Phase 5l: Port landlord boarder read endpoints: `GET /api/landlord/boarders.php` and clean alias.
-- [x] Phase 5m: Port landlord boarder write endpoints: `POST`, `PUT`, and `DELETE /api/landlord/boarders.php`.
+- [x] Phase 5j: Port draft publish property alias: `POST /api/landlord/properties`.
+- [x] Phase 5k: Port landlord dashboard stats: `GET /api/landlord/dashboard-stats`.
+- [x] Phase 5l: Port landlord boarder read endpoints: `GET /api/landlord/boarders` and clean alias.
+- [x] Phase 5m: Port landlord boarder write endpoints: `POST`, `PUT`, and `DELETE /api/landlord/boarders`.
 - [x] Phase 7a: Add guarded frontend Worker API override and flow-critical Worker auth/admin support.
 - [ ] Phase 6: Port payments, messages, and remaining optional integrations. Payments and messages are explicit Worker TODO stubs for now.
 - [x] Phase 7: Switch frontend API base URL from PHP to the Worker.
@@ -180,13 +180,13 @@ Choose the Cloudflare data layer before porting database-backed endpoints:
 Read these files before editing TypeScript:
 
 ```bash
-rg --files functions/api/auth | rg "\.php$"
-rg -n "localStorage\.setItem|Authorization|auth/me|refresh-token|login\.php|register\.php" client/js client/views
+rg --files functions/api/auth | rg "\$"
+rg -n "localStorage\.setItem|Authorization|auth/me|refresh-token|login\|register\" client/js client/views
 ```
 
 - [x] **Step 2: Create auth route module**
 
-Create `workers/api/src/routes/auth.ts` and mount it from `workers/api/src/index.ts`. Keep existing route aliases where the frontend still calls `.php` URLs, including `/auth/login.php` and `/auth/register.php`.
+Create `workers/api/src/routes/auth.ts` and mount it from `workers/api/src/index.ts`. Keep existing route aliases where the frontend still calls ``URLs, including`/auth/login`and`/auth/register`.
 
 - [x] **Step 3: Port `/auth/check-email`**
 
@@ -206,7 +206,7 @@ Create `workers/api/test/auth.test.ts` for unregistered emails, password users, 
 
 - [ ] **Step 6: Port remaining auth endpoints one at a time**
 
-Next endpoints: `/auth/login.php`, then `/auth/register.php`. Each endpoint needs a failing test before implementation and a parity check against the PHP response shape.
+Next endpoints: `/auth/login`, then `/auth/register`. Each endpoint needs a failing test before implementation and a parity check against the PHP response shape.
 
 ## Task 3.5: Public Room And Listing Migration
 
@@ -215,11 +215,11 @@ Next endpoints: `/auth/login.php`, then `/auth/register.php`. Each endpoint need
 Read:
 
 ```bash
-Get-Content functions\api\rooms\popular-locations.php
-Get-Content functions\api\rooms\public.php
-Get-Content functions\api\rooms\detail.php
-Get-Content functions\api\rooms\similar.php
-Get-Content functions\api\properties\all.php
+Get-Content functions\api\rooms\popular-locations
+Get-Content functions\api\rooms\public
+Get-Content functions\api\rooms\detail
+Get-Content functions\api\rooms\similar
+Get-Content functions\api\properties\all
 ```
 
 - [x] **Step 2: Port `/api/rooms/popular-locations`**
@@ -318,7 +318,7 @@ Create `workers/api/src/routes/properties.ts` and extend `workers/api/src/reposi
 }
 ```
 
-Support both `/api/properties/all` and `/api/properties/all.php` while the existing frontend still calls the PHP-suffixed URL.
+Support both `/api/properties/all` and `/api/properties/all` while the existing frontend still calls the PHP-suffixed URL.
 
 - [x] **Step 13: Add D1 migration for landlord profile names**
 
@@ -326,7 +326,7 @@ Create `workers/api/migrations/0004_landlord_profiles.sql` with the `landlord_pr
 
 - [x] **Step 14: Add route tests**
 
-Create `workers/api/test/properties.test.ts` for `/api/properties/all` and `/api/properties/all.php` response shape, amenities/photos enrichment, occupancy status, and empty map results.
+Create `workers/api/test/properties.test.ts` for `/api/properties/all` and `/api/properties/all` response shape, amenities/photos enrichment, occupancy status, and empty map results.
 
 - [x] **Step 15: Move to the next phase after remote migration is applied**
 
@@ -339,10 +339,10 @@ Next phase: boarder application and saved-listing routes.
 Read:
 
 ```bash
-Get-Content functions\api\boarder\saved-listings.php
-Get-Content functions\src\Modules\Application\Controllers\ApplicationController.php
-Get-Content functions\src\Modules\Application\Repositories\ApplicationRepository.php
-Get-Content functions\src\Modules\Application\Services\ApplicationService.php
+Get-Content functions\api\boarder\saved-listings
+Get-Content functions\src\Modules\Application\Controllers\ApplicationController
+Get-Content functions\src\Modules\Application\Repositories\ApplicationRepository
+Get-Content functions\src\Modules\Application\Services\ApplicationService
 ```
 
 - [x] **Step 2: Add protected-route auth context**
@@ -471,13 +471,13 @@ and:
 Port these aliases:
 
 - `GET /api/landlord/properties`
-- `GET /api/landlord/properties.php`
+- `GET /api/landlord/properties`
 - `GET /api/landlord/properties?id=:id`
-- `GET /api/landlord/properties.php?id=:id`
+- `GET /api/landlord/properties?id=:id`
 
 - [x] **Step 2a: Add landlord property read tests**
 
-Create `workers/api/test/landlord.test.ts` for landlord property list/detail response shapes, `.php` alias behavior, empty lists, not-found behavior, photo URL normalization, and landlord-only authorization.
+Create `workers/api/test/landlord.test.ts` for landlord property list/detail response shapes, `` alias behavior, empty lists, not-found behavior, photo URL normalization, and landlord-only authorization.
 
 - [x] **Step 3: Port `POST /api/landlord/listings`**
 
@@ -492,7 +492,7 @@ Extend `workers/api/test/landlord.test.ts` for `POST /api/landlord/listings` res
 Completed in Phase 5c:
 
 - `DELETE /api/landlord/properties?id=:id`
-- `DELETE /api/landlord/properties.php?id=:id`
+- `DELETE /api/landlord/properties?id=:id`
 
 Completed in Phase 5d:
 
@@ -503,15 +503,15 @@ Completed in Phase 5d:
 Completed in Phase 5e:
 
 - `GET /api/landlord/rooms?propertyId=:id`
-- `GET /api/landlord/rooms.php?propertyId=:id`
+- `GET /api/landlord/rooms?propertyId=:id`
 - `GET /api/landlord/rooms?propertyId=:id&id=:roomId`
-- `GET /api/landlord/rooms.php?propertyId=:id&id=:roomId`
+- `GET /api/landlord/rooms?propertyId=:id&id=:roomId`
 - `POST /api/landlord/rooms`
-- `POST /api/landlord/rooms.php`
+- `POST /api/landlord/rooms`
 - `PUT /api/landlord/rooms?id=:roomId`
-- `PUT /api/landlord/rooms.php?id=:roomId`
+- `PUT /api/landlord/rooms?id=:roomId`
 - `DELETE /api/landlord/rooms?id=:roomId`
-- `DELETE /api/landlord/rooms.php?id=:roomId`
+- `DELETE /api/landlord/rooms?id=:roomId`
 - Defers room photo upload, cover-photo update, and room-photo delete behavior until an UploadThing-backed media phase.
 
 Completed in Phase 5f:
@@ -540,20 +540,20 @@ Completed in Phase 5h:
 Completed in Phase 5i:
 
 - `POST /api/landlord/upload-photos`
-- `POST /api/landlord/upload-photos.php`
+- `POST /api/landlord/upload-photos`
 - Uses UploadThing for temporary property photo uploads and returns the PHP-compatible `{ data: { urls } }` shape.
 - Updates `PUT /api/landlord/listings/:id` to reconcile submitted `photos` and `photos_to_delete` arrays against `property_photos`.
 - Deletes UploadThing files best-effort for removed property photo URLs.
 
 Completed in Phase 5j:
 
-- `POST /api/landlord/properties.php`
+- `POST /api/landlord/properties`
 - Preserves the PHP draft publish response shape: `{ success: true, data: { property_id, message } }`.
 - Creates the address, property, and amenities without invoking the richer listing creation route.
 
 Completed in Phase 5k:
 
-- `GET /api/landlord/dashboard-stats.php`
+- `GET /api/landlord/dashboard-stats`
 - `GET /api/landlord/dashboard-stats`
 - `GET /api/landlord/dashboard/stats`
 - Preserves the PHP dashboard response envelope: `{ data: { occupancy, revenue, renewals, payment_alerts } }`.
@@ -562,7 +562,7 @@ Completed in Phase 5k:
 
 Completed in Phase 5l:
 
-- `GET /api/landlord/boarders.php?propertyId=:id`
+- `GET /api/landlord/boarders?propertyId=:id`
 - `GET /api/landlord/boarders?propertyId=:id`
 - Preserves the PHP response envelope: `{ success: true, data: { boarders, total_count } }`.
 - Uses migrated D1 `applications`, `users`, `rooms`, and property ownership checks.
@@ -571,11 +571,11 @@ Completed in Phase 5l:
 
 Completed in Phase 5m:
 
-- `POST /api/landlord/boarders.php`
 - `POST /api/landlord/boarders`
-- `PUT /api/landlord/boarders.php`
+- `POST /api/landlord/boarders`
 - `PUT /api/landlord/boarders`
-- `DELETE /api/landlord/boarders.php?id=:id`
+- `PUT /api/landlord/boarders`
+- `DELETE /api/landlord/boarders?id=:id`
 - `DELETE /api/landlord/boarders?id=:id`
 - Preserves PHP success envelopes for manual add/update/remove boarder actions.
 - Uses existing D1 `users`, `applications`, `rooms`, and property ownership checks; no new migration required.
@@ -585,7 +585,7 @@ Completed in Phase 5m:
 
 - [x] **Step 4a: Add landlord property soft-delete tests**
 
-Extend `workers/api/test/landlord.test.ts` for successful property and room soft deletion, missing property IDs, missing/unauthorized properties, `.php` alias behavior, and landlord-only authorization.
+Extend `workers/api/test/landlord.test.ts` for successful property and room soft deletion, missing property IDs, missing/unauthorized properties, `` alias behavior, and landlord-only authorization.
 
 - [x] **Step 4b: Add landlord listing update tests**
 
@@ -593,7 +593,7 @@ Extend `workers/api/test/landlord.test.ts` for listing update response shape, pa
 
 - [x] **Step 4c: Add landlord room CRUD/status tests**
 
-Create `workers/api/test/landlord-rooms.test.ts` for room list/detail response shapes, `.php` alias behavior, create validation, duplicate room numbers, update/status changes, soft delete, and landlord-only authorization.
+Create `workers/api/test/landlord-rooms.test.ts` for room list/detail response shapes, `` alias behavior, create validation, duplicate room numbers, update/status changes, soft delete, and landlord-only authorization.
 
 - [x] **Step 4d: Add property photo upload tests**
 
@@ -613,15 +613,15 @@ Extend `workers/api/test/landlord-photos.test.ts` for temporary UploadThing prop
 
 - [x] **Step 4h: Add draft publish property alias tests**
 
-Extend `workers/api/test/landlord.test.ts` for `POST /api/landlord/properties.php` creation, response shape, D1 inserts, amenities, and PHP-compatible missing-field validation.
+Extend `workers/api/test/landlord.test.ts` for `POST /api/landlord/properties` creation, response shape, D1 inserts, amenities, and PHP-compatible missing-field validation.
 
 - [x] **Step 4i: Add landlord dashboard stats tests**
 
-Create `workers/api/test/landlord-dashboard.test.ts` for `GET /api/landlord/dashboard-stats.php`, clean route aliases, empty-stat behavior, and landlord-only authorization.
+Create `workers/api/test/landlord-dashboard.test.ts` for `GET /api/landlord/dashboard-stats`, clean route aliases, empty-stat behavior, and landlord-only authorization.
 
 - [x] **Step 4j: Add landlord boarder read tests**
 
-Create `workers/api/test/landlord-boarders.test.ts` for `GET /api/landlord/boarders.php`, clean route alias, empty list behavior, missing `propertyId`, property ownership/not-found behavior, and landlord-only authorization.
+Create `workers/api/test/landlord-boarders.test.ts` for `GET /api/landlord/boarders`, clean route alias, empty list behavior, missing `propertyId`, property ownership/not-found behavior, and landlord-only authorization.
 
 - [x] **Step 4k: Add landlord boarder write tests**
 
@@ -640,11 +640,11 @@ Completed in Phase 7a:
 - `client/js/config.js` accepts `?apiBaseUrl=...`, `localStorage.havenSpaceApiBaseUrl`, or `window.HAVEN_SPACE_API_BASE_URL`.
 - The default local/prod API remains unchanged so non-migrated routes still use PHP unless a Worker API is explicitly selected.
 - Added flow-critical Worker routes:
-  - `POST /auth/register.php`, `/auth/register`, `/api/auth/register.php`, `/api/auth/register`
-  - `POST /auth/login.php`, `/auth/login`, `/api/auth/login.php`, `/api/auth/login`
-  - `GET /auth/me.php`, `/auth/me`, `/api/auth/me.php`, `/api/auth/me`
-  - `GET /api/admin/landlords.php`, `GET /api/admin/landlords`
-  - `POST /api/admin/landlords.php`, `POST /api/admin/landlords`
+  - `POST /auth/register`, `/auth/register`, `/api/auth/register`, `/api/auth/register`
+  - `POST /auth/login`, `/auth/login`, `/api/auth/login`, `/api/auth/login`
+  - `GET /auth/me`, `/auth/me`, `/api/auth/me`, `/api/auth/me`
+  - `GET /api/admin/landlords`, `GET /api/admin/landlords`
+  - `POST /api/admin/landlords`, `POST /api/admin/landlords`
 - Added a stateful D1-backed smoke test for the requested flow:
   - landlord signup
   - blocked landlord listing write before approval
@@ -660,14 +660,14 @@ Completed in Phase 8a:
 
 - Added `0008_platform_settings.sql` for the Worker-backed admin dashboard settings and summary routes.
 - Migrated the remaining admin dashboard route group:
-  - `GET /api/admin/summary.php`, `GET /api/admin/summary`
-  - `GET /api/admin/users.php`, `GET /api/admin/users`
-  - `PATCH /api/admin/users.php`, `PATCH /api/admin/users`
-  - `GET /api/admin/properties.php`, `GET /api/admin/properties`
-  - `POST /api/admin/properties.php`, `POST /api/admin/properties`
-  - `GET /api/admin/applications.php`, `GET /api/admin/applications`
-  - `GET /api/admin/settings.php`, `GET /api/admin/settings`
-  - `PATCH /api/admin/settings.php`, `PATCH /api/admin/settings`
+  - `GET /api/admin/summary`, `GET /api/admin/summary`
+  - `GET /api/admin/users`, `GET /api/admin/users`
+  - `PATCH /api/admin/users`, `PATCH /api/admin/users`
+  - `GET /api/admin/properties`, `GET /api/admin/properties`
+  - `POST /api/admin/properties`, `POST /api/admin/properties`
+  - `GET /api/admin/applications`, `GET /api/admin/applications`
+  - `GET /api/admin/settings`, `GET /api/admin/settings`
+  - `PATCH /api/admin/settings`, `PATCH /api/admin/settings`
 - Added D1-backed route tests covering admin overview, applications analytics, user status management, property moderation, platform settings, and admin-only access.
 - Admin landlord verification from Phase 7a plus these Phase 8a routes means the admin dashboard no longer depends on `/functions/api/admin/*`, after applying the new D1 migration remotely.
 
@@ -693,13 +693,13 @@ Completed in Phase 8c:
   - `PUT /api/users/profile`
   - `PATCH /api/users/profile`
   - `POST /api/users/avatar`
-  - `POST /auth/change-password`, `POST /auth/change-password.php`
-  - `POST /auth/forgot-password`, `POST /auth/forgot-password.php`
-  - `POST /auth/verify-reset-code`, `POST /auth/verify-reset-code.php`
-  - `POST /auth/resend-reset-code`, `POST /auth/resend-reset-code.php`
-  - `POST /auth/reset-password`, `POST /auth/reset-password.php`
-  - `POST /auth/refresh-token`, `POST /auth/refresh-token.php`
-  - `POST /auth/logout`, `POST /auth/logout.php`
+  - `POST /auth/change-password`, `POST /auth/change-password`
+  - `POST /auth/forgot-password`, `POST /auth/forgot-password`
+  - `POST /auth/verify-reset-code`, `POST /auth/verify-reset-code`
+  - `POST /auth/resend-reset-code`, `POST /auth/resend-reset-code`
+  - `POST /auth/reset-password`, `POST /auth/reset-password`
+  - `POST /auth/refresh-token`, `POST /auth/refresh-token`
+  - `POST /auth/logout`, `POST /auth/logout`
   - `GET /api/boarder/onboarding-status`
   - `POST /api/boarder/update-onboarding`
 - Avatar uploads use UploadThing and store the returned avatar URL on the D1 `users` row.

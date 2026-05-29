@@ -3,7 +3,7 @@
 ## Package Identity
 
 - `client/` contains the browser app built into `dist/` for Cloudflare Pages: HTML views, CSS, static components, and ES module JavaScript.
-- There is no frontend framework. Routing is page-based and initialization flows through [main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js).
+- There is no frontend framework. Routing is page-based and initialization flows through [main.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.ts).
 
 ## Setup & Run
 
@@ -15,29 +15,29 @@
 
 ## Patterns & Conventions
 
-- Treat [client/js/main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js) as the entry router. New page logic should be wired through a `data-view` branch there or through an existing page module.
+- Treat [client/js/main.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.ts) as the entry router. New page logic should be wired through a `data-view` branch there or through an existing page module.
 - Keep reusable UI behavior in `client/js/components/` and shared browser helpers in `client/js/shared/`.
 - Put role/page logic under `client/js/views/<role>/`; mirror the HTML structure under `client/views/<role>/` and CSS under `client/css/views/<role>/`.
-- Use the shared auth/network helpers before inventing new request wrappers. Start with [client/js/shared/state.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/state.js), [auth-check.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-check.js), and [auth-sync.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-sync.js).
-- Reuse centralized icons from [client/js/shared/icons.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/icons.js) instead of scattering inline SVG strings.
+- Use the shared auth/network helpers before inventing new request wrappers. Start with [client/js/shared/state.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/state.ts), [auth-check.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-check.ts), and [auth-sync.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-sync.ts).
+- Reuse centralized icons from [client/js/shared/icons.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/icons.ts) instead of scattering inline SVG strings.
 - **New Icons**: Add new icons as SVG files in `client/assets/svg/` directory. The icon system now prioritizes SVG files over path data for better maintainability and easier updates.
 - **Direct SVG Usage**: For simple cases, you can directly include SVG files in HTML using `<img src="../../../assets/svg/icon-name.svg">` or inline the SVG content, following the pattern used in sidebar components.
-- DO: follow the component injection and path-resolution pattern from [client/js/components/sidebar.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/components/sidebar.js).
-- DO: follow the view bootstrap style from [client/js/views/public/index.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/views/public/index.js) or the role initializers imported by `main.js`.
+- DO: follow the component injection and path-resolution pattern from [client/js/components/sidebar.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/components/sidebar.ts).
+- DO: follow the view bootstrap style from [client/js/views/public/index.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/views/public/index.ts) or the role initializers imported by `main.ts`.
 - DO: keep page styles in the matching CSS tree, for example [client/css/views/public/public.css](/C:/Users/Qwenzy/Desktop/haven-space/client/css/views/public/public.css).
 - DON'T: add more large inline page controllers inside HTML files like [client/views/boarder/settings/index.html](/C:/Users/Qwenzy/Desktop/haven-space/client/views/boarder/settings/index.html); prefer moving logic into `client/js/views/...`.
-- DON'T: duplicate auth header logic beside files like [client/js/shared/auth-headers.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-headers.js) and `state.js`; extend shared code instead.
+- DON'T: duplicate auth header logic beside files like [client/js/shared/auth-headers.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-headers.ts) and `state.ts`; extend shared code instead.
 - When touching UI/UX, preserve the existing product tone and check relative asset paths because the build script rewrites them for `dist/`.
 
 ## Key Files
 
-- Entry router: [client/js/main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js)
-- Environment config: [client/js/config.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/config.js)
-- Shared state/auth fetch logic: [client/js/shared/state.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/state.js)
-- Shared icons: [client/js/shared/icons.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/icons.js)
-- Reusable sidebar component: [client/js/components/sidebar.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/components/sidebar.js)
+- Entry router: [client/js/main.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.ts)
+- Environment config: [client/js/config.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/config.ts)
+- Shared state/auth fetch logic: [client/js/shared/state.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/state.ts)
+- Shared icons: [client/js/shared/icons.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/icons.ts)
+- Reusable sidebar component: [client/js/components/sidebar.ts](/C:/Users/Qwenzy/Desktop/haven-space/client/js/components/sidebar.ts)
 - Global CSS imports and tokens: [client/css/global.css](/C:/Users/Qwenzy/Desktop/haven-space/client/css/global.css)
-- Build path-rewrite logic: [scripts/build.js](/C:/Users/Qwenzy/Desktop/haven-space/scripts/build.js)
+- Build path-rewrite logic: [scripts/build.ts](/C:/Users/Qwenzy/Desktop/haven-space/scripts/build.ts)
 
 ## JIT Index Hints
 
@@ -50,7 +50,7 @@
 ## Common Gotchas
 
 - `http://localhost` can serve the frontend, while API calls default to the Cloudflare Worker at `http://localhost:8787` locally; keep both local and production Worker URLs working.
-- `scripts/build.js` rewrites paths for `dist/`, so hardcoded relative paths can break production even if localhost works.
+- `scripts/build.ts` rewrites paths for `dist/`, so hardcoded relative paths can break production even if localhost works.
 - Authentication state is spread across `token`, `user`, `user_id`, and related flags in `localStorage`; changes usually need to stay consistent across all shared auth utilities.
 
 ## Pre-PR Checks

@@ -19,7 +19,7 @@
       rel="stylesheet"
       href="../../../../css/views/boarder/boarder-settings.css?v=1777136032299"
     />
-    <script type="module" src="../../../../js/main.js?v=1777136032299"></script>
+    <script type="module" src="../../../../js/main.ts?v=1777136032299"></script>
   </head>
   <body data-view="boarder-applications" data-dashboard-type="applications">
     <div class="boarder-dashboard">
@@ -381,9 +381,9 @@
     </div>
 
     <script type="module">
-      import { getIcon } from '../../../../js/shared/icons.js';
-      import { initApplicationsDashboard } from '../../../../js/views/boarder/applications-dashboard.js';
-      import { initSettingsPage } from '../../../../js/views/boarder/settings.js';
+      import { getIcon } from '../../../../js/shared/icons.ts';
+      import { initApplicationsDashboard } from '../../../../js/views/boarder/applications-dashboard.ts';
+      import { initSettingsPage } from '../../../../js/views/boarder/settings.ts';
 
       document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.icon-placeholder').forEach(el => {

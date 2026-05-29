@@ -17,7 +17,7 @@ client/
 │   ├── components/   # Component initialization
 │   ├── shared/       # Shared utilities
 │   ├── views/        # View-specific logic (nested by type)
-│   └── main.js       # Application entry point
+│   └── main.ts       # Application entry point
 ├── views/            # HTML view templates
 │   ├── admin/        # Admin dashboard views
 │   ├── boarder/      # Boarder dashboard views
@@ -41,7 +41,7 @@ Navigate to `http://localhost:8788`.
 ### Entry Point
 
 - `views/public/index.html` - Source homepage copied to `dist/index.html`
-- `js/main.js` - Main JavaScript entry point
+- `js/main.ts` - Main JavaScript entry point
 
 ## Architecture
 
@@ -77,11 +77,11 @@ css/components/
 └── sidebar.css        # Styles
 
 js/components/
-├── logo-cloud.js      # Initialization
-└── sidebar.js         # Initialization
+├── logo-cloud.ts      # Initialization
+└── sidebar.ts         # Initialization
 ```
 
-Each component exports an `init` function called from `main.js`.
+Each component exports an `init` function called from `main.ts`.
 
 ## View Structure
 

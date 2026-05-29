@@ -136,10 +136,10 @@ const roomPhotos: LandlordRoomPhotoRow[] = [
 ];
 
 describe('landlord room routes', () => {
-  it('returns landlord rooms with the PHP response shape and .php alias', async () => {
+  it('returns landlord rooms with the PHP response shape and  alias', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/rooms.php?propertyId=10',
+      'http://localhost/api/landlord/rooms?propertyId=10',
       { headers: { 'X-User-ID': '3' } },
       createSequenceEnv(
         [
@@ -469,7 +469,7 @@ describe('landlord room routes', () => {
   it('soft deletes a landlord room', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/rooms.php?id=11',
+      'http://localhost/api/landlord/rooms?id=11',
       {
         method: 'DELETE',
         headers: { 'X-User-ID': '3' },

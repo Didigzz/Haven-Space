@@ -46,34 +46,42 @@ Photo upload routes require an UploadThing token:
 bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 ```
 
+Google sign-in/sign-up routes require OAuth credentials from Google Cloud. Set
+the production redirect URI in Google Cloud to the Worker callback URL, for
+example `https://haven-space-api.floresaybaez574.workers.dev/api/auth/google/callback`.
+
+```bash
+bunx wrangler secret put GOOGLE_CLIENT_ID --env=""
+bunx wrangler secret put GOOGLE_CLIENT_SECRET --env=""
+# Optional when the default callback URL is not the one registered in Google Cloud.
+bunx wrangler secret put GOOGLE_REDIRECT_URI --env=""
+```
+
 ## Current Routes
+
+The clean routes below are the canonical Worker API. Some legacy `` URL
+aliases are still handled by the TypeScript Worker for backwards compatibility;
+they are not PHP files and do not require a PHP runtime.
 
 - `GET /api/test`
 - `GET /test`
 - `GET /api/health`
 - `POST /auth/check-email`
+- `GET /auth/google/authorize`
+- `GET /api/auth/google/authorize`
+- `GET /auth/google/callback`
+- `GET /api/auth/google/callback`
 - `POST /auth/register`
-- `POST /auth/register.php`
 - `POST /api/auth/register`
-- `POST /api/auth/register.php`
 - `POST /auth/login`
-- `POST /auth/login.php`
 - `GET /auth/me`
-- `GET /auth/me.php`
 - `POST /auth/change-password`
-- `POST /auth/change-password.php`
 - `POST /auth/forgot-password`
-- `POST /auth/forgot-password.php`
 - `POST /auth/verify-reset-code`
-- `POST /auth/verify-reset-code.php`
 - `POST /auth/resend-reset-code`
-- `POST /auth/resend-reset-code.php`
 - `POST /auth/reset-password`
-- `POST /auth/reset-password.php`
 - `POST /auth/refresh-token`
-- `POST /auth/refresh-token.php`
 - `POST /auth/logout`
-- `POST /auth/logout.php`
 - `GET /api/users/profile`
 - `PUT /api/users/profile`
 - `PATCH /api/users/profile`
@@ -83,7 +91,7 @@ bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 - `GET /api/rooms/detail`
 - `GET /api/rooms/similar`
 - `GET /api/properties/all`
-- `GET /api/properties/all.php`
+- `GET /api/properties/all`
 - `GET /api/boarder/saved-listings`
 - `GET /api/boarder/saved-listings?property_id=...`
 - `POST /api/boarder/saved-listings`
@@ -112,66 +120,66 @@ bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 - `GET /api/landlord/applications/:id`
 - `PATCH /api/landlord/applications/:id/status`
 - `GET /api/landlord/dashboard-stats`
-- `GET /api/landlord/dashboard-stats.php`
+- `GET /api/landlord/dashboard-stats`
 - `GET /api/landlord/dashboard/stats`
 - `GET /api/landlord/boarders?propertyId=...`
-- `GET /api/landlord/boarders.php?propertyId=...`
+- `GET /api/landlord/boarders?propertyId=...`
 - `POST /api/landlord/approve-leave-request`
 - `GET /api/landlord/announcements`
 - `POST /api/landlord/announcements`
 - `PUT /api/landlord/announcements/:id`
 - `DELETE /api/landlord/announcements/:id`
 - `POST /api/landlord/boarders`
-- `POST /api/landlord/boarders.php`
+- `POST /api/landlord/boarders`
 - `PUT /api/landlord/boarders`
-- `PUT /api/landlord/boarders.php`
+- `PUT /api/landlord/boarders`
 - `DELETE /api/landlord/boarders?id=...`
-- `DELETE /api/landlord/boarders.php?id=...`
+- `DELETE /api/landlord/boarders?id=...`
 - `GET /api/landlord/properties`
-- `GET /api/landlord/properties.php`
+- `GET /api/landlord/properties`
 - `GET /api/landlord/properties?id=...`
-- `GET /api/landlord/properties.php?id=...`
-- `POST /api/landlord/properties.php`
+- `GET /api/landlord/properties?id=...`
+- `POST /api/landlord/properties`
 - `DELETE /api/landlord/properties?id=...`
-- `DELETE /api/landlord/properties.php?id=...`
+- `DELETE /api/landlord/properties?id=...`
 - `POST /api/landlord/listings`
 - `PUT /api/landlord/listings/:id`
 - `POST /api/landlord/upload-photos`
-- `POST /api/landlord/upload-photos.php`
+- `POST /api/landlord/upload-photos`
 - `POST /api/landlord/listings/:id/photos`
 - `GET /api/landlord/rooms?propertyId=...`
-- `GET /api/landlord/rooms.php?propertyId=...`
+- `GET /api/landlord/rooms?propertyId=...`
 - `GET /api/landlord/rooms?propertyId=...&id=...`
-- `GET /api/landlord/rooms.php?propertyId=...&id=...`
+- `GET /api/landlord/rooms?propertyId=...&id=...`
 - `POST /api/landlord/rooms`
-- `POST /api/landlord/rooms.php`
+- `POST /api/landlord/rooms`
 - `POST /api/landlord/rooms/:id/photos`
 - `PATCH /api/landlord/rooms/:id/photos`
 - `DELETE /api/landlord/rooms/:id/photos`
 - `PUT /api/landlord/rooms?id=...`
-- `PUT /api/landlord/rooms.php?id=...`
+- `PUT /api/landlord/rooms?id=...`
 - `DELETE /api/landlord/rooms?id=...`
-- `DELETE /api/landlord/rooms.php?id=...`
+- `DELETE /api/landlord/rooms?id=...`
 - `GET /api/admin/landlords?status=...`
-- `GET /api/admin/landlords.php?status=...`
+- `GET /api/admin/landlords?status=...`
 - `POST /api/admin/landlords`
-- `POST /api/admin/landlords.php`
+- `POST /api/admin/landlords`
 - `GET /api/admin/summary`
-- `GET /api/admin/summary.php`
+- `GET /api/admin/summary`
 - `GET /api/admin/users?limit=...&offset=...&q=...&role=...`
-- `GET /api/admin/users.php?limit=...&offset=...&q=...&role=...`
+- `GET /api/admin/users?limit=...&offset=...&q=...&role=...`
 - `PATCH /api/admin/users`
-- `PATCH /api/admin/users.php`
+- `PATCH /api/admin/users`
 - `GET /api/admin/properties?moderation=...`
-- `GET /api/admin/properties.php?moderation=...`
+- `GET /api/admin/properties?moderation=...`
 - `POST /api/admin/properties`
-- `POST /api/admin/properties.php`
+- `POST /api/admin/properties`
 - `GET /api/admin/applications`
-- `GET /api/admin/applications.php`
+- `GET /api/admin/applications`
 - `GET /api/admin/settings`
-- `GET /api/admin/settings.php`
+- `GET /api/admin/settings`
 - `PATCH /api/admin/settings`
-- `PATCH /api/admin/settings.php`
+- `PATCH /api/admin/settings`
 
 ## Shared Utilities
 
@@ -219,7 +227,7 @@ bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 During Phase 7 testing, point the static frontend at a Worker API without editing files by opening any page with:
 
 ```text
-?apiBaseUrl=http://localhost:8787
+?apiBaseUrl=http://localhost:8000
 ```
 
 The value is saved to `localStorage.havenSpaceApiBaseUrl`. Clear that key to return to the default Worker API.

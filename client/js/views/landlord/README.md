@@ -6,28 +6,28 @@ JavaScript modules for landlord dashboard views.
 
 | File                       | Description                           |
 | -------------------------- | ------------------------------------- |
-| `landlord.js`              | Landlord dashboard home functionality |
-| `landlord-listings.js`     | Property listing management (CRUD)    |
-| `landlord-applications.js` | Application review and management     |
-| `landlord-payments.js`     | Payment tracking and recording        |
-| `landlord-maintenance.js`  | Maintenance request management        |
+| `landlord.ts`              | Landlord dashboard home functionality |
+| `landlord-listings.ts`     | Property listing management (CRUD)    |
+| `landlord-applications.ts` | Application review and management     |
+| `landlord-payments.ts`     | Payment tracking and recording        |
+| `landlord-maintenance.ts`  | Maintenance request management        |
 
 ## Exports
 
 ```javascript
-// landlord.js
+// landlord.ts
 export function initLandlord() {}
 
-// landlord-listings.js
+// landlord-listings.ts
 export function initLandlordListings() {}
 
-// landlord-applications.js
+// landlord-applications.ts
 export function initLandlordApplications() {}
 
-// landlord-payments.js
+// landlord-payments.ts
 export function initLandlordPayments() {}
 
-// landlord-maintenance.js
+// landlord-maintenance.ts
 export function initLandlordMaintenance() {}
 ```
 
@@ -35,17 +35,17 @@ export function initLandlordMaintenance() {}
 
 ```html
 <!-- Dashboard home -->
-<script type="module" src="../../../js/views/landlord/landlord.js"></script>
+<script type="module" src="../../../js/views/landlord/landlord.ts"></script>
 
 <!-- Listings -->
-<script type="module" src="../../../js/views/landlord/landlord-listings.js"></script>
+<script type="module" src="../../../js/views/landlord/landlord-listings.ts"></script>
 
 <!-- Applications -->
-<script type="module" src="../../../js/views/landlord/landlord-applications.js"></script>
+<script type="module" src="../../../js/views/landlord/landlord-applications.ts"></script>
 
 <!-- Payments -->
-<script type="module" src="../../../js/views/landlord/landlord-payments.js"></script>
+<script type="module" src="../../../js/views/landlord/landlord-payments.ts"></script>
 
 <!-- Maintenance -->
-<script type="module" src="../../../js/views/landlord/landlord-maintenance.js"></script>
+<script type="module" src="../../../js/views/landlord/landlord-maintenance.ts"></script>
 ```

@@ -1,7 +1,15 @@
 export interface Env {
   APP_ENV?: string;
+  APP_DEBUG?: string;
   APP_ORIGIN?: string;
+  APP_BASE_URL?: string;
+  ALLOWED_ORIGINS?: string;
   JWT_SECRET?: string;
+  JWT_EXPIRATION?: string;
+  REFRESH_TOKEN_EXPIRATION?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  GOOGLE_REDIRECT_URI?: string;
   UPLOADTHING_TOKEN?: string;
   DB?: D1Database;
   UPLOADTHING_UPLOAD_FILES?: UploadThingUploadFiles;

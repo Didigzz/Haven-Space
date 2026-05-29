@@ -39,7 +39,7 @@ function createSequenceEnv(responses: D1Response[], capturedBinds: unknown[][] =
 }
 
 describe('properties routes', () => {
-  it('returns all map properties with the PHP response shape and .php alias', async () => {
+  it('returns all map properties with the PHP response shape and  alias', async () => {
     const properties: MapPropertyRow[] = [
       {
         id: 10,
@@ -92,7 +92,7 @@ describe('properties routes', () => {
     ];
 
     const response = await app.request(
-      'http://localhost/api/properties/all.php',
+      'http://localhost/api/properties/all',
       {},
       createSequenceEnv([{ all: properties }, { all: amenities }, { all: photos }])
     );

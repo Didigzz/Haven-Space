@@ -129,7 +129,7 @@ The boarder payment pages now feature a comprehensive color system that provides
 
 ### JavaScript Implementation
 
-**File:** `client/js/views/boarder/boarder-payments.js`
+**File:** `client/js/views/boarder/boarder-payments.ts`
 
 ```javascript
 function getPaymentStatus(dueDate, paidDate) {
@@ -155,7 +155,7 @@ function getPaymentStatus(dueDate, paidDate) {
 
 ### Dashboard Enhanced Logic
 
-**File:** `client/js/views/boarder/dashboard.js`
+**File:** `client/js/views/boarder/dashboard.ts`
 
 Additional granularity for dashboard cards:
 

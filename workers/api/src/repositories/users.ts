@@ -34,6 +34,24 @@ export interface CreateUserInput {
   boarderStatus: string | null;
 }
 
+export interface CreateGoogleUserInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  googleId: string;
+  googlePicture: string | null;
+  role: 'boarder' | 'landlord';
+  accountStatus: string;
+  isVerified: number;
+  emailVerified: number;
+  boarderStatus: string | null;
+}
+
+export interface GoogleIdentityInput {
+  googleId: string;
+  googlePicture: string | null;
+}
+
 export interface CreateLandlordProfileInput {
   userId: number;
   boardingHouseName: string;
@@ -86,6 +104,37 @@ export async function findUserAccountByEmail(
       `
     )
     .bind(email)
+    .first<UserAccountRow>();
+}
+
+export async function findUserAccountByGoogleId(
+  db: D1Database,
+  googleId: string
+): Promise<UserAccountRow | null> {
+  return await db
+    .prepare(
+      `
+        SELECT
+          id,
+          first_name,
+          last_name,
+          email,
+          password_hash,
+          google_id,
+          role,
+          is_verified,
+          email_verified,
+          account_status,
+          boarder_status,
+          phone_number,
+          avatar_url
+        FROM users
+        WHERE google_id = ?
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    )
+    .bind(googleId)
     .first<UserAccountRow>();
 }
 
@@ -180,6 +229,73 @@ export async function createUserAccount(db: D1Database, input: CreateUserInput):
     .run();
 
   return insertedId(result, 'User');
+}
+
+export async function createGoogleUserAccount(
+  db: D1Database,
+  input: CreateGoogleUserInput
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        INSERT INTO users (
+          first_name,
+          last_name,
+          email,
+          password_hash,
+          google_id,
+          google_picture,
+          role,
+          is_verified,
+          email_verified,
+          account_status,
+          boarder_status,
+          avatar_url
+        )
+        VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, ?)
+      `
+    )
+    .bind(
+      input.firstName,
+      input.lastName,
+      input.email,
+      input.googleId,
+      input.googlePicture,
+      input.role,
+      input.isVerified,
+      input.emailVerified,
+      input.accountStatus,
+      input.boarderStatus,
+      input.googlePicture
+    )
+    .run();
+
+  return insertedId(result, 'Google user');
+}
+
+export async function updateGoogleIdentity(
+  db: D1Database,
+  userId: number,
+  input: GoogleIdentityInput
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        UPDATE users
+        SET
+          google_id = ?,
+          google_picture = ?,
+          avatar_url = COALESCE(avatar_url, ?),
+          email_verified = 1,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+          AND deleted_at IS NULL
+      `
+    )
+    .bind(input.googleId, input.googlePicture, input.googlePicture, userId)
+    .run();
+
+  return Number(result.meta.changes ?? 0);
 }
 
 export async function createLandlordProfile(

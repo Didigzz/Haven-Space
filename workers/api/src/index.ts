@@ -19,25 +19,56 @@ import tenancyRoutes from './routes/tenancy';
 
 const app = new Hono<{ Bindings: Env }>();
 
-function resolveOrigin(requestOrigin: string, configuredOrigins?: string): string {
-  const origins = (configuredOrigins || requestOrigin || '*')
+function configuredCorsOrigins(env: Env, requestOrigin: string): string[] {
+  return (env.APP_ORIGIN || env.ALLOWED_ORIGINS || env.APP_BASE_URL || requestOrigin || '*')
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
+}
+
+function isLocalhostOrigin(value: string): boolean {
+  try {
+    const { hostname } = new URL(value);
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1' ||
+      hostname === '[::1]'
+    );
+  } catch {
+    return false;
+  }
+}
+
+function resolveOrigin(requestOrigin: string, env: Env): string {
+  const origins = configuredCorsOrigins(env, requestOrigin);
 
   if (origins.includes('*')) {
     return requestOrigin || '*';
   }
 
-  return origins.includes(requestOrigin) ? requestOrigin : origins[0] || requestOrigin;
+  if (origins.includes(requestOrigin)) {
+    return requestOrigin;
+  }
+
+  if (
+    env.APP_ENV !== 'production' &&
+    requestOrigin &&
+    isLocalhostOrigin(requestOrigin) &&
+    origins.some(origin => isLocalhostOrigin(origin))
+  ) {
+    return requestOrigin;
+  }
+
+  return origins[0] || requestOrigin;
 }
 
 app.use(
   '*',
   cors({
-    origin: (origin, c) => resolveOrigin(origin, c.env.APP_ORIGIN),
+    origin: (origin, c) => resolveOrigin(origin, c.env),
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Authorization', 'Content-Type'],
+    allowHeaders: ['Authorization', 'Content-Type', 'X-User-ID', 'X-USER-ID'],
     credentials: true,
   })
 );

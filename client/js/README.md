@@ -6,33 +6,33 @@ ES Modules for application logic and component initialization.
 
 ```
 js/
-├── main.js                  # Application entry point
+├── main.ts                  # Application entry point
 ├── auth/                    # Authentication logic
-│   ├── login.js             # Login page functionality
-│   ├── signup.js            # Signup page functionality
-│   └── forgot-password.js   # Password recovery functionality
+│   ├── login.ts             # Login page functionality
+│   ├── signup.ts            # Signup page functionality
+│   └── forgot-password.ts   # Password recovery functionality
 ├── components/              # Reusable component initialization
-│   ├── logo-cloud.js        # Infinite logo slider
-│   └── sidebar.js           # Dashboard sidebar navigation
+│   ├── logo-cloud.ts        # Infinite logo slider
+│   └── sidebar.ts           # Dashboard sidebar navigation
 ├── shared/                  # Shared utilities
-│   └── state.js             # State management, auth helpers, API utilities
+│   └── state.ts             # State management, auth helpers, API utilities
 └── views/                   # View-specific logic (nested by type)
     ├── admin/
-    │   └── admin.js
+    │   └── admin.ts
     ├── boarder/
-    │   ├── boarder.js
-    │   ├── boarder-applications.js
-    │   ├── boarder-maintenance.js
-    │   ├── boarder-payments.js
-    │   └── boarder-rooms.js
+    │   ├── boarder.ts
+    │   ├── boarder-applications.ts
+    │   ├── boarder-maintenance.ts
+    │   ├── boarder-payments.ts
+    │   └── boarder-rooms.ts
     ├── landing/
-    │   └── landing.js
+    │   └── landing.ts
     ├── landlord/
-    │   ├── landlord.js
-    │   ├── landlord-applications.js
-    │   ├── landlord-listings.js
-    │   ├── landlord-maintenance.js
-    │   └── landlord-payments.js
+    │   ├── landlord.ts
+    │   ├── landlord-applications.ts
+    │   ├── landlord-listings.ts
+    │   ├── landlord-maintenance.ts
+    │   └── landlord-payments.ts
     └── public/              # Reserved for public view logic
 ```
 
@@ -41,16 +41,16 @@ js/
 Include in HTML as a module:
 
 ```html
-<script type="module" src="./js/main.js"></script>
+<script type="module" src="./js/main.ts"></script>
 ```
 
-## Entry Point (`main.js`)
+## Entry Point (`main.ts`)
 
 The main entry point initializes all components and handles global functionality:
 
 ```javascript
-import { initLogoCloud } from './components/logo-cloud.js';
-import { initSidebar } from './components/sidebar.js';
+import { initLogoCloud } from './components/logo-cloud.ts';
+import { initSidebar } from './components/sidebar.ts';
 
 document.addEventListener('DOMContentLoaded', () => {
   initLogoCloud();
@@ -80,9 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 | Module               | Description                                      |
 | -------------------- | ------------------------------------------------ |
-| `login.js`           | Login form handling, validation, social sign-in  |
-| `signup.js`          | Signup form handling, role selection, validation |
-| `forgot-password.js` | Password recovery flow, email submission         |
+| `login.ts`           | Login form handling, validation, social sign-in  |
+| `signup.ts`          | Signup form handling, role selection, validation |
+| `forgot-password.ts` | Password recovery flow, email submission         |
 
 ### Components (`components/`)
 
@@ -90,14 +90,14 @@ Reusable component initialization functions:
 
 | Module          | Description                    | Exports               |
 | --------------- | ------------------------------ | --------------------- |
-| `logo-cloud.js` | Infinite logo slider animation | `initLogoCloud()`     |
-| `sidebar.js`    | Dashboard sidebar navigation   | `initSidebar(config)` |
+| `logo-cloud.ts` | Infinite logo slider animation | `initLogoCloud()`     |
+| `sidebar.ts`    | Dashboard sidebar navigation   | `initSidebar(config)` |
 
 ### Shared (`shared/`)
 
 | Module     | Description                                                                     |
 | ---------- | ------------------------------------------------------------------------------- |
-| `state.js` | Application state, authentication helpers, API fetch wrapper, utility functions |
+| `state.ts` | Application state, authentication helpers, API fetch wrapper, utility functions |
 
 ### Views (`views/`)
 
@@ -107,45 +107,45 @@ View-specific logic organized by dashboard type:
 
 | Module     | Description                   |
 | ---------- | ----------------------------- |
-| `admin.js` | Admin dashboard functionality |
+| `admin.ts` | Admin dashboard functionality |
 
 #### Boarder (`views/boarder/`)
 
 | Module                    | Description                                 |
 | ------------------------- | ------------------------------------------- |
-| `boarder.js`              | Boarder dashboard home                      |
-| `boarder-rooms.js`        | Room browsing and details                   |
-| `boarder-applications.js` | Rental application submission and tracking  |
-| `boarder-payments.js`     | Payment viewing and processing              |
-| `boarder-maintenance.js`  | Maintenance request submission and tracking |
+| `boarder.ts`              | Boarder dashboard home                      |
+| `boarder-rooms.ts`        | Room browsing and details                   |
+| `boarder-applications.ts` | Rental application submission and tracking  |
+| `boarder-payments.ts`     | Payment viewing and processing              |
+| `boarder-maintenance.ts`  | Maintenance request submission and tracking |
 
 #### Landing (`views/landing/`)
 
 | Module       | Description                              |
 | ------------ | ---------------------------------------- |
-| `landing.js` | Landing page interactions and animations |
+| `landing.ts` | Landing page interactions and animations |
 
 #### Landlord (`views/landlord/`)
 
 | Module                     | Description                        |
 | -------------------------- | ---------------------------------- |
-| `landlord.js`              | Landlord dashboard home            |
-| `landlord-listings.js`     | Property listing management (CRUD) |
-| `landlord-applications.js` | Application review and management  |
-| `landlord-payments.js`     | Payment tracking and recording     |
-| `landlord-maintenance.js`  | Maintenance request management     |
+| `landlord.ts`              | Landlord dashboard home            |
+| `landlord-listings.ts`     | Property listing management (CRUD) |
+| `landlord-applications.ts` | Application review and management  |
+| `landlord-payments.ts`     | Payment tracking and recording     |
+| `landlord-maintenance.ts`  | Maintenance request management     |
 
 ## Module Pattern
 
 Each module exports specific functions:
 
 ```javascript
-// components/logo-cloud.js
+// components/logo-cloud.ts
 export function initLogoCloud() {
   // Component initialization logic
 }
 
-// views/boarder/boarder-rooms.js
+// views/boarder/boarder-rooms.ts
 export function initBoarderRooms() {
   // View initialization logic
 }

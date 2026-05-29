@@ -262,24 +262,14 @@ async function handleUpdateAdminSettings(c: Context<{ Bindings: Env }>) {
 }
 
 adminRoutes.get('/api/admin/landlords', handleAdminLandlords);
-adminRoutes.get('/api/admin/landlords.php', handleAdminLandlords);
 adminRoutes.post('/api/admin/landlords', handleUpdateAdminLandlord);
-adminRoutes.post('/api/admin/landlords.php', handleUpdateAdminLandlord);
 adminRoutes.get('/api/admin/summary', handleAdminSummary);
-adminRoutes.get('/api/admin/summary.php', handleAdminSummary);
 adminRoutes.get('/api/admin/users', handleAdminUsers);
-adminRoutes.get('/api/admin/users.php', handleAdminUsers);
 adminRoutes.patch('/api/admin/users', handleUpdateAdminUser);
-adminRoutes.patch('/api/admin/users.php', handleUpdateAdminUser);
 adminRoutes.get('/api/admin/properties', handleAdminProperties);
-adminRoutes.get('/api/admin/properties.php', handleAdminProperties);
 adminRoutes.post('/api/admin/properties', handleUpdateAdminProperty);
-adminRoutes.post('/api/admin/properties.php', handleUpdateAdminProperty);
 adminRoutes.get('/api/admin/applications', handleAdminApplications);
-adminRoutes.get('/api/admin/applications.php', handleAdminApplications);
 adminRoutes.get('/api/admin/settings', handleAdminSettings);
-adminRoutes.get('/api/admin/settings.php', handleAdminSettings);
 adminRoutes.patch('/api/admin/settings', handleUpdateAdminSettings);
-adminRoutes.patch('/api/admin/settings.php', handleUpdateAdminSettings);
 
 export default adminRoutes;

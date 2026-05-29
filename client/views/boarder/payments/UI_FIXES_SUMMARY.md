@@ -174,5 +174,5 @@ All changes follow the Haven Space Design System specifications:
 
 - Non-existent `edit.svg` was replaced with `settings.svg` from the assets directory
 - All SVG files used are from `client/assets/svg/` directory
-- The `icons.js` file mentioned in project rules is deprecated and not used
+- The `icons.ts` file mentioned in project rules is deprecated and not used
 - Direct SVG usage pattern is now the standard as per project conventions

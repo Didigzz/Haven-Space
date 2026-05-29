@@ -13,20 +13,20 @@ The "Generate with AI" button in landlord create listing was stuck loading with 
 
 ## Fixes Applied
 
-### 1. create-listing.js
+### 1. create-listing.ts
 
 - Uncommented console.error for better debugging
 - Added error message cleanup before new attempts
 - Improved error logging with detailed information
 - Better error message handling
 
-### 2. AIService.js
+### 2. AIService.ts
 
 - Fixed showSuggestion method to use proper event listeners instead of inline JavaScript
 - Added detailed error information in executeFunction
 - Improved error messages in generateDescription method
 
-### 3. generate-description.php
+### 3. generate-description
 
 - Added try-catch around Groq API call
 - Better error handling for unconfigured AI service
@@ -69,11 +69,11 @@ The "Generate with AI" button in landlord create listing was stuck loading with 
 
 ## Files Modified
 
-- `client/js/views/landlord/create-listing.js`
-- `client/js/services/AIService.js`
-- `functions/api/ai/generate-description.php`
+- `client/js/views/landlord/create-listing.ts`
+- `client/js/services/AIService.ts`
+- `functions/api/ai/generate-description`
 
 ## Files Added (for testing)
 
 - `client/test-ai-generation.html`
-- `client/js/views/landlord/debug-ai-endpoint.js`
+- `client/js/views/landlord/debug-ai-endpoint.ts`

@@ -39,7 +39,7 @@ Uses hash-based routing (`#overview`, `#verification`, `#users`, `#properties`, 
 ## Related Files
 
 - **CSS:** `/css/views/admin/admin.css` - Dark command center theme with purple/indigo accents
-- **JavaScript:** `/js/views/admin/admin-dashboard.js` - Panel logic and API integration
-- **JavaScript:** `/js/views/admin/index.js` - Dashboard initialization and auth guard
+- **JavaScript:** `/js/views/admin/admin-dashboard.ts` - Panel logic and API integration
+- **JavaScript:** `/js/views/admin/index.ts` - Dashboard initialization and auth guard
 - **Component:** `/components/sidebar.html` - Admin navigation sidebar
-- **Component:** `/js/components/sidebar.js` - Admin navigation configuration
+- **Component:** `/js/components/sidebar.ts` - Admin navigation configuration

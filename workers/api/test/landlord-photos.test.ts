@@ -86,7 +86,7 @@ describe('landlord listing photo routes', () => {
     const capturedBinds: unknown[][] = [];
     const uploaded: { names: string[]; metadata?: Record<string, unknown> }[] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/upload-photos.php',
+      'http://localhost/api/landlord/upload-photos',
       {
         method: 'POST',
         headers: { 'X-User-ID': '3' },

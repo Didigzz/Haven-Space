@@ -73,6 +73,5 @@ async function listAllProperties(c: Context<{ Bindings: Env }>) {
 }
 
 propertiesRoutes.get('/api/properties/all', listAllProperties);
-propertiesRoutes.get('/api/properties/all.php', listAllProperties);
 
 export default propertiesRoutes;

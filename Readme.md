@@ -33,7 +33,7 @@ Run the Worker API locally:
 bun run cf:api:dev
 ```
 
-The local API default is `http://localhost:8787`.
+The local API default is `http://localhost:8000`.
 
 Run the Cloudflare Pages frontend locally:
 
@@ -56,14 +56,22 @@ Required Worker secrets:
 ```bash
 cd workers/api
 bunx wrangler secret put JWT_SECRET --env=""
+bunx wrangler secret put GOOGLE_CLIENT_ID --env=""
+bunx wrangler secret put GOOGLE_CLIENT_SECRET --env=""
 bunx wrangler secret put UPLOADTHING_TOKEN --env=""
+```
+
+For Google auth, register the Worker callback URL in Google Cloud, for example:
+
+```text
+https://haven-space-api.floresaybaez574.workers.dev/api/auth/google/callback
 ```
 
 ## Frontend API URL
 
 The frontend defaults to:
 
-- local: `http://localhost:8787`
+- local: `http://localhost:8000`
 - production: `https://haven-space-api.floresaybaez574.workers.dev`
 
 Override it without editing files:

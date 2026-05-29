@@ -60,10 +60,10 @@ const boarderUser = {
 };
 
 describe('landlord dashboard stats routes', () => {
-  it('returns dashboard stats with the PHP response shape and .php alias', async () => {
+  it('returns dashboard stats with the PHP response shape and  alias', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/dashboard-stats.php',
+      'http://localhost/api/landlord/dashboard-stats',
       {
         headers: {
           'X-User-ID': '3',
@@ -169,7 +169,7 @@ describe('landlord dashboard stats routes', () => {
 
   it('requires a landlord role for dashboard stats', async () => {
     const response = await app.request(
-      'http://localhost/api/landlord/dashboard-stats.php',
+      'http://localhost/api/landlord/dashboard-stats',
       {
         headers: {
           'X-User-ID': '7',

@@ -98,7 +98,7 @@ describe('admin dashboard routes', () => {
     const env = createEnv(sqlite);
 
     const summary = await app.request(
-      'http://localhost/api/admin/summary.php',
+      'http://localhost/api/admin/summary',
       { headers: { 'X-User-ID': '1' } },
       env
     );
@@ -124,7 +124,7 @@ describe('admin dashboard routes', () => {
     expect(summaryBody.data.revenue.currency).toBe('PHP');
 
     const applications = await app.request(
-      'http://localhost/api/admin/applications.php',
+      'http://localhost/api/admin/applications',
       { headers: { 'X-User-ID': '1' } },
       env
     );
@@ -169,7 +169,7 @@ describe('admin dashboard routes', () => {
     const env = createEnv(sqlite);
 
     const list = await app.request(
-      'http://localhost/api/admin/users.php?role=landlord&q=lara',
+      'http://localhost/api/admin/users?role=landlord&q=lara',
       { headers: { 'X-User-ID': '1' } },
       env
     );
@@ -189,7 +189,7 @@ describe('admin dashboard routes', () => {
     expect(listBody.meta).toEqual({ total: 1, limit: 40, offset: 0 });
 
     const update = await app.request(
-      'http://localhost/api/admin/users.php',
+      'http://localhost/api/admin/users',
       {
         method: 'PATCH',
         headers: adminHeaders(),
@@ -214,7 +214,7 @@ describe('admin dashboard routes', () => {
     const env = createEnv(sqlite);
 
     const list = await app.request(
-      'http://localhost/api/admin/properties.php?moderation=pending_review',
+      'http://localhost/api/admin/properties?moderation=pending_review',
       { headers: { 'X-User-ID': '1' } },
       env
     );
@@ -232,7 +232,7 @@ describe('admin dashboard routes', () => {
     ]);
 
     const update = await app.request(
-      'http://localhost/api/admin/properties.php',
+      'http://localhost/api/admin/properties',
       {
         method: 'POST',
         headers: adminHeaders(),
@@ -259,7 +259,7 @@ describe('admin dashboard routes', () => {
     const env = createEnv(sqlite);
 
     const settings = await app.request(
-      'http://localhost/api/admin/settings.php',
+      'http://localhost/api/admin/settings',
       { headers: { 'X-User-ID': '1' } },
       env
     );
@@ -272,7 +272,7 @@ describe('admin dashboard routes', () => {
     expect(settingsBody.data.terms_version).toBe('1.0');
 
     const update = await app.request(
-      'http://localhost/api/admin/settings.php',
+      'http://localhost/api/admin/settings',
       {
         method: 'PATCH',
         headers: adminHeaders(),
@@ -312,7 +312,7 @@ describe('admin dashboard routes', () => {
     seedAdminDashboardData(sqlite);
 
     const response = await app.request(
-      'http://localhost/api/admin/summary.php',
+      'http://localhost/api/admin/summary',
       { headers: { 'X-User-ID': '2' } },
       createEnv(sqlite)
     );

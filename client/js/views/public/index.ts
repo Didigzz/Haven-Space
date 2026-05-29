@@ -1,0 +1,334 @@
+/**
+ * Public Views Entry Point
+ *
+ * Initializes homepage components (logo cloud, floating header, FAQ accordion)
+ * Handles authenticated user state for logged-in boarders
+ */
+
+import { initLogoCloud } from '../../components/logo-cloud.ts';
+import { initPublicFindARoom } from './public-find-a-room.ts';
+import { getState } from '../../shared/state.ts';
+import { initIconElements } from '../../shared/icons.ts';
+import { setupAuthenticatedNavigation } from '../../shared/routing.ts';
+import { showToast } from '../../shared/toast.ts';
+
+/**
+ * Floating Header - Scroll-triggered transition
+ * Transitions header from full-width to floating pill on scroll
+ */
+function initFloatingHeader() {
+  const navbar = document.querySelector('.navbar');
+  const scrollThreshold = 50;
+
+  if (!navbar) {
+    console.warn('FloatingHeader: Navbar element not found');
+    return;
+  }
+
+  let ticking = false;
+
+  const handleScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollY = window.scrollY || window.pageYOffset;
+        const isScrolled = scrollY > scrollThreshold;
+        const wasScrolled = navbar.classList.contains('navbar-scrolled');
+
+        if (isScrolled !== wasScrolled) {
+          if (isScrolled) {
+            navbar.classList.add('navbar-scrolled');
+          } else {
+            navbar.classList.remove('navbar-scrolled');
+          }
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+}
+
+/**
+ * FAQ Accordion - Toggle expand/collapse
+ * Only one item can be open at a time with smooth animation
+ */
+function initFAQAccordion() {
+  const faqItems = document.querySelectorAll('.faq-item');
+  const faqTabs = document.querySelectorAll('.faq-tab');
+
+  if (faqItems.length === 0) {
+    return;
+  }
+
+  // Handle tab clicks
+  faqTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const category = tab.dataset.category;
+
+      // Update active tab
+      faqTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Filter FAQ items
+      faqItems.forEach(item => {
+        const itemCategory = item.dataset.category;
+        const shouldShow = category === 'all' || itemCategory === category;
+
+        if (shouldShow) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+          // Close the item if it's open
+          item.classList.remove('active');
+          const question = item.querySelector('.faq-question');
+          if (question) {
+            question.setAttribute('aria-expanded', 'false');
+          }
+        }
+      });
+    });
+  });
+
+  // Handle accordion clicks
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question');
+
+    if (question) {
+      question.addEventListener('click', () => {
+        const isActive = item.classList.contains('active');
+
+        // Close all items first
+        faqItems.forEach(otherItem => {
+          otherItem.classList.remove('active');
+          const otherQuestion = otherItem.querySelector('.faq-question');
+          if (otherQuestion) {
+            otherQuestion.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        // If the clicked item wasn't active, open it
+        if (!isActive) {
+          item.classList.add('active');
+          question.setAttribute('aria-expanded', 'true');
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Initialize Public Views
+ * Sets up homepage components (logo cloud, floating header, FAQ accordion)
+ */
+export function initPublicViews() {
+  // Wait for DOM and images to be ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPublicComponents);
+  } else {
+    initPublicComponents();
+  }
+}
+
+/**
+ * Update navigation for authenticated users
+ * Shows user menu instead of login/signup buttons
+ */
+function updateNavigationForAuthenticatedUser() {
+  const state = getState();
+
+  if (!state.isAuthenticated || !state.user) {
+    return; // User not logged in, keep default login buttons
+  }
+
+  const navActions = document.querySelector('.nav-actions');
+  if (!navActions) return;
+
+  const user = state.user;
+  const userName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+  const initials = (user.first_name?.[0] || user.last_name?.[0] || 'U').toUpperCase();
+
+  // Replace login/signup buttons with user avatar dropdown
+  // Determine dropdown content based on user role
+  const isBoarder = user.role === 'boarder';
+  const isLandlord = user.role === 'landlord';
+  const isAdmin = user.role === 'admin';
+
+  const boarderMenuItems = isBoarder
+    ? `
+    <a href="../boarder/applications/index.html" class="nav-user-menu-item">
+      <img src="../../assets/svg/document.svg" alt="" width="18" height="18" />
+      My Applications
+    </a>
+    <a href="../boarder/payments/index.html" class="nav-user-menu-item">
+      <img src="../../assets/svg/creditCard.svg" alt="" width="18" height="18" />
+      Payments
+    </a>
+    <div class="nav-user-divider"></div>
+  `
+    : '';
+
+  const landlordMenuItems = isLandlord
+    ? `
+    <a href="../landlord/index.html" class="nav-user-menu-item">
+      <img src="../../assets/svg/home.svg" alt="" width="18" height="18" />
+      Go to Dashboard
+    </a>
+    <div class="nav-user-divider"></div>
+  `
+    : '';
+
+  const adminMenuItems = isAdmin
+    ? `
+    <a href="../admin/index.html" class="nav-user-menu-item">
+      <img src="../../assets/svg/dashboard.svg" alt="" width="18" height="18" />
+      Go to Dashboard
+    </a>
+    <div class="nav-user-divider"></div>
+  `
+    : '';
+
+  navActions.innerHTML = `
+    <div class="nav-user-menu">
+      <button class="nav-user-button" id="nav-user-btn" aria-label="User menu">
+        <div class="nav-user-avatar">${initials}</div>
+        <span class="nav-user-name">${userName.split(' ')[0]}</span>
+        <img src="../../assets/svg/chevron-down.svg" alt="" width="16" height="16" class="nav-chevron" />
+      </button>
+      <div class="nav-user-dropdown" id="nav-user-dropdown">
+        <div class="nav-user-info">
+          <div class="nav-user-info-name">${userName}</div>
+          <div class="nav-user-info-email">${user.email || ''}</div>
+          <div class="nav-user-info-role">${user.role || 'Boarder'}</div>
+        </div>
+        <div class="nav-user-divider"></div>
+        ${adminMenuItems}
+        ${landlordMenuItems}
+        ${boarderMenuItems}
+        <button class="nav-user-menu-item nav-user-logout" id="nav-logout-btn">
+          <img src="../../assets/svg/logout.svg" alt="" width="18" height="18" />
+          Logout
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Setup dropdown toggle
+  const userBtn = document.getElementById('nav-user-btn');
+  const dropdown = document.getElementById('nav-user-dropdown');
+
+  if (userBtn && dropdown) {
+    userBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      dropdown.classList.toggle('show');
+    });
+  }
+
+  // Setup logout button
+  const logoutBtn = document.getElementById('nav-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        // Import logout function from auth-check.ts
+        const { logout } = await import('../../shared/auth-check.ts');
+
+        // Call the proper logout function
+        await logout();
+      } catch (error) {
+        console.error('Logout failed:', error);
+
+        // Fallback: clear local storage and redirect manually
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // Store logout message in sessionStorage to display after redirect
+        sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+        sessionStorage.setItem('logoutToastType', 'success');
+
+        // Redirect to login page
+        window.location.href = 'auth/login.html';
+      }
+    });
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', e => {
+    if (dropdown && !dropdown.contains(e.target) && userBtn && !userBtn.contains(e.target)) {
+      dropdown.classList.remove('show');
+    }
+  });
+}
+
+/**
+ * Initialize public components after DOM is ready
+ */
+function initPublicComponents() {
+  // Show logout toast if redirected from logout
+  const logoutToastMsg = sessionStorage.getItem('logoutToast');
+  if (logoutToastMsg) {
+    const toastType = sessionStorage.getItem('logoutToastType') || 'success';
+    sessionStorage.removeItem('logoutToast');
+    sessionStorage.removeItem('logoutToastType');
+    showToast(logoutToastMsg, toastType, 5000);
+  }
+
+  // Check if user is authenticated and update navigation
+  updateNavigationForAuthenticatedUser();
+
+  // Initialize data-icon elements (footer social icons, etc.)
+  initIconElements();
+
+  // Setup authentication-aware navigation for find-a-room links
+  setupAuthenticatedNavigation();
+
+  // Initialize floating header (homepage only)
+  initFloatingHeader();
+
+  // Initialize FAQ accordion
+  initFAQAccordion();
+
+  // Initialize find-a-room page (only if elements exist)
+  if (document.querySelector('.find-room-main')) {
+    initPublicFindARoom();
+  }
+
+  // Initialize logo cloud (homepage only)
+  const logoSlider = document.getElementById('logoSlider');
+  if (logoSlider) {
+    // Wait for images to load before calculating dimensions
+    const images = logoSlider.querySelectorAll('img');
+    let loadedCount = 0;
+
+    const checkAllLoaded = () => {
+      loadedCount++;
+      if (loadedCount === images.length) {
+        setTimeout(() => {
+          initLogoCloud();
+        }, 100);
+      }
+    };
+
+    if (images.length > 0) {
+      images.forEach(img => {
+        if (img.complete) {
+          checkAllLoaded();
+        } else {
+          img.addEventListener('load', checkAllLoaded);
+          img.addEventListener('error', checkAllLoaded); // Continue even if image fails
+        }
+      });
+    } else {
+      initLogoCloud();
+    }
+  }
+
+  // Initialize find-room-description animation
+  const findRoomDescription = document.getElementById('find-room-description');
+  if (findRoomDescription) {
+    import('./find-room-description.ts').then(module => {
+      module.initFindRoomDescriptionAnimation();
+    });
+  }
+}

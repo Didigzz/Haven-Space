@@ -217,10 +217,10 @@ describe('landlord property routes', () => {
     ]);
   });
 
-  it('creates a property through the PHP properties.php alias', async () => {
+  it('creates a property through the PHP properties alias', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/properties.php',
+      'http://localhost/api/landlord/properties',
       {
         method: 'POST',
         headers: {
@@ -349,9 +349,9 @@ describe('landlord property routes', () => {
     });
   });
 
-  it('returns PHP-compatible properties.php create validation errors', async () => {
+  it('returns PHP-compatible properties create validation errors', async () => {
     const response = await app.request(
-      'http://localhost/api/landlord/properties.php',
+      'http://localhost/api/landlord/properties',
       {
         method: 'POST',
         headers: {
@@ -656,10 +656,10 @@ describe('landlord property routes', () => {
     });
   });
 
-  it('returns landlord properties with the PHP response shape and .php alias', async () => {
+  it('returns landlord properties with the PHP response shape and  alias', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/properties.php',
+      'http://localhost/api/landlord/properties',
       { headers: { 'X-User-ID': '3' } },
       createSequenceEnv(
         [{ first: landlordUser }, { all: [propertyRow] }, { all: amenities }, { all: photos }],
@@ -717,7 +717,7 @@ describe('landlord property routes', () => {
   it('returns single landlord property detail with amenities and photos', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/properties.php?id=10',
+      'http://localhost/api/landlord/properties?id=10',
       { headers: { 'X-User-ID': '3' } },
       createSequenceEnv(
         [{ first: landlordUser }, { first: detailRow }, { all: amenities }, { all: photos }],
@@ -761,7 +761,7 @@ describe('landlord property routes', () => {
 
   it('returns PHP-compatible landlord property not found behavior', async () => {
     const response = await app.request(
-      'http://localhost/api/landlord/properties.php?id=404',
+      'http://localhost/api/landlord/properties?id=404',
       { headers: { 'X-User-ID': '3' } },
       createSequenceEnv([{ first: landlordUser }, { first: null }])
     );
@@ -773,7 +773,7 @@ describe('landlord property routes', () => {
   it('soft deletes a landlord property and its rooms with the PHP response shape', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
-      'http://localhost/api/landlord/properties.php?id=10',
+      'http://localhost/api/landlord/properties?id=10',
       {
         method: 'DELETE',
         headers: { 'X-User-ID': '3' },
@@ -835,7 +835,7 @@ describe('landlord property routes', () => {
 
   it('requires a landlord role for landlord property deletion', async () => {
     const response = await app.request(
-      'http://localhost/api/landlord/properties.php?id=10',
+      'http://localhost/api/landlord/properties?id=10',
       {
         method: 'DELETE',
         headers: { 'X-User-ID': '7' },
