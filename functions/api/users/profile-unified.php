@@ -1,10 +1,8 @@
 <?php
 
 /**
- * User Profile API Endpoints (Updated for Environment Switching)
- * Handles user profile data updates with automatic database switching
- * 
- * This is an example of how to update existing endpoints to use the unified database system
+ * User Profile API Endpoints
+ * Handles user profile data updates using the database system
  */
 
 require_once __DIR__ . '/../../src/Core/bootstrap.php';
@@ -12,16 +10,6 @@ require_once __DIR__ . '/../middleware.php';
 require_once __DIR__ . '/../../config/database.php';
 
 use App\Api\Middleware;
-
-// Enable CORS
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-User-ID');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
 
 // Authenticate user
 $user = Middleware::authenticate();
@@ -32,7 +20,7 @@ if (!$user) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Get unified database adapter (automatically switches based on APP_ENV)
+// Get database adapter
 $db = getUnifiedDB();
 
 switch ($method) {
@@ -48,13 +36,12 @@ switch ($method) {
 }
 
 /**
- * Get user profile data using unified database interface
+ * Get user profile data
  */
 function getUserProfile($db, $userId) {
     try {
-        // Using unified interface - works with both MySQL and Appwrite
         $users = $db->select('users', ['id' => $userId], [
-            'fields' => ['id', 'name', 'email', 'phone_number', 'avatar_file_id', 'created_at', 'updated_at']
+            'fields' => ['id', 'first_name', 'last_name', 'email', 'phone_number', 'avatar_file_id', 'created_at', 'updated_at']
         ]);
         
         if (empty($users)) {
@@ -65,13 +52,14 @@ function getUserProfile($db, $userId) {
         $user = $users[0];
         
         // Get additional profile data if needed
-        $profiles = $db->select('user_profiles', ['user_id' => $userId]);
+        $profiles = $db->select('boarder_profiles', ['user_id' => $userId]);
         $profile = !empty($profiles) ? $profiles[0] : null;
         
         // Combine user and profile data
         $userData = [
             'id' => $user['id'],
-            'name' => $user['name'],
+            'first_name' => $user['first_name'],
+            'last_name' => $user['last_name'],
             'email' => $user['email'],
             'phone' => $user['phone_number'] ?? null,
             'avatar_file_id' => $user['avatar_file_id'] ?? null,
@@ -82,8 +70,7 @@ function getUserProfile($db, $userId) {
         
         json_response(200, [
             'success' => true,
-            'data' => $userData,
-            'database_type' => \App\Core\Database\DatabaseManager::getDatabaseType()
+            'data' => $userData
         ]);
         
     } catch (Exception $e) {
@@ -93,7 +80,7 @@ function getUserProfile($db, $userId) {
 }
 
 /**
- * Update user profile data using unified database interface
+ * Update user profile data
  */
 function updateUserProfile($db, $userId) {
     try {
@@ -105,7 +92,7 @@ function updateUserProfile($db, $userId) {
         }
         
         // Validate and sanitize input
-        $allowedFields = ['name', 'phone_number', 'avatar_file_id'];
+        $allowedFields = ['first_name', 'last_name', 'phone_number', 'avatar_file_id'];
         $updateData = [];
         
         foreach ($allowedFields as $field) {
@@ -122,7 +109,7 @@ function updateUserProfile($db, $userId) {
         // Add updated timestamp
         $updateData['updated_at'] = date('Y-m-d H:i:s');
         
-        // Update user using unified interface
+        // Update user
         $affectedRows = $db->update('users', $updateData, ['id' => $userId]);
         
         if ($affectedRows === 0) {
@@ -132,28 +119,18 @@ function updateUserProfile($db, $userId) {
         
         // Get updated user data
         $users = $db->select('users', ['id' => $userId], [
-            'fields' => ['id', 'name', 'email', 'phone_number', 'avatar_file_id', 'updated_at']
+            'fields' => ['id', 'first_name', 'last_name', 'email', 'phone_number', 'avatar_file_id', 'updated_at']
         ]);
         
         json_response(200, [
             'success' => true,
             'message' => 'Profile updated successfully',
-            'data' => $users[0],
-            'database_type' => \App\Core\Database\DatabaseManager::getDatabaseType()
+            'data' => $users[0]
         ]);
         
     } catch (Exception $e) {
         error_log("Update user profile error: " . $e->getMessage());
         json_response(500, ['error' => 'Failed to update user profile']);
     }
-}
-
-/**
- * Helper function for JSON responses
- */
-function json_response($status, $data) {
-    http_response_code($status);
-    header('Content-Type: application/json');
-    echo json_encode($data, JSON_PRETTY_PRINT);
 }
 ?>

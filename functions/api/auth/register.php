@@ -182,21 +182,6 @@ try {
     // Commit transaction
     $pdo->commit();
 
-    // Sync user to Appwrite and assign role label
-    try {
-        $appwrite = new \App\Services\AppwriteService();
-        $appwrite->createUserWithRole(
-            localUserId: $userId,
-            email: $email,
-            password: $password,
-            name: trim($firstName . ' ' . $lastName),
-            role: $role
-        );
-    } catch (\Throwable $e) {
-        // Non-fatal: local registration succeeded; log and continue
-        error_log('Appwrite sync failed for user ' . $userId . ': ' . $e->getMessage());
-    }
-
     // Send email verification email using PHPMailer
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
@@ -299,8 +284,6 @@ try {
         $pdo->rollBack();
     }
     error_log('Database error during registration: ' . $e->getMessage());
-    error_log('Error code: ' . $e->getCode());
-    error_log('Error info: ' . json_encode($e->errorInfo ?? []));
     http_response_code(500);
     echo json_encode([
         'error' => 'Registration failed due to database error',
