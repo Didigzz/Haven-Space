@@ -11,6 +11,9 @@ functions/api/vendor/
 # Environment files (NEVER commit these!)
 .env.local
 .env.production
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 !.env.example
 !.env.xampp
 
@@ -49,3 +52,7 @@ backups/
 # Bun
 bun
 bun.lock
+!workers/api/bun.lock
+
+# Cloudflare local output
+.wrangler/
