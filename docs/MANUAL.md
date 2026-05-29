@@ -50,14 +50,10 @@ This installs all frontend and tooling dependencies listed in `package.json`.
 
 ## Step 3 — Install PHP Backend Dependencies
 
-The project has two PHP dependency sets. Install both:
+Install the main backend dependencies:
 
 ```bash
-# Main backend dependencies
 composer install --working-dir functions
-
-# Appwrite function dependencies
-composer install --working-dir functions/api
 ```
 
 ---

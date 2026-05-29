@@ -11,7 +11,6 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
-[![Appwrite](https://img.shields.io/badge/Appwrite-FD366E?style=for-the-badge&logo=appwrite&logoColor=white)](https://appwrite.io/)
 [![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
 [![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black)](https://prettier.io/)
@@ -27,7 +26,6 @@ Haven Space is a full-stack boarding house platform that streamlines the rental 
 
 - **Frontend**: Vanilla HTML/CSS/JS served via Apache (`http://localhost`)
 - **Backend**: PHP REST API running at `http://localhost:8000`
-- **Cloud**: Deployed on [Appwrite](https://appwrite.io/) — `https://haven-space.appwrite.network`
 
 ---
 
@@ -68,7 +66,6 @@ Haven Space is a full-stack boarding house platform that streamlines the rental 
 | UI Framework    | Bootstrap                                    |
 | Backend         | PHP 8+                                       |
 | Database        | MySQL                                        |
-| Cloud Platform  | Appwrite                                     |
 | Package Manager | Bun                                          |
 | Code Quality    | ESLint, Prettier, Husky, commitlint          |
 
@@ -94,7 +91,7 @@ haven-space/
 ├── functions/            # PHP backend
 │   ├── api/              # Route table and legacy endpoints
 │   ├── src/              # PSR-4 modules (Controllers/Services/Repositories)
-│   ├── config/           # Appwrite and environment config
+│   ├── config/           # Environment config
 │   └── database/         # SQL migrations and seeds
 ├── scripts/              # Build, DB setup, and utility scripts
 └── docs/                 # Documentation and manuals
@@ -124,10 +121,7 @@ bun install
 # 3. Install PHP backend dependencies
 composer install --working-dir functions
 
-# 4. Install Appwrite function dependencies
-composer install --working-dir functions/api
-
-# 5. Set up the database
+# 4. Set up the database
 bun run db:setup
 ```
 
@@ -154,15 +148,6 @@ Start Apache and MySQL via XAMPP (or your preferred stack), then:
 | `bun run db:setup`                      | Run database migrations                     |
 | `bun run db:reset`                      | Reset the database                          |
 | `composer test --working-dir functions` | Run backend tests                           |
-
----
-
-## Deployment
-
-The platform is deployed on **Appwrite Cloud**.
-
-- Production URL: [https://haven-space.appwrite.network](https://haven-space.appwrite.network)
-- Deploy Appwrite function: `appwrite push function api-function`
 
 ---
 

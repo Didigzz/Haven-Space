@@ -8,11 +8,10 @@
 ## Setup & Run
 
 - Frontend base URL: `http://localhost`
-- Production/debug URL: `https://haven-space.appwrite.network`
 - Lint JS: `bun run lint`
 - Format touched files: `bun run format`
 - Build deployable static output: `bun run build`
-- Read frontend design guidance before UI work: [DESIGN.md](/C:/Users/Qwenzy/Desktop/haven-space/DESIGN.md)
+- Read frontend design guidance before UI work: [DESIGN.md](/C:/Users/Qwenzy/Desktop/haven-space/client/DESIGN.md)
 
 ## Patterns & Conventions
 
@@ -34,7 +33,6 @@
 
 - Entry router: [client/js/main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js)
 - Environment config: [client/js/config.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/config.js)
-- Appwrite browser SDK setup: [client/js/appwrite.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/appwrite.js)
 - Shared state/auth fetch logic: [client/js/shared/state.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/state.js)
 - Shared icons: [client/js/shared/icons.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/icons.js)
 - Reusable sidebar component: [client/js/components/sidebar.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/components/sidebar.js)
