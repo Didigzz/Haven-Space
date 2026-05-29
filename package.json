@@ -16,6 +16,11 @@
     "lint": "eslint client/js --ext .js",
     "lint:fix": "eslint --fix client/js --ext .js",
     "build": "node scripts/build.js",
+    "cf:api:dev": "bun run --cwd workers/api dev",
+    "cf:api:deploy": "bun run --cwd workers/api deploy",
+    "cf:api:deploy:staging": "bun run --cwd workers/api deploy:staging",
+    "cf:api:typecheck": "bun run --cwd workers/api typecheck",
+    "cf:api:test": "bun run --cwd workers/api test",
     "prepare": "husky install"
   },
   "keywords": [
@@ -44,9 +49,5 @@
     "*.{html,css,scss,md,json,yaml,yml}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "appwrite": "^24.2.0",
-    "node-appwrite": "^14.1.0"
   }
 }
