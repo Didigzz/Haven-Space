@@ -6,6 +6,7 @@
 import { getImageUrl } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
 import { initIconElements, getIcon } from '../../shared/icons.js';
+import { getLoginPath, viewPath } from '../../shared/routing.js';
 
 // State management
 const state = {
@@ -774,12 +775,8 @@ function handleScheduleTour(room) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   if (!user || user.role !== 'boarder') {
-    const basePath = window.location.pathname.includes('github.io')
-      ? '/Haven-Space/client/views/public/auth/login.html'
-      : '/views/public/auth/login.html';
-
     const redirectUrl = encodeURIComponent(window.location.href);
-    window.location.href = `${basePath}?redirect=${redirectUrl}`;
+    window.location.href = `${getLoginPath()}?redirect=${redirectUrl}`;
     return;
   }
 
@@ -794,23 +791,15 @@ function handleContactLandlord(room) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   if (!user || user.role !== 'boarder') {
-    const basePath = window.location.pathname.includes('github.io')
-      ? '/Haven-Space/client/views/public/auth/login.html'
-      : '/views/public/auth/login.html';
-
     const redirectUrl = encodeURIComponent(window.location.href);
-    window.location.href = `${basePath}?redirect=${redirectUrl}`;
+    window.location.href = `${getLoginPath()}?redirect=${redirectUrl}`;
     return;
   }
 
   // TODO: Redirect to messages page with landlord
   alert(`Contact landlord for ${room.title}. (Integration pending)`);
 
-  const basePath = window.location.pathname.includes('github.io')
-    ? '/Haven-Space/client/views/boarder/messages/index.html'
-    : '/views/boarder/messages/index.html';
-
-  window.location.href = basePath;
+  window.location.href = viewPath('boarder/messages/index.html');
 }
 
 /**
@@ -1291,7 +1280,7 @@ function setupRoomModalListeners(room, property, _modal) {
 
         if (!user || !user.id || user.role !== 'boarder') {
           const redirectUrl = encodeURIComponent(window.location.href);
-          window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
+          window.location.href = `${getLoginPath()}?redirect=${redirectUrl}`;
           return;
         }
 
@@ -1308,7 +1297,9 @@ function setupRoomModalListeners(room, property, _modal) {
           roomType: roomType,
         });
 
-        window.location.href = `../confirm-booking/index.html?${params.toString()}`;
+        window.location.href = `${viewPath(
+          'boarder/confirm-booking/index.html'
+        )}?${params.toString()}`;
       });
     }
 

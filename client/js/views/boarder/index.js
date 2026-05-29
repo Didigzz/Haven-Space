@@ -23,35 +23,10 @@ import { updateNavbarNotifications } from '../../components/navbar.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
 import { ensureAuth } from '../../shared/auth-sync.js';
 import { initOAuthHandler } from '../../shared/oauth-handler.js';
+import { getBasePath, getLoginPath } from '../../shared/routing.js';
 
 function loginPath() {
-  const pathname = window.location.pathname;
-  const hostname = window.location.hostname;
-
-  if (pathname.includes('github.io')) {
-    return '/Haven-Space/client/views/public/auth/login.html';
-  }
-
-  // For localhost development
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Check if we're already in a views subdirectory
-    if (pathname.includes('/views/')) {
-      // Extract the base path up to /views/
-      const viewsIndex = pathname.indexOf('/views/');
-      const basePath = pathname.substring(0, viewsIndex + 7); // Include '/views/'
-      return `${basePath}public/auth/login.html`;
-    }
-
-    // Default for localhost - assume haven-space project structure
-    if (pathname.includes('/haven-space/')) {
-      return '/haven-space/client/views/public/auth/login.html';
-    }
-
-    // Fallback for localhost
-    return '/client/views/public/auth/login.html';
-  }
-
-  return '/views/public/auth/login.html';
+  return getLoginPath();
 }
 
 function initialsFrom(user) {
@@ -81,9 +56,7 @@ export async function initBoarderDashboard() {
   const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
   if (boarderStatus !== 'accepted') {
     // Non-accepted boarders should be in applications dashboard
-    const basePath = window.location.pathname.includes('github.io')
-      ? '/Haven-Space/client/views/'
-      : '/views/';
+    const basePath = getBasePath();
     window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
     return;
   }

@@ -1,5 +1,5 @@
 import { getIcon } from '../shared/icons.js';
-import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+import { getBasePath, getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
 import CONFIG from '../config.js';
 
@@ -113,29 +113,25 @@ function initializeLogin() {
         throw new Error(errorData.error || 'Login failed. Please check your credentials.');
       }
 
-      const phpData = await response.json();
-      const phpUser = phpData.user;
-      const role = phpUser.role ?? 'boarder';
+      const authData = await response.json();
+      const authUser = authData.user;
+      const role = authUser.role ?? 'boarder';
 
       // Build a user object compatible with the rest of the app
       const userRecord = {
-        id: phpUser.id,
-        first_name: phpUser.first_name || '',
-        last_name: phpUser.last_name || '',
-        name: [phpUser.first_name, phpUser.last_name].filter(Boolean).join(' ') || phpUser.email,
-        email: phpUser.email,
+        id: authUser.id,
+        first_name: authUser.first_name || '',
+        last_name: authUser.last_name || '',
+        name: [authUser.first_name, authUser.last_name].filter(Boolean).join(' ') || authUser.email,
+        email: authUser.email,
         role,
-        boarder_status: phpUser.boarder_status ?? 'new',
+        boarder_status: authUser.boarder_status ?? 'new',
       };
 
-      // Persist to localStorage so auth-check.js / routing.js keep working
       localStorage.setItem('user', JSON.stringify(userRecord));
-      // Store the PHP JWT so auth-headers.js / me.php can authenticate
-      localStorage.setItem('token', phpData.access_token);
+      localStorage.setItem('token', authData.access_token);
 
-      // Redirect based on role
-      const pathname = window.location.pathname;
-      const basePath = pathname.includes('github.io') ? '/Haven-Space/client/views/' : '/views/';
+      const basePath = getBasePath();
 
       if (role === 'admin') {
         window.location.href = `${basePath}admin/index.html`;

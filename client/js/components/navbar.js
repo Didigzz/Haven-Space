@@ -5,6 +5,7 @@
 
 import { getDisplayName, getAvatarUrl } from '../shared/profile-utils.js';
 import { toggleTheme, isDarkTheme } from '../shared/theme-manager.js';
+import { getBasePath, getLoginPath } from '../shared/routing.js';
 
 /**
  * Initialize navbar component
@@ -294,7 +295,7 @@ function renderNotifications(notifications) {
       // If this is a new application notification, navigate to applications page
       const type = notification?.type || notificationType;
       if (type === 'new_application') {
-        window.location.href = '/views/landlord/applications/index.html';
+        window.location.href = `${getBasePath()}landlord/applications/index.html`;
       }
 
       // If this is an application status notification, sync user data
@@ -314,9 +315,7 @@ function renderNotifications(notifications) {
 
             // If rejected and on main dashboard, redirect to applications dashboard
             if (boarderStatus === 'rejected' && currentPath.includes('/boarder/index.html')) {
-              const basePath = currentPath.includes('github.io')
-                ? '/Haven-Space/client/views/'
-                : '/views/';
+              const basePath = getBasePath();
               window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
             }
             // If accepted and on applications dashboard, redirect to main dashboard
@@ -324,9 +323,7 @@ function renderNotifications(notifications) {
               boarderStatus === 'accepted' &&
               currentPath.includes('/applications-dashboard/')
             ) {
-              const basePath = currentPath.includes('github.io')
-                ? '/Haven-Space/client/views/'
-                : '/views/';
+              const basePath = getBasePath();
               window.location.href = `${basePath}boarder/index.html`;
             }
           }
@@ -517,20 +514,7 @@ function setupUserMenuHandlers(user) {
       sessionStorage.setItem('logoutToast', 'You have successfully logged out');
       sessionStorage.setItem('logoutToastType', 'success');
 
-      // Redirect to login page
-      const pathname = window.location.pathname;
-
-      // Determine correct login path based on current URL structure
-      if (pathname.includes('/dist/')) {
-        // Production mode (dist): auth folder is at root
-        window.location.href = '/auth/login.html';
-      } else if (pathname.includes('/views/')) {
-        // Direct /views access
-        window.location.href = '/views/public/auth/login.html';
-      } else {
-        // Fallback: try development path
-        window.location.href = '/views/public/auth/login.html';
-      }
+      window.location.href = getLoginPath();
     });
   }
 }

@@ -161,13 +161,12 @@
         }).addTo(map);
 
         // Determine API base URL
-        const API_BASE_URL = window.location.origin.includes('github.io')
-          ? 'https://havenspace.com/server/api'
-          : window.location.origin.includes('localhost') ||
-            window.location.origin.includes('127.0.0.1') ||
-            window.location.hostname === 'localhost'
-          ? 'http://localhost:8000'
-          : '/server/api';
+        const API_BASE_URL =
+          localStorage.getItem('havenSpaceApiBaseUrl') ||
+          window.HAVEN_SPACE_API_BASE_URL ||
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8787'
+            : 'https://haven-space-api.floresaybaez574.workers.dev');
 
         // Create custom pin icon
         const pinIcon = L.icon({

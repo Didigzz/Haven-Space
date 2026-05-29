@@ -6,6 +6,7 @@
 import { loadState, authenticatedFetch } from '../../shared/state.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import { getDisplayName, getUserInitials, getAvatarUrl } from '../../shared/profile-utils.js';
+import { getBasePath, getHomePath, getLoginPath, viewPath } from '../../shared/routing.js';
 import CONFIG from '../../config.js';
 
 // State management for enhanced features
@@ -34,13 +35,7 @@ const enhancedState = {
   },
 };
 
-const API_BASE_URL = window.location.origin.includes('github.io')
-  ? 'https://havenspace.com/server/api'
-  : window.location.origin.includes('localhost') ||
-    window.location.origin.includes('127.0.0.1') ||
-    window.location.hostname === 'localhost'
-  ? CONFIG.API_BASE_URL
-  : CONFIG.API_BASE_URL;
+const API_BASE_URL = CONFIG.API_BASE_URL;
 
 /**
  * Fetch properties from backend API
@@ -1229,9 +1224,7 @@ function initProfileDropdown() {
 
       // Get user and determine correct navigation path
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const basePath = window.location.pathname.includes('github.io')
-        ? '/Haven-Space/client/views/'
-        : '/views/';
+      const basePath = getBasePath();
 
       if (user.role === 'boarder') {
         const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
@@ -1252,7 +1245,7 @@ function initProfileDropdown() {
         window.location.href = `${basePath}admin/index.html`;
       } else {
         // Fallback: redirect to login
-        window.location.href = `${basePath}public/auth/login.html`;
+        window.location.href = getLoginPath();
       }
     });
   }
@@ -1290,10 +1283,7 @@ function initProfileDropdown() {
         sessionStorage.setItem('logoutToastType', 'success');
 
         // Redirect to public homepage instead of login page
-        const basePath = window.location.pathname.includes('github.io')
-          ? '/Haven-Space/client/views/'
-          : '/views/';
-        window.location.href = `${basePath}public/index.html`;
+        window.location.href = getHomePath();
       }
     });
   }
@@ -1921,7 +1911,9 @@ function handlePropertySelection(propertyId) {
   }
 
   // Redirect to confirm-booking page with application ID
-  window.location.href = `../../views/boarder/confirm-booking/index.html?applicationId=${selectedApp.id}`;
+  window.location.href = `${viewPath('boarder/confirm-booking/index.html')}?applicationId=${
+    selectedApp.id
+  }`;
 }
 
 function showRejectionModal(propertyId) {

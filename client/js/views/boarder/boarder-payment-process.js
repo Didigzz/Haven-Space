@@ -5,6 +5,7 @@
  */
 
 import CONFIG from '../../config.js';
+import { getLoginPath } from '../../shared/routing.js';
 
 // Payment state
 const paymentState = {
@@ -50,14 +51,7 @@ export async function initPaymentPage() {
  */
 async function initializeNavigation() {
   function loginPath() {
-    const pathname = window.location.pathname;
-    if (pathname.includes('github.io')) {
-      return '/Haven-Space/client/views/public/auth/login.html';
-    }
-    if (pathname.includes('/views/')) {
-      return '/views/public/auth/login.html';
-    }
-    return '/views/public/auth/login.html';
+    return getLoginPath();
   }
 
   function initialsFrom(user) {

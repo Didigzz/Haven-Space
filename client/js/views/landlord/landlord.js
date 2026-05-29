@@ -58,11 +58,14 @@ export function initLandlordDashboard(config = {}) {
     loadProperties();
 
     // Dynamically import and initialize applications ONLY on the main dashboard
+    const pathname = window.location.pathname;
     const isDashboardPage =
-      window.location.pathname.includes('/views/landlord/index.html') ||
-      window.location.pathname.endsWith('/views/landlord/') ||
-      window.location.pathname === '/views/landlord/' ||
-      window.location.pathname === '/views/landlord/index.html';
+      pathname.includes('/views/landlord/index.html') ||
+      pathname.endsWith('/views/landlord/') ||
+      pathname === '/views/landlord/' ||
+      pathname === '/views/landlord/index.html' ||
+      pathname === '/landlord/' ||
+      pathname === '/landlord/index.html';
 
     if (isDashboardPage) {
       import(`./landlord-applications.js?v=${Date.now()}`).then(({ initLandlordApplications }) => {

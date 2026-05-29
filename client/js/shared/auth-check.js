@@ -3,6 +3,8 @@
  * Provides auth guards, token expiry checks, and logout for protected pages
  */
 
+import { getLoginPath } from './paths.js';
+
 /**
  * Check if the user is authenticated and has the required role.
  * Redirects to the login page if not authenticated or role doesn't match.
@@ -72,24 +74,5 @@ export async function logout() {
  * Redirect to the login page, preserving the current URL as a return destination.
  */
 function redirectToLogin() {
-  const loginPath = getLoginPath();
-  window.location.href = loginPath;
-}
-
-/**
- * Resolve the login page path relative to the current page location.
- * Works for both the dev server (client/) and the built dist/ output.
- *
- * @returns {string} Path to the login page
- */
-function getLoginPath() {
-  const pathname = window.location.pathname;
-
-  // GitHub Pages
-  if (pathname.includes('github.io')) {
-    return '/Haven-Space/client/views/public/auth/login.html';
-  }
-
-  // Standard: always use absolute path
-  return '/views/public/auth/login.html';
+  window.location.href = getLoginPath();
 }

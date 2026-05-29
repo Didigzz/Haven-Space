@@ -5,6 +5,7 @@
 
 import { initFindARoomEnhanced } from '../public/find-a-room.js';
 import { getUser } from '../../shared/user-utils.js';
+import { getLoginPath } from '../../shared/routing.js';
 
 /**
  * Handle Google OAuth redirect with user data in hash fragment
@@ -54,7 +55,7 @@ export function initBoarderFindARoomAuth() {
     console.warn('Invalid test token detected, clearing and redirecting to login');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '../../public/auth/login.html';
+    window.location.href = getLoginPath();
     return;
   }
 
@@ -68,7 +69,7 @@ export function initBoarderFindARoomAuth() {
   // Final check - if still no user data, redirect to login
   if (!user || !user.id) {
     console.warn('No user data found, redirecting to login');
-    window.location.href = '../../public/auth/login.html';
+    window.location.href = getLoginPath();
     return;
   }
 
@@ -289,7 +290,7 @@ function ensureDropdownsWork() {
           console.error('Logout failed:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          window.location.href = '/views/public/auth/login.html';
+          window.location.href = getLoginPath();
         }
       });
     }

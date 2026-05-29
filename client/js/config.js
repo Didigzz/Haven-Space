@@ -1,5 +1,8 @@
 // Haven Space Configuration
-// Automatically detects environment and sets appropriate API endpoints
+// Automatically detects environment and sets appropriate Worker API endpoints
+
+const DEFAULT_WORKER_API_URL = 'https://haven-space-api.floresaybaez574.workers.dev';
+const LOCAL_WORKER_API_URL = 'http://localhost:8787';
 
 /**
  * Detect current environment based on hostname and URL patterns
@@ -7,58 +10,44 @@
 function detectEnvironment() {
   const hostname = window.location.hostname;
 
-  // Production environments
-  const productionHosts = [
-    'github.io', // GitHub Pages
-  ];
-
-  if (
-    productionHosts.some(host => hostname.includes(host)) ||
-    hostname.includes('render') ||
-    hostname.includes('github.io')
-  ) {
-    return 'production';
-  }
-
-  // Local development (XAMPP, Apache)
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Check if running via PHP built-in server (:8000) or Apache
-    const port = window.location.port;
-
-    // PHP built-in server on port 8000
-    if (port === '8000') {
-      return 'local-dev';
-    }
-
-    // Apache/XAMPP - typically on port 80 or no port specified
-    // or paths containing haven-space, htdocs, views
-    return 'local-apache';
+    return 'local';
   }
 
-  // Default to local development for unknown hosts
-  return 'local-dev';
+  return 'production';
 }
 
 /**
  * Get API base URL based on detected environment and environment variables
  */
 function getApiBaseUrl() {
-  // Check for VITE_API_BASE_URL environment variable first (Vite/Bun)
-  const viteApiUrl = import.meta.env?.VITE_API_BASE_URL;
+  const urlOverride = new URLSearchParams(window.location.search).get('apiBaseUrl');
 
-  if (viteApiUrl && viteApiUrl.trim() !== '') {
-    return viteApiUrl.trim();
+  if (urlOverride && urlOverride.trim() !== '') {
+    localStorage.setItem('havenSpaceApiBaseUrl', urlOverride.trim());
+    return urlOverride.trim();
+  }
+
+  const storedOverride = localStorage.getItem('havenSpaceApiBaseUrl');
+
+  if (storedOverride && storedOverride.trim() !== '') {
+    return storedOverride.trim();
+  }
+
+  const globalOverride = window.HAVEN_SPACE_API_BASE_URL;
+
+  if (globalOverride && String(globalOverride).trim() !== '') {
+    return String(globalOverride).trim();
   }
 
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://haven-space.github.io/haven-space', // Default production domain placeholder
-    'local-dev': 'http://localhost:8000', // PHP built-in server
-    'local-apache': 'http://localhost:8000', // Apache/XAMPP - still use port 8000 for API
+    production: DEFAULT_WORKER_API_URL,
+    local: LOCAL_WORKER_API_URL,
   };
 
-  return apiUrls[env] || 'http://localhost:8000';
+  return apiUrls[env] || LOCAL_WORKER_API_URL;
 }
 
 /**

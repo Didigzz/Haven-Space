@@ -10,6 +10,7 @@ import { getIcon } from '../../shared/icons.js';
 import { showToast } from '../../shared/toast.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
+import { getBasePath, getLoginPath } from '../../shared/routing.js';
 
 /**
  * Initialize the applications dashboard
@@ -21,7 +22,7 @@ export async function initApplicationsDashboard() {
     console.warn('Invalid test token detected, clearing and redirecting to login');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '../../public/auth/login.html';
+    window.location.href = getLoginPath();
     return;
   }
 
@@ -31,9 +32,7 @@ export async function initApplicationsDashboard() {
 
   if (boarderStatus === 'accepted') {
     // Accepted boarders should be in main dashboard
-    const basePath = window.location.pathname.includes('github.io')
-      ? '/Haven-Space/client/views/'
-      : '/views/';
+    const basePath = getBasePath();
     window.location.href = `${basePath}boarder/index.html`;
     return;
   }

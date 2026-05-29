@@ -4,6 +4,7 @@
  */
 
 import { getAvatarUrl, getUserInitials } from '../shared/profile-utils.js';
+import { getHomePath, getLoginPath, isSourceViewsRuntime } from '../shared/paths.js';
 
 // Map icon names to SVG asset files
 const SIDEBAR_ICON_MAP = {
@@ -32,29 +33,9 @@ const SIDEBAR_ICON_MAP = {
 
 /**
  * Resolve the base path to the assets/svg directory from the current page location.
- * Sidebar is used from views at varying depths, so we walk up to the client root.
  */
 function resolveSvgBasePath() {
-  const path = window.location.pathname;
-
-  // Handle /views/ structure (e.g., /views/landlord/index.html)
-  if (path.includes('/views/')) {
-    const viewsIndex = path.indexOf('/views/');
-    const afterViews = path.slice(viewsIndex + '/views/'.length);
-    const depth = afterViews.split('/').length; // Count segments after /views/
-    return '../'.repeat(depth + 1) + 'assets/svg/';
-  }
-
-  // Handle /client/ structure (e.g., /client/views/landlord/index.html)
-  const clientIndex = path.indexOf('/client/');
-  if (clientIndex !== -1) {
-    const afterClient = path.slice(clientIndex + '/client/'.length);
-    const depth = afterClient.split('/').length - 1; // -1 because last segment is the file
-    return '../'.repeat(depth) + 'assets/svg/';
-  }
-
-  // Default fallback
-  return '../assets/svg/';
+  return '/assets/svg/';
 }
 
 /**
@@ -241,7 +222,7 @@ export function initSidebar(options = {}) {
         logoImg.src = `${basePath}/assets/images/Haven_Space_Logo.png`;
       }
       if (logoLink) {
-        logoLink.href = `${basePath}/views/public/index.html`;
+        logoLink.href = getHomePath();
       }
 
       renderNavigation(role, boarderStatus, basePath);
@@ -278,8 +259,8 @@ function resolveBasePath() {
 }
 
 /**
- * Resolve navigation href based on base path
- * Converts relative paths like '../boarder/tenancy/index.html' to absolute paths
+ * Resolve navigation href based on base path.
+ * Converts relative paths like '../boarder/tenancy/index.html' to absolute paths.
  * @param {string} href - Navigation href
  * @param {string} basePath - Base path from resolveBasePath()
  * @returns {string} Resolved href
@@ -295,10 +276,11 @@ function resolveNavHref(href, basePath) {
     return href;
   }
 
-  // If href starts with '../', remove it and prepend basePath/views/
+  // If href starts with '../', remove it and prepend the active views root.
   if (href.startsWith('../')) {
     const relativePath = href.replace(/^\.\.\//, '');
-    return `${basePath}/views/${relativePath}`;
+    const routeRoot = isSourceViewsRuntime() ? `${basePath}/views/` : `${basePath}/`;
+    return `${routeRoot}${relativePath}`.replace(/\/{2,}/g, '/');
   }
 
   // For other relative paths, prepend basePath
@@ -577,20 +559,7 @@ function setupLogoutHandler() {
         sessionStorage.setItem('logoutToast', 'You have successfully logged out');
         sessionStorage.setItem('logoutToastType', 'success');
 
-        // Redirect to login page
-        const pathname = window.location.pathname;
-
-        // Determine correct login path based on current URL structure
-        if (pathname.includes('/dist/')) {
-          // Production mode (dist): auth folder is at root
-          window.location.href = '/auth/login.html';
-        } else if (pathname.includes('/views/')) {
-          // Direct /views access
-          window.location.href = '/views/public/auth/login.html';
-        } else {
-          // Fallback: try development path
-          window.location.href = '/views/public/auth/login.html';
-        }
+        window.location.href = getLoginPath();
       }
     });
   }

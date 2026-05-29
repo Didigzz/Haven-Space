@@ -4,7 +4,7 @@
  */
 
 import CONFIG from '../../config.js';
-import { updateBoarderStatus } from '../../shared/routing.js';
+import { getLoginPath, updateBoarderStatus } from '../../shared/routing.js';
 import { getImageUrl } from '../../shared/image-utils.js';
 import { storeTemporaryApplicationData } from './application-submitted.js';
 
@@ -27,7 +27,7 @@ export function initConfirmApplication() {
   if (!user || !user.id || user.role !== 'boarder') {
     // Redirect to login if not authenticated as boarder
     const redirectUrl = encodeURIComponent(window.location.href);
-    window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
+    window.location.href = `${getLoginPath()}?redirect=${redirectUrl}`;
     return;
   }
 

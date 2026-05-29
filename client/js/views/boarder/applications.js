@@ -9,17 +9,10 @@ import { initNavbar } from '../../components/navbar.js';
 import { initBoarderStatus } from './status.js';
 import { getIcon } from '../../shared/icons.js';
 import { authenticatedFetch } from '../../shared/state.js';
-import { updateBoarderStatus } from '../../shared/routing.js';
+import { getLoginPath, updateBoarderStatus } from '../../shared/routing.js';
 
 function loginPath() {
-  const pathname = window.location.pathname;
-  if (pathname.includes('github.io')) {
-    return '/Haven-Space/client/views/public/auth/login.html';
-  }
-  if (pathname.includes('/views/')) {
-    return '/views/public/auth/login.html';
-  }
-  return '/views/public/auth/login.html';
+  return getLoginPath();
 }
 
 function initialsFrom(user) {

@@ -8,6 +8,7 @@ import { fetchAcceptedApplications } from '../shared/notifications.js';
 import { showToast } from '../shared/toast.js';
 import CONFIG from '../config.js';
 import { getAuthHeaders } from '../shared/auth-headers.js';
+import { getBasePath } from '../shared/routing.js';
 
 /**
  * Open the "Choose Your Boarding House" overlay
@@ -284,9 +285,7 @@ function openConfirmationStep(app) {
 
       // Redirect to boarder dashboard
       setTimeout(() => {
-        const basePath = window.location.pathname.includes('github.io')
-          ? '/Haven-Space/client/views/'
-          : '/views/';
+        const basePath = getBasePath();
         window.location.href = `${basePath}boarder/index.html`;
       }, 1500);
     } catch (error) {

@@ -4,6 +4,7 @@
 
 import { getDisplayName, getAvatarUrl, fetchAndUpdateProfile } from '../../shared/profile-utils.js';
 import CONFIG from '../../config.js';
+import { viewPath } from '../../shared/routing.js';
 
 /**
  * Initialize settings page
@@ -442,7 +443,7 @@ function initLeavePropertyForm() {
 
           // Redirect to find-a-room page after 2 seconds
           setTimeout(() => {
-            window.location.href = '/views/boarder/find-a-room/index.html';
+            window.location.href = viewPath('boarder/find-a-room/index.html');
           }, 2000);
         } else {
           showToast(data.error || 'Failed to send leave request', 'error');

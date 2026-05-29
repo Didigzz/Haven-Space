@@ -16,7 +16,7 @@ export function initBoarderRoomDetailAuth() {
     // For testing purposes, we'll allow the page to load without authentication
     // In production, you would redirect to login:
     // const redirectUrl = encodeURIComponent(window.location.href);
-    // window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
+    // window.location.href = `/auth/login.html?redirect=${redirectUrl}`;
     // return;
   }
 

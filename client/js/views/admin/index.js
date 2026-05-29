@@ -8,16 +8,10 @@ import { initNavbar } from '../../components/navbar.js';
 import { initAdminDashboardPanels } from './admin-dashboard.js';
 import { getAuthHeaders } from '../../shared/auth-headers.js';
 import { initOAuthHandler } from '../../shared/oauth-handler.js';
+import { getLoginPath } from '../../shared/routing.js';
 
 function loginPath() {
-  const pathname = window.location.pathname;
-  if (pathname.includes('github.io')) {
-    return '/Haven-Space/client/views/public/auth/login.html';
-  }
-  if (pathname.includes('/views/')) {
-    return '/views/public/auth/login.html';
-  }
-  return '/views/public/auth/login.html';
+  return getLoginPath();
 }
 
 function initialsFrom(user) {

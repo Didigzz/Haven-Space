@@ -10,6 +10,7 @@ import { setImageWithFallback } from '../../shared/image-utils.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initLandlordPermissions } from '../../shared/permissions.js';
 import { initNavbar, updateNavbarNotifications } from '../../components/navbar.js';
+import { getLoginPath } from '../../shared/routing.js';
 
 // Amenity display names
 const amenityLabels = {
@@ -30,14 +31,7 @@ let isVerified = false;
 let currentUser = null;
 
 function loginPath() {
-  const pathname = window.location.pathname;
-  if (pathname.includes('github.io')) {
-    return '/Haven-Space/client/views/public/auth/login.html';
-  }
-  if (pathname.includes('/views/')) {
-    return '/views/public/auth/login.html';
-  }
-  return '/views/public/auth/login.html';
+  return getLoginPath();
 }
 
 function initialsFrom(user) {

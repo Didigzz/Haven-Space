@@ -15,35 +15,10 @@ import { initLandlordPermissions } from '../../shared/permissions.js';
 import '../../shared/auth-headers.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
 import { initOAuthHandler } from '../../shared/oauth-handler.js';
+import { getLoginPath } from '../../shared/routing.js';
 
 function loginPath() {
-  const pathname = window.location.pathname;
-  const hostname = window.location.hostname;
-
-  if (pathname.includes('github.io')) {
-    return '/Haven-Space/client/views/public/auth/login.html';
-  }
-
-  // For localhost development
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Check if we're already in a views subdirectory
-    if (pathname.includes('/views/')) {
-      // Extract the base path up to /views/
-      const viewsIndex = pathname.indexOf('/views/');
-      const basePath = pathname.substring(0, viewsIndex + 7); // Include '/views/'
-      return `${basePath}public/auth/login.html`;
-    }
-
-    // Default for localhost - assume haven-space project structure
-    if (pathname.includes('/haven-space/')) {
-      return '/haven-space/client/views/public/auth/login.html';
-    }
-
-    // Fallback for localhost
-    return '/client/views/public/auth/login.html';
-  }
-
-  return '/views/public/auth/login.html';
+  return getLoginPath();
 }
 
 function initialsFrom(user) {

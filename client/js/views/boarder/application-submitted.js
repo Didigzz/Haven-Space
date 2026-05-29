@@ -6,6 +6,7 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 import { getImageUrl } from '../../shared/image-utils.js';
+import { getLoginPath } from '../../shared/routing.js';
 
 // State management
 const state = {
@@ -21,7 +22,7 @@ export async function initApplicationSubmitted() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (!user || !user.id || user.role !== 'boarder') {
     // Redirect to login if not authenticated as boarder
-    window.location.href = '../../public/auth/login.html';
+    window.location.href = getLoginPath();
     return;
   }
 

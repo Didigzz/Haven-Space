@@ -4,7 +4,7 @@
  */
 
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
-import { updateBoarderStatus } from '../../shared/routing.js';
+import { updateBoarderStatus, viewPath } from '../../shared/routing.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import { authenticatedFetch } from '../../shared/state.js';
 import CONFIG from '../../config.js';
@@ -489,7 +489,7 @@ function addPropertyMarkers(propertiesList) {
 
     // Add click event to navigate to maps.html
     marker.on('click', () => {
-      window.location.href = '../../views/public/maps.html?property=' + property.id;
+      window.location.href = `${viewPath('public/maps.html')}?property=${property.id}`;
     });
 
     state.markers.push(marker);

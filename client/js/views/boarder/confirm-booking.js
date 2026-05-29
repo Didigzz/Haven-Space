@@ -4,7 +4,7 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
-import { updateBoarderStatus } from '../../shared/routing.js';
+import { getBasePath, getLoginPath, updateBoarderStatus } from '../../shared/routing.js';
 import CONFIG from '../../config.js';
 import { getAuthHeaders } from '../../shared/auth-headers.js';
 
@@ -16,11 +16,11 @@ export function initConfirmBooking() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (user.role === 'landlord') {
     alert('This page is for boarders only. Redirecting to landlord dashboard...');
-    window.location.href = '../../landlord/index.html';
+    window.location.href = `${getBasePath()}landlord/index.html`;
     return;
   } else if (!user.role || user.role !== 'boarder') {
     alert('Please log in as a boarder to access this page.');
-    window.location.href = '../../public/auth/login.html';
+    window.location.href = getLoginPath();
     return;
   }
 
@@ -297,7 +297,7 @@ async function handleSubmitApplication(application) {
         alert(
           'You are logged in as a landlord. Please log in as a boarder to submit applications.'
         );
-        window.location.href = '../../public/auth/login.html';
+        window.location.href = getLoginPath();
         return;
       } else {
         throw new Error('Invalid user role. Please log in as a boarder.');
@@ -396,11 +396,11 @@ async function handleSubmitApplication(application) {
           'You are logged in as a landlord. Please log in as a boarder to submit applications.'
         );
         // Redirect to login page
-        window.location.href = '../../public/auth/login.html';
+        window.location.href = getLoginPath();
         return;
       } else if (!user.role) {
         alert('Please log in to submit an application.');
-        window.location.href = '../../public/auth/login.html';
+        window.location.href = getLoginPath();
         return;
       }
     }

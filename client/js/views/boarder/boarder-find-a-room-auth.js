@@ -5,6 +5,7 @@
 
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
+import { getLoginPath } from '../../shared/routing.js';
 
 /**
  * Initialize the authenticated boarder find-a-room page
@@ -30,7 +31,7 @@ function setupBoarderFindARoom() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (!user || user.role !== 'boarder') {
     // Redirect to login if not authenticated as boarder
-    window.location.href = '../../public/auth/login.html';
+    window.location.href = getLoginPath();
     return;
   }
 

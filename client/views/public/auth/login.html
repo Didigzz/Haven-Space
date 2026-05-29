@@ -184,8 +184,10 @@
               }
 
               try {
-                // Use the same API base URL as the module
-                const apiBaseUrl = 'http://localhost:8000';
+                const apiBaseUrl =
+                  localStorage.getItem('havenSpaceApiBaseUrl') ||
+                  window.HAVEN_SPACE_API_BASE_URL ||
+                  'http://localhost:8787';
                 const response = await fetch(`${apiBaseUrl}/auth/login.php`, {
                   method: 'POST',
                   headers: {
