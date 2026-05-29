@@ -10,14 +10,12 @@ function detectEnvironment() {
   // Production environments
   const productionHosts = [
     'github.io', // GitHub Pages
-    'appwrite.network', // Appwrite hosting
   ];
 
   if (
     productionHosts.some(host => hostname.includes(host)) ||
     hostname.includes('render') ||
-    hostname.includes('github.io') ||
-    hostname.includes('appwrite')
+    hostname.includes('github.io')
   ) {
     return 'production';
   }
@@ -55,7 +53,7 @@ function getApiBaseUrl() {
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://haven-space.appwrite.network', // Production domain
+    production: 'https://haven-space.github.io/haven-space', // Default production domain placeholder
     'local-dev': 'http://localhost:8000', // PHP built-in server
     'local-apache': 'http://localhost:8000', // Apache/XAMPP - still use port 8000 for API
   };
@@ -80,13 +78,6 @@ const CONFIG = {
   // Environment detection helper
   isProduction: () => detectEnvironment() === 'production',
   isLocal: () => detectEnvironment().startsWith('local'),
-
-  // Appwrite configuration
-  APPWRITE: {
-    ENDPOINT: 'https://fra.cloud.appwrite.io/v1',
-    PROJECT_ID: '69eae504002697b6749c',
-    FUNCTION_ID: 'api-function',
-  },
 };
 
 // Environment info available via CONFIG.ENV

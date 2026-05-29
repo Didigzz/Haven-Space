@@ -1278,7 +1278,7 @@ function initProfileDropdown() {
         // Import logout function from auth-check.js
         const { logout } = await import('../../shared/auth-check.js');
 
-        // Call the proper logout function which handles Appwrite session deletion
+        // Call the proper logout function
         await logout();
       } catch (error) {
         // Fallback: clear local storage and redirect manually

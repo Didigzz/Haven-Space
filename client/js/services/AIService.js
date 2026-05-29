@@ -6,31 +6,9 @@
 import CONFIG from '../config.js';
 
 class AIService {
-  static appwriteClient = null;
-  static functions = null;
-
-  static initializeAppwrite() {
-    if (
-      !this.appwriteClient &&
-      typeof window !== 'undefined' &&
-      typeof window.Appwrite !== 'undefined'
-    ) {
-      this.appwriteClient = new window.Appwrite.Client()
-        .setEndpoint(CONFIG.APPWRITE.ENDPOINT)
-        .setProject(CONFIG.APPWRITE.PROJECT_ID);
-
-      this.functions = new window.Appwrite.Functions(this.appwriteClient);
-    }
-    return this.appwriteClient;
-  }
-
   static getStoredValue(key) {
     const value = localStorage.getItem(key);
     return value && value !== 'null' && value !== 'undefined' ? value : null;
-  }
-
-  static isAppwriteExecutionRequest() {
-    return CONFIG.isProduction();
   }
 
   static async parseJsonResponse(response) {
@@ -51,91 +29,54 @@ class AIService {
   }
 
   /**
-   * Execute Appwrite function with proper format
+   * Execute function via HTTP call
    * @param {string} path - API path to call
    * @param {string} method - HTTP method
    * @param {Object} data - Request data
-   * @returns {Promise<Object>} Function response
+   * @returns {Promise<Object>} API response
    */
   static async executeFunction(path, method = 'GET', data = null) {
     try {
       const token = AIService.getStoredValue('token');
       const sessionId = AIService.getStoredValue('session_id');
       const userId = AIService.getStoredValue('user_id');
-      const isAppwriteExecution = AIService.isAppwriteExecutionRequest();
 
-      if (isAppwriteExecution) {
-        // Use Appwrite SDK for production
-        this.initializeAppwrite();
+      // Use direct HTTP
+      const headers = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      };
 
-        if (!this.appwriteClient) {
-          throw new Error('Appwrite SDK not available');
-        }
-
-        // Set session if available
-        if (sessionId) {
-          this.appwriteClient.setSession(sessionId);
-        }
-
-        const execution = await this.functions.createExecution(
-          CONFIG.APPWRITE.FUNCTION_ID,
-          JSON.stringify({
-            ...(data || {}),
-            path,
-            method,
-          }),
-          false, // async
-          path,
-          method,
-          {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-            ...(sessionId && { 'X-Session-Id': sessionId }),
-            ...(userId && { 'X-User-Id': userId }),
-          }
-        );
-
-        // Parse the response body
-        const result = JSON.parse(execution.responseBody || '{}');
-        return result;
-      } else {
-        // Use direct HTTP for local development
-        const headers = {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        };
-
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-        if (sessionId) {
-          headers['X-Session-Id'] = sessionId;
-        }
-        if (userId) {
-          headers['X-User-Id'] = userId;
-        }
-
-        const requestOptions = {
-          method,
-          headers,
-          credentials: 'include',
-        };
-
-        const requestUrl = `${CONFIG.API_BASE_URL}${path}`;
-
-        if (data && method !== 'GET') {
-          requestOptions.body = JSON.stringify(data);
-        }
-
-        const response = await fetch(requestUrl, requestOptions);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await AIService.parseJsonResponse(response);
-        return result;
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
+      if (sessionId) {
+        headers['X-Session-Id'] = sessionId;
+      }
+      if (userId) {
+        headers['X-User-Id'] = userId;
+      }
+
+      const requestOptions = {
+        method,
+        headers,
+        credentials: 'include',
+      };
+
+      const requestUrl = `${CONFIG.API_BASE_URL}${path}`;
+
+      if (data && method !== 'GET') {
+        requestOptions.body = JSON.stringify(data);
+      }
+
+      const response = await fetch(requestUrl, requestOptions);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await AIService.parseJsonResponse(response);
+      return result;
     } catch (error) {
       console.error(`Function execution failed for ${path}:`, error);
 
@@ -387,7 +328,6 @@ class AIService {
    * @returns {boolean} True if AI features should be available
    */
   static isAVAILable() {
-    // In production, you might want to check this from a config endpoint
     return true;
   }
 }

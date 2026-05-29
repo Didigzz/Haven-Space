@@ -561,7 +561,7 @@ function setupLogoutHandler() {
         const basePath = resolveBasePath();
         const { logout } = await import(`${basePath}/js/shared/auth-check.js`);
 
-        // Call the proper logout function which handles Appwrite session deletion
+        // Call the proper logout function
         await logout();
       } catch (error) {
         console.error('Logout failed:', error);
