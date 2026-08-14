@@ -1,0 +1,12 @@
+{
+  "name": "haven-space-web",
+  "compatibility_date": "2026-08-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "vars": {
+    "API_BASE_URL": "https://haven-space-api.floresaybaez574.workers.dev"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

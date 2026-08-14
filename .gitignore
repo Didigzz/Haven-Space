@@ -53,6 +53,7 @@ backups/
 bun
 bun.lock
 !workers/api/bun.lock
+!apps/web/bun.lock
 
 # Cloudflare local output
 .wrangler/
