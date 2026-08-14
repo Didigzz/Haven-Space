@@ -85,7 +85,7 @@ export interface ListingDetail {
   availableRooms: number;
   totalRooms: number;
   amenities: string[];
-  houseRules: unknown[];
+  houseRules: string[];
   genderPreference: string;
   propertyRules: string;
   images: string[];

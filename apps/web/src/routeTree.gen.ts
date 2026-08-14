@@ -10,11 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root';
 import { Route as IndexRouteImport } from './routes/index';
+import { Route as ForLandlordsRouteImport } from './routes/for-landlords';
+import { Route as HavenAiRouteImport } from './routes/haven-ai';
+import { Route as MapsRouteImport } from './routes/maps';
+import { Route as OurStoryRouteImport } from './routes/our-story';
+import { Route as PublicMapsRouteImport } from './routes/public-maps';
+import { Route as TeamsRouteImport } from './routes/teams';
 import { Route as AuthLoginRouteImport } from './routes/auth/login';
+import { Route as FindARoomIndexRouteImport } from './routes/find-a-room/index';
+import { Route as LegalPrivacyPolicyRouteImport } from './routes/legal/privacy-policy';
+import { Route as LegalTermsOfServiceRouteImport } from './routes/legal/terms-of-service';
+import { Route as LegalUserAgreementRouteImport } from './routes/legal/user-agreement';
+import { Route as RoomsIdRouteImport } from './routes/rooms/$id';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const ForLandlordsRoute = ForLandlordsRouteImport.update({
+  id: '/for-landlords',
+  path: '/for-landlords',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const HavenAiRoute = HavenAiRouteImport.update({
+  id: '/haven-ai',
+  path: '/haven-ai',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const MapsRoute = MapsRouteImport.update({
+  id: '/maps',
+  path: '/maps',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const OurStoryRoute = OurStoryRouteImport.update({
+  id: '/our-story',
+  path: '/our-story',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const PublicMapsRoute = PublicMapsRouteImport.update({
+  id: '/public-maps',
+  path: '/public-maps',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const TeamsRoute = TeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
   getParentRoute: () => rootRouteImport,
 } as any);
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -22,31 +63,140 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any);
+const FindARoomIndexRoute = FindARoomIndexRouteImport.update({
+  id: '/find-a-room/',
+  path: '/find-a-room/',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LegalPrivacyPolicyRoute = LegalPrivacyPolicyRouteImport.update({
+  id: '/legal/privacy-policy',
+  path: '/legal/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LegalTermsOfServiceRoute = LegalTermsOfServiceRouteImport.update({
+  id: '/legal/terms-of-service',
+  path: '/legal/terms-of-service',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LegalUserAgreementRoute = LegalUserAgreementRouteImport.update({
+  id: '/legal/user-agreement',
+  path: '/legal/user-agreement',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const RoomsIdRoute = RoomsIdRouteImport.update({
+  id: '/rooms/$id',
+  path: '/rooms/$id',
+  getParentRoute: () => rootRouteImport,
+} as any);
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
+  '/for-landlords': typeof ForLandlordsRoute;
+  '/haven-ai': typeof HavenAiRoute;
+  '/maps': typeof MapsRoute;
+  '/our-story': typeof OurStoryRoute;
+  '/public-maps': typeof PublicMapsRoute;
+  '/teams': typeof TeamsRoute;
   '/auth/login': typeof AuthLoginRoute;
+  '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
+  '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
+  '/legal/user-agreement': typeof LegalUserAgreementRoute;
+  '/rooms/$id': typeof RoomsIdRoute;
+  '/find-a-room/': typeof FindARoomIndexRoute;
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
+  '/for-landlords': typeof ForLandlordsRoute;
+  '/haven-ai': typeof HavenAiRoute;
+  '/maps': typeof MapsRoute;
+  '/our-story': typeof OurStoryRoute;
+  '/public-maps': typeof PublicMapsRoute;
+  '/teams': typeof TeamsRoute;
   '/auth/login': typeof AuthLoginRoute;
+  '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
+  '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
+  '/legal/user-agreement': typeof LegalUserAgreementRoute;
+  '/rooms/$id': typeof RoomsIdRoute;
+  '/find-a-room': typeof FindARoomIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   '/': typeof IndexRoute;
+  '/for-landlords': typeof ForLandlordsRoute;
+  '/haven-ai': typeof HavenAiRoute;
+  '/maps': typeof MapsRoute;
+  '/our-story': typeof OurStoryRoute;
+  '/public-maps': typeof PublicMapsRoute;
+  '/teams': typeof TeamsRoute;
   '/auth/login': typeof AuthLoginRoute;
+  '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
+  '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
+  '/legal/user-agreement': typeof LegalUserAgreementRoute;
+  '/rooms/$id': typeof RoomsIdRoute;
+  '/find-a-room/': typeof FindARoomIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/' | '/auth/login';
+  fullPaths:
+    | '/'
+    | '/for-landlords'
+    | '/haven-ai'
+    | '/maps'
+    | '/our-story'
+    | '/public-maps'
+    | '/teams'
+    | '/auth/login'
+    | '/legal/privacy-policy'
+    | '/legal/terms-of-service'
+    | '/legal/user-agreement'
+    | '/rooms/$id'
+    | '/find-a-room/';
   fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/auth/login';
-  id: '__root__' | '/' | '/auth/login';
+  to:
+    | '/'
+    | '/for-landlords'
+    | '/haven-ai'
+    | '/maps'
+    | '/our-story'
+    | '/public-maps'
+    | '/teams'
+    | '/auth/login'
+    | '/legal/privacy-policy'
+    | '/legal/terms-of-service'
+    | '/legal/user-agreement'
+    | '/rooms/$id'
+    | '/find-a-room';
+  id:
+    | '__root__'
+    | '/'
+    | '/for-landlords'
+    | '/haven-ai'
+    | '/maps'
+    | '/our-story'
+    | '/public-maps'
+    | '/teams'
+    | '/auth/login'
+    | '/legal/privacy-policy'
+    | '/legal/terms-of-service'
+    | '/legal/user-agreement'
+    | '/rooms/$id'
+    | '/find-a-room/';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  ForLandlordsRoute: typeof ForLandlordsRoute;
+  HavenAiRoute: typeof HavenAiRoute;
+  MapsRoute: typeof MapsRoute;
+  OurStoryRoute: typeof OurStoryRoute;
+  PublicMapsRoute: typeof PublicMapsRoute;
+  TeamsRoute: typeof TeamsRoute;
   AuthLoginRoute: typeof AuthLoginRoute;
+  LegalPrivacyPolicyRoute: typeof LegalPrivacyPolicyRoute;
+  LegalTermsOfServiceRoute: typeof LegalTermsOfServiceRoute;
+  LegalUserAgreementRoute: typeof LegalUserAgreementRoute;
+  RoomsIdRoute: typeof RoomsIdRoute;
+  FindARoomIndexRoute: typeof FindARoomIndexRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +208,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/for-landlords': {
+      id: '/for-landlords';
+      path: '/for-landlords';
+      fullPath: '/for-landlords';
+      preLoaderRoute: typeof ForLandlordsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/haven-ai': {
+      id: '/haven-ai';
+      path: '/haven-ai';
+      fullPath: '/haven-ai';
+      preLoaderRoute: typeof HavenAiRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/maps': {
+      id: '/maps';
+      path: '/maps';
+      fullPath: '/maps';
+      preLoaderRoute: typeof MapsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/our-story': {
+      id: '/our-story';
+      path: '/our-story';
+      fullPath: '/our-story';
+      preLoaderRoute: typeof OurStoryRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/public-maps': {
+      id: '/public-maps';
+      path: '/public-maps';
+      fullPath: '/public-maps';
+      preLoaderRoute: typeof PublicMapsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/teams': {
+      id: '/teams';
+      path: '/teams';
+      fullPath: '/teams';
+      preLoaderRoute: typeof TeamsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/auth/login': {
       id: '/auth/login';
       path: '/auth/login';
@@ -65,12 +257,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/find-a-room/': {
+      id: '/find-a-room/';
+      path: '/find-a-room';
+      fullPath: '/find-a-room/';
+      preLoaderRoute: typeof FindARoomIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/legal/privacy-policy': {
+      id: '/legal/privacy-policy';
+      path: '/legal/privacy-policy';
+      fullPath: '/legal/privacy-policy';
+      preLoaderRoute: typeof LegalPrivacyPolicyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/legal/terms-of-service': {
+      id: '/legal/terms-of-service';
+      path: '/legal/terms-of-service';
+      fullPath: '/legal/terms-of-service';
+      preLoaderRoute: typeof LegalTermsOfServiceRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/legal/user-agreement': {
+      id: '/legal/user-agreement';
+      path: '/legal/user-agreement';
+      fullPath: '/legal/user-agreement';
+      preLoaderRoute: typeof LegalUserAgreementRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/rooms/$id': {
+      id: '/rooms/$id';
+      path: '/rooms/$id';
+      fullPath: '/rooms/$id';
+      preLoaderRoute: typeof RoomsIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForLandlordsRoute: ForLandlordsRoute,
+  HavenAiRoute: HavenAiRoute,
+  MapsRoute: MapsRoute,
+  OurStoryRoute: OurStoryRoute,
+  PublicMapsRoute: PublicMapsRoute,
+  TeamsRoute: TeamsRoute,
   AuthLoginRoute: AuthLoginRoute,
+  LegalPrivacyPolicyRoute: LegalPrivacyPolicyRoute,
+  LegalTermsOfServiceRoute: LegalTermsOfServiceRoute,
+  LegalUserAgreementRoute: LegalUserAgreementRoute,
+  RoomsIdRoute: RoomsIdRoute,
+  FindARoomIndexRoute: FindARoomIndexRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
