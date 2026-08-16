@@ -459,10 +459,16 @@ export interface LandlordAnnouncementsResponse {
 
 export interface NotificationItem {
   id: number;
+  user_id: number;
+  type: string;
   title: string;
-  body: string;
+  message: string;
+  metadata: unknown;
   is_read: boolean;
+  read_at: string | null;
   created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface NotificationsResponse {
@@ -474,22 +480,102 @@ export interface UnreadCountResponse {
   data: { unread_count: number };
 }
 
+export interface AdminSummary {
+  counts: {
+    users_total: number;
+    users_boarder: number;
+    users_landlord: number;
+    users_admin: number;
+    landlords_pending_verification: number;
+    properties_total: number;
+    properties_pending_moderation: number;
+    applications_total: number;
+  };
+  revenue: {
+    platform_fee_percent: number;
+    currency: 'PHP';
+    note: string;
+  };
+}
+
 export interface AdminSummaryResponse {
-  data: Record<string, unknown>;
+  data: AdminSummary;
+}
+
+export interface AdminUserRow {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+  is_verified: number;
+  account_status: string;
+  created_at: string;
 }
 
 export interface AdminUsersResponse {
-  data: Array<Record<string, unknown>>;
+  data: AdminUserRow[];
+  meta: { total: number; limit: number; offset: number };
+}
+
+export interface AdminPropertyRow {
+  id: number;
+  title: string;
+  price: number;
+  listing_moderation_status: string;
+  landlord_first: string;
+  landlord_last: string;
+  landlord_email: string;
 }
 
 export interface AdminPropertiesResponse {
-  data: Array<Record<string, unknown>>;
+  data: AdminPropertyRow[];
+}
+
+export interface AdminApplicationRow {
+  id: number;
+  status: string;
+  created_at: string;
+  boarder_first: string;
+  boarder_last: string;
+  boarder_email: string;
+  landlord_first: string;
+  landlord_last: string;
+  room_title: string | null;
+}
+
+export interface AdminApplicationStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  processed_rate_percent: number;
+  by_status: Record<string, number>;
 }
 
 export interface AdminApplicationsResponse {
-  data: Array<Record<string, unknown>>;
+  data: {
+    stats: AdminApplicationStats;
+    applications: AdminApplicationRow[];
+  };
 }
 
+export type AdminSettings = Record<string, string>;
+
 export interface AdminSettingsResponse {
-  data: Record<string, unknown>;
+  data: AdminSettings;
+}
+
+export interface AdminLandlordRow {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_verified: number;
+  created_at: string;
+  boarding_house_name: string | null;
+}
+
+export interface AdminLandlordsResponse {
+  data: AdminLandlordRow[];
 }

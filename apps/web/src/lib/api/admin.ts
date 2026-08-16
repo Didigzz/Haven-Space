@@ -1,6 +1,7 @@
 import { getApiBaseUrl } from '../config';
 import type {
   AdminApplicationsResponse,
+  AdminLandlordsResponse,
   AdminPropertiesResponse,
   AdminSettingsResponse,
   AdminSummaryResponse,
@@ -88,8 +89,8 @@ export function patchSettings(
   );
 }
 
-export function getLandlords(token: string): Promise<AdminUsersResponse> {
-  return apiFetch<AdminUsersResponse>(base(), '/api/admin/landlords', {
+export function getLandlords(token: string): Promise<AdminLandlordsResponse> {
+  return apiFetch<AdminLandlordsResponse>(base(), '/api/admin/landlords', {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
