@@ -121,6 +121,25 @@ export interface GrantPropertyAccessInput {
   invitationId: number | null;
 }
 
+// SQL fragment that is true when the current properties row is accessible to a
+// landlord: the landlord owns the property (`landlord_id`) OR has an active
+// shared-access row in `property_access`. Pass `alias` (e.g. `'p'`) when the
+// properties table is aliased in the query and column references would
+// otherwise be ambiguous. Consumes two `?` binds — both bound to the landlord id.
+export function accessiblePropertyClause(alias?: string): string {
+  const ownerColumn = alias ? `${alias}.landlord_id` : 'landlord_id';
+  const idColumn = alias ? `${alias}.id` : 'id';
+
+  return `(
+    ${ownerColumn} = ?
+    OR ${idColumn} IN (
+      SELECT pa.property_id
+      FROM property_access pa
+      WHERE pa.landlord_id = ? AND pa.removed_at IS NULL
+    )
+  )`;
+}
+
 function insertedId(result: D1Result, label: string): number {
   const id = Number(result.meta.last_row_id);
 
