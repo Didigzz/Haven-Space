@@ -46,7 +46,7 @@ function VerificationPage() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => setSelectedId(e.target.files?.[0] ?? null)}
+                onChange={e => setSelectedId(e.target.files?.[0] ?? null)}
               />
             </label>
           </div>
@@ -59,14 +59,18 @@ function VerificationPage() {
                 type="file"
                 accept="image/*,.pdf"
                 className="hidden"
-                onChange={(e) => setSelectedProof(e.target.files?.[0] ?? null)}
+                onChange={e => setSelectedProof(e.target.files?.[0] ?? null)}
               />
             </label>
           </div>
 
           <Button
             disabled={!selectedId || !selectedProof}
-            onClick={() => setNote('Document upload is recorded locally. Upload to the API will be wired once the verification endpoint is finalized.')}
+            onClick={() =>
+              setNote(
+                'Document upload is recorded locally. Upload to the API will be wired once the verification endpoint is finalized.'
+              )
+            }
           >
             Submit documents
           </Button>

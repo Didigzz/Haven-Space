@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
+import { Icon } from '../../components/ui/Icon';
 import { LANDLORD_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/landlord/pricing')({
@@ -9,7 +10,10 @@ export const Route = createFileRoute('/landlord/pricing')({
     <Protected role="landlord">
       <RoleShell title="Pricing" nav={LANDLORD_NAV}>
         <Card className="mx-auto max-w-2xl">
-          <h1 className="text-xl font-bold">Simple, Transparent Pricing</h1>
+          <div className="flex items-center gap-3">
+            <Icon name="flag" size={28} />
+            <h1 className="text-xl font-bold">Simple, Transparent Pricing</h1>
+          </div>
           <h2 className="mt-3 text-lg font-semibold">Landlord Premium</h2>
           <p className="mt-2 text-sm text-gray-ink">
             List unlimited properties, accept applications, and manage boarders with no credit card

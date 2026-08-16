@@ -8,10 +8,16 @@ import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../components/ui/Field';
+import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { ApiRequestError } from '../../lib/api/http';
-import { createAnnouncement, deleteAnnouncement, getAnnouncements, updateAnnouncement } from '../../lib/api/landlord';
+import {
+  createAnnouncement,
+  deleteAnnouncement,
+  getAnnouncements,
+  updateAnnouncement,
+} from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
 import { LANDLORD_NAV } from '../../lib/nav';
 import type { LandlordAnnouncement } from '../../lib/types';
@@ -73,7 +79,7 @@ function AnnouncementsPage() {
       setModalOpen(false);
       setForm(EMPTY_FORM);
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to save announcement.'),
   });
 
@@ -82,7 +88,7 @@ function AnnouncementsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-announcements'] });
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to delete announcement.'),
   });
 
@@ -120,7 +126,14 @@ function AnnouncementsPage() {
         </div>
       ) : null}
 
-      <div className="mb-4 flex justify-end">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Icon name="announcement" size={28} />
+          <div>
+            <h2 className="text-2xl font-bold text-ink">Announcements</h2>
+            <p className="text-sm text-gray-ink">Reach your boarders with updates.</p>
+          </div>
+        </div>
         <Button onClick={openCreate}>+ New announcement</Button>
       </div>
 
@@ -129,14 +142,24 @@ function AnnouncementsPage() {
       ) : announcements.error ? (
         <ErrorState message={announcements.error.message} />
       ) : list.length === 0 ? (
-        <EmptyState title="No announcements" description="Create an announcement to reach your boarders." />
+        <EmptyState
+          title="No announcements"
+          description="Create an announcement to reach your boarders."
+        />
       ) : (
         <div className="flex flex-col gap-3">
-          {list.map((announcement) => (
+          {list.map(announcement => (
             <Card key={announcement.id}>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="font-semibold">{announcement.title}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-semibold">{announcement.title}</h2>
+                    {announcement.priority === 'high' ? (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                        High priority
+                      </span>
+                    ) : null}
+                  </div>
                   <p className="text-sm text-gray-ink">
                     {announcement.category} · {announcement.priority} priority ·{' '}
                     {announcement.target_property}
@@ -182,7 +205,7 @@ function AnnouncementsPage() {
               id="title"
               required
               value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
             />
           </Field>
           <Field label="Message" htmlFor="description">
@@ -191,7 +214,7 @@ function AnnouncementsPage() {
               rows={4}
               required
               value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -199,7 +222,7 @@ function AnnouncementsPage() {
               <SelectInput
                 id="category"
                 value={form.category}
-                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
               >
                 <option value="general">General</option>
                 <option value="maintenance">Maintenance</option>
@@ -212,7 +235,7 @@ function AnnouncementsPage() {
               <SelectInput
                 id="priority"
                 value={form.priority}
-                onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}
+                onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>

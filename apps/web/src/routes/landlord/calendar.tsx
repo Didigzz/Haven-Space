@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
+import { Icon } from '../../components/ui/Icon';
 import { LANDLORD_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/landlord/calendar')({
@@ -9,7 +10,10 @@ export const Route = createFileRoute('/landlord/calendar')({
     <Protected role="landlord">
       <RoleShell title="Calendar" nav={LANDLORD_NAV}>
         <Card className="mx-auto max-w-2xl">
-          <h1 className="text-xl font-bold">Calendar</h1>
+          <div className="flex items-center gap-3">
+            <Icon name="calendar" size={28} />
+            <h1 className="text-xl font-bold">Calendar</h1>
+          </div>
           <p className="mt-1 text-sm text-gray-ink">
             Track payments and tenancy events — move-ins, move-outs, and payment due dates.
           </p>

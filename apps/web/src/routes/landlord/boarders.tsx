@@ -8,10 +8,19 @@ import { DataTable } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, SelectInput, TextInput } from '../../components/ui/Field';
+import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../lib/api/http';
-import { addBoarder, getBoarders, getProperties, getRooms, removeBoarder, updateBoarder } from '../../lib/api/landlord';
+import {
+  addBoarder,
+  getBoarders,
+  getProperties,
+  getRooms,
+  removeBoarder,
+  updateBoarder,
+} from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
 import { LANDLORD_NAV } from '../../lib/nav';
 import type { LandlordBoarder } from '../../lib/types';
@@ -71,7 +80,7 @@ function BoardersPage() {
   });
 
   const availableRooms = (rooms.data?.data.rooms ?? []).filter(
-    (room) => room.status !== 'occupied' || form.id
+    room => room.status !== 'occupied' || form.id
   );
 
   const save = useMutation({
@@ -93,7 +102,7 @@ function BoardersPage() {
       setModalOpen(false);
       setForm(EMPTY_FORM);
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to save boarder.'),
   });
 
@@ -102,7 +111,7 @@ function BoardersPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to remove boarder.'),
   });
 
@@ -141,16 +150,24 @@ function BoardersPage() {
         </div>
       ) : null}
 
+      <div className="mb-5 flex items-center gap-3">
+        <Icon name="users" size={28} />
+        <div>
+          <h2 className="text-2xl font-bold text-ink">Boarders</h2>
+          <p className="text-sm text-gray-ink">Manage the tenants in your properties.</p>
+        </div>
+      </div>
+
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="w-72">
           <Field label="Property" htmlFor="propertyId">
             <SelectInput
               id="propertyId"
               value={propertyId}
-              onChange={(e) => setPropertyId(e.target.value)}
+              onChange={e => setPropertyId(e.target.value)}
             >
               <option value="">Select a property</option>
-              {properties.data?.data.properties.map((p) => (
+              {properties.data?.data.properties.map(p => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
@@ -158,13 +175,14 @@ function BoardersPage() {
             </SelectInput>
           </Field>
         </div>
-        {propertyIdNumber ? (
-          <Button onClick={openAdd}>+ Add boarder</Button>
-        ) : null}
+        {propertyIdNumber ? <Button onClick={openAdd}>+ Add boarder</Button> : null}
       </div>
 
       {!propertyIdNumber ? (
-        <EmptyState title="Select a property" description="Choose a property to see its boarders." />
+        <EmptyState
+          title="Select a property"
+          description="Choose a property to see its boarders."
+        />
       ) : boarders.isLoading ? (
         <Spinner />
       ) : boarders.error ? (
@@ -174,21 +192,21 @@ function BoardersPage() {
       ) : (
         <DataTable<LandlordBoarder>
           rows={boarderList}
-          keyFor={(row) => row.id}
+          keyFor={row => row.id}
           columns={[
             {
               header: 'Name',
-              cell: (row) => `${row.first_name} ${row.last_name}`,
+              cell: row => `${row.first_name} ${row.last_name}`,
             },
-            { header: 'Email', cell: (row) => row.email ?? '—' },
-            { header: 'Room', cell: (row) => row.room_title ?? '—' },
+            { header: 'Email', cell: row => row.email ?? '—' },
+            { header: 'Room', cell: row => row.room_title ?? '—' },
             {
               header: 'Rent',
-              cell: (row) => `₱${row.rent.toLocaleString()}`,
+              cell: row => `₱${row.rent.toLocaleString()}`,
             },
             {
               header: 'Actions',
-              cell: (row) => (
+              cell: row => (
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -223,7 +241,7 @@ function BoardersPage() {
                 id="first_name"
                 required
                 value={form.first_name}
-                onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+                onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
               />
             </Field>
             <Field label="Last name" htmlFor="last_name">
@@ -231,7 +249,7 @@ function BoardersPage() {
                 id="last_name"
                 required
                 value={form.last_name}
-                onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
+                onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
               />
             </Field>
           </div>
@@ -241,7 +259,7 @@ function BoardersPage() {
               type="email"
               required
               value={form.email}
-              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
             />
           </Field>
           <Field label="Room" htmlFor="room_id">
@@ -249,10 +267,10 @@ function BoardersPage() {
               id="room_id"
               required
               value={form.room_id}
-              onChange={(e) => setForm((f) => ({ ...f, room_id: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, room_id: e.target.value }))}
             >
               <option value="">Select a room</option>
-              {availableRooms.map((room) => (
+              {availableRooms.map(room => (
                 <option key={room.id} value={room.id}>
                   {room.room_number} — ₱{room.price.toLocaleString()} ({room.status})
                 </option>
@@ -264,7 +282,7 @@ function BoardersPage() {
               id="move_in_date"
               type="date"
               value={form.move_in_date}
-              onChange={(e) => setForm((f) => ({ ...f, move_in_date: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, move_in_date: e.target.value }))}
             />
           </Field>
           <Button type="submit" disabled={save.isPending}>

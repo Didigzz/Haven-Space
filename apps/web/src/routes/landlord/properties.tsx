@@ -5,7 +5,9 @@ import { RoleShell } from '../../components/layout/RoleShell';
 import { DataTable } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import { getProperties } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
 import { LANDLORD_NAV } from '../../lib/nav';
@@ -29,6 +31,13 @@ function PropertiesPage() {
 
   return (
     <RoleShell title="My properties" nav={LANDLORD_NAV}>
+      <div className="mb-5 flex items-center gap-3">
+        <Icon name="buildingOffice" size={28} />
+        <div>
+          <h2 className="text-2xl font-bold text-ink">My properties</h2>
+          <p className="text-sm text-gray-ink">All the properties you manage.</p>
+        </div>
+      </div>
       {properties.isLoading ? (
         <Spinner />
       ) : properties.error ? (
@@ -36,11 +45,11 @@ function PropertiesPage() {
       ) : properties.data && properties.data.data.properties.length > 0 ? (
         <DataTable<LandlordProperty>
           rows={properties.data.data.properties}
-          keyFor={(row) => row.id}
+          keyFor={row => row.id}
           columns={[
             {
               header: 'Name',
-              cell: (row) => (
+              cell: row => (
                 <Link
                   to="/landlord/listings/$id/edit"
                   params={{ id: String(row.id) }}
@@ -50,14 +59,14 @@ function PropertiesPage() {
                 </Link>
               ),
             },
-            { header: 'Address', cell: (row) => `${row.address}, ${row.city}` },
+            { header: 'Address', cell: row => `${row.address}, ${row.city}` },
             {
               header: 'Status',
-              cell: (row) => <span className="capitalize">{row.status}</span>,
+              cell: row => <StatusBadge status={row.status} />,
             },
             {
               header: 'Rooms',
-              cell: (row) => `${row.occupied_rooms}/${row.total_rooms}`,
+              cell: row => `${row.occupied_rooms}/${row.total_rooms}`,
             },
           ]}
         />

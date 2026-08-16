@@ -26,20 +26,29 @@ function OnboardingPage() {
   });
 
   function set<K extends keyof typeof form>(key: K, value: string) {
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm(f => ({ ...f, [key]: value }));
   }
 
   function handleNext(e: FormEvent) {
     e.preventDefault();
-    setStep((s) => Math.min(s + 1, 3));
+    setStep(s => Math.min(s + 1, 3));
   }
 
   return (
     <RoleShell title="Onboarding" nav={LANDLORD_NAV}>
       <Card className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-center gap-2 text-sm">
-          {[1, 2, 3].map((n) => (
-            <span key={n} className={`rounded-full px-3 py-1 ${n === step ? 'bg-primary text-white' : n < step ? 'bg-mint text-primary' : 'bg-gray-100 text-gray-ink'}`}>
+          {[1, 2, 3].map(n => (
+            <span
+              key={n}
+              className={`rounded-full px-3 py-1 ${
+                n === step
+                  ? 'bg-primary text-white'
+                  : n < step
+                  ? 'bg-mint text-primary'
+                  : 'bg-gray-100 text-gray-ink'
+              }`}
+            >
               Step {n}
             </span>
           ))}
@@ -53,7 +62,7 @@ function OnboardingPage() {
                 id="businessName"
                 required
                 value={form.businessName}
-                onChange={(e) => set('businessName', e.target.value)}
+                onChange={e => set('businessName', e.target.value)}
               />
             </Field>
             <Field label="Contact number" htmlFor="contactNumber">
@@ -62,7 +71,7 @@ function OnboardingPage() {
                 type="tel"
                 required
                 value={form.contactNumber}
-                onChange={(e) => set('contactNumber', e.target.value)}
+                onChange={e => set('contactNumber', e.target.value)}
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
@@ -71,7 +80,7 @@ function OnboardingPage() {
                   id="city"
                   required
                   value={form.city}
-                  onChange={(e) => set('city', e.target.value)}
+                  onChange={e => set('city', e.target.value)}
                 />
               </Field>
               <Field label="Province" htmlFor="province">
@@ -79,7 +88,7 @@ function OnboardingPage() {
                   id="province"
                   required
                   value={form.province}
-                  onChange={(e) => set('province', e.target.value)}
+                  onChange={e => set('province', e.target.value)}
                 />
               </Field>
             </div>
@@ -94,11 +103,14 @@ function OnboardingPage() {
                 rows={4}
                 required
                 value={form.bio}
-                onChange={(e) => set('bio', e.target.value)}
+                onChange={e => set('bio', e.target.value)}
               />
             </Field>
             <div className="flex justify-between">
-              <Button className="border border-gray-300 bg-white text-gray-ink hover:bg-gray-50" onClick={() => setStep(1)}>
+              <Button
+                className="border border-gray-300 bg-white text-gray-ink hover:bg-gray-50"
+                onClick={() => setStep(1)}
+              >
                 Back
               </Button>
               <Button type="submit">Continue</Button>

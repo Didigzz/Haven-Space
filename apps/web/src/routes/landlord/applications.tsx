@@ -7,7 +7,9 @@ import { Button } from '../../components/ui/Button';
 import { DataTable } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../lib/api/http';
 import { getApplications, patchApplicationStatus } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
@@ -39,7 +41,7 @@ function ApplicationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-applications'] });
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update application.'),
   });
 
@@ -56,31 +58,36 @@ function ApplicationsPage() {
           <ErrorState message={error} />
         </div>
       ) : null}
+      <div className="mb-5 flex items-center gap-3">
+        <Icon name="application" size={28} />
+        <div>
+          <h2 className="text-2xl font-bold text-ink">Applications</h2>
+          <p className="text-sm text-gray-ink">Review and respond to boarder applications.</p>
+        </div>
+      </div>
       <DataTable<ApplicationSummary>
         rows={applications.data.data}
-        keyFor={(row) => row.id}
+        keyFor={row => row.id}
         columns={[
           {
             header: 'Property',
-            cell: (row) => row.property_title,
+            cell: row => row.property_title,
           },
           {
             header: 'Room',
-            cell: (row) => `${row.room_title} · ₱${row.room_price.toLocaleString()}`,
+            cell: row => `${row.room_title} · ₱${row.room_price.toLocaleString()}`,
           },
           {
             header: 'Boarder',
-            cell: (row) => `${row.first_name} ${row.last_name}`,
+            cell: row => `${row.first_name} ${row.last_name}`,
           },
           {
             header: 'Status',
-            cell: (row) => (
-              <span className="capitalize">{String(row.status).replace(/_/g, ' ')}</span>
-            ),
+            cell: row => <StatusBadge status={String(row.status)} />,
           },
           {
             header: 'Actions',
-            cell: (row) =>
+            cell: row =>
               row.status === 'pending' ? (
                 <div className="flex gap-2">
                   <Button
