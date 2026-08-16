@@ -32,7 +32,8 @@ import {
 function runMigrations(db: Database): void {
   const migrationDir = join(import.meta.dir, '..', 'migrations');
   const migrationNames = readdirSync(migrationDir)
-    .filter(name => name.endsWith('.sql'))
+    // Skip seed migrations (demo data) — tests build their own fixtures.
+    .filter(name => name.endsWith('.sql') && !name.includes('seed'))
     .sort();
 
   for (const name of migrationNames) {
