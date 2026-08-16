@@ -1,23 +1,26 @@
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
-import {
-  AuthDivider,
-  AuthSplitLayout,
-  GoogleButton,
-} from '../../components/auth/AuthSplitLayout';
+import { AuthDivider, AuthSplitLayout, GoogleButton } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
 import { checkEmail } from '../../lib/api/auth';
 import { useAuth } from '../../lib/auth-context';
-import { googleAuthorizeUrl, handleOAuthHash, redirectPathForUser } from '../../lib/oauth';
+import {
+  authErrorSearch,
+  googleAuthorizeUrl,
+  handleOAuthHash,
+  redirectPathForUser,
+} from '../../lib/oauth';
 
 export const Route = createFileRoute('/auth/login')({
+  validateSearch: authErrorSearch,
   component: LoginPage,
 });
 
 function LoginPage() {
+  const { error: searchError } = useSearch({ from: '/auth/login' });
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -50,7 +53,9 @@ function LoginPage() {
       const user = await login(email.trim(), password);
       void navigate({ to: redirectPathForUser(user) });
     } catch (err) {
-      setError(err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.');
+      setError(
+        err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -69,9 +74,14 @@ function LoginPage() {
         </p>
       }
     >
+      {searchError ? <ErrorState message={searchError} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
-      <GoogleButton onClick={() => { window.location.href = googleAuthorizeUrl('login', 'boarder'); }} />
+      <GoogleButton
+        onClick={() => {
+          window.location.href = googleAuthorizeUrl('login', 'boarder');
+        }}
+      />
       <AuthDivider />
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -84,7 +94,7 @@ function LoginPage() {
             autoComplete="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             onBlur={handleEmailBlur}
           />
         </Field>
@@ -103,7 +113,7 @@ function LoginPage() {
               autoComplete="current-password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
             />
           </Field>
         )}

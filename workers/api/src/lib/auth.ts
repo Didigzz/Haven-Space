@@ -82,17 +82,22 @@ export function cookieValue(request: Request, name: string): string | null {
   return null;
 }
 
-function base64UrlToBytes(value: string): Uint8Array {
+function base64UrlToBytes(value: string): Uint8Array | null {
   const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
   const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-  const binary = atob(padded);
-  const bytes = new Uint8Array(binary.length);
 
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
+  try {
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+
+    return bytes;
+  } catch {
+    return null;
   }
-
-  return bytes;
 }
 
 function bytesToBase64Url(bytes: Uint8Array): string {
@@ -111,7 +116,13 @@ function jsonToBase64Url(value: unknown): string {
 
 function base64UrlToJson<T>(value: string): T | null {
   try {
-    const json = new TextDecoder().decode(base64UrlToBytes(value));
+    const bytes = base64UrlToBytes(value);
+
+    if (!bytes) {
+      return null;
+    }
+
+    const json = new TextDecoder().decode(bytes);
     return JSON.parse(json) as T;
   } catch {
     return null;
@@ -152,7 +163,7 @@ export async function verifyJwt(token: string, secret: string): Promise<JwtPaylo
   );
   const received = base64UrlToBytes(signature);
 
-  if (!timingSafeEqual(expected, received)) {
+  if (!received || !timingSafeEqual(expected, received)) {
     return null;
   }
 

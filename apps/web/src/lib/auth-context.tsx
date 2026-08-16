@@ -1,5 +1,20 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { getMe, login as apiLogin, logout as apiLogout, register as apiRegister } from './api/auth';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import {
+  completeGoogleAuth,
+  getMe,
+  login as apiLogin,
+  logout as apiLogout,
+  register as apiRegister,
+  type GoogleCompleteInput,
+} from './api/auth';
 import { clearStoredAuth, getStoredAuth, setStoredAuth } from './auth-store';
 import type { AuthUser, RegisterInput } from './types';
 
@@ -7,8 +22,10 @@ interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
   register: (input: RegisterInput) => Promise<AuthUser>;
+  completeGoogle: (input: GoogleCompleteInput) => Promise<AuthUser>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -16,9 +33,20 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [stored] = useState(getStoredAuth);
-  const [token, setToken] = useState<string | null>(stored.token);
-  const [user, setUser] = useState<AuthUser | null>(stored.user);
+  // The session lives in localStorage, which only exists in the browser. Read it
+  // after mount instead of during render so the server-rendered HTML (always
+  // logged out) matches the client's first render, avoiding SSR hydration
+  // mismatches on protected pages.
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    const stored = getStoredAuth();
+    setToken(stored.token);
+    setUser(stored.user);
+    setIsHydrated(true);
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await apiLogin(email, password);
@@ -30,6 +58,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (input: RegisterInput) => {
     const response = await apiRegister(input);
+    setStoredAuth(response.access_token, response.refresh_token, response.user);
+    setToken(response.access_token);
+    setUser(response.user);
+    return response.user;
+  }, []);
+
+  const completeGoogle = useCallback(async (input: GoogleCompleteInput) => {
+    const response = await completeGoogleAuth(input);
     setStoredAuth(response.access_token, response.refresh_token, response.user);
     setToken(response.access_token);
     setUser(response.user);
@@ -59,12 +95,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       isAuthenticated: Boolean(token && user),
+      isHydrated,
       login,
       register,
+      completeGoogle,
       logout,
       refreshUser,
     }),
-    [user, token, login, register, logout, refreshUser]
+    [user, token, isHydrated, login, register, completeGoogle, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

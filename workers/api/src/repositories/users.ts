@@ -45,6 +45,7 @@ export interface CreateGoogleUserInput {
   isVerified: number;
   emailVerified: number;
   boarderStatus: string | null;
+  phoneNumber: string | null;
 }
 
 export interface GoogleIdentityInput {
@@ -56,6 +57,8 @@ export interface CreateLandlordProfileInput {
   userId: number;
   boardingHouseName: string;
   boardingHouseDescription: string;
+  city: string;
+  province: string;
 }
 
 export async function findAuthUserByEmail(
@@ -250,9 +253,10 @@ export async function createGoogleUserAccount(
           email_verified,
           account_status,
           boarder_status,
-          avatar_url
+          avatar_url,
+          phone_number
         )
-        VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
     )
     .bind(
@@ -266,7 +270,8 @@ export async function createGoogleUserAccount(
       input.emailVerified,
       input.accountStatus,
       input.boarderStatus,
-      input.googlePicture
+      input.googlePicture,
+      input.phoneNumber
     )
     .run();
 
@@ -309,14 +314,22 @@ export async function createLandlordProfile(
           user_id,
           boarding_house_name,
           boarding_house_description,
+          city,
+          province,
           property_type,
           total_rooms,
           available_rooms
         )
-        VALUES (?, ?, ?, 'Single unit', 1, 1)
+        VALUES (?, ?, ?, ?, ?, 'Single unit', 1, 1)
       `
     )
-    .bind(input.userId, input.boardingHouseName, input.boardingHouseDescription)
+    .bind(
+      input.userId,
+      input.boardingHouseName,
+      input.boardingHouseDescription,
+      input.city,
+      input.province
+    )
     .run();
 
   return insertedId(result, 'Landlord profile');

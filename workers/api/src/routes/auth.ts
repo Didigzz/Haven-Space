@@ -24,6 +24,7 @@ const accessTokenSeconds = 60 * 60;
 const refreshTokenSeconds = 60 * 60 * 24 * 30;
 const googleStateCookieName = 'google_oauth_state';
 const googleStateSeconds = 10 * 60;
+const googlePendingSeconds = 10 * 60;
 const googleAuthEndpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
 const googleTokenEndpoint = 'https://oauth2.googleapis.com/token';
 const googleUserInfoEndpoint = 'https://openidconnect.googleapis.com/v1/userinfo';
@@ -59,6 +60,19 @@ interface GoogleProfileResponse {
   picture?: string;
   error?: string;
   error_description?: string;
+}
+
+interface GooglePendingPayload {
+  type?: string;
+  googleId?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  picture?: string | null;
+  action?: string;
+  origin?: string;
+  link?: boolean;
+  exp?: number;
 }
 
 function normalizeEmail(value: unknown): string | null {
@@ -461,12 +475,22 @@ function splitGoogleName(profile: GoogleProfileResponse): { firstName: string; l
   };
 }
 
-async function userFromGoogleProfile(
+type GoogleUserResolution =
+  | { kind: 'existing'; user: UserAccountRow }
+  | { kind: 'link_required'; user: UserAccountRow }
+  | { kind: 'new' };
+
+/**
+ * Resolve a Google profile against the user table WITHOUT creating or linking
+ * anything. Account creation / Google-identity linking is deferred to the role
+ * chooser (`POST /auth/google/complete`) so a brand-new email never silently
+ * becomes a boarder and an existing email/password account is never silently
+ * linked.
+ */
+async function resolveGoogleUser(
   db: D1Database,
-  profile: GoogleProfileResponse,
-  action: OAuthAction,
-  role: OAuthRole
-): Promise<UserAccountRow> {
+  profile: GoogleProfileResponse
+): Promise<GoogleUserResolution> {
   const googleId = profile.sub?.trim();
   const email = normalizeEmail(profile.email);
 
@@ -481,7 +505,7 @@ async function userFromGoogleProfile(
   const byGoogleId = await findUserAccountByGoogleId(db, googleId);
 
   if (byGoogleId) {
-    return byGoogleId;
+    return { kind: 'existing', user: byGoogleId };
   }
 
   const byEmail = await findUserAccountByEmail(db, email);
@@ -491,44 +515,51 @@ async function userFromGoogleProfile(
       throw new Error('This email is already linked to another Google account');
     }
 
-    await updateGoogleIdentity(db, Number(byEmail.id), {
-      googleId,
-      googlePicture: profile.picture ?? null,
-    });
-
-    const linked = await findUserAccountById(db, Number(byEmail.id));
-
-    if (!linked) {
-      throw new Error('Unable to load linked Google account');
-    }
-
-    return linked;
+    return { kind: 'link_required', user: byEmail };
   }
 
-  if (role === 'landlord') {
-    throw new Error('Please create landlord accounts with the landlord signup form.');
+  return { kind: 'new' };
+}
+
+async function createGooglePendingToken(
+  secret: string | undefined,
+  input: {
+    googleId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    picture: string | null;
+    action: OAuthAction;
+    origin: string;
+    link: boolean;
+  }
+): Promise<string> {
+  if (!secret) {
+    throw new Error('JWT secret is not configured');
   }
 
-  const { firstName, lastName } = splitGoogleName(profile);
-  const userId = await createGoogleUserAccount(db, {
-    firstName,
-    lastName,
-    email,
-    googleId,
-    googlePicture: profile.picture ?? null,
-    role,
-    accountStatus: 'active',
-    isVerified: 1,
-    emailVerified: 1,
-    boarderStatus: action === 'signup' || action === 'login' ? 'new' : null,
-  });
-  const created = await findUserAccountById(db, userId);
+  return await signJwt(
+    {
+      type: 'google_pending',
+      googleId: input.googleId,
+      email: input.email,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      picture: input.picture,
+      action: input.action,
+      origin: input.origin,
+      link: input.link,
+    },
+    secret,
+    googlePendingSeconds
+  );
+}
 
-  if (!created) {
-    throw new Error('Unexpected Google signup error');
-  }
+function pendingSessionRedirect(origin: string, token: string): string {
+  const url = new URL('/auth/choose-role', origin.endsWith('/') ? origin : `${origin}/`);
+  url.hash = `google-pending=${encodeURIComponent(token)}`;
 
-  return created;
+  return url.toString();
 }
 
 async function handleGoogleAuthorize(c: Context<{ Bindings: Env }>): Promise<Response> {
@@ -582,12 +613,11 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
   const action = oauthAction(state?.action);
 
   if (c.req.query('error')) {
-    return authErrorRedirect(
-      c.env,
-      origin,
-      action,
-      c.req.query('error_description') || 'Google login was cancelled'
-    );
+    const message =
+      c.req.query('error') === 'access_denied'
+        ? 'Google login was cancelled.'
+        : c.req.query('error_description') || 'Google login failed. Please try again.';
+    return authErrorRedirect(c.env, origin, action, message);
   }
 
   if (!state) {
@@ -609,39 +639,203 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
     const db = requireD1(c.env);
     const googleAccessToken = await googleTokens(c, code);
     const profile = await googleProfile(googleAccessToken);
-    const user = await userFromGoogleProfile(db, profile, action, oauthRole(state.role));
+    const resolution = await resolveGoogleUser(db, profile);
 
-    if (['suspended', 'banned'].includes(user.account_status)) {
-      return authErrorRedirect(
-        c.env,
-        origin,
-        action,
-        'This account is suspended or banned. Contact support if you believe this is a mistake.'
+    if (resolution.kind === 'existing') {
+      const user = resolution.user;
+
+      if (['suspended', 'banned'].includes(user.account_status)) {
+        return authErrorRedirect(
+          c.env,
+          origin,
+          action,
+          'This account is suspended or banned. Contact support if you believe this is a mistake.'
+        );
+      }
+
+      const { accessToken, refreshToken } = await authTokens(user, c.env.JWT_SECRET);
+      const formattedUser = await formatUserResponse(db, user);
+      const redirectUrl = new URL(redirectPathForUser(formattedUser), `${origin}/`);
+      redirectUrl.hash = `auth=${userHashPayload(formattedUser, accessToken, refreshToken)}`;
+
+      const headers = clearGoogleStateHeaders(c.env);
+      headers.append(
+        'Set-Cookie',
+        authCookie('access_token', accessToken, accessTokenSeconds, c.env)
       );
+      headers.append(
+        'Set-Cookie',
+        authCookie('refresh_token', refreshToken, refreshTokenSeconds, c.env)
+      );
+
+      return redirectResponse(redirectUrl.toString(), headers);
     }
 
-    const { accessToken, refreshToken } = await authTokens(user, c.env.JWT_SECRET);
-    const formattedUser = await formatUserResponse(db, user);
-    const redirectUrl = new URL(redirectPathForUser(formattedUser), `${origin}/`);
-    redirectUrl.hash = `auth=${userHashPayload(formattedUser, accessToken, refreshToken)}`;
+    // Brand-new email (or an existing email not yet linked to Google): do NOT
+    // create an account or link identities here. Hand the user a short-lived
+    // pending session and send them to the role chooser, which completes the
+    // flow via POST /auth/google/complete.
+    const googleId = profile.sub?.trim();
+    const email = normalizeEmail(profile.email);
 
-    const headers = clearGoogleStateHeaders(c.env);
-    headers.append(
-      'Set-Cookie',
-      authCookie('access_token', accessToken, accessTokenSeconds, c.env)
-    );
-    headers.append(
-      'Set-Cookie',
-      authCookie('refresh_token', refreshToken, refreshTokenSeconds, c.env)
-    );
+    if (!googleId || !email) {
+      throw new Error('Google did not return a usable profile');
+    }
 
-    return redirectResponse(redirectUrl.toString(), headers);
+    const { firstName, lastName } = splitGoogleName(profile);
+    const pendingToken = await createGooglePendingToken(c.env.JWT_SECRET, {
+      googleId,
+      email,
+      firstName,
+      lastName,
+      picture: profile.picture ?? null,
+      action,
+      origin,
+      link: resolution.kind === 'link_required',
+    });
+
+    return redirectResponse(
+      pendingSessionRedirect(origin, pendingToken),
+      clearGoogleStateHeaders(c.env)
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Google login failed. Please try again.';
 
     return authErrorRedirect(c.env, origin, action, message);
   }
+}
+
+async function handleGoogleComplete(c: Context<{ Bindings: Env }>): Promise<Response> {
+  const db = requireD1(c.env);
+  const body = await readJsonObject(c.req.raw);
+  const pendingToken = stringField(body, 'pendingToken');
+
+  if (!pendingToken || !c.env.JWT_SECRET) {
+    return errorResponse(401, 'Invalid or expired Google session. Please try again.');
+  }
+
+  const payload = await verifyJwt(pendingToken, c.env.JWT_SECRET);
+
+  if (
+    !payload ||
+    payload.type !== 'google_pending' ||
+    typeof payload.googleId !== 'string' ||
+    typeof payload.email !== 'string'
+  ) {
+    return errorResponse(401, 'Invalid or expired Google session. Please try again.');
+  }
+
+  const googleId = payload.googleId;
+  const email = payload.email;
+
+  const complete = async (user: UserAccountRow): Promise<Response> => {
+    if (['suspended', 'banned'].includes(user.account_status)) {
+      return errorResponse(
+        403,
+        'This account is suspended or banned. Contact support if you believe this is a mistake.'
+      );
+    }
+
+    const { accessToken, refreshToken } = await authTokens(user, c.env.JWT_SECRET);
+    const formattedUser = await formatUserResponse(db, user);
+
+    return authResponse(
+      c.env,
+      {
+        success: true,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        user: formattedUser,
+      },
+      accessToken,
+      refreshToken
+    );
+  };
+
+  // Already linked to this Google account (e.g. a replayed or reused pending
+  // token): treat as a normal login and skip creation/linking.
+  const byGoogleId = await findUserAccountByGoogleId(db, googleId);
+
+  if (byGoogleId) {
+    return await complete(byGoogleId);
+  }
+
+  const byEmail = await findUserAccountByEmail(db, email);
+
+  if (byEmail) {
+    if (byEmail.google_id && byEmail.google_id !== googleId) {
+      return errorResponse(409, 'This email is already linked to another Google account');
+    }
+
+    if (payload.link !== true) {
+      return errorResponse(
+        409,
+        'An account already exists for this email. Please log in or link your Google account.'
+      );
+    }
+
+    await updateGoogleIdentity(db, Number(byEmail.id), {
+      googleId,
+      googlePicture: typeof payload.picture === 'string' ? payload.picture : null,
+    });
+    const linked = await findUserAccountById(db, Number(byEmail.id));
+
+    if (!linked) {
+      return errorResponse(500, 'Unable to load linked Google account');
+    }
+
+    return await complete(linked);
+  }
+
+  // Brand-new email: create the account for the chosen role. Google's email
+  // verification is trusted (email_verified = 1). Landlords start unverified
+  // (is_verified = 0) and land on the dashboard with a pending banner; boarders
+  // are created as status 'new'.
+  const role = stringField(body, 'role');
+
+  if (role !== 'boarder' && role !== 'landlord') {
+    return errorResponse(400, 'Invalid role');
+  }
+
+  const firstName =
+    stringField(body, 'firstName') ||
+    (typeof payload.firstName === 'string' && payload.firstName ? payload.firstName : 'Google');
+  const lastName =
+    stringField(body, 'lastName') ||
+    (typeof payload.lastName === 'string' && payload.lastName ? payload.lastName : 'User');
+
+  const userId = await createGoogleUserAccount(db, {
+    firstName,
+    lastName,
+    email,
+    googleId,
+    googlePicture: typeof payload.picture === 'string' ? payload.picture : null,
+    role,
+    accountStatus: 'active',
+    isVerified: role === 'landlord' ? 0 : 1,
+    emailVerified: 1,
+    boarderStatus: role === 'boarder' ? 'new' : null,
+    phoneNumber: stringField(body, 'phoneNumber') || null,
+  });
+
+  if (role === 'landlord') {
+    await createLandlordProfile(db, {
+      userId,
+      boardingHouseName: stringField(body, 'businessName'),
+      boardingHouseDescription: stringField(body, 'businessDescription'),
+      city: stringField(body, 'city'),
+      province: stringField(body, 'province'),
+    });
+  }
+
+  const created = await findUserAccountById(db, userId);
+
+  if (!created) {
+    return errorResponse(500, 'Unexpected Google signup error');
+  }
+
+  return await complete(created);
 }
 
 authRoutes.post('/auth/check-email', async c => {
@@ -747,6 +941,8 @@ async function handleRegister(c: Context<{ Bindings: Env }>) {
       userId,
       boardingHouseName: stringField(body, 'businessName'),
       boardingHouseDescription: stringField(body, 'businessDescription'),
+      city: stringField(body, 'city'),
+      province: stringField(body, 'province'),
     });
   }
 
@@ -866,5 +1062,7 @@ authRoutes.get('/auth/google/authorize', handleGoogleAuthorize);
 authRoutes.get('/api/auth/google/authorize', handleGoogleAuthorize);
 authRoutes.get('/auth/google/callback', handleGoogleCallback);
 authRoutes.get('/api/auth/google/callback', handleGoogleCallback);
+authRoutes.post('/auth/google/complete', handleGoogleComplete);
+authRoutes.post('/api/auth/google/complete', handleGoogleComplete);
 
 export default authRoutes;

@@ -1,8 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Outlet, createRootRoute, HeadContent, Scripts, useNavigate } from '@tanstack/react-router';
+import {
+  Link,
+  Outlet,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+  useNavigate,
+} from '@tanstack/react-router';
 import { useEffect, useState, type ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth-context';
-import { handleOAuthHash, redirectPathForUser } from '../lib/oauth';
+import { handleGooglePendingHash, handleOAuthHash, redirectPathForUser } from '../lib/oauth';
 import appCss from '../styles/app.css?url';
 
 export const Route = createRootRoute({
@@ -30,16 +37,40 @@ export const Route = createRootRoute({
     ],
   }),
   component: RootComponent,
+  notFoundComponent: NotFoundPage,
 });
+
+function NotFoundPage() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-cream px-6 text-center">
+      <p className="text-6xl font-extrabold text-primary">404</p>
+      <h1 className="text-2xl font-bold text-ink">Page not found</h1>
+      <p className="max-w-md text-sm text-gray-ink">
+        The page you&apos;re looking for doesn&apos;t exist or may have been moved.
+      </p>
+      <Link
+        to="/"
+        className="mt-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
+      >
+        ← Back to home
+      </Link>
+    </div>
+  );
+}
 
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
   const navigate = useNavigate();
 
-  // Handle the Google OAuth `#auth=` callback hash on any page.
+  // Handle the Google OAuth `#auth=` callback hash on any page, and route
+  // `#google-pending=` sessions to the role chooser.
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: redirectPathForUser(user) });
+    if (user) {
+      void navigate({ to: redirectPathForUser(user) });
+      return;
+    }
+    if (handleGooglePendingHash()) void navigate({ to: '/auth/choose-role' });
   }, [navigate]);
 
   return (
