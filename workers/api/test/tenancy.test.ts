@@ -151,7 +151,7 @@ describe('tenancy and leave request routes', () => {
     });
   });
 
-  it('sends a leave request message, cancels active rental state, and cancels pending payments', async () => {
+  it('sends a leave request message and keeps the tenancy active with a pending leave request', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     seedTenancyData(sqlite);
@@ -194,21 +194,37 @@ describe('tenancy and leave request routes', () => {
         )
         .get()
     ).toEqual({
-      status: 'cancelled',
-      leave_request_status: 'completed',
+      status: 'confirmed',
+      leave_request_status: 'pending',
       leave_request_reason: 'Moving closer to work',
       intended_leave_date: '2026-07-01',
-      deleted: 1,
+      deleted: 0,
     });
+    // The tenancy stays visible and the room stays occupied while pending.
     expect(sqlite.prepare('SELECT boarder_status FROM users WHERE id = 2').get()).toEqual({
-      boarder_status: 'new',
+      boarder_status: 'accepted',
     });
     expect(
       sqlite.prepare('SELECT status FROM payments WHERE id = 300').get() as { status: string }
-    ).toEqual({ status: 'cancelled' });
+    ).toEqual({ status: 'pending' });
+    expect(sqlite.prepare('SELECT status FROM rooms WHERE id = 100').get()).toEqual({
+      status: 'occupied',
+    });
     expect(
       sqlite.prepare('SELECT COUNT(*) as count FROM messages').get() as { count: number }
     ).toEqual({ count: 1 });
+
+    const tenancyResponse = await app.request(
+      'http://localhost/api/boarder/tenancy',
+      { headers: { 'X-User-ID': '2' } },
+      createEnv(sqlite)
+    );
+    const tenancyBody = (await tenancyResponse.json()) as {
+      data: { application_id: number; leave_request_status: string; intended_leave_date: string };
+    };
+    expect(tenancyBody.data.application_id).toBe(200);
+    expect(tenancyBody.data.leave_request_status).toBe('pending');
+    expect(tenancyBody.data.intended_leave_date).toBe('2026-07-01');
   });
 
   it('approves a pending leave request for the owning landlord', async () => {
@@ -217,8 +233,7 @@ describe('tenancy and leave request routes', () => {
     seedTenancyData(sqlite);
     sqlite.exec(`
       UPDATE applications
-      SET status = 'accepted',
-          leave_request_status = 'pending',
+      SET leave_request_status = 'pending',
           intended_leave_date = '2026-07-15',
           deleted_at = NULL
       WHERE id = 200;
@@ -248,8 +263,149 @@ describe('tenancy and leave request routes', () => {
       },
     });
     expect(
-      sqlite.prepare('SELECT leave_request_status FROM applications WHERE id = 200').get()
-    ).toEqual({ leave_request_status: 'approved' });
+      sqlite
+        .prepare(
+          `
+            SELECT status, leave_request_status, deleted_at IS NOT NULL AS deleted
+            FROM applications
+            WHERE id = 200
+          `
+        )
+        .get()
+    ).toEqual({ status: 'ended', leave_request_status: 'approved', deleted: 1 });
+    // Approval finalizes the leave: room freed, boarder back to browsing, payments cancelled.
+    expect(sqlite.prepare('SELECT status FROM rooms WHERE id = 100').get()).toEqual({
+      status: 'available',
+    });
+    expect(sqlite.prepare('SELECT boarder_status FROM users WHERE id = 2').get()).toEqual({
+      boarder_status: 'new',
+    });
+    expect(
+      sqlite.prepare('SELECT status FROM payments WHERE id = 300').get() as { status: string }
+    ).toEqual({ status: 'cancelled' });
+  });
+
+  it('rejects a second leave request while one is pending', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedTenancyData(sqlite);
+
+    const first = await app.request(
+      'http://localhost/api/boarder/leave-request',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '2',
+        },
+        body: JSON.stringify({
+          reason: 'Moving closer to work',
+          leave_date: '2026-07-01',
+          message: 'Thank you for hosting me.',
+        }),
+      },
+      createEnv(sqlite)
+    );
+    expect(first.status).toBe(200);
+
+    const second = await app.request(
+      'http://localhost/api/boarder/leave-request',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '2',
+        },
+        body: JSON.stringify({
+          reason: 'Changed my mind',
+          leave_date: '2026-08-01',
+          message: 'Second attempt.',
+        }),
+      },
+      createEnv(sqlite)
+    );
+
+    expect(second.status).toBe(409);
+    expect(await second.json()).toEqual({
+      error:
+        'You already have a pending leave request. Please wait for your landlord to review it before submitting another.',
+    });
+    // The original request is untouched.
+    expect(
+      sqlite
+        .prepare('SELECT leave_request_status, leave_request_reason FROM applications WHERE id = 200')
+        .get()
+    ).toEqual({
+      leave_request_status: 'pending',
+      leave_request_reason: 'Moving closer to work',
+    });
+  });
+
+  it('declines a pending leave request without ending the tenancy', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedTenancyData(sqlite);
+    sqlite.exec(`
+      UPDATE applications
+      SET leave_request_status = 'pending',
+          intended_leave_date = '2026-07-15'
+      WHERE id = 200;
+    `);
+
+    const response = await app.request(
+      'http://localhost/api/landlord/decline-leave-request',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({ application_id: 200 }),
+      },
+      createEnv(sqlite)
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      success: true,
+      message: 'Leave request declined successfully',
+      data: {
+        application_id: 200,
+        boarder_name: 'Benny Boarder',
+        intended_leave_date: '2026-07-15',
+      },
+    });
+    // The tenancy stays active and the room stays occupied.
+    expect(
+      sqlite
+        .prepare(
+          `
+            SELECT status, leave_request_status, deleted_at IS NOT NULL AS deleted
+            FROM applications
+            WHERE id = 200
+          `
+        )
+        .get()
+    ).toEqual({ status: 'confirmed', leave_request_status: 'declined', deleted: 0 });
+    expect(sqlite.prepare('SELECT status FROM rooms WHERE id = 100').get()).toEqual({
+      status: 'occupied',
+    });
+
+    // A non-pending (already processed) request is not found.
+    const again = await app.request(
+      'http://localhost/api/landlord/decline-leave-request',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({ application_id: 200 }),
+      },
+      createEnv(sqlite)
+    );
+    expect(again.status).toBe(404);
+    expect(await again.json()).toEqual({ error: 'Leave request not found or already processed' });
   });
 
   it('returns PHP-compatible tenancy and leave validation errors', async () => {

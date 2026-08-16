@@ -25,6 +25,29 @@ body {
   color: var(--color-ink);
 }
 
+/* Dropdown menu entrance: scale from the trigger, fast ease-out */
+@keyframes menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu-pop {
+  transform-origin: top right;
+  animation: menu-pop 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-pop {
+    animation: none;
+  }
+}
+
 /* Logo cloud marquee (legacy logo-cloud.css) */
 @keyframes logo-marquee {
   from {

@@ -237,8 +237,19 @@ export async function hardDeleteApplication(db: D1Database, applicationId: numbe
 }
 
 export async function softDeleteApplication(db: D1Database, applicationId: number): Promise<void> {
+  // Withdrawal ends the application: move it to the terminal `cancelled` status
+  // and hide it from all lists. Only pending/accepted applications reach this
+  // path (enforced by the routes against the state machine).
   await db
-    .prepare('UPDATE applications SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?')
+    .prepare(
+      `
+        UPDATE applications
+        SET status = 'cancelled',
+            deleted_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `
+    )
     .bind(applicationId)
     .run();
 }
@@ -288,10 +299,10 @@ export async function cancelOtherBoarderApplications(
             updated_at = CURRENT_TIMESTAMP
         WHERE boarder_id = ?
           AND id != ?
-          AND status IN (?, ?, ?)
+          AND status IN (?, ?)
       `
     )
-    .bind('cancelled', boarderId, applicationId, 'pending', 'accepted', 'confirmed')
+    .bind('cancelled', boarderId, applicationId, 'pending', 'accepted')
     .run();
 }
 

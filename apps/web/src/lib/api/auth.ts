@@ -1,5 +1,6 @@
 import { getApiBaseUrl } from '../config';
 import type {
+  AuthUser,
   CheckEmailResponse,
   ForgotPasswordResponse,
   LoginResponse,
@@ -30,6 +31,38 @@ export function login(email: string, password: string): Promise<LoginResponse> {
 
 export function register(input: RegisterInput): Promise<RegisterResponse> {
   return apiFetch<RegisterResponse>(base(), '/auth/register', {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+}
+
+export interface GoogleCompleteInput {
+  pendingToken: string;
+  role?: 'boarder' | 'landlord';
+  firstName?: string;
+  lastName?: string;
+  businessName?: string;
+  businessDescription?: string;
+  city?: string;
+  province?: string;
+  phoneNumber?: string;
+}
+
+export interface GoogleCompleteResponse {
+  success: true;
+  access_token: string;
+  refresh_token: string;
+  user: AuthUser;
+}
+
+/**
+ * Complete a pending Google session started on the role chooser: create the
+ * account for the chosen role (or link the Google identity to an existing
+ * email/password account). Returns the standard auth payload.
+ */
+export function completeGoogleAuth(input: GoogleCompleteInput): Promise<GoogleCompleteResponse> {
+  return apiFetch<GoogleCompleteResponse>(base(), '/auth/google/complete', {
     method: 'POST',
     credentials: 'include',
     body: JSON.stringify(input),

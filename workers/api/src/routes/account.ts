@@ -165,6 +165,8 @@ async function handleUpdateProfile(c: Context<{ Bindings: Env }>) {
   const firstName = stringField(body, 'first_name');
   const lastName = stringField(body, 'last_name');
   const phoneNumber = stringField(body, 'phone_number') || null;
+  const city = stringField(body, 'city') || null;
+  const province = stringField(body, 'province') || null;
 
   if (!firstName || !lastName) {
     return errorResponse(400, 'First name and last name are required');
@@ -174,7 +176,13 @@ async function handleUpdateProfile(c: Context<{ Bindings: Env }>) {
     return errorResponse(400, 'Invalid Philippine mobile number format');
   }
 
-  await updateUserProfile(db, authUser.user_id, { firstName, lastName, phoneNumber });
+  await updateUserProfile(db, authUser.user_id, authUser.role, {
+    firstName,
+    lastName,
+    phoneNumber,
+    city,
+    province,
+  });
 
   const updated = await findUserProfileById(db, authUser.user_id);
 

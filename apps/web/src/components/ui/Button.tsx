@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, Ref } from 'react';
 
 const VARIANTS: Record<string, string> = {
   primary: 'bg-primary text-white hover:bg-primary-dark',
@@ -10,12 +10,15 @@ const VARIANTS: Record<string, string> = {
 export function Button({
   variant = 'primary',
   className = '',
+  ref,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'outline' | 'ghost' | 'danger';
+  ref?: Ref<HTMLButtonElement>;
 }) {
   return (
     <button
+      ref={ref}
       className={`rounded-full px-4 py-2 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]} ${className}`}
       {...props}
     />

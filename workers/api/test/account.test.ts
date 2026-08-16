@@ -151,6 +151,78 @@ describe('account, profile, password, and onboarding routes', () => {
     expect(updateBody.user.phone_number).toBe('09175551234');
   });
 
+  it('stores city and province on the landlord profile via profile update', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const update = await app.request(
+      'http://localhost/api/users/profile',
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({
+          first_name: 'Lara',
+          last_name: 'Landlord',
+          phone_number: '09171234567',
+          city: 'Quezon City',
+          province: 'Metro Manila',
+        }),
+      },
+      env
+    );
+    const updateBody = (await update.json()) as {
+      user: { city: string | null; province: string | null };
+    };
+
+    expect(update.status).toBe(200);
+    expect(updateBody.user.city).toBe('Quezon City');
+    expect(updateBody.user.province).toBe('Metro Manila');
+
+    const profile = sqlite
+      .prepare('SELECT city, province FROM landlord_profiles WHERE user_id = 3')
+      .get() as { city: string; province: string };
+
+    expect(profile).toEqual({ city: 'Quezon City', province: 'Metro Manila' });
+  });
+
+  it('does not create a landlord profile row for a boarder profile update', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const update = await app.request(
+      'http://localhost/api/users/profile',
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '2',
+        },
+        body: JSON.stringify({
+          first_name: 'Ben',
+          last_name: 'Boarder',
+          phone_number: '09175551234',
+          city: 'Manila',
+          province: 'Metro Manila',
+        }),
+      },
+      env
+    );
+
+    expect(update.status).toBe(200);
+    expect(
+      sqlite.prepare('SELECT COUNT(*) AS c FROM landlord_profiles WHERE user_id = 2').get() as {
+        c: number;
+      }
+    ).toEqual({ c: 0 });
+  });
+
   it('uploads an avatar through UploadThing and stores the URL', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);

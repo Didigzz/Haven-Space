@@ -18,6 +18,7 @@ import { Route as PublicMapsRouteImport } from './routes/public-maps'
 import { Route as TeamsRouteImport } from './routes/teams'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AuthChooseRouteImport } from './routes/auth/choose'
+import { Route as AuthChooseRoleRouteImport } from './routes/auth/choose-role'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
@@ -72,7 +73,7 @@ import { Route as LandlordPaymentsRecordRouteImport } from './routes/landlord/pa
 import { Route as BoarderFindARoomIdIndexRouteImport } from './routes/boarder/find-a-room/$id/index'
 import { Route as BoarderFindARoomIdApplyRouteImport } from './routes/boarder/find-a-room/$id/apply'
 import { Route as LandlordListingsIdEditRouteImport } from './routes/landlord/listings/$id/edit'
-import { Route as LandlordRoomsIdEditRouteImport } from './routes/landlord/rooms/$id/edit'
+import { Route as LandlordListingsRoomsIdEditRouteImport } from './routes/landlord/listings/rooms/$id/edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -117,6 +118,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AuthChooseRoute = AuthChooseRouteImport.update({
   id: '/auth/choose',
   path: '/auth/choose',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthChooseRoleRoute = AuthChooseRoleRouteImport.update({
+  id: '/auth/choose-role',
+  path: '/auth/choose-role',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
@@ -392,11 +398,12 @@ const LandlordListingsIdEditRoute = LandlordListingsIdEditRouteImport.update({
   path: '/$id/edit',
   getParentRoute: () => LandlordListingsRoute,
 } as any)
-const LandlordRoomsIdEditRoute = LandlordRoomsIdEditRouteImport.update({
-  id: '/landlord/rooms/$id/edit',
-  path: '/landlord/rooms/$id/edit',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const LandlordListingsRoomsIdEditRoute =
+  LandlordListingsRoomsIdEditRouteImport.update({
+    id: '/rooms/$id/edit',
+    path: '/rooms/$id/edit',
+    getParentRoute: () => LandlordListingsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -407,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/public-maps': typeof PublicMapsRoute
   '/teams': typeof TeamsRoute
   '/auth/choose': typeof AuthChooseRoute
+  '/auth/choose-role': typeof AuthChooseRoleRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -461,8 +469,8 @@ export interface FileRoutesByFullPath {
   '/landlord/payments/': typeof LandlordPaymentsIndexRoute
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute
   '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute
-  '/landlord/rooms/$id/edit': typeof LandlordRoomsIdEditRoute
   '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute
+  '/landlord/listings/rooms/$id/edit': typeof LandlordListingsRoomsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -473,6 +481,7 @@ export interface FileRoutesByTo {
   '/public-maps': typeof PublicMapsRoute
   '/teams': typeof TeamsRoute
   '/auth/choose': typeof AuthChooseRoute
+  '/auth/choose-role': typeof AuthChooseRoleRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -520,8 +529,8 @@ export interface FileRoutesByTo {
   '/landlord/payments': typeof LandlordPaymentsIndexRoute
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute
   '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute
-  '/landlord/rooms/$id/edit': typeof LandlordRoomsIdEditRoute
   '/boarder/find-a-room/$id': typeof BoarderFindARoomIdIndexRoute
+  '/landlord/listings/rooms/$id/edit': typeof LandlordListingsRoomsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -533,6 +542,7 @@ export interface FileRoutesById {
   '/public-maps': typeof PublicMapsRoute
   '/teams': typeof TeamsRoute
   '/auth/choose': typeof AuthChooseRoute
+  '/auth/choose-role': typeof AuthChooseRoleRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -587,8 +597,8 @@ export interface FileRoutesById {
   '/landlord/payments/': typeof LandlordPaymentsIndexRoute
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute
   '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute
-  '/landlord/rooms/$id/edit': typeof LandlordRoomsIdEditRoute
   '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute
+  '/landlord/listings/rooms/$id/edit': typeof LandlordListingsRoomsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -601,6 +611,7 @@ export interface FileRouteTypes {
     | '/public-maps'
     | '/teams'
     | '/auth/choose'
+    | '/auth/choose-role'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/reset-password'
@@ -655,8 +666,8 @@ export interface FileRouteTypes {
     | '/landlord/payments/'
     | '/boarder/find-a-room/$id/apply'
     | '/landlord/listings/$id/edit'
-    | '/landlord/rooms/$id/edit'
     | '/boarder/find-a-room/$id/'
+    | '/landlord/listings/rooms/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -667,6 +678,7 @@ export interface FileRouteTypes {
     | '/public-maps'
     | '/teams'
     | '/auth/choose'
+    | '/auth/choose-role'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/reset-password'
@@ -714,8 +726,8 @@ export interface FileRouteTypes {
     | '/landlord/payments'
     | '/boarder/find-a-room/$id/apply'
     | '/landlord/listings/$id/edit'
-    | '/landlord/rooms/$id/edit'
     | '/boarder/find-a-room/$id'
+    | '/landlord/listings/rooms/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -726,6 +738,7 @@ export interface FileRouteTypes {
     | '/public-maps'
     | '/teams'
     | '/auth/choose'
+    | '/auth/choose-role'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/reset-password'
@@ -780,8 +793,8 @@ export interface FileRouteTypes {
     | '/landlord/payments/'
     | '/boarder/find-a-room/$id/apply'
     | '/landlord/listings/$id/edit'
-    | '/landlord/rooms/$id/edit'
     | '/boarder/find-a-room/$id/'
+    | '/landlord/listings/rooms/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -793,6 +806,7 @@ export interface RootRouteChildren {
   PublicMapsRoute: typeof PublicMapsRoute
   TeamsRoute: typeof TeamsRoute
   AuthChooseRoute: typeof AuthChooseRoute
+  AuthChooseRoleRoute: typeof AuthChooseRoleRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
@@ -832,7 +846,6 @@ export interface RootRouteChildren {
   FindARoomIndexRoute: typeof FindARoomIndexRoute
   LandlordIndexRoute: typeof LandlordIndexRoute
   BoarderRoomsIdRoute: typeof BoarderRoomsIdRoute
-  LandlordRoomsIdEditRoute: typeof LandlordRoomsIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -898,6 +911,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/choose'
       fullPath: '/auth/choose'
       preLoaderRoute: typeof AuthChooseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/choose-role': {
+      id: '/auth/choose-role'
+      path: '/auth/choose-role'
+      fullPath: '/auth/choose-role'
+      preLoaderRoute: typeof AuthChooseRoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/forgot-password': {
@@ -1278,12 +1298,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordListingsIdEditRouteImport
       parentRoute: typeof LandlordListingsRoute
     }
-    '/landlord/rooms/$id/edit': {
-      id: '/landlord/rooms/$id/edit'
-      path: '/landlord/rooms/$id/edit'
-      fullPath: '/landlord/rooms/$id/edit'
-      preLoaderRoute: typeof LandlordRoomsIdEditRouteImport
-      parentRoute: typeof rootRouteImport
+    '/landlord/listings/rooms/$id/edit': {
+      id: '/landlord/listings/rooms/$id/edit'
+      path: '/rooms/$id/edit'
+      fullPath: '/landlord/listings/rooms/$id/edit'
+      preLoaderRoute: typeof LandlordListingsRoomsIdEditRouteImport
+      parentRoute: typeof LandlordListingsRoute
     }
   }
 }
@@ -1361,12 +1381,14 @@ interface LandlordListingsRouteChildren {
   LandlordListingsCreateRoute: typeof LandlordListingsCreateRoute
   LandlordListingsIndexRoute: typeof LandlordListingsIndexRoute
   LandlordListingsIdEditRoute: typeof LandlordListingsIdEditRoute
+  LandlordListingsRoomsIdEditRoute: typeof LandlordListingsRoomsIdEditRoute
 }
 
 const LandlordListingsRouteChildren: LandlordListingsRouteChildren = {
   LandlordListingsCreateRoute: LandlordListingsCreateRoute,
   LandlordListingsIndexRoute: LandlordListingsIndexRoute,
   LandlordListingsIdEditRoute: LandlordListingsIdEditRoute,
+  LandlordListingsRoomsIdEditRoute: LandlordListingsRoomsIdEditRoute,
 }
 
 const LandlordListingsRouteWithChildren =
@@ -1394,6 +1416,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicMapsRoute: PublicMapsRoute,
   TeamsRoute: TeamsRoute,
   AuthChooseRoute: AuthChooseRoute,
+  AuthChooseRoleRoute: AuthChooseRoleRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
@@ -1433,7 +1456,6 @@ const rootRouteChildren: RootRouteChildren = {
   FindARoomIndexRoute: FindARoomIndexRoute,
   LandlordIndexRoute: LandlordIndexRoute,
   BoarderRoomsIdRoute: BoarderRoomsIdRoute,
-  LandlordRoomsIdEditRoute: LandlordRoomsIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

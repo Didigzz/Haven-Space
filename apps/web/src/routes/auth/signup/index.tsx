@@ -1,4 +1,4 @@
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
   AuthDivider,
@@ -10,13 +10,20 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, TextInput } from '../../../components/ui/Field';
 import { ApiRequestError } from '../../../lib/api/http';
 import { useAuth } from '../../../lib/auth-context';
-import { googleAuthorizeUrl, handleOAuthHash, redirectPathForUser } from '../../../lib/oauth';
+import {
+  authErrorSearch,
+  googleAuthorizeUrl,
+  handleOAuthHash,
+  redirectPathForUser,
+} from '../../../lib/oauth';
 
 export const Route = createFileRoute('/auth/signup/')({
+  validateSearch: authErrorSearch,
   component: BoarderSignupPage,
 });
 
 function BoarderSignupPage() {
+  const { error: searchError } = useSearch({ from: '/auth/signup/' });
   const { register } = useAuth();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
@@ -56,7 +63,9 @@ function BoarderSignupPage() {
       });
       void navigate({ to: redirectPathForUser(user) });
     } catch (err) {
-      setError(err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.');
+      setError(
+        err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -76,9 +85,14 @@ function BoarderSignupPage() {
         </p>
       }
     >
+      {searchError ? <ErrorState message={searchError} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
-      <GoogleButton onClick={() => { window.location.href = googleAuthorizeUrl('signup', 'boarder'); }} />
+      <GoogleButton
+        onClick={() => {
+          window.location.href = googleAuthorizeUrl('signup', 'boarder');
+        }}
+      />
       <AuthDivider />
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -90,7 +104,7 @@ function BoarderSignupPage() {
               autoComplete="given-name"
               required
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={e => setFirstName(e.target.value)}
             />
           </Field>
           <Field label="Last name" htmlFor="lastName">
@@ -100,7 +114,7 @@ function BoarderSignupPage() {
               autoComplete="family-name"
               required
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={e => setLastName(e.target.value)}
             />
           </Field>
         </div>
@@ -113,7 +127,7 @@ function BoarderSignupPage() {
             autoComplete="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
           />
         </Field>
 
@@ -127,7 +141,7 @@ function BoarderSignupPage() {
             required
             minLength={8}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
           />
         </Field>
 
@@ -140,7 +154,7 @@ function BoarderSignupPage() {
             required
             minLength={8}
             value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+            onChange={e => setConfirm(e.target.value)}
           />
         </Field>
 

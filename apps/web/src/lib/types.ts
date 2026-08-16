@@ -247,6 +247,8 @@ export interface UpdateProfileInput {
   first_name: string;
   last_name: string;
   phone_number: string | null;
+  city?: string | null;
+  province?: string | null;
 }
 
 export interface SavedListingsResponse {

@@ -1,15 +1,25 @@
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
-import { AuthSplitLayout } from '../../../components/auth/AuthSplitLayout';
+import {
+  AuthDivider,
+  AuthSplitLayout,
+  GoogleButton,
+} from '../../../components/auth/AuthSplitLayout';
 import { Button } from '../../../components/ui/Button';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../../components/ui/Field';
 import { ApiRequestError } from '../../../lib/api/http';
 import { useAuth } from '../../../lib/auth-context';
-import { handleOAuthHash } from '../../../lib/oauth';
+import {
+  authErrorSearch,
+  googleAuthorizeUrl,
+  handleOAuthHash,
+  redirectPathForUser,
+} from '../../../lib/oauth';
 import { isPhilippinePhone } from '../../../lib/validation';
 
 export const Route = createFileRoute('/auth/signup/landlord')({
+  validateSearch: authErrorSearch,
   component: LandlordSignupPage,
 });
 
@@ -24,6 +34,7 @@ const ID_TYPES = [
 ];
 
 function LandlordSignupPage() {
+  const { error: searchError } = useSearch({ from: '/auth/signup/landlord' });
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -45,11 +56,11 @@ function LandlordSignupPage() {
 
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: '/landlord/verification' });
+    if (user) void navigate({ to: redirectPathForUser(user) });
   }, [navigate]);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm(f => ({ ...f, [key]: value }));
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -87,7 +98,9 @@ function LandlordSignupPage() {
       });
       void navigate({ to: '/landlord/verification' });
     } catch (err) {
-      setError(err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.');
+      setError(
+        err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -107,7 +120,15 @@ function LandlordSignupPage() {
         </p>
       }
     >
+      {searchError ? <ErrorState message={searchError} /> : null}
       {error ? <ErrorState message={error} /> : null}
+
+      <GoogleButton
+        onClick={() => {
+          window.location.href = googleAuthorizeUrl('signup', 'landlord');
+        }}
+      />
+      <AuthDivider />
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-3">
@@ -118,7 +139,7 @@ function LandlordSignupPage() {
               autoComplete="given-name"
               required
               value={form.firstName}
-              onChange={(e) => set('firstName', e.target.value)}
+              onChange={e => set('firstName', e.target.value)}
             />
           </Field>
           <Field label="Last name" htmlFor="lastName">
@@ -128,7 +149,7 @@ function LandlordSignupPage() {
               autoComplete="family-name"
               required
               value={form.lastName}
-              onChange={(e) => set('lastName', e.target.value)}
+              onChange={e => set('lastName', e.target.value)}
             />
           </Field>
         </div>
@@ -141,7 +162,7 @@ function LandlordSignupPage() {
             autoComplete="email"
             required
             value={form.email}
-            onChange={(e) => set('email', e.target.value)}
+            onChange={e => set('email', e.target.value)}
           />
         </Field>
 
@@ -156,7 +177,7 @@ function LandlordSignupPage() {
               required
               minLength={8}
               value={form.password}
-              onChange={(e) => set('password', e.target.value)}
+              onChange={e => set('password', e.target.value)}
             />
           </Field>
           <Field label="Confirm password" htmlFor="confirm">
@@ -168,7 +189,7 @@ function LandlordSignupPage() {
               required
               minLength={8}
               value={form.confirm}
-              onChange={(e) => set('confirm', e.target.value)}
+              onChange={e => set('confirm', e.target.value)}
             />
           </Field>
         </div>
@@ -182,7 +203,7 @@ function LandlordSignupPage() {
             placeholder="e.g., Haven Dormitory, ABC Boarding House"
             required
             value={form.businessName}
-            onChange={(e) => set('businessName', e.target.value)}
+            onChange={e => set('businessName', e.target.value)}
           />
         </Field>
 
@@ -194,7 +215,7 @@ function LandlordSignupPage() {
             rows={3}
             maxLength={500}
             value={form.businessDescription}
-            onChange={(e) => set('businessDescription', e.target.value)}
+            onChange={e => set('businessDescription', e.target.value)}
           />
         </Field>
 
@@ -206,7 +227,7 @@ function LandlordSignupPage() {
             placeholder="+63 9XX XXX XXXX"
             required
             value={form.phoneNumber}
-            onChange={(e) => set('phoneNumber', e.target.value)}
+            onChange={e => set('phoneNumber', e.target.value)}
           />
         </Field>
 
@@ -218,7 +239,7 @@ function LandlordSignupPage() {
               placeholder="e.g., Quezon City"
               required
               value={form.city}
-              onChange={(e) => set('city', e.target.value)}
+              onChange={e => set('city', e.target.value)}
             />
           </Field>
           <Field label="Province" htmlFor="province">
@@ -228,7 +249,7 @@ function LandlordSignupPage() {
               placeholder="e.g., Metro Manila"
               required
               value={form.province}
-              onChange={(e) => set('province', e.target.value)}
+              onChange={e => set('province', e.target.value)}
             />
           </Field>
         </div>
@@ -245,10 +266,10 @@ function LandlordSignupPage() {
             name="idType"
             required
             value={form.idType}
-            onChange={(e) => set('idType', e.target.value)}
+            onChange={e => set('idType', e.target.value)}
           >
             <option value="">Select ID type</option>
-            {ID_TYPES.map((opt) => (
+            {ID_TYPES.map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -263,7 +284,7 @@ function LandlordSignupPage() {
             placeholder="Enter your ID number"
             required
             value={form.idNumber}
-            onChange={(e) => set('idNumber', e.target.value)}
+            onChange={e => set('idNumber', e.target.value)}
           />
         </Field>
 

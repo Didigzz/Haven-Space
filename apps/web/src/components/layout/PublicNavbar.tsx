@@ -1,7 +1,6 @@
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { useAuth } from '../../lib/auth-context';
-import { Icon } from '../ui/Icon';
+import { UserMenu } from './UserMenu';
 
 const LINKS = [
   { to: '/', label: 'Home' },
@@ -12,12 +11,7 @@ const LINKS = [
 ] as const;
 
 export function PublicNavbar() {
-  const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const homeFor = (role: string) =>
-    role === 'admin' ? '/admin' : role === 'landlord' ? '/landlord' : '/boarder';
+  const { isAuthenticated } = useAuth();
 
   return (
     <nav className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -44,51 +38,8 @@ export function PublicNavbar() {
           ))}
         </ul>
         <div className="flex items-center gap-3">
-          {isAuthenticated && user ? (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setMenuOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-3 hover:bg-mint"
-              >
-                <img
-                  src="/assets/images/sample.png"
-                  alt=""
-                  className="h-7 w-7 rounded-full object-cover"
-                />
-                <span className="text-sm font-medium">{user.first_name}</span>
-                <Icon name="chevronDown" size={14} />
-              </button>
-              {menuOpen ? (
-                <div className="absolute right-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-pop">
-                  <Link
-                    to={homeFor(user.role)}
-                    className="block px-4 py-2 text-sm hover:bg-mint"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to={
-                      user.role === 'landlord' ? '/landlord/settings' : '/boarder/settings'
-                    }
-                    className="block px-4 py-2 text-sm hover:bg-mint"
-                  >
-                    Settings
-                  </Link>
-                  <button
-                    type="button"
-                    className="block w-full px-4 py-2 text-left text-sm text-error hover:bg-mint"
-                    onClick={async () => {
-                      await logout();
-                      setMenuOpen(false);
-                      void navigate({ to: '/auth/login' });
-                    }}
-                  >
-                    Log out
-                  </button>
-                </div>
-              ) : null}
-            </div>
+          {isAuthenticated ? (
+            <UserMenu />
           ) : (
             <>
               <Link

@@ -11,6 +11,7 @@ import { Field, TextArea, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../lib/api/http';
 import { getTenancy, leaveRequest } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
@@ -64,6 +65,8 @@ function TenancyPage() {
   }
 
   const data = tenancy.data?.data;
+  const leaveStatus =
+    typeof data?.leave_request_status === 'string' ? data.leave_request_status : 'none';
 
   return (
     <RoleShell title="Tenancy" nav={BOARDER_NAV}>
@@ -74,6 +77,8 @@ function TenancyPage() {
           title="No active tenancy"
           description="Once your booking is confirmed, your tenancy details appear here."
         />
+      ) : leaveStatus === 'pending' ? (
+        <PendingLeaveState data={data} />
       ) : (
         <div className="max-w-2xl">
           {error ? (
@@ -157,5 +162,68 @@ function TenancyPage() {
         </form>
       </Modal>
     </RoleShell>
+  );
+}
+
+function PendingLeaveState({ data }: { data: Record<string, unknown> }) {
+  const propertyName = String(data.property_name ?? 'Your tenancy');
+  const address = [
+    String(data.address ?? ''),
+    data.city ? String(data.city) : '',
+    data.province ? String(data.province) : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+  const reason =
+    typeof data.leave_request_reason === 'string' && data.leave_request_reason
+      ? data.leave_request_reason
+      : null;
+  const intendedDate =
+    typeof data.intended_leave_date === 'string' && data.intended_leave_date
+      ? data.intended_leave_date
+      : null;
+  const submittedDate =
+    typeof data.leave_request_date === 'string' && data.leave_request_date
+      ? data.leave_request_date
+      : null;
+
+  return (
+    <div className="max-w-2xl">
+      <Card>
+        <div className="flex items-center gap-3">
+          <Icon name="document" size={28} className="shrink-0" />
+          <h1 className="text-xl font-bold">{propertyName}</h1>
+          <StatusBadge status="pending" />
+        </div>
+        {address ? <p className="mt-1 text-gray-ink">{address}</p> : null}
+        <div className="mt-4 rounded-lg bg-mint/60 p-4">
+          <p className="font-semibold text-primary">Leave request pending</p>
+          <p className="mt-1 text-sm text-gray-ink">
+            Your landlord will review your request. Your room stays reserved for you until
+            it&apos;s approved, and you can&apos;t submit another request until it&apos;s resolved.
+          </p>
+        </div>
+        <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {reason ? (
+            <div>
+              <dt className="text-sm text-gray-ink">Reason</dt>
+              <dd className="font-medium">{reason}</dd>
+            </div>
+          ) : null}
+          {intendedDate ? (
+            <div>
+              <dt className="text-sm text-gray-ink">Intended leave date</dt>
+              <dd className="font-medium">{intendedDate}</dd>
+            </div>
+          ) : null}
+          {submittedDate ? (
+            <div>
+              <dt className="text-sm text-gray-ink">Requested on</dt>
+              <dd className="font-medium">{submittedDate}</dd>
+            </div>
+          ) : null}
+        </dl>
+      </Card>
+    </div>
   );
 }

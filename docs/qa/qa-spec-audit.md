@@ -331,9 +331,13 @@ For every flow, verify the affordances exist — flag any that don't as a bug:
 
 > This section grows as the run proceeds. Every unexpected behavior encountered is added here with its status (confirmed bug / by-design / fixed).
 
-| #   | Discovered edge case      | Where | Actual behavior | Verdict | Fix applied? |
-| --- | ------------------------- | ----- | --------------- | ------- | ------------ |
-| —   | _(filled during the run)_ |       |                 |         |              |
+| #    | Discovered edge case                                  | Where                                                                                                              | Actual behavior                                                                                                                                                                                                 | Verdict                                       | Fix applied?                                                                                                                               |
+| ---- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --- | ---- | ----------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| EC-1 | Duplicate layout (2× sidebar + 2× topbar + 2× main)   | `/boarder/applications`, `/boarder/applications/:id`, `/boarder/find-a-room/:id`, `/boarder/find-a-room/:id/apply` | Layout routes (`applications.tsx`, `find-a-room.tsx`, `find-a-room/$id.tsx`) render `Protected`+`RoleShell`+`Outlet`, and child routes render `Protected`+`RoleShell` again → nested duplicate shell            | **Confirmed bug** (S2 duplicate UI)           | **Fixed** — child routes now render content only (shell lives in the parent layout)                                                        |     | EC-2 | Orphaned route (no link reaches it) | `/landlord/rooms/:id/edit` | Only reachable by typing the URL; listing edit page had no per-room management section; page required a `propertyId` search param no link passed | **Confirmed bug** (S2 navigability / missing UI) | **Fixed** — listing edit page now renders a Rooms section with per-room Edit links; room-edit page got `Protected` guard + `RoleShell`; `validateSearch` accepts string or number `propertyId`. **Later refactor:** route moved to `/landlord/listings/rooms/:id/edit` so it inherits the shell + guard from the listings layout; old URL 404s gracefully |
+| EC-3 | Room-edit page had no role guard                      | `/landlord/rooms/:id/edit`                                                                                         | Root-level route (not under a `Protected` layout) → any role (even logged-out) could open the landlord room form UI                                                                                             | **Confirmed bug** (S2 access control, A13)    | **Fixed** — room edit now inherits `Protected role="landlord"` from the `/landlord/listings` layout (boarder visits are redirected)        |
+| EC-6 | Landlord can re-process a **confirmed** booking (A20) | `PATCH /api/landlord/applications/:id/status`                                                                      | Guard only blocked `accepted`/`rejected`; a landlord rejected an already-confirmed application → app left as `rejected` with `confirmed_at` set, room stayed `occupied`, tenancy vanished — contradictory state | **Confirmed bug** (S2 edge case, A20)         | **Fixed** — guard now also blocks `confirmed`/`cancelled` (returns 403 "Application has already been processed")                           |
+| EC-4 | Guest CTA shown to logged-in users                    | `/boarder/find-a-room`                                                                                             | "Want to apply for a room? Log in or sign up" rendered for an authenticated boarder                                                                                                                             | **Confirmed bug** (S3 duplicate/confusing UI) | **Fixed** — CTA hidden when `isAuthenticated` (still shows logged-out on public `/find-a-room`)                                            |
+| EC-5 | 404 page had no way back                              | any nonexistent route (`/nonexistent-page`, `/landlord/nonexistent`, `/admin/nonexistent`)                         | TanStack default "Not Found" text, no home link, no branding                                                                                                                                                    | **Confirmed bug** (S3 missing UI, A5)         | **Fixed** — root `notFoundComponent` with 404 heading + "← Back to home" link; `/rooms/999999` already handled "Room not found" gracefully |
 
 ---
 
@@ -427,3 +431,214 @@ required.
   (duplicate/missing-UI findings that are purely cosmetic are logged, not fixed).
 - **Code changes are IN scope** when a discovered bug is confirmed and a fix is clearly right for the app
   (per the fix mandate). Pure QA reporting applies only to bugs deemed out of scope or not clearly fixable.
+
+---
+
+## 10. Run #1 Findings — 2026-08-16 (preview browser, local API :8000 / web :3000)
+
+Fresh landlord (`qa.landlord.audit.20260816@example.com`, promoted to verified) + boarder
+(`qa.boarder.audit.20260816@example.com`) + listing "Audit House Manila" (id 6, 2 rooms) + 1
+boarder application (id 9).
+
+### 10.1 Duplicate layout — nested sidebar + nav (fixed)
+
+Four boarder routes rendered **two sidebars, two topbars, two `<nav>` and two `<main>`** because the
+route tree used layout routes that render `Protected` + `RoleShell` + `<Outlet />` while their child
+routes rendered `Protected` + `RoleShell` again:
+
+- `/boarder/applications` (`applications.tsx` layout + `applications/index.tsx`)
+- `/boarder/applications/:id` (`applications.tsx` layout + `applications/$id.tsx`)
+- `/boarder/find-a-room/:id` (`find-a-room.tsx` layout + `find-a-room/$id.tsx` layout)
+- `/boarder/find-a-room/:id/apply` (same chain)
+
+**Fix:** removed the nested `Protected`/`RoleShell` from `applications/index.tsx`, `applications/$id.tsx`,
+and `find-a-room/$id.tsx` (kept `<Outlet />`). The landlord area (listings, payments layout trees) was
+verified clean — one shell per page.
+
+### 10.2 Orphaned room-edit page (fixed)
+
+`/landlord/rooms/:id/edit` was reachable only by direct URL — no `Link` anywhere pointed to it and the
+listing edit page had no per-room management UI. It also depended on a `propertyId` search param and
+had **no role guard** (a boarder could open the form UI).
+
+**Fix:** added a Rooms section (room number, type, price, status badge, "Edit room" link) to
+`landlord/listings/$id/edit.tsx`; wrapped the room-edit page in `Protected role="landlord"` +
+`RoleShell`; widened `validateSearch` to accept a string or numeric `propertyId`. Verified: boarder
+visiting `/landlord/rooms/7/edit` is redirected; landlord edit link loads the seeded form.
+
+### 10.3 Guest CTA on logged-in find-a-room (fixed)
+
+"Want to apply for a room? Log in or sign up" rendered for an authenticated boarder on
+`/boarder/find-a-room`. **Fix:** `FindARoomContent` now hides the CTA when `useAuth().isAuthenticated`;
+logged-out public `/find-a-room` still shows it.
+
+### 10.4 404 page without a way back (fixed)
+
+No `notFoundComponent` was configured, so unknown routes rendered bare "Not Found" with no home link
+(spec A5). **Fix:** root `notFoundComponent` with a 404 heading, message, and "← Back to home" link.
+`/rooms/999999` already rendered a graceful "Room not found" state.
+
+### 10.5 Bug log
+
+#### BUG-01: Nested duplicate layout (sidebar + topbar + main) on boarder pages
+
+- **Severity:** S2
+- **Category:** duplicate UI
+- **Scenario:** 4.8 (duplicate UI), 4.3 boarder sweep
+- **Repro:** log in as boarder → `/boarder/applications` (and the three related routes)
+- **Expected:** one sidebar + one topbar + content
+- **Actual:** two sidebars, two topbars, two `<main>` (outer shell + nested shell rendered inside content)
+- **Impact:** layout broken, screen real estate wasted, confusing navigation; affects every boarder using the core apply flow
+- **Status:** FIXED (verified single shell on all four routes)
+
+#### BUG-02: Landlord room-edit page unreachable from the UI
+
+- **Severity:** S2
+- **Category:** navigability / missing UI
+- **Scenario:** 4.4 (Edit room row), 4.1 A2 (every page linked from somewhere)
+- **Repro:** as landlord, open any listing edit page → no per-room management exists; `/landlord/rooms/:id/edit` only via typed URL
+- **Expected:** room editing reachable with a back path
+- **Actual:** route exists but no link targets it; requires `propertyId` search param; no role guard
+- **Impact:** landlords cannot edit individual rooms (price/status/photos)
+- **Status:** FIXED (Rooms section + links + guard + shell; both `?propertyId=6` and router-encoded forms work)
+
+#### BUG-03: Guest "Log in or sign up" CTA on authenticated boarder page
+
+- **Severity:** S3
+- **Category:** duplicate UI / confusing UI
+- **Scenario:** 4.8 duplicate-CTA check
+- **Status:** FIXED
+
+#### BUG-04: 404 renders bare "Not Found" with no way back
+
+- **Severity:** S3
+- **Category:** missing UI
+- **Scenario:** A5
+- **Status:** FIXED
+
+### 10.6 Passed spot-checks (this run)
+
+- Landlord dashboard, listings, listings/create, listings/:id/edit, properties, announcements,
+  settings, verification, payments, boarders, applications — **single shell, no duplicates**.
+- Boarder dashboard, find-a-room index, payments, payments/pay, applications/settings — single shell.
+- Login redirect is status-aware: new boarder → `/boarder/find-a-room` (not hardcoded `/boarder`).
+- Role guard: boarder → `/landlord/rooms/:id/edit` redirected to `/`; `Protected` enforced.
+- `/rooms/999999` → graceful "Room not found" + Browse rooms link.
+- Web typecheck (`tsc --noEmit`) and web test suite (31 tests) pass after all fixes.
+
+---
+
+## 11. Run #2 Findings — 2026-08-16 (flow edge cases + room-management refactor)
+
+### 11.1 Room-edit route refactor (done)
+
+`/landlord/rooms/:id/edit` moved to `/landlord/listings/rooms/:id/edit` (file
+`routes/landlord/listings/rooms/$id/edit.tsx`) so it **inherits the `Protected` guard and `RoleShell`
+from the `/landlord/listings` layout** instead of wrapping itself. Removed the self-wrapped shell/guard;
+`validateSearch` still accepts a string or numeric `propertyId`. The old URL 404s gracefully via the
+new not-found page. Verified: landlord edit link loads the seeded form under one shell; a boarder
+visiting the route is redirected.
+
+### 11.2 Rooms add/delete on the listing edit page (done)
+
+`/landlord/listings/:id/edit` Rooms section now has:
+
+- **+ Add room** — modal (room number, type, price, deposit, capacity) → `POST /api/landlord/rooms`;
+  duplicate room number shows the API 409 inline; list refreshes after create.
+- **Delete** per room — accessible `ConfirmDialog` + `DELETE /api/landlord/rooms?id=…`; list refreshes after delete.
+
+Verified end-to-end in the browser: added "Room 3" (₱5,000) → appeared in the list; deleted it → list
+restored to Room 1/2. Both mutations invalidate `landlord-rooms` + `landlord-properties` so the
+listing table and dashboard occupancy stay in sync.
+
+### 11.3 Flow edge cases (walkthrough, fresh accounts as in Section 3)
+
+| #   | Scenario                                                                                                                                                                                                     | Result                                                                                                       |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| F1  | Boarder applies (app 9) → landlord accepts → boarder confirms (GCash) → `/boarder/confirm-booking` + tenancy page with full details                                                                          | **PASS** (confirm-booking page correctly shows "No accepted applications" after confirmation)                |
+| F2  | Leave request: boarder submits (reason/date/message) → tenancy shows pending banner + details, re-submit disabled → landlord approves from Boarders page                                                     | **PASS** (after approval: app removed from both lists, boarder gone from tenants, room freed to `available`) |
+| F3  | Admin moderation cycle on a listing: Flag → hidden from `/api/rooms/public` → Reject → status `Rejected` → Publish → visible again; notice "Property moderation status updated successfully" on every action | **PASS**                                                                                                     |
+| F4  | A16 multi-apply: boarder applied to 2 rooms; landlord accepted one; boarder confirmed → the other application auto-cancelled, only the confirmed one remains                                                 | **PASS**                                                                                                     |
+| F5  | A17 duplicate apply: re-applying to a room already applied to → 400 "You have already applied to this room. Status: pending", no duplicate row                                                               | **PASS**                                                                                                     |
+| F6  | A18 occupied room: second boarder applies to an occupied room → 400 "This room is already occupied and can no longer be applied to"                                                                          | **PASS**                                                                                                     |
+| F7  | A20 re-processing: landlord re-rejects an already-processed application → was allowed (BUG, fixed below)                                                                                                     | **FIXED** — 403 "Application has already been processed"                                                     |
+
+### 11.4 Bug log — Run 2
+
+#### BUG-05: Landlord can re-process a confirmed booking (A20)
+
+- **Severity:** S2
+- **Category:** edge case / access control
+- **Scenario:** A20, 4.9
+- **Repro:** accept + boarder-confirm an application, then `PATCH /api/landlord/applications/:id/status` with `rejected`
+- **Expected:** 403 — application already processed
+- **Actual:** 200; app ends as `rejected` with `confirmed_at`/`payment_method` still set, room stays `occupied`, tenancy is gone — contradictory state
+- **Impact:** a landlord can silently strand a confirmed tenant and leave rooms marked occupied
+- **Fix:** `workers/api/src/routes/applications.ts` — status guard now blocks `accepted`, `rejected`, `confirmed`, and `cancelled`
+- **Status:** FIXED (verified 403; API typecheck + 165 API tests pass)
+
+### 11.5 Cleanup
+
+Test data left consistent: room 7 reset to `available`, broken app 10 soft-deleted. Accounts and the
+"Audit House Manila" listing (id 6) remain for further runs.
+
+---
+
+## 12. Run 3 — Application state machine + reusable room management
+
+### 12.1 Application status state machine
+
+Added an explicit, single-source-of-truth state machine in `workers/api/src/lib/application-status.ts`
+and enforced it on **every** mutation path (`workers/api/src/routes/applications.ts`):
+
+```
+pending → accepted → confirmed → ended
+pending → rejected          pending → cancelled (withdraw / multi-apply cancel)
+confirmed → ended (tenancy leave approved)   ended: terminal
+```
+
+- `PATCH /status` (accept/reject): only `pending` may transition; `accepted`/`rejected`/`confirmed`/`cancelled` → 403.
+- Boarder withdraw: only `pending`/`accepted` may withdraw; confirmed bookings can no longer be cancelled by the boarder.
+- Multi-apply cancel-on-confirm: only other `pending`/`accepted` apps are cancelled (a confirmed sibling can never be touched).
+- Tenancy leave-approval now ends the application with status `ended` (was: soft-delete) and requires a `confirmed` application; the `ended` status is terminal and immutable.
+- `workers/api/src/repositories/applications.ts` + `repositories/tenancy.ts` updated to match.
+- Frontend: `StatusBadge` gained `confirmed`/`ended`/`cancelled` styles; the boarder application detail page shows a
+  note + disabled control for confirmed/ended instead of the dangerous "Withdraw/Delete" button.
+
+**Tests:** 11 new state-machine unit tests (`workers/api/test/lib/application-status.test.ts`); route tests
+updated for the new confirm/ended semantics. API suite now **176 tests, all pass**; typecheck clean.
+
+### 12.2 Reusable `LandlordRoomList` component
+
+Extracted the listing-edit Rooms section into `apps/web/src/components/rooms/LandlordRoomList.tsx` —
+self-contained data fetching + mutations (list / add / delete / edit-room links), used in two places:
+
+- `/landlord/listings/:id/edit` — replaces the former inline section (identical UI, verified in browser).
+- `/landlord/properties` — `DataTable` gained an optional `expandable` row renderer (chevron toggle,
+  `aria-expanded`); each property row expands to show its `LandlordRoomList` inline.
+
+Verified in the browser: expanded the "Audit House Manila" row → Room 1/2 listed with Edit-room links and
+Delete; the "+ Add room" modal opens correctly inside the expanded table row (fixed-position modal escapes the
+table's `overflow-x-auto`); edit-room still navigates to `/landlord/listings/rooms/:id/edit` with the inherited
+shell + seeded form.
+
+### 12.3 Findings
+
+- **EC-6 (fixed):** `DataTable` had no way to surface per-row detail; added an optional `expandable` prop
+  (backwards-compatible — all other usages unchanged).
+- **EC-7 (fixed):** boarder application detail still offered "Withdraw" on a confirmed booking; now gated to
+  pending/accepted with a status note for confirmed/ended.
+- **Note:** room deletion previously used native `window.confirm` — a minor a11y gap (no focus
+  management, no `role=dialog` exposure). Replaced with a reusable, accessible `ConfirmDialog`
+  (`apps/web/src/components/ui/ConfirmDialog.tsx`): `role=dialog` + `aria-modal`, `aria-labelledby`/
+  `aria-describedby`, Escape-to-cancel, overlay-click-to-cancel, focus moves to the destructive confirm
+  button on open and returns to the trigger on close, `busy` state disables both buttons. The only
+  `window.confirm` call site in the app (`LandlordRoomList` delete) now uses it; `Button` gained a
+  `ref` prop (React 19 passes it through) to support focus management. Verified in the browser:
+  Escape cancels without deleting, confirm deletes and closes the dialog, room list refreshes.
+
+### 12.4 Verification
+
+- `tsc --noEmit` clean (web + API); 31 web tests pass; 176 API tests pass.
+- Browser: expanded-row room list + add-room modal on Properties; extracted component on listing edit;
+  room-edit deep link intact.

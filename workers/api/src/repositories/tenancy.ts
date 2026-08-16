@@ -1,3 +1,5 @@
+import { freeRoom } from './applications';
+
 export interface TenancyRow {
   application_id: number;
   tenancy_start_date: string;
@@ -12,6 +14,10 @@ export interface TenancyRow {
   monthly_rent: number;
   deposit: number;
   house_rules: string | null;
+  leave_request_status: string | null;
+  leave_request_date: string | null;
+  leave_request_reason: string | null;
+  intended_leave_date: string | null;
   landlord_id: number;
   landlord_first_name: string;
   landlord_last_name: string;
@@ -36,6 +42,10 @@ export interface TenancyData {
   monthly_rent: number;
   deposit: number;
   house_rules: unknown[];
+  leave_request_status: string;
+  leave_request_date: string | null;
+  leave_request_reason: string | null;
+  intended_leave_date: string | null;
   property_electricity_cost: number;
   property_water_cost: number;
   property_internet_cost: number;
@@ -60,6 +70,7 @@ export interface ConversationRow {
 export interface PendingLeaveRequestRow {
   id: number;
   boarder_id: number;
+  room_id: number;
   intended_leave_date: string | null;
   first_name: string;
   last_name: string;
@@ -163,6 +174,10 @@ export function formatTenancy(row: TenancyRow, now = new Date()): TenancyData {
     monthly_rent: numeric(row.monthly_rent),
     deposit: numeric(row.deposit),
     house_rules: parseJsonArray(row.house_rules),
+    leave_request_status: row.leave_request_status ?? 'none',
+    leave_request_date: row.leave_request_date ?? null,
+    leave_request_reason: row.leave_request_reason ?? null,
+    intended_leave_date: row.intended_leave_date ?? null,
     property_electricity_cost: 0,
     property_water_cost: 0,
     property_internet_cost: 0,
@@ -197,6 +212,10 @@ export async function findCurrentTenancy(
           r.price as monthly_rent,
           r.deposit,
           p.house_rules,
+          app.leave_request_status,
+          app.leave_request_date,
+          app.leave_request_reason,
+          app.intended_leave_date,
           p.landlord_id,
           u.first_name as landlord_first_name,
           u.last_name as landlord_last_name,
@@ -330,23 +349,24 @@ export async function createLeaveMessage(
   return insertedId(result, 'Message');
 }
 
-export async function completeLeaveRequest(
+export async function submitLeaveRequest(
   db: D1Database,
   applicationId: number,
   boarderId: number,
   reason: string,
   leaveDate: string
 ): Promise<void> {
+  // Keep the application active (status stays confirmed, no soft delete) so the
+  // boarder's tenancy remains visible in a "pending approval" state; the room
+  // stays occupied until the landlord approves the request.
   await db
     .prepare(
       `
         UPDATE applications
-        SET status = 'cancelled',
-            leave_request_status = 'completed',
+        SET leave_request_status = 'pending',
             leave_request_date = date('now'),
             leave_request_reason = ?,
             intended_leave_date = ?,
-            deleted_at = CURRENT_TIMESTAMP,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
           AND boarder_id = ?
@@ -392,6 +412,7 @@ export async function findPendingLeaveRequest(
         SELECT
           app.id,
           app.boarder_id,
+          app.room_id,
           app.intended_leave_date,
           u.first_name,
           u.last_name
@@ -400,6 +421,7 @@ export async function findPendingLeaveRequest(
         WHERE app.id = ?
           AND app.landlord_id = ?
           AND app.leave_request_status = 'pending'
+          AND app.status = 'confirmed'
           AND app.deleted_at IS NULL
         LIMIT 1
       `
@@ -408,21 +430,51 @@ export async function findPendingLeaveRequest(
     .first<PendingLeaveRequestRow>();
 }
 
-export async function approvePendingLeaveRequest(
+export async function declinePendingLeaveRequest(
   db: D1Database,
   applicationId: number
 ): Promise<void> {
+  // Declining keeps the tenancy active (status/deleted_at untouched); the
+  // boarder simply stays and may request to leave again later.
   await db
     .prepare(
       `
         UPDATE applications
-        SET leave_request_status = 'approved',
+        SET leave_request_status = 'declined',
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `
     )
     .bind(applicationId)
     .run();
+}
+
+export async function approvePendingLeaveRequest(
+  db: D1Database,
+  applicationId: number,
+  boarderId: number,
+  roomId: number
+): Promise<void> {
+  // Finalize the leave: move the confirmed application to the terminal `ended`
+  // state, release the room, reset the boarder to room-searching state, and
+  // cancel any pending payments.
+  await db
+    .prepare(
+      `
+        UPDATE applications
+        SET leave_request_status = 'approved',
+            status = 'ended',
+            deleted_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `
+    )
+    .bind(applicationId)
+    .run();
+
+  await freeRoom(db, roomId);
+  await resetBoarderStatus(db, boarderId);
+  await cancelPendingBoarderPayments(db, boarderId);
 }
 
 export function buildLeaveMessage(

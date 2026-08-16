@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { useAuth } from '../../lib/auth-context';
 import { getPopularLocations, listPublicRooms } from '../../lib/api/public';
 import type {
   PublicListingsFilters,
@@ -224,6 +225,7 @@ export function FindARoomContent({
   initialData?: PublicListingsResponse;
   detailTo?: string;
 }) {
+  const { isAuthenticated } = useAuth();
   const [filters, setFilters] = useState<PublicListingsFilters>(DEFAULT_FILTERS);
   const [priceRange, setPriceRange] = useState('any');
   const [roomType, setRoomType] = useState('any');
@@ -380,16 +382,18 @@ export function FindARoomContent({
             </div>
           ) : null}
 
-          {/* Guest CTA */}
-          <p className="mt-6 text-sm opacity-95">
-            Want to apply for a room?{' '}
-            <Link
-              to="/auth/login"
-              className="font-semibold underline underline-offset-2 hover:text-mint"
-            >
-              Log in or sign up
-            </Link>
-          </p>
+          {/* Guest CTA — hidden for signed-in users */}
+          {!isAuthenticated ? (
+            <p className="mt-6 text-sm opacity-95">
+              Want to apply for a room?{' '}
+              <Link
+                to="/auth/login"
+                className="font-semibold underline underline-offset-2 hover:text-mint"
+              >
+                Log in or sign up
+              </Link>
+            </p>
+          ) : null}
         </div>
       </section>
 

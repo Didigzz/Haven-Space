@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { hash } from 'bcryptjs';
 
 import app from '../src/index';
 import type { Env } from '../src/env';
+import { signJwt } from '../src/lib/auth';
 
 function runMigrations(db: Database): void {
   const migrationDir = join(import.meta.dir, '..', 'migrations');
@@ -111,6 +113,36 @@ async function authorizeGoogleSignup(env: Env): Promise<{ cookie: string; state:
     cookie: cookieHeader(authorize),
     state: stateFromRedirect(authorize),
   };
+}
+
+function pendingTokenFromRedirect(response: Response): string {
+  const location = response.headers.get('Location');
+
+  expect(location).toBeString();
+
+  const url = new URL(location as string);
+  expect(url.hash).toStartWith('#google-pending=');
+
+  return decodeURIComponent(url.hash.slice('#google-pending='.length));
+}
+
+function jwtPayload(token: string): Record<string, unknown> {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+
+  return JSON.parse(atob(padded)) as Record<string, unknown>;
+}
+
+function postJson(path: string, body: unknown, env: Env): Promise<Response> {
+  return app.request(
+    `http://localhost${path}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    env
+  );
 }
 
 const originalFetch = globalThis.fetch;
@@ -246,7 +278,7 @@ describe('auth routes', () => {
     expect(response.headers.get('Set-Cookie')).toContain('google_oauth_state=');
   });
 
-  it('creates a boarder account from Google callback and redirects with app tokens', async () => {
+  it('redirects a brand-new Google email to the role chooser without creating an account', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
@@ -267,33 +299,162 @@ describe('auth routes', () => {
       env
     );
     const location = new URL(callback.headers.get('Location') as string);
-    const authPayload = JSON.parse(decodeURIComponent(location.hash.replace(/^#auth=/, ''))) as {
-      access_token: string;
-      user: { id: number; email: string; role: string; boarder_status: string };
-    };
+    const token = pendingTokenFromRedirect(callback);
+    const payload = jwtPayload(token);
 
     expect(callback.status).toBe(302);
-    expect(location.origin + location.pathname).toBe('http://localhost:4173/boarder/find-a-room');
-    expect(authPayload.access_token).toBeString();
-    expect(authPayload.user).toMatchObject({
-      email: 'new.google@example.com',
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/auth/choose-role');
+    expect(location.hash).toStartWith('#google-pending=');
+    expect(payload.type).toBe('google_pending');
+    expect(payload.email).toBe('new.google@example.com');
+    expect(payload.link).toBe(false);
+
+    // No account row is created until the chooser completes the flow.
+    expect(
+      sqlite
+        .prepare('SELECT COUNT(*) as count FROM users WHERE email = ?')
+        .get('new.google@example.com')
+    ).toEqual({ count: 0 });
+  });
+
+  it('completes a pending Google session as a boarder', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    const { cookie, state } = await authorizeGoogleSignup(env);
+
+    mockGoogleFetch({
+      sub: 'google-sub-boarder',
+      email: 'boarder.google@example.com',
+      email_verified: true,
+      given_name: 'Bo',
+      family_name: 'Boarder',
+    });
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const token = pendingTokenFromRedirect(callback);
+
+    const complete = await postJson(
+      '/auth/google/complete',
+      { pendingToken: token, role: 'boarder' },
+      env
+    );
+    const body = (await complete.json()) as {
+      success: boolean;
+      access_token: string;
+      user: {
+        email: string;
+        role: string;
+        boarder_status: string;
+        is_verified: boolean;
+        email_verified: boolean;
+      };
+    };
+
+    expect(complete.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.access_token).toBeString();
+    expect(body.user).toMatchObject({
+      email: 'boarder.google@example.com',
       role: 'boarder',
       boarder_status: 'new',
+      is_verified: true,
+      email_verified: true,
     });
 
     const me = await app.request(
       'http://localhost/auth/me',
-      { headers: authHeaders(authPayload.access_token) },
+      { headers: authHeaders(body.access_token) },
       env
     );
-    const meBody = (await me.json()) as { user: { email: string; email_verified: boolean } };
 
     expect(me.status).toBe(200);
-    expect(meBody.user.email).toBe('new.google@example.com');
-    expect(meBody.user.email_verified).toBe(true);
   });
 
-  it('links Google login to an existing verified email account', async () => {
+  it('completes a pending Google session as a landlord with optional details', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    const { cookie, state } = await authorizeGoogleSignup(env);
+
+    mockGoogleFetch({
+      sub: 'google-sub-landlord',
+      email: 'landlord.google@example.com',
+      email_verified: true,
+      given_name: 'Lina',
+      family_name: 'Landlord',
+    });
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const token = pendingTokenFromRedirect(callback);
+
+    const complete = await postJson(
+      '/auth/google/complete',
+      {
+        pendingToken: token,
+        role: 'landlord',
+        businessName: 'Haven Dormitory',
+        businessDescription: 'Cozy rooms near the university.',
+        city: 'Quezon City',
+        province: 'Metro Manila',
+        phoneNumber: '09171234567',
+      },
+      env
+    );
+    const body = (await complete.json()) as {
+      success: boolean;
+      user: {
+        email: string;
+        role: string;
+        is_verified: boolean;
+        email_verified: boolean;
+        account_status: string;
+        verification_status: string | null;
+      };
+    };
+
+    expect(complete.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.user).toMatchObject({
+      email: 'landlord.google@example.com',
+      role: 'landlord',
+      is_verified: false,
+      email_verified: true,
+      account_status: 'active',
+      verification_status: 'pending',
+    });
+
+    const profile = sqlite
+      .prepare(
+        'SELECT boarding_house_name, boarding_house_description, city, province FROM landlord_profiles'
+      )
+      .get() as {
+      boarding_house_name: string;
+      boarding_house_description: string;
+      city: string;
+      province: string;
+    };
+    const user = sqlite
+      .prepare('SELECT phone_number, google_id FROM users WHERE email = ?')
+      .get('landlord.google@example.com') as { phone_number: string; google_id: string };
+
+    expect(profile.boarding_house_name).toBe('Haven Dormitory');
+    expect(profile.boarding_house_description).toBe('Cozy rooms near the university.');
+    expect(profile.city).toBe('Quezon City');
+    expect(profile.province).toBe('Metro Manila');
+    expect(user.phone_number).toBe('09171234567');
+    expect(user.google_id).toBe('google-sub-landlord');
+  });
+
+  it('routes an existing unlinked email to the chooser in link-confirm mode without linking', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
@@ -340,10 +501,318 @@ describe('auth routes', () => {
       { headers: { Cookie: cookie } },
       env
     );
+    const location = new URL(callback.headers.get('Location') as string);
+    const token = pendingTokenFromRedirect(callback);
+    const payload = jwtPayload(token);
 
     expect(callback.status).toBe(302);
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/auth/choose-role');
+    expect(payload.link).toBe(true);
+
+    // Nothing is linked until the user confirms on the chooser.
     expect(
       sqlite.prepare('SELECT google_id FROM users WHERE email = ?').get('paula@example.com')
-    ).toEqual({ google_id: 'google-sub-linked' });
+    ).toEqual({ google_id: null });
+  });
+
+  it('links the Google identity to an existing password account on complete', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    const passwordHash = await hash('correct-horse-battery', 4);
+
+    sqlite
+      .prepare(
+        `
+          INSERT INTO users (
+            first_name,
+            last_name,
+            email,
+            password_hash,
+            role,
+            is_verified,
+            email_verified,
+            account_status,
+            boarder_status
+          )
+          VALUES ('Paula', 'Password', 'paula2@example.com', ?, 'boarder', 1, 1, 'active', 'new')
+        `
+      )
+      .run(passwordHash);
+
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login',
+      { headers: { Referer: 'http://localhost:4173/auth/login.html' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    mockGoogleFetch({
+      sub: 'google-sub-linked2',
+      email: 'paula2@example.com',
+      email_verified: true,
+      given_name: 'Paula',
+      family_name: 'Password',
+    });
+
+    const callback = await app.request(
+      `http://localhost/api/auth/google/callback?code=google-code&state=${encodeURIComponent(
+        state
+      )}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const token = pendingTokenFromRedirect(callback);
+
+    const complete = await postJson('/auth/google/complete', { pendingToken: token }, env);
+
+    expect(complete.status).toBe(200);
+    expect(
+      sqlite.prepare('SELECT google_id FROM users WHERE email = ?').get('paula2@example.com')
+    ).toEqual({ google_id: 'google-sub-linked2' });
+
+    // Password login still works after the identity is linked.
+    const login = await postJson(
+      '/auth/login',
+      { email: 'paula2@example.com', password: 'correct-horse-battery' },
+      env
+    );
+
+    expect(login.status).toBe(200);
+  });
+
+  it('rejects missing, invalid, and expired pending tokens on complete', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+
+    const missing = await postJson('/auth/google/complete', { role: 'boarder' }, env);
+    expect(missing.status).toBe(401);
+
+    const invalid = await postJson(
+      '/auth/google/complete',
+      { pendingToken: 'not-a-jwt', role: 'boarder' },
+      env
+    );
+    expect(invalid.status).toBe(401);
+
+    const malformedSignature = await postJson(
+      '/auth/google/complete',
+      {
+        pendingToken: 'header.' + btoa(JSON.stringify({ type: 'google_pending' })) + '.s',
+        role: 'boarder',
+      },
+      env
+    );
+    expect(malformedSignature.status).toBe(401);
+
+    const expiredToken = await signJwt(
+      { type: 'google_pending', googleId: 'google-sub-expired', email: 'expired@example.com' },
+      'test-secret',
+      -60
+    );
+    const expired = await postJson(
+      '/auth/google/complete',
+      { pendingToken: expiredToken, role: 'boarder' },
+      env
+    );
+    expect(expired.status).toBe(401);
+  });
+
+  it('skips the chooser and issues tokens for an already-linked Google user', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    sqlite
+      .prepare(
+        `
+          INSERT INTO users (
+            first_name,
+            last_name,
+            email,
+            password_hash,
+            google_id,
+            role,
+            is_verified,
+            email_verified,
+            account_status,
+            boarder_status
+          )
+          VALUES ('Gia', 'Google', 'returning@example.com', '', 'google-sub-return', 'boarder', 1, 1, 'active', 'new')
+        `
+      )
+      .run();
+
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login',
+      { headers: { Referer: 'http://localhost:4173/auth/login.html' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    mockGoogleFetch({
+      sub: 'google-sub-return',
+      email: 'returning@example.com',
+      email_verified: true,
+      given_name: 'Gia',
+      family_name: 'Google',
+    });
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const location = new URL(callback.headers.get('Location') as string);
+
+    expect(callback.status).toBe(302);
+    expect(location.hash).toStartWith('#auth=');
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/boarder/find-a-room');
+  });
+  it('redirects a cancelled Google consent back to login with a friendly banner', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login',
+      { headers: { Referer: 'http://localhost:4173/auth/login.html' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?error=access_denied&state=${encodeURIComponent(
+        state
+      )}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const location = new URL(callback.headers.get('Location') as string);
+
+    expect(callback.status).toBe(302);
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/auth/login');
+    expect(location.searchParams.get('error')).toBe('Google login was cancelled.');
+  });
+
+  it('redirects to login with a not-configured banner when OAuth credentials are missing', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    delete env.GOOGLE_CLIENT_ID;
+    delete env.GOOGLE_CLIENT_SECRET;
+
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login',
+      { headers: { Referer: 'http://localhost:4173/auth/login.html' } },
+      env
+    );
+    const location = new URL(authorize.headers.get('Location') as string);
+
+    expect(authorize.status).toBe(302);
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/auth/login');
+    expect(location.searchParams.get('error')).toBe('Google OAuth is not configured');
+  });
+
+  it('rejects a Google email already linked to a different Google account', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    sqlite
+      .prepare(
+        `
+          INSERT INTO users (
+            first_name,
+            last_name,
+            email,
+            password_hash,
+            google_id,
+            role,
+            is_verified,
+            email_verified,
+            account_status,
+            boarder_status
+          )
+          VALUES ('Other', 'Owner', 'claimed@example.com', '', 'other-google-sub', 'boarder', 1, 1, 'active', 'new')
+        `
+      )
+      .run();
+
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login',
+      { headers: { Referer: 'http://localhost:4173/auth/login.html' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    mockGoogleFetch({
+      sub: 'different-google-sub',
+      email: 'claimed@example.com',
+      email_verified: true,
+      given_name: 'Different',
+      family_name: 'Google',
+    });
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const location = new URL(callback.headers.get('Location') as string);
+
+    expect(callback.status).toBe(302);
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/auth/login');
+    expect(location.searchParams.get('error')).toBe(
+      'This email is already linked to another Google account'
+    );
+  });
+
+  it('returns 409 on complete when the email is already linked to another Google account', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    sqlite
+      .prepare(
+        `
+          INSERT INTO users (
+            first_name,
+            last_name,
+            email,
+            password_hash,
+            google_id,
+            role,
+            is_verified,
+            email_verified,
+            account_status,
+            boarder_status
+          )
+          VALUES ('Other', 'Owner', 'claimed2@example.com', '', 'other-google-sub', 'boarder', 1, 1, 'active', 'new')
+        `
+      )
+      .run();
+
+    const pendingToken = await signJwt(
+      {
+        type: 'google_pending',
+        googleId: 'different-google-sub',
+        email: 'claimed2@example.com',
+        link: true,
+      },
+      'test-secret',
+      300
+    );
+    const complete = await postJson(
+      '/auth/google/complete',
+      { pendingToken, role: 'boarder' },
+      env
+    );
+
+    expect(complete.status).toBe(409);
+    expect(((await complete.json()) as { error: string }).error).toBe(
+      'This email is already linked to another Google account'
+    );
   });
 });

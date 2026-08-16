@@ -70,12 +70,13 @@ function boarderRedirectPath(user: AuthUser): string {
     case 'new':
     case 'browsing':
     default:
-      return '/boarder';
+      return '/boarder/find-a-room';
   }
 }
 
 /**
- * Build the Google OAuth authorize URL for the given action and role.
+ * Build the Google OAuth authorize URL for the given action and role. The role
+ * is a hint only — for a brand-new email the role chooser decides.
  */
 export function googleAuthorizeUrl(
   action: 'login' | 'signup',
@@ -86,4 +87,98 @@ export function googleAuthorizeUrl(
   return `${getApiBaseUrl()}/auth/google/authorize?action=${action}&role=${role}&origin=${encodeURIComponent(
     origin
   )}`;
+}
+
+/**
+ * Claims carried by the `#google-pending=` fragment the OAuth callback redirects
+ * to for brand-new (or not-yet-linked) Google emails. Parsed client-side for
+ * display only — the server re-verifies the signed token on completion.
+ */
+export interface GooglePendingSession {
+  googleId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  picture: string | null;
+  action: 'login' | 'signup';
+  link: boolean;
+}
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+
+  try {
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    return JSON.parse(atob(padded)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Parse the unverified claims of a `google_pending` JWT. Returns null when the
+ * token is not shaped like a valid pending session.
+ */
+export function parseGooglePendingToken(token: string): GooglePendingSession | null {
+  const payload = decodeJwtPayload(token);
+  if (!payload || payload.type !== 'google_pending') return null;
+  if (typeof payload.googleId !== 'string' || typeof payload.email !== 'string') return null;
+
+  return {
+    googleId: payload.googleId,
+    email: payload.email,
+    firstName: typeof payload.firstName === 'string' ? payload.firstName : 'Google',
+    lastName: typeof payload.lastName === 'string' ? payload.lastName : 'User',
+    picture: typeof payload.picture === 'string' ? payload.picture : null,
+    action: payload.action === 'signup' ? 'signup' : 'login',
+    link: payload.link === true,
+  };
+}
+
+/**
+ * Read the `#google-pending={jwt}` fragment and return the raw token plus its
+ * parsed claims, or null when absent/malformed. Client-only.
+ */
+export function handleGooglePendingHash(): {
+  token: string;
+  session: GooglePendingSession;
+} | null {
+  if (typeof window === 'undefined') return null;
+
+  const hash = window.location.hash;
+  if (!hash.startsWith('#google-pending=')) return null;
+
+  try {
+    const token = decodeURIComponent(hash.slice('#google-pending='.length));
+    const session = parseGooglePendingToken(token);
+    if (!session) return null;
+    return { token, session };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Remove the `#google-pending=` fragment once consumed so refresh/re-share
+ * doesn't re-run the flow (and the JWT doesn't linger in the URL).
+ */
+export function clearGooglePendingHash(): void {
+  if (typeof window === 'undefined') return;
+  window.history.replaceState(
+    {},
+    document.title,
+    window.location.pathname + window.location.search
+  );
+}
+
+/**
+ * Shared `?error=` search-param reader for the auth pages (TanStack
+ * validateSearch). Used so the API-provided OAuth failure messages are surfaced
+ * as inline banners instead of being silently dropped.
+ */
+export function authErrorSearch(search: Record<string, unknown>): { error?: string } {
+  const error = typeof search.error === 'string' ? search.error.trim() : '';
+  return error ? { error } : {};
 }

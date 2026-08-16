@@ -61,3 +61,6 @@ bun.lock
 /client
 
 .freebuff
+
+# TanStack router generator cache
+.tanstack/

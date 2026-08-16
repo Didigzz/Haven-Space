@@ -1,7 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Protected } from '../../../components/auth/Protected';
-import { RoleShell } from '../../../components/layout/RoleShell';
 import { DataTable } from '../../../components/ui/DataTable';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { ErrorState } from '../../../components/ui/ErrorState';
@@ -11,7 +9,6 @@ import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../../lib/api/http';
 import { deleteApplication, getApplications } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
-import { BOARDER_NAV } from '../../../lib/nav';
 import type { ApplicationSummary } from '../../../lib/types';
 
 export const Route = createFileRoute('/boarder/applications/')({
@@ -36,77 +33,76 @@ function ApplicationsPage() {
     mutationFn: (id: number) => deleteApplication(token!, id),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['applications'] }),
     onError: (err: Error) => {
-      const message = err instanceof ApiRequestError ? err.message : 'Failed to withdraw application.';
+      const message =
+        err instanceof ApiRequestError ? err.message : 'Failed to withdraw application.';
       window.alert(message);
     },
   });
 
   return (
-    <Protected role="boarder">
-      <RoleShell title="Applications" nav={BOARDER_NAV}>
-        <div className="mb-6 flex items-center gap-3">
-          <Icon name="application" size={28} />
-          <div>
-            <h2 className="text-2xl font-bold text-ink">My applications</h2>
-            <p className="text-sm text-gray-ink">Track the rooms you&apos;ve applied to.</p>
-          </div>
+    <div>
+      <div className="mb-6 flex items-center gap-3">
+        <Icon name="application" size={28} />
+        <div>
+          <h2 className="text-2xl font-bold text-ink">My applications</h2>
+          <p className="text-sm text-gray-ink">Track the rooms you&apos;ve applied to.</p>
         </div>
-        {applications.isLoading ? (
-          <Spinner />
-        ) : applications.error ? (
-          <ErrorState message={applications.error.message} />
-        ) : !applications.data || applications.data.data.length === 0 ? (
-          <EmptyState
-            title="No applications yet"
-            description="Browse rooms and apply to start your journey."
-          />
-        ) : (
-          <DataTable<ApplicationSummary>
-            rows={applications.data.data}
-            keyFor={(row) => row.id}
-            columns={[
-              {
-                header: 'Property',
-                cell: (row) => (
-                  <Link
-                    to="/boarder/applications/$id"
-                    params={{ id: String(row.id) }}
-                    className="font-medium text-primary hover:underline"
+      </div>
+      {applications.isLoading ? (
+        <Spinner />
+      ) : applications.error ? (
+        <ErrorState message={applications.error.message} />
+      ) : !applications.data || applications.data.data.length === 0 ? (
+        <EmptyState
+          title="No applications yet"
+          description="Browse rooms and apply to start your journey."
+        />
+      ) : (
+        <DataTable<ApplicationSummary>
+          rows={applications.data.data}
+          keyFor={row => row.id}
+          columns={[
+            {
+              header: 'Property',
+              cell: row => (
+                <Link
+                  to="/boarder/applications/$id"
+                  params={{ id: String(row.id) }}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {row.property_title ?? `Application #${row.id}`}
+                </Link>
+              ),
+            },
+            {
+              header: 'Room',
+              cell: row => row.room_title ?? '—',
+            },
+            {
+              header: 'Status',
+              cell: row => <StatusBadge status={String(row.status)} />,
+            },
+            {
+              header: 'Submitted',
+              cell: row => formatDate(row.created_at),
+            },
+            {
+              header: 'Actions',
+              cell: row =>
+                row.status === 'accepted' || row.status === 'pending' ? (
+                  <button
+                    type="button"
+                    className="text-sm text-red-600 hover:underline disabled:opacity-50"
+                    disabled={withdraw.isPending}
+                    onClick={() => withdraw.mutate(row.id)}
                   >
-                    {row.property_title ?? `Application #${row.id}`}
-                  </Link>
-                ),
-              },
-              {
-                header: 'Room',
-                cell: (row) => row.room_title ?? '—',
-              },
-              {
-                header: 'Status',
-                cell: (row) => <StatusBadge status={String(row.status)} />,
-              },
-              {
-                header: 'Submitted',
-                cell: (row) => formatDate(row.created_at),
-              },
-              {
-                header: 'Actions',
-                cell: (row) =>
-                  row.status === 'accepted' || row.status === 'pending' ? (
-                    <button
-                      type="button"
-                      className="text-sm text-red-600 hover:underline disabled:opacity-50"
-                      disabled={withdraw.isPending}
-                      onClick={() => withdraw.mutate(row.id)}
-                    >
-                      Withdraw
-                    </button>
-                  ) : null,
-              },
-            ]}
-          />
-        )}
-      </RoleShell>
-    </Protected>
+                    Withdraw
+                  </button>
+                ) : null,
+            },
+          ]}
+        />
+      )}
+    </div>
   );
 }
