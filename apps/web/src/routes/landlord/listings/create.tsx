@@ -9,6 +9,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { ApiRequestError } from '../../../lib/api/http';
 import { createListing } from '../../../lib/api/landlord';
 import { useAuth } from '../../../lib/auth-context';
+import { setPendingToast } from '../../../lib/toast';
 
 export const Route = createFileRoute('/landlord/listings/create')({
   component: CreateListingPage,
@@ -55,7 +56,10 @@ function CreateListingPage() {
         propertyCapacity: Number(form.propertyCapacity),
         amenities,
       }),
-    onSuccess: () => void navigate({ to: '/landlord/listings' }),
+    onSuccess: () => {
+      setPendingToast('success', 'Listing created!');
+      void navigate({ to: '/landlord/listings' });
+    },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to create listing.'),
   });

@@ -10,6 +10,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import { getApplications, patchApplicationStatus } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
@@ -28,6 +29,7 @@ function ApplicationsPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
+  const { toasts, push, dismiss } = useToasts();
 
   const applications = useQuery({
     queryKey: ['landlord-applications'],
@@ -38,8 +40,12 @@ function ApplicationsPage() {
   const patchStatus = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>
       patchApplicationStatus(token!, id, status),
-    onSuccess: () => {
+    onSuccess: (_data, { status }) => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-applications'] });
+      push({
+        tone: 'success',
+        message: status === 'accepted' ? 'Application accepted.' : 'Application rejected.',
+      });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update application.'),
@@ -53,6 +59,7 @@ function ApplicationsPage() {
 
   return (
     <RoleShell title="Applications" nav={LANDLORD_NAV}>
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       {error ? (
         <div className="mb-4">
           <ErrorState message={error} />

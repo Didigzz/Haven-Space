@@ -836,4 +836,124 @@ describe('auth routes', () => {
       'This email is already linked to another Google account'
     );
   });
+
+  it('returns an existing Google user to the redirect path from OAuth state', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    sqlite
+      .prepare(
+        `
+          INSERT INTO users (
+            first_name, last_name, email, password_hash, google_id,
+            role, is_verified, email_verified, account_status, boarder_status
+          )
+          VALUES ('Gia', 'Google', 'returning-redirect@example.com', '', 'google-sub-redirect', 'boarder', 1, 1, 'active', 'new')
+        `
+      )
+      .run();
+
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login&role=boarder&redirect=/haven-ai',
+      { headers: { Referer: 'http://localhost:4173/auth/login' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    mockGoogleFetch({
+      sub: 'google-sub-redirect',
+      email: 'returning-redirect@example.com',
+      email_verified: true,
+      given_name: 'Gia',
+      family_name: 'Google',
+    });
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const location = new URL(callback.headers.get('Location') as string);
+
+    expect(callback.status).toBe(302);
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/haven-ai');
+    expect(location.searchParams.get('redirect')).toBe('/haven-ai');
+    expect(location.hash).toStartWith('#auth=');
+  });
+
+  it('carries the redirect path through a pending Google signup session', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=signup&role=boarder&redirect=/haven-ai',
+      { headers: { Referer: 'http://localhost:4173/auth/signup' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    mockGoogleFetch({
+      sub: 'google-sub-new-redirect',
+      email: 'new.redirect@example.com',
+      email_verified: true,
+      given_name: 'New',
+      family_name: 'Redirect',
+    });
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const token = pendingTokenFromRedirect(callback);
+
+    expect(jwtPayload(token)).toMatchObject({ type: 'google_pending', redirect: '/haven-ai' });
+  });
+
+  it('rejects open-redirect values in the OAuth redirect claim', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+    sqlite
+      .prepare(
+        `
+          INSERT INTO users (
+            first_name, last_name, email, password_hash, google_id,
+            role, is_verified, email_verified, account_status, boarder_status
+          )
+          VALUES ('Gia', 'Google', 'open-redirect@example.com', '', 'google-sub-open', 'boarder', 1, 1, 'active', 'new')
+        `
+      )
+      .run();
+
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login&role=boarder&redirect=//evil.example.com',
+      { headers: { Referer: 'http://localhost:4173/auth/login' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    mockGoogleFetch({
+      sub: 'google-sub-open',
+      email: 'open-redirect@example.com',
+      email_verified: true,
+      given_name: 'Gia',
+      family_name: 'Google',
+    });
+
+    const callback = await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+    const location = new URL(callback.headers.get('Location') as string);
+
+    // The malicious value is dropped — the user lands on the role home instead.
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/boarder/find-a-room');
+    expect(location.searchParams.get('redirect')).toBe('/boarder/find-a-room');
+  });
 });

@@ -13,6 +13,7 @@ import { ApiRequestError } from '../../lib/api/http';
 import { confirmApplication, getAcceptedApplications } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
 import { BOARDER_NAV } from '../../lib/nav';
+import { setPendingToast } from '../../lib/toast';
 
 export const Route = createFileRoute('/boarder/confirm-booking')({
   component: () => (
@@ -40,6 +41,7 @@ function ConfirmBookingPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['accepted'] });
       void queryClient.invalidateQueries({ queryKey: ['tenancy'] });
+      setPendingToast('success', 'Booking confirmed!');
       void navigate({ to: '/boarder/tenancy' });
     },
     onError: err =>

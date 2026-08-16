@@ -10,6 +10,8 @@ import { Spinner } from '../../../../../components/ui/Spinner';
 import { ApiRequestError } from '../../../../../lib/api/http';
 import { getRooms, updateRoom, uploadRoomPhotos } from '../../../../../lib/api/landlord';
 import { useAuth } from '../../../../../lib/auth-context';
+import { setPendingToast } from '../../../../../lib/toast';
+import { ToastStack, useToasts } from '../../../../../components/ui/Toast';
 
 interface RoomEditSearch {
   propertyId?: string;
@@ -33,6 +35,7 @@ function EditRoomPage() {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const { toasts, push, dismiss } = useToasts();
   const [uploading, setUploading] = useState(false);
 
   const roomId = Number(id);
@@ -83,6 +86,7 @@ function EditRoomPage() {
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyIdNumber] });
+      setPendingToast('success', 'Room updated.');
       void navigate({
         to: '/landlord/listings/$id/edit',
         params: { id: String(propertyIdNumber) },
@@ -104,6 +108,7 @@ function EditRoomPage() {
     uploadRoomPhotos(token!, roomId, files)
       .then(() => {
         void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyIdNumber] });
+        push({ tone: 'success', message: 'Photos uploaded.' });
       })
       .catch(err =>
         setPhotoError(err instanceof ApiRequestError ? err.message : 'Failed to upload photos.')
@@ -120,6 +125,7 @@ function EditRoomPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       {rooms.isLoading ? (
         <Spinner />
       ) : !propertyIdNumber ? (

@@ -11,6 +11,8 @@ export interface AiChatResponse {
   response?: string;
   property_count?: number;
   error?: string;
+  code?: string;
+  limit?: { scope: 'guest' | 'user'; max: number };
 }
 
 function sessionId(): string {
@@ -27,10 +29,19 @@ function userId(): string {
   return localStorage.getItem('user_id') || 'anonymous';
 }
 
+function authHeader(token?: string): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 /** Non-streaming chat (single JSON response). */
-export function chat(message: string, history: AiHistoryMessage[] = []): Promise<AiChatResponse> {
+export function chat(
+  message: string,
+  history: AiHistoryMessage[] = [],
+  token?: string
+): Promise<AiChatResponse> {
   return apiFetch<AiChatResponse>(getApiBaseUrl(), '/api/ai/chat', {
     method: 'POST',
+    headers: authHeader(token),
     body: JSON.stringify({
       message,
       history,
@@ -43,15 +54,19 @@ export function chat(message: string, history: AiHistoryMessage[] = []): Promise
 /**
  * Streaming chat. Requests `stream: true` from the API; each token is passed
  * to `onDelta` as it arrives, and the promise resolves with the full response.
+ * Pass the auth `token` when available so the API can enforce per-user limits.
  */
 export async function chatStream(
   message: string,
   history: AiHistoryMessage[] = [],
-  onDelta: (delta: string) => void
+  onDelta: (delta: string) => void,
+  token?: string
 ): Promise<AiChatResponse> {
   const response = await fetch(`${getApiBaseUrl()}/api/ai/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    // Include the API-issued ai_usage tracking cookie cross-origin.
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...authHeader(token) },
     body: JSON.stringify({
       message,
       history,
@@ -65,7 +80,12 @@ export async function chatStream(
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as Partial<AiChatResponse>;
-    return { success: false, error: body.error ?? `Request failed (${response.status})` };
+    return {
+      success: false,
+      error: body.error ?? `Request failed (${response.status})`,
+      code: body.code,
+      limit: body.limit,
+    };
   }
 
   if (contentType.includes('text/event-stream') && response.body) {

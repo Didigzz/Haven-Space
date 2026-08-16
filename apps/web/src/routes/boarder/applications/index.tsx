@@ -6,6 +6,7 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 import { Icon } from '../../../components/ui/Icon';
 import { Spinner } from '../../../components/ui/Spinner';
 import { StatusBadge } from '../../../components/ui/StatusBadge';
+import { ToastStack, useToasts } from '../../../components/ui/Toast';
 import { ApiRequestError } from '../../../lib/api/http';
 import { deleteApplication, getApplications } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
@@ -23,6 +24,7 @@ function formatDate(value: string | null): string {
 function ApplicationsPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
+  const { toasts, push, dismiss } = useToasts();
   const applications = useQuery({
     queryKey: ['applications'],
     queryFn: () => getApplications(token!),
@@ -31,16 +33,20 @@ function ApplicationsPage() {
 
   const withdraw = useMutation({
     mutationFn: (id: number) => deleteApplication(token!, id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['applications'] }),
-    onError: (err: Error) => {
-      const message =
-        err instanceof ApiRequestError ? err.message : 'Failed to withdraw application.';
-      window.alert(message);
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['applications'] });
+      push({ tone: 'success', message: 'Application withdrawn.' });
     },
+    onError: (err: Error) =>
+      push({
+        tone: 'error',
+        message: err instanceof ApiRequestError ? err.message : 'Failed to withdraw application.',
+      }),
   });
 
   return (
     <div>
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       <div className="mb-6 flex items-center gap-3">
         <Icon name="application" size={28} />
         <div>

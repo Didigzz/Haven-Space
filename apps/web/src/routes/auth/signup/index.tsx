@@ -23,7 +23,7 @@ export const Route = createFileRoute('/auth/signup/')({
 });
 
 function BoarderSignupPage() {
-  const { error: searchError } = useSearch({ from: '/auth/signup/' });
+  const { error: searchError, redirect } = useSearch({ from: '/auth/signup/' });
   const { register } = useAuth();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
@@ -36,8 +36,8 @@ function BoarderSignupPage() {
 
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: redirectPathForUser(user) });
-  }, [navigate]);
+    if (user) void navigate({ to: redirect ?? redirectPathForUser(user) });
+  }, [navigate, redirect]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -61,7 +61,7 @@ function BoarderSignupPage() {
         password,
         role: 'boarder',
       });
-      void navigate({ to: redirectPathForUser(user) });
+      void navigate({ to: redirect ?? redirectPathForUser(user) });
     } catch (err) {
       setError(
         err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
@@ -90,7 +90,7 @@ function BoarderSignupPage() {
 
       <GoogleButton
         onClick={() => {
-          window.location.href = googleAuthorizeUrl('signup', 'boarder');
+          window.location.href = googleAuthorizeUrl('signup', 'boarder', redirect);
         }}
       />
       <AuthDivider />

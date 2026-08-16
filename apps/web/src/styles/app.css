@@ -25,6 +25,37 @@ body {
   color: var(--color-ink);
 }
 
+/* Dashed top fade grid background (legacy public.css .vision-grid-background) */
+.vision-grid-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: linear-gradient(to right, #e7e5e4 1px, transparent 1px),
+    linear-gradient(to bottom, #e7e5e4 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 0;
+  mask-image: repeating-linear-gradient(
+      to right,
+      black 0px,
+      black 3px,
+      transparent 3px,
+      transparent 8px
+    ),
+    repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
+    radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
+  -webkit-mask-image: repeating-linear-gradient(
+      to right,
+      black 0px,
+      black 3px,
+      transparent 3px,
+      transparent 8px
+    ),
+    repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
+    radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}
+
 /* Dropdown menu entrance: scale from the trigger, fast ease-out */
 @keyframes menu-pop {
   from {
@@ -44,6 +75,64 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .menu-pop {
+    animation: none;
+  }
+}
+
+/* Modal entrance: fade the backdrop and scale the card in quickly */
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-pop {
+  animation: modal-pop 200ms ease-out;
+}
+
+.modal-fade {
+  animation: modal-fade 180ms ease-out;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-pop,
+  .modal-fade {
+    animation: none;
+  }
+}
+
+/* Toast entrance: slide in from the right + fade */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast-in {
+  animation: toast-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-in {
     animation: none;
   }
 }

@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { chatStream, type AiHistoryMessage } from '../lib/api/ai';
+import { useAuth } from '../lib/auth-context';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
+import { LoginPromptOverlay } from '../components/ai/LoginPromptOverlay';
 import { Icon } from '../components/ui/Icon';
 
 export const Route = createFileRoute('/haven-ai')({
@@ -15,6 +17,22 @@ const SUGGESTIONS = [
   'Show me rooms with AC near my university',
 ];
 
+/** Return-to path carried through login/signup so guests resume their chat. */
+const REDIRECT_PATH = '/haven-ai';
+
+/**
+ * Guest chat state persisted in sessionStorage across the login detour so the
+ * conversation (and the blocked question) survive navigating to /auth/* and
+ * back. Cleared once it has been acted on.
+ */
+const PENDING_STATE_KEY = 'haven_ai_pending';
+
+interface PendingChatState {
+  history: AiHistoryMessage[];
+  pendingMessage: string | null;
+  blocked: boolean;
+}
+
 function AiAvatar() {
   return (
     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-light text-white">
@@ -24,27 +42,87 @@ function AiAvatar() {
 }
 
 function HavenAiPage() {
+  const { isAuthenticated, isHydrated, token } = useAuth();
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<AiHistoryMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [guestPromptsUsed, setGuestPromptsUsed] = useState(0);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [guestBlocked, setGuestBlocked] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [dailyLimitHit, setDailyLimitHit] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pendingRef = useRef<string | null>(null);
+
+  function persistState(overrides: Partial<PendingChatState>) {
+    try {
+      sessionStorage.setItem(
+        PENDING_STATE_KEY,
+        JSON.stringify({
+          history,
+          pendingMessage: null,
+          blocked: false,
+          ...overrides,
+        } satisfies PendingChatState)
+      );
+    } catch {
+      // sessionStorage unavailable — gating still works for this page load
+    }
+  }
+
+  function clearPendingState() {
+    try {
+      sessionStorage.removeItem(PENDING_STATE_KEY);
+    } catch {
+      // ignore
+    }
+  }
 
   async function sendMessage(message: string) {
     const text = message.trim();
     if (!text || loading) return;
 
+    // Guests get one free response per browser (enforced server-side too).
+    // Block further sends and prompt them to log in instead.
+    if (!isAuthenticated && guestPromptsUsed >= 1) {
+      pendingRef.current = text;
+      setPendingMessage(text);
+      persistState({ pendingMessage: text });
+      setShowLoginModal(true);
+      return;
+    }
+
     setHistory(prev => [...prev, { role: 'user', content: text }]);
     setLoading(true);
     setError(null);
+    setDailyLimitHit(false);
     setStreamingContent('');
     try {
-      const result = await chatStream(text, history, delta => {
-        setStreamingContent(prev => prev + delta);
-      });
+      const result = await chatStream(
+        text,
+        history,
+        delta => {
+          setStreamingContent(prev => prev + delta);
+        },
+        token ?? undefined
+      );
       if (result.success && result.response) {
         setHistory(prev => [...prev, { role: 'assistant', content: result.response ?? '' }]);
+        if (!isAuthenticated) setGuestPromptsUsed(1);
+      } else if (result.code === 'AI_LIMIT_REACHED') {
+        if (result.limit?.scope === 'user') {
+          setError("You've reached today's limit of 10 Haven AI questions. Come back tomorrow.");
+          setDailyLimitHit(true);
+        } else {
+          // Guest freebie already spent (e.g. after a page reload) — server
+          // backstop pops the same login prompt.
+          pendingRef.current = text;
+          setPendingMessage(text);
+          persistState({ pendingMessage: text });
+          setShowLoginModal(true);
+        }
       } else {
         setError(result.error ?? 'AI assistant unavailable. Please try again later.');
       }
@@ -56,6 +134,56 @@ function HavenAiPage() {
       setLoading(false);
       setStreamingContent('');
     }
+  }
+
+  const sendRef = useRef(sendMessage);
+  sendRef.current = sendMessage;
+
+  // Restore a guest chat carried over from the login detour (or a manual
+  // navigation away and back).
+  useEffect(() => {
+    let saved: PendingChatState | null = null;
+    try {
+      const raw = sessionStorage.getItem(PENDING_STATE_KEY);
+      if (raw) saved = JSON.parse(raw) as PendingChatState;
+    } catch {
+      // ignore malformed state
+    }
+    if (!saved) return;
+
+    if (Array.isArray(saved.history)) setHistory(saved.history);
+
+    if (saved.blocked) {
+      setGuestBlocked(true);
+      setGuestPromptsUsed(1);
+    } else if (typeof saved.pendingMessage === 'string' && saved.pendingMessage) {
+      pendingRef.current = saved.pendingMessage;
+      setPendingMessage(saved.pendingMessage);
+    }
+  }, []);
+
+  // Once auth state is known, either auto-send the blocked question (the user
+  // returned logged in) or re-show the login prompt (they came back as a
+  // guest). Also fires when the Google OAuth `#auth=` hash flips auth state.
+  useEffect(() => {
+    if (!isHydrated || !pendingRef.current) return;
+
+    if (isAuthenticated) {
+      const message = pendingRef.current;
+      pendingRef.current = null;
+      setPendingMessage(null);
+      clearPendingState();
+      void sendRef.current(message);
+    } else {
+      setShowLoginModal(true);
+    }
+  }, [isHydrated, isAuthenticated]);
+
+  function handleNotNow() {
+    setShowLoginModal(false);
+    setGuestBlocked(true);
+    setGuestPromptsUsed(1);
+    persistState({ pendingMessage: null, blocked: true });
   }
 
   useEffect(() => {
@@ -95,8 +223,9 @@ function HavenAiPage() {
                   <button
                     key={suggestion}
                     type="button"
+                    disabled={guestBlocked}
                     onClick={() => sendMessage(suggestion)}
-                    className="rounded-xl border border-gray-200 bg-white p-4 text-left text-sm text-gray-ink transition hover:border-primary hover:bg-mint/40 hover:text-ink"
+                    className="rounded-xl border border-gray-200 bg-white p-4 text-left text-sm text-gray-ink transition hover:border-primary hover:bg-mint/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {suggestion}
                   </button>
@@ -145,7 +274,13 @@ function HavenAiPage() {
               ) : null}
 
               {error ? (
-                <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+                <p
+                  className={`rounded-lg px-4 py-3 text-sm ${
+                    dailyLimitHit ? 'bg-amber-50 text-amber-800' : 'bg-red-50 text-red-600'
+                  }`}
+                >
+                  {error}
+                </p>
               ) : null}
             </div>
           )}
@@ -154,6 +289,28 @@ function HavenAiPage() {
         {/* Composer */}
         <div className="border-t border-gray-200 bg-white px-4 py-4">
           <div className="mx-auto max-w-3xl">
+            {guestBlocked ? (
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-mint/50 px-4 py-3">
+                <p className="text-sm text-ink">
+                  Log in or sign up to keep chatting with Haven AI.
+                </p>
+                <div className="flex shrink-0 items-center gap-2">
+                  <a
+                    href={`/auth/login?redirect=${REDIRECT_PATH}`}
+                    className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark"
+                  >
+                    Log in
+                  </a>
+                  <a
+                    href={`/auth/choose?redirect=${REDIRECT_PATH}`}
+                    className="rounded-full border border-primary px-4 py-1.5 text-xs font-semibold text-primary transition hover:bg-white"
+                  >
+                    Sign up
+                  </a>
+                </div>
+              </div>
+            ) : null}
+
             <form
               onSubmit={onSubmit}
               className="flex items-end gap-2 rounded-3xl border border-gray-300 bg-white p-2 shadow-sm focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(74,124,35,0.1)]"
@@ -161,6 +318,7 @@ function HavenAiPage() {
               <textarea
                 rows={1}
                 value={input}
+                disabled={guestBlocked}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -168,12 +326,14 @@ function HavenAiPage() {
                     onSubmit(e);
                   }
                 }}
-                placeholder="Ask Haven AI anything..."
-                className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm text-ink outline-none placeholder:text-muted"
+                placeholder={
+                  guestBlocked ? 'Log in to continue chatting' : 'Ask Haven AI anything...'
+                }
+                className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm text-ink outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60"
               />
               <button
                 type="submit"
-                disabled={loading || input.trim() === ''}
+                disabled={loading || guestBlocked || input.trim() === ''}
                 aria-label="Send message"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:bg-gray-300"
               >
@@ -199,6 +359,8 @@ function HavenAiPage() {
           </div>
         </div>
       </main>
+
+      <LoginPromptOverlay open={showLoginModal} redirect={REDIRECT_PATH} onNotNow={handleNotNow} />
     </div>
   );
 }

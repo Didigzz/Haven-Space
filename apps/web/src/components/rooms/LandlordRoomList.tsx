@@ -8,6 +8,7 @@ import { Field, SelectInput, TextInput } from '../ui/Field';
 import { Modal } from '../ui/Modal';
 import { Spinner } from '../ui/Spinner';
 import { StatusBadge } from '../ui/StatusBadge';
+import { ToastStack, useToasts } from '../ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import { createRoom, deleteRoom, getRooms } from '../../lib/api/landlord';
 import type { LandlordRoom } from '../../lib/types';
@@ -35,6 +36,7 @@ const EMPTY_ROOM_FORM: AddRoomForm = {
  */
 export function LandlordRoomList({ token, propertyId }: { token: string; propertyId: number }) {
   const queryClient = useQueryClient();
+  const { toasts, push, dismiss } = useToasts();
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomForm, setRoomForm] = useState<AddRoomForm>(EMPTY_ROOM_FORM);
   const [roomError, setRoomError] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
       setAddRoomOpen(false);
       setRoomForm(EMPTY_ROOM_FORM);
       setRoomError(null);
+      push({ tone: 'success', message: 'Room added.' });
     },
     onError: err =>
       setRoomError(err instanceof ApiRequestError ? err.message : 'Failed to add room.'),
@@ -74,6 +77,8 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
       void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyId] });
       void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
       setDeleteError(null);
+      setPendingDelete(null);
+      push({ tone: 'success', message: 'Room deleted.' });
     },
     onError: err =>
       setDeleteError(err instanceof ApiRequestError ? err.message : 'Failed to delete room.'),
@@ -87,6 +92,7 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
 
   return (
     <>
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -227,9 +233,7 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
         busy={removeRoom.isPending}
         onConfirm={() => {
           if (!pendingDelete) return;
-          removeRoom.mutate(pendingDelete.id, {
-            onSuccess: () => setPendingDelete(null),
-          });
+          removeRoom.mutate(pendingDelete.id);
         }}
         onCancel={() => setPendingDelete(null)}
       />

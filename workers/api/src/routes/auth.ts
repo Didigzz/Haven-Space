@@ -38,6 +38,7 @@ interface GoogleStatePayload {
   role?: string;
   origin?: string;
   nonce?: string;
+  redirect?: string;
   exp?: number;
 }
 
@@ -86,6 +87,16 @@ function normalizeEmail(value: unknown): string | null {
 
 function isEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+/**
+ * Allow only same-origin relative paths (a single leading '/', no '//') so a
+ * `redirect` carried through OAuth state can never become an open redirect.
+ */
+function safeRedirectPath(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  if (!value.startsWith('/') || value.startsWith('//')) return null;
+  return value;
 }
 
 function stringField(body: JsonRecord, field: string): string {
@@ -395,8 +406,16 @@ function validatePhilippinePhone(value: string): boolean {
 
 async function createGoogleState(
   secret: string,
-  input: { action: OAuthAction; role: OAuthRole; origin: string; nonce: string }
+  input: {
+    action: OAuthAction;
+    role: OAuthRole;
+    origin: string;
+    nonce: string;
+    redirect?: string | null;
+  }
 ): Promise<string> {
+  const redirect = safeRedirectPath(input.redirect);
+
   return await signJwt(
     {
       type: 'google_oauth_state',
@@ -404,6 +423,7 @@ async function createGoogleState(
       role: input.role,
       origin: input.origin,
       nonce: input.nonce,
+      ...(redirect ? { redirect } : {}),
     },
     secret,
     googleStateSeconds
@@ -559,11 +579,14 @@ async function createGooglePendingToken(
     action: OAuthAction;
     origin: string;
     link: boolean;
+    redirect?: string | null;
   }
 ): Promise<string> {
   if (!secret) {
     throw new Error('JWT secret is not configured');
   }
+
+  const redirect = safeRedirectPath(input.redirect);
 
   return await signJwt(
     {
@@ -576,6 +599,7 @@ async function createGooglePendingToken(
       action: input.action,
       origin: input.origin,
       link: input.link,
+      ...(redirect ? { redirect } : {}),
     },
     secret,
     googlePendingSeconds
@@ -593,6 +617,7 @@ async function handleGoogleAuthorize(c: Context<{ Bindings: Env }>): Promise<Res
   const action = oauthAction(c.req.query('action'));
   const role = oauthRole(c.req.query('role'));
   const origin = frontendOrigin(c);
+  const redirect = safeRedirectPath(c.req.query('redirect'));
   let clientId: string;
   let jwtSecret: string;
 
@@ -611,6 +636,7 @@ async function handleGoogleAuthorize(c: Context<{ Bindings: Env }>): Promise<Res
     role,
     origin,
     nonce,
+    redirect,
   });
   const url = new URL(googleAuthEndpoint);
   url.searchParams.set('client_id', clientId);
@@ -677,7 +703,12 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
 
       const { accessToken, refreshToken } = await authTokens(user, c.env.JWT_SECRET);
       const formattedUser = await formatUserResponse(db, user);
-      const redirectUrl = new URL(redirectPathForUser(formattedUser), `${origin}/`);
+      const redirectPath = safeRedirectPath(state?.redirect) ?? redirectPathForUser(formattedUser);
+      const redirectUrl = new URL(redirectPath, `${origin}/`);
+      // Carried so the frontend's global OAuth hash handler can send the user
+      // back to the page they started from (e.g. /haven-ai) instead of the
+      // default role home.
+      redirectUrl.searchParams.set('redirect', redirectPath);
       redirectUrl.hash = `auth=${userHashPayload(formattedUser, accessToken, refreshToken)}`;
 
       const headers = clearGoogleStateHeaders(c);
@@ -714,6 +745,7 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
       action,
       origin,
       link: resolution.kind === 'link_required',
+      redirect: safeRedirectPath(state?.redirect),
     });
 
     return redirectResponse(

@@ -10,6 +10,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../../lib/api/http';
 import { confirmApplication, deleteApplication, getApplication } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
+import { setPendingToast } from '../../../lib/toast';
 
 export const Route = createFileRoute('/boarder/applications/$id')({
   component: ApplicationDetailPage,
@@ -31,7 +32,10 @@ function ApplicationDetailPage() {
 
   const confirm = useMutation({
     mutationFn: () => confirmApplication(token!, Number(id), paymentMethod),
-    onSuccess: () => void navigate({ to: '/boarder/confirm-booking' }),
+    onSuccess: () => {
+      setPendingToast('success', 'Booking confirmed!');
+      void navigate({ to: '/boarder/confirm-booking' });
+    },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to confirm booking.'),
   });
@@ -40,6 +44,7 @@ function ApplicationDetailPage() {
     mutationFn: () => deleteApplication(token!, Number(id)),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['applications'] });
+      setPendingToast('success', 'Application withdrawn.');
       void navigate({ to: '/boarder/applications' });
     },
     onError: err =>

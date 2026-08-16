@@ -11,6 +11,8 @@ import { LandlordRoomList } from '../../../../components/rooms/LandlordRoomList'
 import { ApiRequestError } from '../../../../lib/api/http';
 import { getProperty, updateListing, uploadPropertyPhotos } from '../../../../lib/api/landlord';
 import { useAuth } from '../../../../lib/auth-context';
+import { setPendingToast } from '../../../../lib/toast';
+import { ToastStack, useToasts } from '../../../../components/ui/Toast';
 
 export const Route = createFileRoute('/landlord/listings/$id/edit')({
   component: EditListingPage,
@@ -34,6 +36,7 @@ function EditListingPage() {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const { toasts, push, dismiss } = useToasts();
   const [uploading, setUploading] = useState(false);
   const [photosToDelete, setPhotosToDelete] = useState<string[]>([]);
 
@@ -124,6 +127,7 @@ function EditListingPage() {
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
+      setPendingToast('success', 'Listing updated.');
       void navigate({ to: '/landlord/listings' });
     },
     onError: err =>
@@ -148,6 +152,7 @@ function EditListingPage() {
     uploadPropertyPhotos(token!, propertyId, files)
       .then(() => {
         void queryClient.invalidateQueries({ queryKey: ['landlord-property', propertyId] });
+        push({ tone: 'success', message: 'Photos uploaded.' });
       })
       .catch(err =>
         setPhotoError(err instanceof ApiRequestError ? err.message : 'Failed to upload photos.')
@@ -167,6 +172,7 @@ function EditListingPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       <Link
         to="/landlord/listings"
         className="mb-4 inline-block text-sm text-primary hover:underline"

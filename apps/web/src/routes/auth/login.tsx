@@ -6,6 +6,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
 import { checkEmail } from '../../lib/api/auth';
+import { setPendingToast } from '../../lib/toast';
 import { useAuth } from '../../lib/auth-context';
 import {
   authErrorSearch,
@@ -20,7 +21,7 @@ export const Route = createFileRoute('/auth/login')({
 });
 
 function LoginPage() {
-  const { error: searchError } = useSearch({ from: '/auth/login' });
+  const { error: searchError, redirect } = useSearch({ from: '/auth/login' });
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -32,8 +33,8 @@ function LoginPage() {
   // Handle the Google OAuth `#auth=` callback hash if present.
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: redirectPathForUser(user) });
-  }, [navigate]);
+    if (user) void navigate({ to: redirect ?? redirectPathForUser(user) });
+  }, [navigate, redirect]);
 
   async function handleEmailBlur() {
     if (!email.trim() || !email.includes('@')) return;
@@ -51,7 +52,8 @@ function LoginPage() {
     setSubmitting(true);
     try {
       const user = await login(email.trim(), password);
-      void navigate({ to: redirectPathForUser(user) });
+      setPendingToast('success', `Welcome back, ${user.first_name}!`);
+      void navigate({ to: redirect ?? redirectPathForUser(user) });
     } catch (err) {
       setError(
         err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
@@ -79,7 +81,7 @@ function LoginPage() {
 
       <GoogleButton
         onClick={() => {
-          window.location.href = googleAuthorizeUrl('login', 'boarder');
+          window.location.href = googleAuthorizeUrl('login', 'boarder', redirect);
         }}
       />
       <AuthDivider />

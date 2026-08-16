@@ -15,11 +15,11 @@ function HomePage() {
       <Hero />
 
       {/* App preview image overlapping the hero */}
-      <section className="relative z-10 mx-auto -mt-16 max-w-5xl px-4">
+      <section className="pointer-events-none relative z-10 mx-auto -mt-16 max-w-[1500px] px-6">
         <img
           src="/assets/images/public/main.png"
           alt="Haven Space app dashboard preview"
-          className="mx-auto w-full rounded-xl"
+          className="mx-auto block w-full"
         />
       </section>
 

@@ -6,6 +6,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextArea, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
 import { useAuth } from '../../lib/auth-context';
+import { setPendingToast } from '../../lib/toast';
 import {
   authErrorSearch,
   clearGooglePendingHash,
@@ -22,7 +23,9 @@ export const Route = createFileRoute('/auth/choose-role')({
 type Step = 'role' | 'landlord-details';
 
 function ChooseRolePage() {
-  const { error: searchError } = useSearch({ from: '/auth/choose-role' });
+  const { error: searchError, redirect: searchRedirect } = useSearch({
+    from: '/auth/choose-role',
+  });
   const { completeGoogle } = useAuth();
   const navigate = useNavigate();
   const handled = useRef(false);
@@ -66,7 +69,8 @@ function ChooseRolePage() {
     setError(null);
     try {
       const user = await completeGoogle({ pendingToken: pending.token, ...input });
-      void navigate({ to: redirectPathForUser(user) });
+      setPendingToast('success', `Welcome back, ${user.first_name}!`);
+      void navigate({ to: session?.redirect ?? searchRedirect ?? redirectPathForUser(user) });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
       setBusy(false);
