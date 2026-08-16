@@ -10,7 +10,13 @@ import { RoomCard } from './RoomCard';
 
 const DEFAULT_FILTERS: PublicListingsFilters = { sort_by: 'newest', limit: 20, offset: 0 };
 
-export function FindARoomContent({ initialData }: { initialData?: PublicListingsResponse }) {
+export function FindARoomContent({
+  initialData,
+  detailTo = '/rooms/$id',
+}: {
+  initialData?: PublicListingsResponse;
+  detailTo?: string;
+}) {
   const [filters, setFilters] = useState<PublicListingsFilters>(DEFAULT_FILTERS);
 
   const query = useQuery({
@@ -32,7 +38,7 @@ export function FindARoomContent({ initialData }: { initialData?: PublicListings
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {query.data?.data.properties.map((property) => (
-            <RoomCard key={property.id} property={property} />
+            <RoomCard key={property.id} property={property} detailTo={detailTo} />
           ))}
         </ul>
       )}

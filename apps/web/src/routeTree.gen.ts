@@ -24,6 +24,17 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AuthSignupRouteImport } from './routes/auth/signup';
 import { Route as AuthVerifyEmailRouteImport } from './routes/auth/verify-email';
 import { Route as BoarderIndexRouteImport } from './routes/boarder/index';
+import { Route as BoarderAnnouncementsRouteImport } from './routes/boarder/announcements';
+import { Route as BoarderApplicationSubmittedRouteImport } from './routes/boarder/application-submitted';
+import { Route as BoarderApplicationsRouteImport } from './routes/boarder/applications';
+import { Route as BoarderConfirmBookingRouteImport } from './routes/boarder/confirm-booking';
+import { Route as BoarderFindARoomRouteImport } from './routes/boarder/find-a-room';
+import { Route as BoarderHouseRulesRouteImport } from './routes/boarder/house-rules';
+import { Route as BoarderMapsRouteImport } from './routes/boarder/maps';
+import { Route as BoarderMessagesRouteImport } from './routes/boarder/messages';
+import { Route as BoarderPaymentsRouteImport } from './routes/boarder/payments';
+import { Route as BoarderSettingsRouteImport } from './routes/boarder/settings';
+import { Route as BoarderTenancyRouteImport } from './routes/boarder/tenancy';
 import { Route as FindARoomIndexRouteImport } from './routes/find-a-room/index';
 import { Route as LandlordIndexRouteImport } from './routes/landlord/index';
 import { Route as LandlordVerificationRouteImport } from './routes/landlord/verification';
@@ -33,6 +44,16 @@ import { Route as LegalUserAgreementRouteImport } from './routes/legal/user-agre
 import { Route as RoomsIdRouteImport } from './routes/rooms/$id';
 import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index';
 import { Route as AuthSignupLandlordRouteImport } from './routes/auth/signup/landlord';
+import { Route as BoarderApplicationsIndexRouteImport } from './routes/boarder/applications/index';
+import { Route as BoarderApplicationsIdRouteImport } from './routes/boarder/applications/$id';
+import { Route as BoarderApplicationsSettingsRouteImport } from './routes/boarder/applications/settings';
+import { Route as BoarderFindARoomIndexRouteImport } from './routes/boarder/find-a-room/index';
+import { Route as BoarderFindARoomIdRouteImport } from './routes/boarder/find-a-room/$id';
+import { Route as BoarderPaymentsIndexRouteImport } from './routes/boarder/payments/index';
+import { Route as BoarderPaymentsPayRouteImport } from './routes/boarder/payments/pay';
+import { Route as BoarderRoomsIdRouteImport } from './routes/boarder/rooms/$id';
+import { Route as BoarderFindARoomIdIndexRouteImport } from './routes/boarder/find-a-room/$id/index';
+import { Route as BoarderFindARoomIdApplyRouteImport } from './routes/boarder/find-a-room/$id/apply';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -109,6 +130,61 @@ const BoarderIndexRoute = BoarderIndexRouteImport.update({
   path: '/boarder/',
   getParentRoute: () => rootRouteImport,
 } as any);
+const BoarderAnnouncementsRoute = BoarderAnnouncementsRouteImport.update({
+  id: '/boarder/announcements',
+  path: '/boarder/announcements',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderApplicationSubmittedRoute = BoarderApplicationSubmittedRouteImport.update({
+  id: '/boarder/application-submitted',
+  path: '/boarder/application-submitted',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderApplicationsRoute = BoarderApplicationsRouteImport.update({
+  id: '/boarder/applications',
+  path: '/boarder/applications',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderConfirmBookingRoute = BoarderConfirmBookingRouteImport.update({
+  id: '/boarder/confirm-booking',
+  path: '/boarder/confirm-booking',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderFindARoomRoute = BoarderFindARoomRouteImport.update({
+  id: '/boarder/find-a-room',
+  path: '/boarder/find-a-room',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderHouseRulesRoute = BoarderHouseRulesRouteImport.update({
+  id: '/boarder/house-rules',
+  path: '/boarder/house-rules',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderMapsRoute = BoarderMapsRouteImport.update({
+  id: '/boarder/maps',
+  path: '/boarder/maps',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderMessagesRoute = BoarderMessagesRouteImport.update({
+  id: '/boarder/messages',
+  path: '/boarder/messages',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderPaymentsRoute = BoarderPaymentsRouteImport.update({
+  id: '/boarder/payments',
+  path: '/boarder/payments',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderSettingsRoute = BoarderSettingsRouteImport.update({
+  id: '/boarder/settings',
+  path: '/boarder/settings',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderTenancyRoute = BoarderTenancyRouteImport.update({
+  id: '/boarder/tenancy',
+  path: '/boarder/tenancy',
+  getParentRoute: () => rootRouteImport,
+} as any);
 const FindARoomIndexRoute = FindARoomIndexRouteImport.update({
   id: '/find-a-room/',
   path: '/find-a-room/',
@@ -154,6 +230,56 @@ const AuthSignupLandlordRoute = AuthSignupLandlordRouteImport.update({
   path: '/landlord',
   getParentRoute: () => AuthSignupRoute,
 } as any);
+const BoarderApplicationsIndexRoute = BoarderApplicationsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BoarderApplicationsRoute,
+} as any);
+const BoarderApplicationsIdRoute = BoarderApplicationsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BoarderApplicationsRoute,
+} as any);
+const BoarderApplicationsSettingsRoute = BoarderApplicationsSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => BoarderApplicationsRoute,
+} as any);
+const BoarderFindARoomIndexRoute = BoarderFindARoomIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BoarderFindARoomRoute,
+} as any);
+const BoarderFindARoomIdRoute = BoarderFindARoomIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BoarderFindARoomRoute,
+} as any);
+const BoarderPaymentsIndexRoute = BoarderPaymentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BoarderPaymentsRoute,
+} as any);
+const BoarderPaymentsPayRoute = BoarderPaymentsPayRouteImport.update({
+  id: '/pay',
+  path: '/pay',
+  getParentRoute: () => BoarderPaymentsRoute,
+} as any);
+const BoarderRoomsIdRoute = BoarderRoomsIdRouteImport.update({
+  id: '/boarder/rooms/$id',
+  path: '/boarder/rooms/$id',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderFindARoomIdIndexRoute = BoarderFindARoomIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BoarderFindARoomIdRoute,
+} as any);
+const BoarderFindARoomIdApplyRoute = BoarderFindARoomIdApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
+  getParentRoute: () => BoarderFindARoomIdRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
@@ -169,6 +295,17 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute;
   '/auth/signup': typeof AuthSignupRouteWithChildren;
   '/auth/verify-email': typeof AuthVerifyEmailRoute;
+  '/boarder/announcements': typeof BoarderAnnouncementsRoute;
+  '/boarder/application-submitted': typeof BoarderApplicationSubmittedRoute;
+  '/boarder/applications': typeof BoarderApplicationsRouteWithChildren;
+  '/boarder/confirm-booking': typeof BoarderConfirmBookingRoute;
+  '/boarder/find-a-room': typeof BoarderFindARoomRouteWithChildren;
+  '/boarder/house-rules': typeof BoarderHouseRulesRoute;
+  '/boarder/maps': typeof BoarderMapsRoute;
+  '/boarder/messages': typeof BoarderMessagesRoute;
+  '/boarder/payments': typeof BoarderPaymentsRouteWithChildren;
+  '/boarder/settings': typeof BoarderSettingsRoute;
+  '/boarder/tenancy': typeof BoarderTenancyRoute;
   '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
@@ -179,7 +316,17 @@ export interface FileRoutesByFullPath {
   '/find-a-room/': typeof FindARoomIndexRoute;
   '/landlord/': typeof LandlordIndexRoute;
   '/auth/signup/landlord': typeof AuthSignupLandlordRoute;
+  '/boarder/applications/$id': typeof BoarderApplicationsIdRoute;
+  '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute;
+  '/boarder/find-a-room/$id': typeof BoarderFindARoomIdRouteWithChildren;
+  '/boarder/payments/pay': typeof BoarderPaymentsPayRoute;
+  '/boarder/rooms/$id': typeof BoarderRoomsIdRoute;
   '/auth/signup/': typeof AuthSignupIndexRoute;
+  '/boarder/applications/': typeof BoarderApplicationsIndexRoute;
+  '/boarder/find-a-room/': typeof BoarderFindARoomIndexRoute;
+  '/boarder/payments/': typeof BoarderPaymentsIndexRoute;
+  '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute;
+  '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute;
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
@@ -194,6 +341,14 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute;
   '/auth/reset-password': typeof AuthResetPasswordRoute;
   '/auth/verify-email': typeof AuthVerifyEmailRoute;
+  '/boarder/announcements': typeof BoarderAnnouncementsRoute;
+  '/boarder/application-submitted': typeof BoarderApplicationSubmittedRoute;
+  '/boarder/confirm-booking': typeof BoarderConfirmBookingRoute;
+  '/boarder/house-rules': typeof BoarderHouseRulesRoute;
+  '/boarder/maps': typeof BoarderMapsRoute;
+  '/boarder/messages': typeof BoarderMessagesRoute;
+  '/boarder/settings': typeof BoarderSettingsRoute;
+  '/boarder/tenancy': typeof BoarderTenancyRoute;
   '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
@@ -204,7 +359,16 @@ export interface FileRoutesByTo {
   '/find-a-room': typeof FindARoomIndexRoute;
   '/landlord': typeof LandlordIndexRoute;
   '/auth/signup/landlord': typeof AuthSignupLandlordRoute;
+  '/boarder/applications/$id': typeof BoarderApplicationsIdRoute;
+  '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute;
+  '/boarder/payments/pay': typeof BoarderPaymentsPayRoute;
+  '/boarder/rooms/$id': typeof BoarderRoomsIdRoute;
   '/auth/signup': typeof AuthSignupIndexRoute;
+  '/boarder/applications': typeof BoarderApplicationsIndexRoute;
+  '/boarder/find-a-room': typeof BoarderFindARoomIndexRoute;
+  '/boarder/payments': typeof BoarderPaymentsIndexRoute;
+  '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute;
+  '/boarder/find-a-room/$id': typeof BoarderFindARoomIdIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -221,6 +385,17 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute;
   '/auth/signup': typeof AuthSignupRouteWithChildren;
   '/auth/verify-email': typeof AuthVerifyEmailRoute;
+  '/boarder/announcements': typeof BoarderAnnouncementsRoute;
+  '/boarder/application-submitted': typeof BoarderApplicationSubmittedRoute;
+  '/boarder/applications': typeof BoarderApplicationsRouteWithChildren;
+  '/boarder/confirm-booking': typeof BoarderConfirmBookingRoute;
+  '/boarder/find-a-room': typeof BoarderFindARoomRouteWithChildren;
+  '/boarder/house-rules': typeof BoarderHouseRulesRoute;
+  '/boarder/maps': typeof BoarderMapsRoute;
+  '/boarder/messages': typeof BoarderMessagesRoute;
+  '/boarder/payments': typeof BoarderPaymentsRouteWithChildren;
+  '/boarder/settings': typeof BoarderSettingsRoute;
+  '/boarder/tenancy': typeof BoarderTenancyRoute;
   '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
@@ -231,7 +406,17 @@ export interface FileRoutesById {
   '/find-a-room/': typeof FindARoomIndexRoute;
   '/landlord/': typeof LandlordIndexRoute;
   '/auth/signup/landlord': typeof AuthSignupLandlordRoute;
+  '/boarder/applications/$id': typeof BoarderApplicationsIdRoute;
+  '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute;
+  '/boarder/find-a-room/$id': typeof BoarderFindARoomIdRouteWithChildren;
+  '/boarder/payments/pay': typeof BoarderPaymentsPayRoute;
+  '/boarder/rooms/$id': typeof BoarderRoomsIdRoute;
   '/auth/signup/': typeof AuthSignupIndexRoute;
+  '/boarder/applications/': typeof BoarderApplicationsIndexRoute;
+  '/boarder/find-a-room/': typeof BoarderFindARoomIndexRoute;
+  '/boarder/payments/': typeof BoarderPaymentsIndexRoute;
+  '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute;
+  '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -249,6 +434,17 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/signup'
     | '/auth/verify-email'
+    | '/boarder/announcements'
+    | '/boarder/application-submitted'
+    | '/boarder/applications'
+    | '/boarder/confirm-booking'
+    | '/boarder/find-a-room'
+    | '/boarder/house-rules'
+    | '/boarder/maps'
+    | '/boarder/messages'
+    | '/boarder/payments'
+    | '/boarder/settings'
+    | '/boarder/tenancy'
     | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
@@ -259,7 +455,17 @@ export interface FileRouteTypes {
     | '/find-a-room/'
     | '/landlord/'
     | '/auth/signup/landlord'
-    | '/auth/signup/';
+    | '/boarder/applications/$id'
+    | '/boarder/applications/settings'
+    | '/boarder/find-a-room/$id'
+    | '/boarder/payments/pay'
+    | '/boarder/rooms/$id'
+    | '/auth/signup/'
+    | '/boarder/applications/'
+    | '/boarder/find-a-room/'
+    | '/boarder/payments/'
+    | '/boarder/find-a-room/$id/apply'
+    | '/boarder/find-a-room/$id/';
   fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
@@ -274,6 +480,14 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/reset-password'
     | '/auth/verify-email'
+    | '/boarder/announcements'
+    | '/boarder/application-submitted'
+    | '/boarder/confirm-booking'
+    | '/boarder/house-rules'
+    | '/boarder/maps'
+    | '/boarder/messages'
+    | '/boarder/settings'
+    | '/boarder/tenancy'
     | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
@@ -284,7 +498,16 @@ export interface FileRouteTypes {
     | '/find-a-room'
     | '/landlord'
     | '/auth/signup/landlord'
-    | '/auth/signup';
+    | '/boarder/applications/$id'
+    | '/boarder/applications/settings'
+    | '/boarder/payments/pay'
+    | '/boarder/rooms/$id'
+    | '/auth/signup'
+    | '/boarder/applications'
+    | '/boarder/find-a-room'
+    | '/boarder/payments'
+    | '/boarder/find-a-room/$id/apply'
+    | '/boarder/find-a-room/$id';
   id:
     | '__root__'
     | '/'
@@ -300,6 +523,17 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/signup'
     | '/auth/verify-email'
+    | '/boarder/announcements'
+    | '/boarder/application-submitted'
+    | '/boarder/applications'
+    | '/boarder/confirm-booking'
+    | '/boarder/find-a-room'
+    | '/boarder/house-rules'
+    | '/boarder/maps'
+    | '/boarder/messages'
+    | '/boarder/payments'
+    | '/boarder/settings'
+    | '/boarder/tenancy'
     | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
@@ -310,7 +544,17 @@ export interface FileRouteTypes {
     | '/find-a-room/'
     | '/landlord/'
     | '/auth/signup/landlord'
-    | '/auth/signup/';
+    | '/boarder/applications/$id'
+    | '/boarder/applications/settings'
+    | '/boarder/find-a-room/$id'
+    | '/boarder/payments/pay'
+    | '/boarder/rooms/$id'
+    | '/auth/signup/'
+    | '/boarder/applications/'
+    | '/boarder/find-a-room/'
+    | '/boarder/payments/'
+    | '/boarder/find-a-room/$id/apply'
+    | '/boarder/find-a-room/$id/';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -327,6 +571,17 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute;
   AuthSignupRoute: typeof AuthSignupRouteWithChildren;
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute;
+  BoarderAnnouncementsRoute: typeof BoarderAnnouncementsRoute;
+  BoarderApplicationSubmittedRoute: typeof BoarderApplicationSubmittedRoute;
+  BoarderApplicationsRoute: typeof BoarderApplicationsRouteWithChildren;
+  BoarderConfirmBookingRoute: typeof BoarderConfirmBookingRoute;
+  BoarderFindARoomRoute: typeof BoarderFindARoomRouteWithChildren;
+  BoarderHouseRulesRoute: typeof BoarderHouseRulesRoute;
+  BoarderMapsRoute: typeof BoarderMapsRoute;
+  BoarderMessagesRoute: typeof BoarderMessagesRoute;
+  BoarderPaymentsRoute: typeof BoarderPaymentsRouteWithChildren;
+  BoarderSettingsRoute: typeof BoarderSettingsRoute;
+  BoarderTenancyRoute: typeof BoarderTenancyRoute;
   LandlordVerificationRoute: typeof LandlordVerificationRoute;
   LegalPrivacyPolicyRoute: typeof LegalPrivacyPolicyRoute;
   LegalTermsOfServiceRoute: typeof LegalTermsOfServiceRoute;
@@ -336,6 +591,7 @@ export interface RootRouteChildren {
   BoarderIndexRoute: typeof BoarderIndexRoute;
   FindARoomIndexRoute: typeof FindARoomIndexRoute;
   LandlordIndexRoute: typeof LandlordIndexRoute;
+  BoarderRoomsIdRoute: typeof BoarderRoomsIdRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -445,6 +701,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BoarderIndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/boarder/announcements': {
+      id: '/boarder/announcements';
+      path: '/boarder/announcements';
+      fullPath: '/boarder/announcements';
+      preLoaderRoute: typeof BoarderAnnouncementsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/application-submitted': {
+      id: '/boarder/application-submitted';
+      path: '/boarder/application-submitted';
+      fullPath: '/boarder/application-submitted';
+      preLoaderRoute: typeof BoarderApplicationSubmittedRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/applications': {
+      id: '/boarder/applications';
+      path: '/boarder/applications';
+      fullPath: '/boarder/applications';
+      preLoaderRoute: typeof BoarderApplicationsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/confirm-booking': {
+      id: '/boarder/confirm-booking';
+      path: '/boarder/confirm-booking';
+      fullPath: '/boarder/confirm-booking';
+      preLoaderRoute: typeof BoarderConfirmBookingRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/find-a-room': {
+      id: '/boarder/find-a-room';
+      path: '/boarder/find-a-room';
+      fullPath: '/boarder/find-a-room';
+      preLoaderRoute: typeof BoarderFindARoomRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/house-rules': {
+      id: '/boarder/house-rules';
+      path: '/boarder/house-rules';
+      fullPath: '/boarder/house-rules';
+      preLoaderRoute: typeof BoarderHouseRulesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/maps': {
+      id: '/boarder/maps';
+      path: '/boarder/maps';
+      fullPath: '/boarder/maps';
+      preLoaderRoute: typeof BoarderMapsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/messages': {
+      id: '/boarder/messages';
+      path: '/boarder/messages';
+      fullPath: '/boarder/messages';
+      preLoaderRoute: typeof BoarderMessagesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/payments': {
+      id: '/boarder/payments';
+      path: '/boarder/payments';
+      fullPath: '/boarder/payments';
+      preLoaderRoute: typeof BoarderPaymentsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/settings': {
+      id: '/boarder/settings';
+      path: '/boarder/settings';
+      fullPath: '/boarder/settings';
+      preLoaderRoute: typeof BoarderSettingsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/tenancy': {
+      id: '/boarder/tenancy';
+      path: '/boarder/tenancy';
+      fullPath: '/boarder/tenancy';
+      preLoaderRoute: typeof BoarderTenancyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/find-a-room/': {
       id: '/find-a-room/';
       path: '/find-a-room';
@@ -508,6 +841,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupLandlordRouteImport;
       parentRoute: typeof AuthSignupRoute;
     };
+    '/boarder/applications/': {
+      id: '/boarder/applications/';
+      path: '/';
+      fullPath: '/boarder/applications/';
+      preLoaderRoute: typeof BoarderApplicationsIndexRouteImport;
+      parentRoute: typeof BoarderApplicationsRoute;
+    };
+    '/boarder/applications/$id': {
+      id: '/boarder/applications/$id';
+      path: '/$id';
+      fullPath: '/boarder/applications/$id';
+      preLoaderRoute: typeof BoarderApplicationsIdRouteImport;
+      parentRoute: typeof BoarderApplicationsRoute;
+    };
+    '/boarder/applications/settings': {
+      id: '/boarder/applications/settings';
+      path: '/settings';
+      fullPath: '/boarder/applications/settings';
+      preLoaderRoute: typeof BoarderApplicationsSettingsRouteImport;
+      parentRoute: typeof BoarderApplicationsRoute;
+    };
+    '/boarder/find-a-room/': {
+      id: '/boarder/find-a-room/';
+      path: '/';
+      fullPath: '/boarder/find-a-room/';
+      preLoaderRoute: typeof BoarderFindARoomIndexRouteImport;
+      parentRoute: typeof BoarderFindARoomRoute;
+    };
+    '/boarder/find-a-room/$id': {
+      id: '/boarder/find-a-room/$id';
+      path: '/$id';
+      fullPath: '/boarder/find-a-room/$id';
+      preLoaderRoute: typeof BoarderFindARoomIdRouteImport;
+      parentRoute: typeof BoarderFindARoomRoute;
+    };
+    '/boarder/payments/': {
+      id: '/boarder/payments/';
+      path: '/';
+      fullPath: '/boarder/payments/';
+      preLoaderRoute: typeof BoarderPaymentsIndexRouteImport;
+      parentRoute: typeof BoarderPaymentsRoute;
+    };
+    '/boarder/payments/pay': {
+      id: '/boarder/payments/pay';
+      path: '/pay';
+      fullPath: '/boarder/payments/pay';
+      preLoaderRoute: typeof BoarderPaymentsPayRouteImport;
+      parentRoute: typeof BoarderPaymentsRoute;
+    };
+    '/boarder/rooms/$id': {
+      id: '/boarder/rooms/$id';
+      path: '/boarder/rooms/$id';
+      fullPath: '/boarder/rooms/$id';
+      preLoaderRoute: typeof BoarderRoomsIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/find-a-room/$id/': {
+      id: '/boarder/find-a-room/$id/';
+      path: '/';
+      fullPath: '/boarder/find-a-room/$id/';
+      preLoaderRoute: typeof BoarderFindARoomIdIndexRouteImport;
+      parentRoute: typeof BoarderFindARoomIdRoute;
+    };
+    '/boarder/find-a-room/$id/apply': {
+      id: '/boarder/find-a-room/$id/apply';
+      path: '/apply';
+      fullPath: '/boarder/find-a-room/$id/apply';
+      preLoaderRoute: typeof BoarderFindARoomIdApplyRouteImport;
+      parentRoute: typeof BoarderFindARoomIdRoute;
+    };
   }
 }
 
@@ -523,6 +926,64 @@ const AuthSignupRouteChildren: AuthSignupRouteChildren = {
 
 const AuthSignupRouteWithChildren = AuthSignupRoute._addFileChildren(AuthSignupRouteChildren);
 
+interface BoarderApplicationsRouteChildren {
+  BoarderApplicationsIdRoute: typeof BoarderApplicationsIdRoute;
+  BoarderApplicationsSettingsRoute: typeof BoarderApplicationsSettingsRoute;
+  BoarderApplicationsIndexRoute: typeof BoarderApplicationsIndexRoute;
+}
+
+const BoarderApplicationsRouteChildren: BoarderApplicationsRouteChildren = {
+  BoarderApplicationsIdRoute: BoarderApplicationsIdRoute,
+  BoarderApplicationsSettingsRoute: BoarderApplicationsSettingsRoute,
+  BoarderApplicationsIndexRoute: BoarderApplicationsIndexRoute,
+};
+
+const BoarderApplicationsRouteWithChildren = BoarderApplicationsRoute._addFileChildren(
+  BoarderApplicationsRouteChildren
+);
+
+interface BoarderFindARoomIdRouteChildren {
+  BoarderFindARoomIdApplyRoute: typeof BoarderFindARoomIdApplyRoute;
+  BoarderFindARoomIdIndexRoute: typeof BoarderFindARoomIdIndexRoute;
+}
+
+const BoarderFindARoomIdRouteChildren: BoarderFindARoomIdRouteChildren = {
+  BoarderFindARoomIdApplyRoute: BoarderFindARoomIdApplyRoute,
+  BoarderFindARoomIdIndexRoute: BoarderFindARoomIdIndexRoute,
+};
+
+const BoarderFindARoomIdRouteWithChildren = BoarderFindARoomIdRoute._addFileChildren(
+  BoarderFindARoomIdRouteChildren
+);
+
+interface BoarderFindARoomRouteChildren {
+  BoarderFindARoomIdRoute: typeof BoarderFindARoomIdRouteWithChildren;
+  BoarderFindARoomIndexRoute: typeof BoarderFindARoomIndexRoute;
+}
+
+const BoarderFindARoomRouteChildren: BoarderFindARoomRouteChildren = {
+  BoarderFindARoomIdRoute: BoarderFindARoomIdRouteWithChildren,
+  BoarderFindARoomIndexRoute: BoarderFindARoomIndexRoute,
+};
+
+const BoarderFindARoomRouteWithChildren = BoarderFindARoomRoute._addFileChildren(
+  BoarderFindARoomRouteChildren
+);
+
+interface BoarderPaymentsRouteChildren {
+  BoarderPaymentsPayRoute: typeof BoarderPaymentsPayRoute;
+  BoarderPaymentsIndexRoute: typeof BoarderPaymentsIndexRoute;
+}
+
+const BoarderPaymentsRouteChildren: BoarderPaymentsRouteChildren = {
+  BoarderPaymentsPayRoute: BoarderPaymentsPayRoute,
+  BoarderPaymentsIndexRoute: BoarderPaymentsIndexRoute,
+};
+
+const BoarderPaymentsRouteWithChildren = BoarderPaymentsRoute._addFileChildren(
+  BoarderPaymentsRouteChildren
+);
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForLandlordsRoute: ForLandlordsRoute,
@@ -537,6 +998,17 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignupRoute: AuthSignupRouteWithChildren,
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
+  BoarderAnnouncementsRoute: BoarderAnnouncementsRoute,
+  BoarderApplicationSubmittedRoute: BoarderApplicationSubmittedRoute,
+  BoarderApplicationsRoute: BoarderApplicationsRouteWithChildren,
+  BoarderConfirmBookingRoute: BoarderConfirmBookingRoute,
+  BoarderFindARoomRoute: BoarderFindARoomRouteWithChildren,
+  BoarderHouseRulesRoute: BoarderHouseRulesRoute,
+  BoarderMapsRoute: BoarderMapsRoute,
+  BoarderMessagesRoute: BoarderMessagesRoute,
+  BoarderPaymentsRoute: BoarderPaymentsRouteWithChildren,
+  BoarderSettingsRoute: BoarderSettingsRoute,
+  BoarderTenancyRoute: BoarderTenancyRoute,
   LandlordVerificationRoute: LandlordVerificationRoute,
   LegalPrivacyPolicyRoute: LegalPrivacyPolicyRoute,
   LegalTermsOfServiceRoute: LegalTermsOfServiceRoute,
@@ -546,6 +1018,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoarderIndexRoute: BoarderIndexRoute,
   FindARoomIndexRoute: FindARoomIndexRoute,
   LandlordIndexRoute: LandlordIndexRoute,
+  BoarderRoomsIdRoute: BoarderRoomsIdRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
