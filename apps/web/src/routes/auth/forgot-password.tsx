@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
-import { AuthLayout } from '../../components/auth/AuthLayout';
+import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
@@ -58,7 +58,7 @@ function ForgotPasswordPage() {
   }
 
   return (
-    <AuthLayout
+    <AuthSplitLayout
       title={step === 'email' ? 'Forgot Password?' : 'Enter Verification Code'}
       subtitle={
         step === 'email'
@@ -66,7 +66,7 @@ function ForgotPasswordPage() {
           : `We've sent a 6-digit code to ${email}`
       }
       footer={
-        <p>
+        <p className="text-center">
           Remember your password?{' '}
           <Link to="/auth/login" className="text-primary hover:underline">
             Log in
@@ -114,6 +114,6 @@ function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

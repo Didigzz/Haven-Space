@@ -1,6 +1,10 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
-import { AuthLayout } from '../../../components/auth/AuthLayout';
+import {
+  AuthDivider,
+  AuthSplitLayout,
+  GoogleButton,
+} from '../../../components/auth/AuthSplitLayout';
 import { Button } from '../../../components/ui/Button';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, TextInput } from '../../../components/ui/Field';
@@ -59,11 +63,12 @@ function BoarderSignupPage() {
   }
 
   return (
-    <AuthLayout
+    <AuthSplitLayout
       title="Create your account"
       subtitle="Sign up as a boarder to find your next home."
+      image="/assets/images/public/signup_lower_right.png"
       footer={
-        <p>
+        <p className="text-center">
           Already have an account?{' '}
           <Link to="/auth/login" className="text-primary hover:underline">
             Log in
@@ -73,18 +78,8 @@ function BoarderSignupPage() {
     >
       {error ? <ErrorState message={error} /> : null}
 
-      <a
-        href={googleAuthorizeUrl('signup', 'boarder')}
-        className="mb-4 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
-      >
-        <span className="font-semibold">G</span> Sign up with Google
-      </a>
-
-      <div className="mb-4 flex items-center gap-3 text-xs text-gray-ink">
-        <span className="h-px flex-1 bg-gray-200" />
-        or
-        <span className="h-px flex-1 bg-gray-200" />
-      </div>
+      <GoogleButton onClick={() => { window.location.href = googleAuthorizeUrl('signup', 'boarder'); }} />
+      <AuthDivider />
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-3">
@@ -153,6 +148,6 @@ function BoarderSignupPage() {
           {submitting ? 'Creating account…' : 'Sign up'}
         </Button>
       </form>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

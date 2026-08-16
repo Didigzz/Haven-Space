@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
-import { AuthLayout } from '../../components/auth/AuthLayout';
+import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
@@ -58,7 +58,7 @@ function ResetPasswordPage() {
   }
 
   return (
-    <AuthLayout
+    <AuthSplitLayout
       title={success ? 'Password Reset Successful!' : 'Reset Your Password'}
       subtitle={
         success ? 'You can now log in with your new password.' : 'Create a new password for your account.'
@@ -117,6 +117,6 @@ function ResetPasswordPage() {
           </Link>
         </p>
       ) : null}
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
-import { AuthLayout } from '../../components/auth/AuthLayout';
+import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
@@ -44,7 +44,7 @@ function VerifyEmailPage() {
   }
 
   return (
-    <AuthLayout
+    <AuthSplitLayout
       title="Check your email"
       subtitle="We've sent you a verification code. Enter it on the signup or login page to verify your account."
     >
@@ -69,6 +69,6 @@ function VerifyEmailPage() {
           Back to Login
         </Link>
       </div>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

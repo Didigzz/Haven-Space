@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { AuthLayout } from '../../components/auth/AuthLayout';
+import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
+import { Icon } from '../../components/ui/Icon';
 
 export const Route = createFileRoute('/auth/choose')({
   component: ChoosePage,
@@ -7,27 +8,41 @@ export const Route = createFileRoute('/auth/choose')({
 
 function ChoosePage() {
   return (
-    <AuthLayout title="Join Haven Space" subtitle="I am a…">
+    <AuthSplitLayout
+      title="Join Haven Space"
+      subtitle="Choose how you want to get started"
+      image="/assets/images/public/signup_lower_left.png"
+      footer={
+        <p className="text-center">
+          Already have an account?{' '}
+          <Link to="/auth/login" className="text-primary hover:underline">
+            Log in
+          </Link>
+        </p>
+      }
+    >
       <div className="flex flex-col gap-3">
         <Link
           to="/auth/signup"
-          className="rounded-md bg-primary px-4 py-3 text-center text-white hover:bg-primary-dark"
+          className="flex items-center gap-4 rounded-xl border-2 border-primary bg-white px-4 py-4 text-left hover:bg-mint"
         >
-          Boarder — I&apos;m looking for a room
+          <Icon name="search" size={28} className="shrink-0" />
+          <span>
+            <span className="block font-semibold text-ink">Boarder</span>
+            <span className="block text-sm text-gray-ink">I&apos;m looking for a room</span>
+          </span>
         </Link>
         <Link
           to="/auth/signup/landlord"
-          className="rounded-md border border-primary px-4 py-3 text-center text-primary hover:bg-mint"
+          className="flex items-center gap-4 rounded-xl border-2 border-gray-200 bg-white px-4 py-4 text-left hover:border-primary hover:bg-mint"
         >
-          Landlord — I rent out rooms
+          <Icon name="buildingOffice" size={28} className="shrink-0" />
+          <span>
+            <span className="block font-semibold text-ink">Landlord</span>
+            <span className="block text-sm text-gray-ink">I rent out rooms</span>
+          </span>
         </Link>
       </div>
-      <p className="mt-6 text-center text-sm text-gray-ink">
-        Already have an account?{' '}
-        <Link to="/auth/login" className="text-primary hover:underline">
-          Log in
-        </Link>
-      </p>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

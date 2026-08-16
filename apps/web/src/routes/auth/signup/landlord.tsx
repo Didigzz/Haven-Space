@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
-import { AuthLayout } from '../../../components/auth/AuthLayout';
+import { AuthSplitLayout } from '../../../components/auth/AuthSplitLayout';
 import { Button } from '../../../components/ui/Button';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../../components/ui/Field';
@@ -94,11 +94,12 @@ function LandlordSignupPage() {
   }
 
   return (
-    <AuthLayout
+    <AuthSplitLayout
       title="Create your landlord account"
       subtitle="This information helps us verify your account and connect you with potential boarders."
+      image="/assets/images/public/signup_lower_left.png"
       footer={
-        <p>
+        <p className="text-center">
           Already have an account?{' '}
           <Link to="/auth/login" className="text-primary hover:underline">
             Log in
@@ -270,6 +271,6 @@ function LandlordSignupPage() {
           {submitting ? 'Creating account…' : 'Create Landlord Account'}
         </Button>
       </form>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

@@ -1,6 +1,10 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
-import { AuthLayout } from '../../components/auth/AuthLayout';
+import {
+  AuthDivider,
+  AuthSplitLayout,
+  GoogleButton,
+} from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
@@ -53,11 +57,11 @@ function LoginPage() {
   }
 
   return (
-    <AuthLayout
+    <AuthSplitLayout
       title="Welcome Back!"
       subtitle="We're excited to see you again. Please enter your details to continue."
       footer={
-        <p>
+        <p className="text-center">
           Don&apos;t have an account?{' '}
           <Link to="/auth/choose" className="text-primary hover:underline">
             Sign up
@@ -67,18 +71,8 @@ function LoginPage() {
     >
       {error ? <ErrorState message={error} /> : null}
 
-      <a
-        href={googleAuthorizeUrl('login', 'boarder')}
-        className="mb-4 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
-      >
-        <span className="font-semibold">G</span> Log in with Google
-      </a>
-
-      <div className="mb-4 flex items-center gap-3 text-xs text-gray-ink">
-        <span className="h-px flex-1 bg-gray-200" />
-        or
-        <span className="h-px flex-1 bg-gray-200" />
-      </div>
+      <GoogleButton onClick={() => { window.location.href = googleAuthorizeUrl('login', 'boarder'); }} />
+      <AuthDivider />
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <Field label="Email" htmlFor="email">
@@ -124,6 +118,6 @@ function LoginPage() {
           {submitting ? 'Logging in…' : 'Login'}
         </Button>
       </form>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }
