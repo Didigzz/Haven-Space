@@ -73,6 +73,7 @@ function seedData(db: Database): void {
     INSERT INTO users (id, first_name, last_name, email, role, is_verified, email_verified, account_status, created_at)
     VALUES
       (1, 'Ada', 'Admin', 'admin@example.com', 'admin', 1, 1, 'active', '2026-05-01 08:00:00'),
+      (2, 'Bea', 'Boarder', 'boarder@example.com', 'boarder', 1, 1, 'active', '2026-05-01 09:00:00'),
       (3, 'Lara', 'Landlord One', 'lara@example.com', 'landlord', 1, 1, 'active', '2026-05-02 08:00:00'),
       (4, 'Omar', 'Landlord Two', 'omar@example.com', 'landlord', 1, 1, 'active', '2026-05-03 08:00:00'),
       (5, 'Una', 'Unverified', 'una@example.com', 'landlord', 0, 0, 'pending_verification', '2026-05-04 08:00:00');
