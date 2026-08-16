@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
+import { PublicLayout } from '../components/layout/PublicLayout';
 import { Hero } from '../components/rooms/Hero';
 import { getPopularLocations } from '../lib/api/public';
 
@@ -17,7 +18,7 @@ function HomePage() {
   const { data } = Route.useLoaderData();
 
   return (
-    <main>
+    <PublicLayout>
       <Hero />
       <section className="mx-auto max-w-6xl p-6">
         <h2 className="mb-4 text-xl font-bold">Popular locations</h2>
@@ -30,6 +31,6 @@ function HomePage() {
           ))}
         </ul>
       </section>
-    </main>
+    </PublicLayout>
   );
 }
