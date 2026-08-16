@@ -150,12 +150,29 @@ function authResponse(
   return response;
 }
 
-function transientCookie(name: string, value: string, maxAge: number, env: Env): string {
-  const secure = env.APP_ENV === 'production' ? '; Secure' : '';
+/**
+ * Cookie carrying the Google OAuth state nonce. It must survive the
+ * cross-site redirect chain (frontend -> API -> accounts.google.com -> API
+ * callback), so on https it is set as `SameSite=None; Secure` — the standard
+ * for OAuth state cookies — while the nonce check in `verifiedGoogleState`
+ * keeps the callback bound to the original authorize request. Over plain http
+ * (local dev on http://localhost) the Secure flag is omitted so browsers that
+ * don't treat localhost as a secure context don't silently reject the cookie,
+ * which otherwise surfaces as a "Google login session expired" bounce-back
+ * before the role chooser ever loads.
+ */
+function googleStateCookie(
+  requestUrl: string,
+  name: string,
+  value: string,
+  maxAge: number
+): string {
+  const secure = new URL(requestUrl).protocol === 'https:' ? '; Secure' : '';
+  const sameSite = secure ? 'None' : 'Lax';
 
   return `${name}=${encodeURIComponent(
     value
-  )}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Lax${secure}`;
+  )}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=${sameSite}${secure}`;
 }
 
 function redirectResponse(location: string, headers?: Headers): Response {
@@ -235,6 +252,16 @@ function frontendOrigin(c: Context<{ Bindings: Env }>): string {
     return requestedOrigin;
   }
 
+  // If no allowed origin was requested, prefer the first localhost origin when
+  // the request itself came in locally, so fallback/error redirects during
+  // local development don't bounce the user to the production site.
+  if (isLocalhostOrigin(c.req.url)) {
+    const localhost = allowedOrigins.find(origin => isLocalhostOrigin(origin));
+    if (localhost) {
+      return localhost;
+    }
+  }
+
   return allowedOrigins[0] ?? 'http://localhost:3000';
 }
 
@@ -243,7 +270,7 @@ function frontendUrl(origin: string, path: string): string {
 }
 
 function authErrorRedirect(
-  env: Env,
+  c: Context<{ Bindings: Env }>,
   origin: string,
   action: OAuthAction,
   message: string
@@ -252,12 +279,12 @@ function authErrorRedirect(
   const url = new URL(path, origin.endsWith('/') ? origin : `${origin}/`);
   url.searchParams.set('error', message);
 
-  return redirectResponse(url.toString(), clearGoogleStateHeaders(env));
+  return redirectResponse(url.toString(), clearGoogleStateHeaders(c));
 }
 
-function clearGoogleStateHeaders(env: Env): Headers {
+function clearGoogleStateHeaders(c: Context<{ Bindings: Env }>): Headers {
   const headers = new Headers();
-  headers.append('Set-Cookie', transientCookie(googleStateCookieName, '', 0, env));
+  headers.append('Set-Cookie', googleStateCookie(c.req.url, googleStateCookieName, '', 0));
   return headers;
 }
 
@@ -575,7 +602,7 @@ async function handleGoogleAuthorize(c: Context<{ Bindings: Env }>): Promise<Res
     jwtSecret = config.jwtSecret;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Google OAuth is not configured';
-    return authErrorRedirect(c.env, origin, action, message);
+    return authErrorRedirect(c, origin, action, message);
   }
 
   const nonce = randomToken();
@@ -597,7 +624,7 @@ async function handleGoogleAuthorize(c: Context<{ Bindings: Env }>): Promise<Res
   const headers = new Headers();
   headers.append(
     'Set-Cookie',
-    transientCookie(googleStateCookieName, nonce, googleStateSeconds, c.env)
+    googleStateCookie(c.req.url, googleStateCookieName, nonce, googleStateSeconds)
   );
 
   return redirectResponse(url.toString(), headers);
@@ -617,22 +644,17 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
       c.req.query('error') === 'access_denied'
         ? 'Google login was cancelled.'
         : c.req.query('error_description') || 'Google login failed. Please try again.';
-    return authErrorRedirect(c.env, origin, action, message);
+    return authErrorRedirect(c, origin, action, message);
   }
 
   if (!state) {
-    return authErrorRedirect(
-      c.env,
-      origin,
-      action,
-      'Google login session expired. Please try again.'
-    );
+    return authErrorRedirect(c, origin, action, 'Google login session expired. Please try again.');
   }
 
   const code = c.req.query('code');
 
   if (!code) {
-    return authErrorRedirect(c.env, origin, action, 'Google did not return an authorization code.');
+    return authErrorRedirect(c, origin, action, 'Google did not return an authorization code.');
   }
 
   try {
@@ -646,7 +668,7 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
 
       if (['suspended', 'banned'].includes(user.account_status)) {
         return authErrorRedirect(
-          c.env,
+          c,
           origin,
           action,
           'This account is suspended or banned. Contact support if you believe this is a mistake.'
@@ -658,7 +680,7 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
       const redirectUrl = new URL(redirectPathForUser(formattedUser), `${origin}/`);
       redirectUrl.hash = `auth=${userHashPayload(formattedUser, accessToken, refreshToken)}`;
 
-      const headers = clearGoogleStateHeaders(c.env);
+      const headers = clearGoogleStateHeaders(c);
       headers.append(
         'Set-Cookie',
         authCookie('access_token', accessToken, accessTokenSeconds, c.env)
@@ -696,13 +718,13 @@ async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promise<Resp
 
     return redirectResponse(
       pendingSessionRedirect(origin, pendingToken),
-      clearGoogleStateHeaders(c.env)
+      clearGoogleStateHeaders(c)
     );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Google login failed. Please try again.';
 
-    return authErrorRedirect(c.env, origin, action, message);
+    return authErrorRedirect(c, origin, action, message);
   }
 }
 

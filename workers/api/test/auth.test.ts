@@ -275,7 +275,28 @@ describe('auth routes', () => {
     expect(redirect.searchParams.get('scope')).toBe('openid profile email');
     expect(redirect.searchParams.get('response_type')).toBe('code');
     expect(redirect.searchParams.get('state')).toBeString();
-    expect(response.headers.get('Set-Cookie')).toContain('google_oauth_state=');
+    const stateCookie = response.headers.get('Set-Cookie');
+    expect(stateCookie).toContain('google_oauth_state=');
+    // Over plain http (local dev) the state cookie must not carry the Secure
+    // flag (browsers can reject it on http://localhost), and it stays Lax.
+    expect(stateCookie).toContain('SameSite=Lax');
+    expect(stateCookie).not.toContain('Secure');
+  });
+
+  it('sets the OAuth state cookie to SameSite=None; Secure over https', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const response = await app.request(
+      'https://localhost/api/auth/google/authorize?action=signup&role=boarder',
+      { headers: { Referer: 'https://haven-space.pages.dev/auth/signup' } },
+      createEnv(sqlite)
+    );
+    const stateCookie = response.headers.get('Set-Cookie');
+
+    expect(response.status).toBe(302);
+    expect(stateCookie).toContain('google_oauth_state=');
+    expect(stateCookie).toContain('SameSite=None');
+    expect(stateCookie).toContain('Secure');
   });
 
   it('redirects a brand-new Google email to the role chooser without creating an account', async () => {
