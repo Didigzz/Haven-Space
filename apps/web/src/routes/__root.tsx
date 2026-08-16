@@ -15,6 +15,8 @@ import {
   redirectPathForUser,
   sanitizeRedirect,
 } from '../lib/oauth';
+import { ToastHost } from '../components/ui/Toast';
+import { setPendingToast } from '../lib/toast';
 import appCss from '../styles/app.css?url';
 
 export const Route = createRootRoute({
@@ -75,6 +77,7 @@ function RootComponent() {
   useEffect(() => {
     const user = handleOAuthHash();
     if (user) {
+      setPendingToast('success', `Welcome back, ${user.first_name}!`);
       const redirect = sanitizeRedirect(
         typeof window === 'undefined'
           ? null
@@ -96,6 +99,7 @@ function RootComponent() {
           <Outlet />
         </QueryClientProvider>
       </AuthProvider>
+      <ToastHost />
     </RootDocument>
   );
 }

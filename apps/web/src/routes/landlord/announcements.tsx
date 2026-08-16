@@ -11,6 +11,7 @@ import { Field, SelectInput, TextArea, TextInput } from '../../components/ui/Fie
 import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
+import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import {
   createAnnouncement,
@@ -49,6 +50,7 @@ const EMPTY_FORM: AnnouncementForm = {
 function AnnouncementsPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
+  const { toasts, push, dismiss } = useToasts();
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<AnnouncementForm>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,10 @@ function AnnouncementsPage() {
       void queryClient.invalidateQueries({ queryKey: ['landlord-announcements'] });
       setModalOpen(false);
       setForm(EMPTY_FORM);
+      push({
+        tone: 'success',
+        message: form.id === null ? 'Announcement created.' : 'Announcement updated.',
+      });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to save announcement.'),
@@ -87,6 +93,7 @@ function AnnouncementsPage() {
     mutationFn: (id: number) => deleteAnnouncement(token!, id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-announcements'] });
+      push({ tone: 'success', message: 'Announcement deleted.' });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to delete announcement.'),
@@ -120,6 +127,7 @@ function AnnouncementsPage() {
 
   return (
     <RoleShell title="Announcements" nav={LANDLORD_NAV}>
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       {error ? (
         <div className="mb-4">
           <ErrorState message={error} />

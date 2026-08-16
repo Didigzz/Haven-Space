@@ -6,6 +6,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
 import { checkEmail } from '../../lib/api/auth';
+import { setPendingToast } from '../../lib/toast';
 import { useAuth } from '../../lib/auth-context';
 import {
   authErrorSearch,
@@ -51,6 +52,7 @@ function LoginPage() {
     setSubmitting(true);
     try {
       const user = await login(email.trim(), password);
+      setPendingToast('success', `Welcome back, ${user.first_name}!`);
       void navigate({ to: redirect ?? redirectPathForUser(user) });
     } catch (err) {
       setError(

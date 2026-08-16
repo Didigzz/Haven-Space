@@ -11,6 +11,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { ToastStack, useToasts } from '../../components/ui/Toast';
 import {
   getApplications,
   getLandlords,
@@ -103,7 +104,7 @@ function AdminOverview() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<TabKey>('users');
-  const [notice, setNotice] = useState('');
+  const { toasts, push, dismiss } = useToasts();
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin'] });
@@ -149,39 +150,39 @@ function AdminOverview() {
     mutationFn: ({ userId, status }: { userId: number; status: string }) =>
       patchUserStatus(token!, userId, status),
     onSuccess: result => {
-      setNotice(result.message);
+      push({ tone: 'success', message: result.message });
       invalidate();
     },
-    onError: (error: Error) => setNotice(error.message),
+    onError: (error: Error) => push({ tone: 'error', message: error.message }),
   });
 
   const patchProperty = useMutation({
     mutationFn: ({ propertyId, action }: { propertyId: number; action: string }) =>
       patchPropertyStatus(token!, propertyId, action),
     onSuccess: result => {
-      setNotice(result.message);
+      push({ tone: 'success', message: result.message });
       invalidate();
     },
-    onError: (error: Error) => setNotice(error.message),
+    onError: (error: Error) => push({ tone: 'error', message: error.message }),
   });
 
   const patchLandlord = useMutation({
     mutationFn: ({ landlordId, action }: { landlordId: number; action: 'approve' | 'reject' }) =>
       updateLandlordVerification(token!, landlordId, action),
     onSuccess: result => {
-      setNotice(result.message);
+      push({ tone: 'success', message: result.message });
       invalidate();
     },
-    onError: (error: Error) => setNotice(error.message),
+    onError: (error: Error) => push({ tone: 'error', message: error.message }),
   });
 
   const saveSettings = useMutation({
     mutationFn: (values: Record<string, string>) => patchSettings(token!, values),
     onSuccess: result => {
-      setNotice(result.message);
+      push({ tone: 'success', message: result.message });
       invalidate();
     },
-    onError: (error: Error) => setNotice(error.message),
+    onError: (error: Error) => push({ tone: 'error', message: error.message }),
   });
 
   const userColumns: Column<AdminUserRow>[] = [
@@ -298,11 +299,7 @@ function AdminOverview() {
         </p>
       </div>
 
-      {notice ? (
-        <div className="mb-4 rounded-md border border-mint bg-mint/40 px-4 py-2 text-sm">
-          {notice}
-        </div>
-      ) : null}
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
 
       {summary.isLoading ? (
         <Spinner />

@@ -12,6 +12,7 @@ import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import {
   addBoarder,
@@ -56,6 +57,7 @@ const EMPTY_FORM: BoarderForm = {
 function BoardersPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
+  const { toasts, push, dismiss } = useToasts();
   const [propertyId, setPropertyId] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<BoarderForm>(EMPTY_FORM);
@@ -103,6 +105,10 @@ function BoardersPage() {
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
       setModalOpen(false);
       setForm(EMPTY_FORM);
+      push({
+        tone: 'success',
+        message: form.id === null ? 'Boarder added.' : 'Boarder updated.',
+      });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to save boarder.'),
@@ -112,6 +118,7 @@ function BoardersPage() {
     mutationFn: (id: number) => removeBoarder(token!, id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
+      push({ tone: 'success', message: 'Boarder removed.' });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to remove boarder.'),
@@ -128,11 +135,15 @@ function BoardersPage() {
       action === 'approve'
         ? approveLeaveRequest(token!, applicationId)
         : declineLeaveRequest(token!, applicationId),
-    onSuccess: () => {
+    onSuccess: (_data, { action }) => {
       // Approval frees the room and changes occupancy, so refresh rooms too.
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
       void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyIdNumber] });
       void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
+      push({
+        tone: 'success',
+        message: action === 'approve' ? 'Leave request approved.' : 'Leave request declined.',
+      });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update leave request.'),
@@ -167,6 +178,7 @@ function BoardersPage() {
 
   return (
     <RoleShell title="Boarders" nav={LANDLORD_NAV}>
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       {error ? (
         <div className="mb-4">
           <ErrorState message={error} />

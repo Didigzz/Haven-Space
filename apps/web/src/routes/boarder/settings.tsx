@@ -9,6 +9,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
+import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import { changePassword } from '../../lib/api/auth';
 import { getProfile, updateProfile, uploadAvatar } from '../../lib/api/account';
@@ -33,7 +34,7 @@ function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const { toasts, push, dismiss } = useToasts();
 
   const profile = useQuery({
     queryKey: ['profile'],
@@ -67,7 +68,7 @@ function SettingsPage() {
       // Write the fresh user to the store so the navbar/user menu updates
       // immediately (AUTH_CHANGED_EVENT re-syncs the auth context).
       setStoredAuth(token!, undefined, data.user);
-      setSavedMessage('Profile updated.');
+      push({ tone: 'success', message: 'Profile updated.' });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update profile.'),
@@ -78,7 +79,7 @@ function SettingsPage() {
     onSuccess: data => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       setStoredAuth(token!, undefined, data.user);
-      setSavedMessage('Avatar updated.');
+      push({ tone: 'success', message: 'Avatar updated.' });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to upload avatar.'),
@@ -89,7 +90,7 @@ function SettingsPage() {
     onSuccess: () => {
       setCurrentPassword('');
       setNewPassword('');
-      setSavedMessage('Password changed.');
+      push({ tone: 'success', message: 'Password changed.' });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to change password.'),
@@ -98,14 +99,12 @@ function SettingsPage() {
   function handleProfileSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setSavedMessage(null);
     saveProfile.mutate();
   }
 
   function handlePasswordSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setSavedMessage(null);
     if (newPassword.length < 8) {
       setError('New password must be at least 8 characters long');
       return;
@@ -118,8 +117,8 @@ function SettingsPage() {
   return (
     <RoleShell title="Settings" nav={BOARDER_NAV}>
       <div className="flex max-w-2xl flex-col gap-6">
+        <ToastStack toasts={toasts} onDismiss={dismiss} />
         {error ? <ErrorState message={error} /> : null}
-        {savedMessage ? <div className="rounded-md bg-mint p-3 text-sm">{savedMessage}</div> : null}
 
         <Card>
           <h2 className="flex items-center gap-2 text-lg font-semibold">
@@ -173,7 +172,6 @@ function SettingsPage() {
                   const file = e.target.files?.[0];
                   if (file) {
                     setError(null);
-                    setSavedMessage(null);
                     avatar.mutate(file);
                   }
                 }}

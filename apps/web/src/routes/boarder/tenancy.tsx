@@ -12,6 +12,7 @@ import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import { getTenancy, leaveRequest } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
@@ -28,6 +29,7 @@ export const Route = createFileRoute('/boarder/tenancy')({
 function TenancyPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
+  const { toasts, push, dismiss } = useToasts();
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [leaveDate, setLeaveDate] = useState('');
@@ -53,6 +55,7 @@ function TenancyPage() {
       setReason('');
       setLeaveDate('');
       setMessage('');
+      push({ tone: 'success', message: 'Leave request submitted.' });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to submit leave request.'),
@@ -70,6 +73,7 @@ function TenancyPage() {
 
   return (
     <RoleShell title="Tenancy" nav={BOARDER_NAV}>
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
       {tenancy.isLoading ? (
         <Spinner />
       ) : !data ? (

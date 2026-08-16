@@ -2,6 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import type { AuthUser } from '../../lib/types';
+import { setPendingToast } from '../../lib/toast';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 
@@ -118,6 +119,7 @@ export function UserMenu() {
               onClick={async () => {
                 setOpen(false);
                 await logout();
+                setPendingToast('success', "You've been logged out. See you soon!");
                 void navigate({ to: '/auth/login' });
               }}
             >

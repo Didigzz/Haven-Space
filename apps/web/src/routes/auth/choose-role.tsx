@@ -6,6 +6,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextArea, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
 import { useAuth } from '../../lib/auth-context';
+import { setPendingToast } from '../../lib/toast';
 import {
   authErrorSearch,
   clearGooglePendingHash,
@@ -68,6 +69,7 @@ function ChooseRolePage() {
     setError(null);
     try {
       const user = await completeGoogle({ pendingToken: pending.token, ...input });
+      setPendingToast('success', `Welcome back, ${user.first_name}!`);
       void navigate({ to: session?.redirect ?? searchRedirect ?? redirectPathForUser(user) });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
