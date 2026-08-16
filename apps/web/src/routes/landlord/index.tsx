@@ -51,6 +51,21 @@ function LandlordDashboard() {
 
   return (
     <RoleShell title="Landlord dashboard" nav={LANDLORD_NAV}>
+      {user?.verification_status === 'pending' ? (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-sm text-amber-800">
+            Your account is pending verification. You can browse the dashboard, but your listings
+            won&apos;t be visible to boarders until your identity is verified.
+          </p>
+          <Link
+            to="/landlord/verification"
+            className="rounded-full bg-amber-800 px-4 py-1.5 text-sm font-semibold text-white hover:brightness-90"
+          >
+            Complete verification
+          </Link>
+        </div>
+      ) : null}
+
       {/* Greeting */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
