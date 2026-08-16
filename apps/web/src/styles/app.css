@@ -79,6 +79,42 @@ body {
   }
 }
 
+/* Modal entrance: fade the backdrop and scale the card in quickly */
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-pop {
+  animation: modal-pop 200ms ease-out;
+}
+
+.modal-fade {
+  animation: modal-fade 180ms ease-out;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-pop,
+  .modal-fade {
+    animation: none;
+  }
+}
+
 /* Logo cloud marquee (legacy logo-cloud.css) */
 @keyframes logo-marquee {
   from {

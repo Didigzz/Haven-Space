@@ -1,6 +1,8 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 
 import type { Env } from '../env';
+import { authenticateUser, cookieValue, signJwt, verifyJwt } from '../lib/auth';
+import type { AuthenticatedUser } from '../lib/auth';
 import { requireD1 } from '../lib/d1';
 import { HttpError, jsonResponse } from '../lib/http';
 
@@ -10,6 +12,15 @@ const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 const GROQ_CHAT_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MAX_HISTORY_MESSAGES = 10;
 const MAX_LISTINGS = 6;
+
+// Response limits. Guests get one free response per browser (tracked by a
+// signed cookie that never expires); authenticated boarders/landlords get a
+// daily cap that resets at midnight Philippine Time; admins are unlimited.
+const AI_USAGE_COOKIE = 'ai_usage';
+const GUEST_MAX_RESPONSES = 1;
+const USER_DAILY_MAX_RESPONSES = 10;
+const GUEST_COOKIE_SECONDS = 60 * 60 * 24 * 365 * 10;
+const USER_COOKIE_SECONDS = 60 * 60 * 24 * 2;
 
 const SYSTEM_PROMPT = `You are Haven AI, the friendly and knowledgeable assistant for Haven Space, a boarding house platform in the Philippines connecting boarders with verified landlords.
 Help users find rooms, understand payments, maintenance requests, applications, and tenancy.
@@ -260,6 +271,65 @@ function formatRoomContext(listings: RoomListing[]): string {
   return `Real listings currently available on Haven Space:\n${lines.join('\n')}`;
 }
 
+interface AiUsageState {
+  kind?: 'guest' | 'user';
+  user_id?: number | string;
+  date?: string;
+  count?: number;
+}
+
+/**
+ * Current calendar date in Philippine Time (Asia/Manila, UTC+8) as YYYY-MM-DD,
+ * used to reset the authenticated daily chat cap at local midnight.
+ */
+function phDate(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(new Date());
+}
+
+/**
+ * HttpOnly tracking cookie carrying a signed usage counter. Over https it must
+ * be SameSite=None; Secure so the cross-origin web app can send it back (same
+ * pattern as the Google OAuth state cookie); over plain http (local dev) it
+ * stays Lax and omits Secure so browsers don't reject it.
+ */
+function aiUsageCookie(requestUrl: string, value: string, maxAgeSeconds: number): string {
+  const secure = new URL(requestUrl).protocol === 'https:' ? '; Secure' : '';
+  const sameSite = secure ? 'None' : 'Lax';
+
+  return `${AI_USAGE_COOKIE}=${value}; Max-Age=${maxAgeSeconds}; Path=/; HttpOnly; SameSite=${sameSite}${secure}`;
+}
+
+/** Read and verify the signed ai_usage cookie; null when absent or invalid. */
+async function readAiUsage(c: Context<{ Bindings: Env }>): Promise<AiUsageState | null> {
+  if (!c.env.JWT_SECRET) return null;
+
+  const raw = cookieValue(c.req.raw, AI_USAGE_COOKIE);
+
+  if (!raw) return null;
+
+  const payload = await verifyJwt(raw, c.env.JWT_SECRET);
+
+  if (!payload || (payload.kind !== 'guest' && payload.kind !== 'user')) return null;
+
+  return {
+    kind: payload.kind,
+    user_id: payload.user_id,
+    date: typeof payload.date === 'string' ? payload.date : undefined,
+    count: typeof payload.count === 'number' ? payload.count : 0,
+  };
+}
+
+/** Build the Set-Cookie value for a fresh/incremented usage state. */
+async function aiUsageCookieValue(
+  c: Context<{ Bindings: Env }>,
+  payload: Record<string, unknown>
+): Promise<string> {
+  const maxAgeSeconds = payload.kind === 'guest' ? GUEST_COOKIE_SECONDS : USER_COOKIE_SECONDS;
+  const value = await signJwt(payload, c.env.JWT_SECRET!, maxAgeSeconds);
+
+  return aiUsageCookie(c.req.url, value, maxAgeSeconds);
+}
+
 async function groqChatCompletion(apiKey: string, messages: ChatMessage[]): Promise<string> {
   const response = await fetch(GROQ_CHAT_URL, {
     method: 'POST',
@@ -299,7 +369,8 @@ async function groqChatCompletion(apiKey: string, messages: ChatMessage[]): Prom
 function streamGroqChat(
   apiKey: string,
   messages: ChatMessage[],
-  propertyCount: number
+  propertyCount: number,
+  usageCookie: string | null
 ): Promise<Response> {
   return fetch(GROQ_CHAT_URL, {
     method: 'POST',
@@ -386,13 +457,16 @@ function streamGroqChat(
         }
       })();
 
-      return new Response(readable, {
-        headers: {
-          'Content-Type': 'text/event-stream; charset=utf-8',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive',
-        },
+      const headers = new Headers({
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
       });
+      if (usageCookie) {
+        headers.append('Set-Cookie', usageCookie);
+      }
+
+      return new Response(readable, { headers });
     })
     .catch(error => {
       return jsonResponse(
@@ -425,6 +499,70 @@ aiRoutes.post('/api/ai/chat', async c => {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message) {
     throw new HttpError(400, 'Message is required');
+  }
+
+  // --- Response limits ---------------------------------------------------
+  // Guests get one free response per browser; authenticated boarders and
+  // landlords get a daily cap (10, reset at midnight Philippine Time); admins
+  // are unlimited. The cookie is only written after a successful AI response,
+  // so failed/errored attempts do not consume the allowance (refund on
+  // failure). Enforcement is skipped entirely if JWT_SECRET is missing.
+  let usageCookie: string | null = null;
+
+  if (c.env.JWT_SECRET) {
+    let authUser: AuthenticatedUser | null = null;
+    try {
+      authUser = await authenticateUser(requireD1(c.env), c.req.raw, c.env.JWT_SECRET);
+    } catch {
+      // Missing/invalid token (or DB/auth failure) — fall back to guest rules
+    }
+
+    const usage = await readAiUsage(c);
+
+    if (authUser && authUser.role === 'admin') {
+      // Admins are exempt from response limits.
+    } else if (authUser) {
+      const today = phDate();
+      const current =
+        usage &&
+        usage.kind === 'user' &&
+        Number(usage.user_id) === authUser.user_id &&
+        usage.date === today
+          ? Math.max(0, usage.count ?? 0)
+          : 0;
+
+      if (current >= USER_DAILY_MAX_RESPONSES) {
+        return jsonResponse(
+          {
+            success: false,
+            error: `You've reached today's limit of ${USER_DAILY_MAX_RESPONSES} Haven AI questions. Come back tomorrow.`,
+            code: 'AI_LIMIT_REACHED',
+            limit: { scope: 'user', max: USER_DAILY_MAX_RESPONSES },
+          },
+          429
+        );
+      }
+
+      usageCookie = await aiUsageCookieValue(c, {
+        kind: 'user',
+        user_id: authUser.user_id,
+        date: today,
+        count: current + 1,
+      });
+    } else if (usage && usage.kind === 'guest') {
+      return jsonResponse(
+        {
+          success: false,
+          error:
+            "You've used your one free Haven AI question. Log in or sign up for unlimited chat.",
+          code: 'AI_LIMIT_REACHED',
+          limit: { scope: 'guest', max: GUEST_MAX_RESPONSES },
+        },
+        429
+      );
+    } else {
+      usageCookie = await aiUsageCookieValue(c, { kind: 'guest', count: 1 });
+    }
   }
 
   let roomContext: { listings: RoomListing[]; searched: boolean } = {
@@ -464,15 +602,19 @@ aiRoutes.post('/api/ai/chat', async c => {
   const propertyCount = roomContext.searched ? roomContext.listings.length : 0;
 
   if (body.stream === true) {
-    return streamGroqChat(apiKey, messages, propertyCount);
+    return streamGroqChat(apiKey, messages, propertyCount, usageCookie);
   }
 
   const response = await groqChatCompletion(apiKey, messages);
-  return jsonResponse({
+  const result = jsonResponse({
     success: true,
     response,
     ...(roomContext.searched ? { property_count: roomContext.listings.length } : {}),
   });
+  if (usageCookie) {
+    result.headers.append('Set-Cookie', usageCookie);
+  }
+  return result;
 });
 
 export default aiRoutes;

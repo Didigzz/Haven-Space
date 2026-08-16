@@ -15,6 +15,8 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`, {
     ...options,
+    // Send cookies (e.g. the API-issued ai_usage tracking cookie) cross-origin.
+    credentials: options.credentials ?? 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers ?? {}),
