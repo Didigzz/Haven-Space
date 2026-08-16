@@ -90,21 +90,40 @@ The API Worker's `ALLOWED_ORIGINS` (or `APP_ORIGIN`) must include the frontend's
 - local frontend: `http://localhost:3000`
 - production frontend: the web Worker's origin (e.g. `https://haven-space-web.<account>.workers.dev`, or a custom domain if one is added)
 
+## Legacy Design Reference (`client/`)
+
+The `client/` folder holds the legacy vanilla HTML/CSS/JS frontend. It is kept as the design
+reference: the TanStack homepage and FAQ were rebuilt to match it. The homepage was aligned as
+follows:
+
+- Removed the border and shadow around the `main.png` app preview image.
+- Removed the "Voices / Real Stories, Real Impact" testimonials section (kept on Our Story, which still carries it in the reference).
+- Restyled the FAQ section (light-gray `#f8f9fa` background, left-aligned header with pill badge, underline category tabs, card-style accordion items) to match the reference.
+
+Preview the reference locally:
+
+```bash
+bun run client:dev
+```
+
+The reference is served at `http://localhost:8788` (redirects to `views/public/index.html`).
+
 ## Scripts
 
-| Command                    | Description                             |
-| -------------------------- | --------------------------------------- |
-| `bun run cf:api:dev`       | Run the Worker API locally              |
-| `bun run cf:api:test`      | Run Worker API tests                    |
-| `bun run cf:api:typecheck` | Typecheck Worker API code               |
-| `bun run cf:api:deploy`    | Deploy the production Worker            |
-| `bun run web:dev`          | Run the TanStack Start frontend locally |
-| `bun run web:test`         | Run frontend tests                      |
-| `bun run web:typecheck`    | Typecheck frontend code                 |
-| `bun run web:build`        | Build the frontend output               |
-| `bun run web:deploy`       | Deploy the frontend Worker              |
-| `bun run deploy`           | Deploy Worker API and frontend          |
-| `bun run format`           | Format files with Prettier              |
+| Command                    | Description                                 |
+| -------------------------- | ------------------------------------------- |
+| `bun run client:dev`       | Serve the legacy `/client` design reference |
+| `bun run cf:api:dev`       | Run the Worker API locally                  |
+| `bun run cf:api:test`      | Run Worker API tests                        |
+| `bun run cf:api:typecheck` | Typecheck Worker API code                   |
+| `bun run cf:api:deploy`    | Deploy the production Worker                |
+| `bun run web:dev`          | Run the TanStack Start frontend locally     |
+| `bun run web:test`         | Run frontend tests                          |
+| `bun run web:typecheck`    | Typecheck frontend code                     |
+| `bun run web:build`        | Build the frontend output                   |
+| `bun run web:deploy`       | Deploy the frontend Worker                  |
+| `bun run deploy`           | Deploy Worker API and frontend              |
+| `bun run format`           | Format files with Prettier                  |
 
 ## Production Deploy
 

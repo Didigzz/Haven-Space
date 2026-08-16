@@ -3,7 +3,6 @@ import { createServerFn } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
 import { FAQSection } from '../components/home/FAQSection';
 import { LogoCloud } from '../components/home/LogoCloud';
-import { Testimonials } from '../components/home/Testimonials';
 import { VisionCards } from '../components/home/VisionCards';
 import { PublicLayout } from '../components/layout/PublicLayout';
 import { Hero } from '../components/rooms/Hero';
@@ -30,7 +29,7 @@ function HomePage() {
         <img
           src="/assets/images/public/main.png"
           alt="Haven Space app dashboard preview"
-          className="mx-auto w-full rounded-xl border border-gray-200 shadow-pop"
+          className="mx-auto w-full rounded-xl"
         />
       </section>
 
@@ -87,7 +86,6 @@ function HomePage() {
       </section>
 
       <VisionCards />
-      <Testimonials />
       <FAQSection />
     </PublicLayout>
   );

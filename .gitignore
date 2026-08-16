@@ -9,8 +9,10 @@ functions/api/vendor/
 .DS_Store
 
 # Environment files (NEVER commit these!)
+.env
 .env.local
 .env.production
+.env.cloudflare
 .dev.vars
 .dev.vars.*
 !.dev.vars.example

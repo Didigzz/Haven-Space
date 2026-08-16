@@ -45,36 +45,38 @@ export function FAQSection() {
   const [tab, setTab] = useState('all');
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const visible = tab === 'all' ? FAQS : FAQS.filter((faq) => faq.category === tab);
+  const visible = tab === 'all' ? FAQS : FAQS.filter(faq => faq.category === tab);
 
   return (
-    <section className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-16">
-        <div className="mb-10 text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-primary">FAQ</span>
-          <h2 className="mt-2 text-3xl font-bold text-ink">Frequently Asked Questions</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-gray-ink">
+    <section className="bg-[#f8f9fa]">
+      <div className="mx-auto max-w-6xl px-4 py-20">
+        <div className="mb-12 text-left">
+          <span className="mb-4 inline-block rounded-full bg-mint px-4 py-2 text-xs font-semibold uppercase tracking-widest text-primary">
+            FAQ
+          </span>
+          <h2 className="mb-4 text-4xl font-extrabold text-ink">Frequently Asked Questions</h2>
+          <p className="max-w-2xl text-lg leading-relaxed text-gray-ink">
             Everything you need to know about Haven Space, from finding rooms to secure payments
             and trusted landlords.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-5">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* Left — image + CTA */}
-          <div className="lg:col-span-2">
-            <div className="overflow-hidden rounded-xl border border-gray-200">
+          <div className="lg:col-span-1 lg:sticky lg:top-8">
+            <div className="overflow-hidden rounded-lg bg-white">
               <img
                 src="/assets/images/public/costumer_support.png"
                 alt="Customer support representative"
-                className="h-48 w-full object-cover"
+                className="block w-full"
               />
-              <div className="bg-cream p-5">
-                <p className="font-semibold text-ink">
+              <div className="p-6">
+                <p className="mb-4 font-semibold text-ink">
                   Any other questions? <span className="font-normal text-gray-ink">We have the answers.</span>
                 </p>
                 <a
                   href="mailto:support@havenspace.app"
-                  className="mt-3 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
+                  className="inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
                 >
                   Contact us
                 </a>
@@ -83,9 +85,9 @@ export function FAQSection() {
           </div>
 
           {/* Right — tabs + accordion */}
-          <div className="lg:col-span-3">
-            <div className="mb-4 flex flex-wrap gap-2">
-              {TABS.map((item) => (
+          <div className="flex flex-col gap-4 lg:col-span-2">
+            <div className="mb-2 flex flex-wrap gap-2 border-b border-gray-200">
+              {TABS.map(item => (
                 <button
                   key={item.key}
                   type="button"
@@ -93,39 +95,47 @@ export function FAQSection() {
                     setTab(item.key);
                     setOpenIndex(null);
                   }}
-                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                    tab === item.key ? 'bg-primary text-white' : 'bg-mint text-primary hover:bg-mint/60'
+                  className={`relative whitespace-nowrap px-4 py-3 text-sm transition-colors ${
+                    tab === item.key
+                      ? 'font-semibold text-ink'
+                      : 'font-medium text-gray-ink hover:text-ink'
                   }`}
                 >
                   {item.label}
+                  {tab === item.key ? (
+                    <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-t bg-primary" />
+                  ) : null}
                 </button>
               ))}
             </div>
-            <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
-              {visible.map((faq, index) => {
-                const isOpen = openIndex === index;
-                return (
-                  <div key={faq.question}>
-                    <button
-                      type="button"
-                      aria-expanded={isOpen}
-                      onClick={() => setOpenIndex(isOpen ? null : index)}
-                      className="flex w-full items-center justify-between px-5 py-4 text-left"
+            {visible.map((faq, index) => {
+              const isOpen = openIndex === index;
+              return (
+                <div
+                  key={faq.question}
+                  className="overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                >
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    onClick={() => setOpenIndex(isOpen ? null : index)}
+                    className="flex w-full items-center justify-between px-6 py-5 text-left"
+                  >
+                    <span className="flex-1 pr-4 font-semibold text-ink">{faq.question}</span>
+                    <span
+                      className={`text-xl text-gray-ink transition-transform ${
+                        isOpen ? 'rotate-45 text-primary' : ''
+                      }`}
                     >
-                      <span className="font-medium text-ink">{faq.question}</span>
-                      <span
-                        className={`ml-4 text-xl text-primary transition-transform ${isOpen ? 'rotate-45' : ''}`}
-                      >
-                        +
-                      </span>
-                    </button>
-                    {isOpen ? (
-                      <p className="px-5 pb-4 text-sm leading-relaxed text-gray-ink">{faq.answer}</p>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
+                      +
+                    </span>
+                  </button>
+                  {isOpen ? (
+                    <p className="px-6 pb-5 text-sm leading-relaxed text-gray-ink">{faq.answer}</p>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

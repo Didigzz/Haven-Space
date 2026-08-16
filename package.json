@@ -19,6 +19,7 @@
     "cf:api:deploy:staging": "bun run --cwd workers/api deploy:staging",
     "cf:api:typecheck": "bun run --cwd workers/api typecheck",
     "cf:api:test": "bun run --cwd workers/api test",
+    "client:dev": "bunx serve client -l 8788",
     "web:dev": "bun run --cwd apps/web dev",
     "web:build": "bun run --cwd apps/web build",
     "web:deploy": "bun run --cwd apps/web deploy",
