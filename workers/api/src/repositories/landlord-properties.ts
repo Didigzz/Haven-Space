@@ -140,6 +140,7 @@ export interface CreateLandlordRoomInput {
   roomNumber: string;
   roomType: string;
   capacity: number;
+  deposit: number;
 }
 
 export interface UpdateLandlordAddressInput {
@@ -444,12 +445,13 @@ export async function createLandlordRoom(
           title,
           price,
           description,
+          deposit,
           status,
           room_number,
           room_type,
           capacity
         )
-        VALUES (?, ?, ?, ?, ?, 'available', ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, 'available', ?, ?, ?)
       `
     )
     .bind(
@@ -458,6 +460,7 @@ export async function createLandlordRoom(
       input.title,
       input.price,
       input.description,
+      input.deposit,
       input.roomNumber,
       input.roomType,
       input.capacity
