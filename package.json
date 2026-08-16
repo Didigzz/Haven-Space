@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Boarding house platform connecting boarders and landlords",
   "scripts": {
-    "dev": "bun run web:dev",
+    "dev": "bun run --parallel web:dev cf:api:dev",
     "server": "bun run cf:api:dev",
     "db:setup": "bun run --cwd workers/api migrate:local",
     "format": "prettier --write .",
