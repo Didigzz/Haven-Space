@@ -1,0 +1,50 @@
+name: Checks
+
+# Runs on every push to main and every pull request: typechecks and lint
+# (Prettier) must pass.
+#
+# The web app (`haven-space` Cloudflare Pages project) is deployed by the
+# Cloudflare git integration (build command + `dist/pages` output dir), which
+# builds every PR as a preview and every push to main as production — no
+# deploy step needed in this workflow.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  checks:
+    name: Typechecks & lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root dependencies
+        run: bun install
+
+      - name: Install API dependencies
+        run: bun install --cwd workers/api
+
+      - name: Install web dependencies
+        run: bun install --cwd apps/web
+
+      - name: Typecheck API
+        run: bun run cf:api:typecheck
+
+      - name: Typecheck web
+        run: bun run web:typecheck
+
+      - name: Build web
+        run: bun run web:build
+
+      - name: Lint (Prettier)
+        run: bun run format:check
