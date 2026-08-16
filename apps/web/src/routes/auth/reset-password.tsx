@@ -61,7 +61,9 @@ function ResetPasswordPage() {
     <AuthSplitLayout
       title={success ? 'Password Reset Successful!' : 'Reset Your Password'}
       subtitle={
-        success ? 'You can now log in with your new password.' : 'Create a new password for your account.'
+        success
+          ? 'You can now log in with your new password.'
+          : 'Create a new password for your account.'
       }
     >
       {success ? (
@@ -87,7 +89,7 @@ function ResetPasswordPage() {
                 required
                 minLength={8}
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={e => setNewPassword(e.target.value)}
               />
             </Field>
             <Field label="Confirm Password" htmlFor="confirmPassword">
@@ -100,7 +102,7 @@ function ResetPasswordPage() {
                 required
                 minLength={8}
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={e => setConfirm(e.target.value)}
               />
             </Field>
             <Button type="submit" disabled={submitting}>

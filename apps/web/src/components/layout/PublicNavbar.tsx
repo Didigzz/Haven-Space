@@ -25,7 +25,7 @@ export function PublicNavbar() {
           <span className="text-lg font-bold text-primary">Haven Space</span>
         </Link>
         <ul className="hidden items-center gap-6 md:flex">
-          {LINKS.map((link) => (
+          {LINKS.map(link => (
             <li key={link.to}>
               <Link
                 to={link.to}

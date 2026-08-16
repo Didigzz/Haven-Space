@@ -54,7 +54,7 @@ function TenancyPage() {
       setLeaveDate('');
       setMessage('');
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to submit leave request.'),
   });
 
@@ -99,7 +99,9 @@ function TenancyPage() {
             <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <dt className="text-sm text-gray-ink">Room</dt>
-                <dd className="font-medium">{String(data.room_number ?? data.room_title ?? '—')}</dd>
+                <dd className="font-medium">
+                  {String(data.room_number ?? data.room_title ?? '—')}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-ink">Monthly rent</dt>
@@ -134,7 +136,7 @@ function TenancyPage() {
               placeholder="e.g., Moving to a new city"
               required
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={e => setReason(e.target.value)}
             />
           </Field>
           <Field label="Leave date" htmlFor="leaveDate">
@@ -143,7 +145,7 @@ function TenancyPage() {
               type="date"
               required
               value={leaveDate}
-              onChange={(e) => setLeaveDate(e.target.value)}
+              onChange={e => setLeaveDate(e.target.value)}
             />
           </Field>
           <Field label="Message" htmlFor="leaveMessage">
@@ -153,7 +155,7 @@ function TenancyPage() {
               placeholder="Anything the landlord should know…"
               required
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
             />
           </Field>
           <Button type="submit" disabled={leave.isPending}>
@@ -199,8 +201,8 @@ function PendingLeaveState({ data }: { data: Record<string, unknown> }) {
         <div className="mt-4 rounded-lg bg-mint/60 p-4">
           <p className="font-semibold text-primary">Leave request pending</p>
           <p className="mt-1 text-sm text-gray-ink">
-            Your landlord will review your request. Your room stays reserved for you until
-            it&apos;s approved, and you can&apos;t submit another request until it&apos;s resolved.
+            Your landlord will review your request. Your room stays reserved for you until it&apos;s
+            approved, and you can&apos;t submit another request until it&apos;s resolved.
           </p>
         </div>
         <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">

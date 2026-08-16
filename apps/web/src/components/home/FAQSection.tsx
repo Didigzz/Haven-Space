@@ -56,8 +56,8 @@ export function FAQSection() {
           </span>
           <h2 className="mb-4 text-4xl font-extrabold text-ink">Frequently Asked Questions</h2>
           <p className="max-w-2xl text-lg leading-relaxed text-gray-ink">
-            Everything you need to know about Haven Space, from finding rooms to secure payments
-            and trusted landlords.
+            Everything you need to know about Haven Space, from finding rooms to secure payments and
+            trusted landlords.
           </p>
         </div>
 
@@ -72,7 +72,8 @@ export function FAQSection() {
               />
               <div className="p-6">
                 <p className="mb-4 font-semibold text-ink">
-                  Any other questions? <span className="font-normal text-gray-ink">We have the answers.</span>
+                  Any other questions?{' '}
+                  <span className="font-normal text-gray-ink">We have the answers.</span>
                 </p>
                 <a
                   href="mailto:support@havenspace.app"

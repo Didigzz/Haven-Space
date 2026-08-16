@@ -41,11 +41,11 @@ export function Footer() {
             Affordable boarding houses and rooms across the Philippines.
           </p>
         </div>
-        {COLUMNS.map((column) => (
+        {COLUMNS.map(column => (
           <div key={column.title}>
             <p className="mb-3 text-sm font-semibold">{column.title}</p>
             <ul className="space-y-2">
-              {column.links.map((link) => (
+              {column.links.map(link => (
                 <li key={link.to}>
                   <Link to={link.to} className="text-sm text-gray-ink hover:text-primary">
                     {link.label}

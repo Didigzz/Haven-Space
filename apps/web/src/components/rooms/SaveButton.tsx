@@ -14,9 +14,7 @@ export function SaveButton({ propertyId }: { propertyId: number }) {
 
   const toggle = useMutation({
     mutationFn: () =>
-      saved.data?.is_saved
-        ? unsaveListing(token!, propertyId)
-        : saveListing(token!, propertyId),
+      saved.data?.is_saved ? unsaveListing(token!, propertyId) : saveListing(token!, propertyId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['saved-status', propertyId] });
       void queryClient.invalidateQueries({ queryKey: ['saved-listings'] });

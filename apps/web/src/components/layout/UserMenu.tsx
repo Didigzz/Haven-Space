@@ -57,7 +57,7 @@ export function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Account menu for ${fullName}`}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen(value => !value)}
         className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition-colors ${
           open ? 'border-primary bg-mint' : 'border-gray-200 hover:bg-mint/60'
         }`}

@@ -34,7 +34,7 @@ function ApplyPage() {
         message: message.trim(),
       }),
     onSuccess: () => void navigate({ to: '/boarder/application-submitted' }),
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to submit application.'),
   });
 
@@ -53,7 +53,7 @@ function ApplyPage() {
   if (!detail.data) return null;
 
   const listing = detail.data.data;
-  const availableRooms = listing.rooms.filter((room) => room.status !== 'Occupied');
+  const availableRooms = listing.rooms.filter(room => room.status !== 'Occupied');
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -70,13 +70,22 @@ function ApplyPage() {
         {listing.address}, {listing.city} — {listing.landlord.name}
       </p>
 
-      {error ? <div className="mt-4"><ErrorState message={error} /></div> : null}
+      {error ? (
+        <div className="mt-4">
+          <ErrorState message={error} />
+        </div>
+      ) : null}
 
       <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
         <Field label="Room" htmlFor="room">
-          <SelectInput id="room" name="room" value={roomId} onChange={(e) => setRoomId(e.target.value)}>
+          <SelectInput
+            id="room"
+            name="room"
+            value={roomId}
+            onChange={e => setRoomId(e.target.value)}
+          >
             <option value="">Select a room</option>
-            {availableRooms.map((room) => (
+            {availableRooms.map(room => (
               <option key={room.id} value={room.id}>
                 {room.roomNumber} — ₱{room.price.toLocaleString()} ({room.capacity} occupant(s))
               </option>
@@ -92,7 +101,7 @@ function ApplyPage() {
             placeholder="Introduce yourself and tell the landlord why you're a good fit…"
             required
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={e => setMessage(e.target.value)}
           />
         </Field>
 

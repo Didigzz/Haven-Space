@@ -333,7 +333,9 @@ describe('tenancy and leave request routes', () => {
     // The original request is untouched.
     expect(
       sqlite
-        .prepare('SELECT leave_request_status, leave_request_reason FROM applications WHERE id = 200')
+        .prepare(
+          'SELECT leave_request_status, leave_request_reason FROM applications WHERE id = 200'
+        )
         .get()
     ).toEqual({
       leave_request_status: 'pending',

@@ -69,7 +69,7 @@ export function NotificationBell() {
       <button
         type="button"
         aria-label={`Notifications${unreadCount ? ` (${unreadCount} unread)` : ''}`}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen(value => !value)}
         className="relative rounded-md p-2 text-gray-700 hover:bg-gray-100"
       >
         <svg
@@ -111,16 +111,16 @@ export function NotificationBell() {
           {list.isLoading ? (
             <p className="px-4 py-6 text-center text-sm text-gray-ink">Loading…</p>
           ) : list.error ? (
-            <p className="px-4 py-6 text-center text-sm text-red-600">
-              {list.error.message}
-            </p>
+            <p className="px-4 py-6 text-center text-sm text-red-600">{list.error.message}</p>
           ) : list.data && list.data.data.length > 0 ? (
             <ul className="max-h-80 divide-y divide-gray-100 overflow-y-auto">
-              {list.data.data.map((notification) => (
+              {list.data.data.map(notification => (
                 <li key={notification.id} className="flex items-start gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`text-sm ${notification.is_read ? 'text-gray-700' : 'font-semibold'}`}
+                      className={`text-sm ${
+                        notification.is_read ? 'text-gray-700' : 'font-semibold'
+                      }`}
                     >
                       {notification.title}
                     </p>
@@ -162,11 +162,7 @@ export function NotificationBell() {
 
           {list.data && list.data.data.length > 0 ? (
             <div className="border-t border-gray-200 px-4 py-2">
-              <Button
-                type="button"
-                className="w-full text-sm"
-                onClick={() => setOpen(false)}
-              >
+              <Button type="button" className="w-full text-sm" onClick={() => setOpen(false)}>
                 Close
               </Button>
             </div>

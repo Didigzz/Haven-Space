@@ -38,11 +38,27 @@ const serverAssets = join(DIST, 'server', 'assets');
 const clientAssets = join(DIST, 'client', 'assets');
 
 if (!existsSync(workerEntry)) {
-  console.error(`Missing ${join('apps', 'web', 'dist', 'server', 'index.js')} — run \`bun run web:build\` first.`);
+  console.error(
+    `Missing ${join(
+      'apps',
+      'web',
+      'dist',
+      'server',
+      'index.js'
+    )} — run \`bun run web:build\` first.`
+  );
   process.exit(1);
 }
 if (!existsSync(serverAssets) || !existsSync(clientAssets)) {
-  console.error(`Missing ${join('apps', 'web', 'dist', 'server', 'assets')} or ${join('apps', 'web', 'dist', 'client', 'assets')} — run \`bun run web:build\` first.`);
+  console.error(
+    `Missing ${join('apps', 'web', 'dist', 'server', 'assets')} or ${join(
+      'apps',
+      'web',
+      'dist',
+      'client',
+      'assets'
+    )} — run \`bun run web:build\` first.`
+  );
   process.exit(1);
 }
 
@@ -57,7 +73,7 @@ cpSync(clientAssets, join(OUT, 'assets'), { recursive: true });
 
 writeFileSync(
   join(OUT, '_routes.json'),
-  JSON.stringify({ version: 1, include: ['/*'], exclude: ['/assets/*'] }, null, 2) + '\n',
+  JSON.stringify({ version: 1, include: ['/*'], exclude: ['/assets/*'] }, null, 2) + '\n'
 );
 
 console.log(`Pages bundle ready at ${join('apps', 'web', 'dist', 'pages')}`);

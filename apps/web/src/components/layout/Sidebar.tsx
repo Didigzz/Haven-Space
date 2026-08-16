@@ -41,7 +41,7 @@ export function Sidebar({ nav }: { nav: NavItem[] }) {
         <button
           type="button"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          onClick={() => setCollapsed((v) => !v)}
+          onClick={() => setCollapsed(v => !v)}
           className="rounded p-1 hover:bg-mint"
         >
           <Icon
@@ -60,7 +60,7 @@ export function Sidebar({ nav }: { nav: NavItem[] }) {
               </p>
             ) : null}
             <div className="space-y-1">
-              {items.map((item) => (
+              {items.map(item => (
                 <Link
                   key={item.to}
                   to={item.to}

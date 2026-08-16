@@ -88,10 +88,13 @@ export function RoomDetailView({
         <section className="mt-8">
           <h2 className="text-lg font-semibold text-ink">Amenities</h2>
           <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {listing.amenities.map((amenity) => {
+            {listing.amenities.map(amenity => {
               const icon = amenityIcon(amenity);
               return (
-                <li key={amenity} className="flex items-center gap-2 rounded-lg border border-gray-100 bg-white p-3 shadow-card">
+                <li
+                  key={amenity}
+                  className="flex items-center gap-2 rounded-lg border border-gray-100 bg-white p-3 shadow-card"
+                >
                   {icon ? <Icon name={icon} size={20} className="shrink-0" /> : null}
                   <span className="text-sm font-medium text-ink">{amenity}</span>
                 </li>
@@ -104,8 +107,11 @@ export function RoomDetailView({
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-ink">Rooms</h2>
         <ul className="mt-3 space-y-3">
-          {listing.rooms.map((room) => (
-            <li key={room.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-card">
+          {listing.rooms.map(room => (
+            <li
+              key={room.id}
+              className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-card"
+            >
               <div>
                 <p className="font-medium text-ink">
                   {room.roomNumber} — ₱{room.price.toLocaleString()}

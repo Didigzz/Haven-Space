@@ -61,10 +61,13 @@ function AnnouncementsPage() {
       ) : announcements.error ? (
         <ErrorState message={announcements.error.message} />
       ) : list.length === 0 ? (
-        <EmptyState title="No announcements" description="Announcements from your landlord appear here." />
+        <EmptyState
+          title="No announcements"
+          description="Announcements from your landlord appear here."
+        />
       ) : (
         <div className="flex flex-col gap-3">
-          {list.map((announcement) => (
+          {list.map(announcement => (
             <button
               key={announcement.id}
               type="button"
@@ -91,7 +94,11 @@ function AnnouncementsPage() {
         </div>
       )}
 
-      <Modal open={Boolean(selected)} title={selected?.title ?? ''} onClose={() => setSelected(null)}>
+      <Modal
+        open={Boolean(selected)}
+        title={selected?.title ?? ''}
+        onClose={() => setSelected(null)}
+      >
         {selected ? (
           <div>
             <p className="text-sm text-gray-ink">

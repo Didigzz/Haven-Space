@@ -64,9 +64,7 @@ function BoarderDashboard() {
                 <p className="truncate font-semibold text-ink">
                   {String(tenancyData.property_name ?? 'Active tenancy')}
                 </p>
-                <p className="text-sm text-gray-ink">
-                  {String(tenancyData.room_number ?? '')}
-                </p>
+                <p className="text-sm text-gray-ink">{String(tenancyData.room_number ?? '')}</p>
               </>
             ) : (
               <>
@@ -147,7 +145,9 @@ function BoarderDashboard() {
             </div>
             <div>
               <dt className="text-sm text-gray-ink">Deposit</dt>
-              <dd className="font-medium text-ink">₱{Number(tenancyData.deposit ?? 0).toLocaleString()}</dd>
+              <dd className="font-medium text-ink">
+                ₱{Number(tenancyData.deposit ?? 0).toLocaleString()}
+              </dd>
             </div>
           </dl>
           <Link

@@ -11,7 +11,7 @@ Sites: web `https://haven-space.pages.dev` · API `https://haven-space-api.flore
 Two intertwined problems:
 
 1. **Prod bug — Google login appears to "do nothing".** On the deployed site, clicking
-   *Continue with Google* opens the Google account chooser, the user picks an account, and the
+   _Continue with Google_ opens the Google account chooser, the user picks an account, and the
    browser lands back on `/auth/login` with **no visible feedback**. The user cannot tell whether
    login succeeded, failed, or is pending.
 2. **Missing product flow — no role choice for first-time Google users.** Today a first-time
@@ -32,18 +32,18 @@ The user asked two direct questions this spec answers:
 
 ### 2.1 Files involved
 
-| Concern | File |
-| --- | --- |
-| OAuth helpers (hash parse, redirect target, authorize URL) | `apps/web/src/lib/oauth.ts` |
-| Global `#auth=` handler | `apps/web/src/routes/__root.tsx` (RootComponent `useEffect`) |
-| Login page (Google button → `action=login`, role hardcoded `boarder`) | `apps/web/src/routes/auth/login.tsx` |
-| Boarder signup page (Google button → `action=signup`, role `boarder`) | `apps/web/src/routes/auth/signup/index.tsx` |
-| Landlord signup page (**no** Google button) | `apps/web/src/routes/auth/signup/landlord.tsx` |
-| Email signup role chooser (`/auth/choose`) | `apps/web/src/routes/auth/choose.tsx` |
-| API Google authorize + callback + user resolution | `workers/api/src/routes/auth.ts` |
-| User repo (google account create / link) | `workers/api/src/repositories/users.ts` |
-| Auth session hydration (localStorage → context, `isHydrated`) | `apps/web/src/lib/auth-context.tsx` |
-| Role gate | `apps/web/src/components/auth/Protected.tsx` |
+| Concern                                                               | File                                                         |
+| --------------------------------------------------------------------- | ------------------------------------------------------------ |
+| OAuth helpers (hash parse, redirect target, authorize URL)            | `apps/web/src/lib/oauth.ts`                                  |
+| Global `#auth=` handler                                               | `apps/web/src/routes/__root.tsx` (RootComponent `useEffect`) |
+| Login page (Google button → `action=login`, role hardcoded `boarder`) | `apps/web/src/routes/auth/login.tsx`                         |
+| Boarder signup page (Google button → `action=signup`, role `boarder`) | `apps/web/src/routes/auth/signup/index.tsx`                  |
+| Landlord signup page (**no** Google button)                           | `apps/web/src/routes/auth/signup/landlord.tsx`               |
+| Email signup role chooser (`/auth/choose`)                            | `apps/web/src/routes/auth/choose.tsx`                        |
+| API Google authorize + callback + user resolution                     | `workers/api/src/routes/auth.ts`                             |
+| User repo (google account create / link)                              | `workers/api/src/repositories/users.ts`                      |
+| Auth session hydration (localStorage → context, `isHydrated`)         | `apps/web/src/lib/auth-context.tsx`                          |
+| Role gate                                                             | `apps/web/src/components/auth/Protected.tsx`                 |
 
 ### 2.2 Flow steps (current)
 
@@ -58,15 +58,12 @@ The user asked two direct questions this spec answers:
 4. `handleGoogleCallback`:
    - `verifiedGoogleState` — verifies the JWT and **matches the nonce against the
      `google_oauth_state` cookie**. Any mismatch → `authErrorRedirect` → `/auth/login?error=Google
-     login session expired. Please try again.`
+login session expired. Please try again.`
    - `?error` from Google (user cancelled) → `authErrorRedirect` → `/auth/login?error=<...>`.
    - Exchanges `code` for tokens; fetches profile from OpenID userinfo.
-   - `userFromGoogleProfile`:
-     - by `google_id` → existing user (login).
-     - by email → links Google identity (`updateGoogleIdentity`) → existing user (login).
-     - **new user**: if `role === 'landlord'` → throw `'Please create landlord accounts with the
-       landlord signup form.'`; otherwise **auto-creates a boarder** account
-       (`createGoogleUserAccount`, `boarderStatus: 'new'`, `isVerified: 1`, `emailVerified: 1`).
+   - `userFromGoogleProfile`: - by `google_id` → existing user (login). - by email → links Google identity (`updateGoogleIdentity`) → existing user (login). - **new user**: if `role === 'landlord'` → throw `'Please create landlord accounts with the
+landlord signup form.'`; otherwise **auto-creates a boarder** account
+     (`createGoogleUserAccount`, `boarderStatus: 'new'`, `isVerified: 1`, `emailVerified: 1`).
    - Suspended/banned → error redirect.
    - Success → redirects to `{origin}/{redirectPathForUser(user)}#auth={urlEncodedJson}` where the
      payload = `{ success, access_token, refresh_token, user }` (plus cookies `access_token` /
@@ -76,14 +73,14 @@ The user asked two direct questions this spec answers:
 
 ### 2.3 Redirect mapping (status-aware, both API and frontend `redirectPathForUser`)
 
-| Role / boarder status | Landing |
-| --- | --- |
-| admin | `/admin` |
-| landlord | `/landlord` |
-| boarder `accepted` | `/boarder/confirm-booking` |
-| boarder `confirmed` | `/boarder` |
-| boarder `applied_pending` / `pending_confirmation` / `rejected` | `/boarder/applications` |
-| boarder `new` / `browsing` | `/boarder/find-a-room` |
+| Role / boarder status                                           | Landing                    |
+| --------------------------------------------------------------- | -------------------------- |
+| admin                                                           | `/admin`                   |
+| landlord                                                        | `/landlord`                |
+| boarder `accepted`                                              | `/boarder/confirm-booking` |
+| boarder `confirmed`                                             | `/boarder`                 |
+| boarder `applied_pending` / `pending_confirmation` / `rejected` | `/boarder/applications`    |
+| boarder `new` / `browsing`                                      | `/boarder/find-a-room`     |
 
 ### 2.4 Where the prod "does nothing" comes from
 
@@ -93,14 +90,14 @@ The user asked two direct questions this spec answers:
   (0 matches for `searchParams.get('error')` / `useSearch` error handling in auth pages).
 - Result: the user is bounced back to a normal-looking `/auth/login` and sees nothing.
 
-**Confirmed symptom detail (interview):** the Google consent screen *does* open, so OAuth
+**Confirmed symptom detail (interview):** the Google consent screen _does_ open, so OAuth
 credentials exist on prod and the authorize step works; the failure happens **after** consent
 (callback error path). The exact `?error=` value is not yet captured (see §6 diagnostics).
 
 Candidate causes to rule out during diagnosis (order of likelihood):
 
-1. `google_oauth_state` cookie / nonce mismatch → *"Google login session expired. Please try
-   again."* (cookie set on the `workers.dev` API domain; cross-site top-level navigation back to
+1. `google_oauth_state` cookie / nonce mismatch → _"Google login session expired. Please try
+   again."_ (cookie set on the `workers.dev` API domain; cross-site top-level navigation back to
    the callback should carry SameSite=Lax, but blocking/cookie-policy settings or the
    `workers.dev` public-suffix handling can break it).
 2. `Google account email is not verified` (profile `email_verified` false/absent).
@@ -119,7 +116,7 @@ status-aware boarder landing is branch-only but not the cause of the bounce-back
 
 ### 3.1 First-time Google login (no account for this email anywhere)
 
-1. User clicks *Continue with Google* (login page, either signup page, or role chooser).
+1. User clicks _Continue with Google_ (login page, either signup page, or role chooser).
 2. Google consent → callback.
 3. **Callback detects a brand-new email → redirects to a role chooser page** (frontend),
    carrying a short-lived pending session token (see §5.2 for the mechanism).
@@ -141,14 +138,14 @@ status-aware boarder landing is branch-only but not the cause of the bounce-back
 ### 3.3 Existing email/password account signs in with Google (same email, no Google link yet)
 
 - Do **not** silently link. Route to the chooser page which shows an **inline account-found
-  notice**: *"An account already exists for <email>. Link Google sign-in?"*
+  notice**: _"An account already exists for <email>. Link Google sign-in?"_
   - **Link** → API attaches the Google identity to the existing account and logs in (role
     preserved; landing per §2.3).
   - **Cancel/Use password instead** → back to `/auth/login` (no account changes).
 
 ### 3.4 Cancelled on Google consent
 
-- Redirect back to `/auth/login` with a friendly banner: *"Google login was cancelled."*
+- Redirect back to `/auth/login` with a friendly banner: _"Google login was cancelled."_
 
 ### 3.5 Any Google auth failure
 
@@ -165,14 +162,14 @@ status-aware boarder landing is branch-only but not the cause of the bounce-back
 
 ## 4. Current Deviations to Fix (summary)
 
-| # | Issue | Current | Desired |
-| --- | --- | --- | --- |
-| D1 | `?error=` silently swallowed | `/auth/login?error=...` renders nothing | Inline banner on all auth pages |
-| D2 | New Google user auto-created as boarder | callback creates boarder immediately | Route to role chooser first |
-| D3 | Landlord Google signup blocked | error *"Please create landlord accounts with the landlord signup form."* | Enabled, optional details |
-| D4 | Existing email account silently linked | `updateGoogleIdentity` without consent | Inline "link Google?" confirmation |
-| D5 | Cancel gives no feedback | error redirect, no visible notice | "Google login was cancelled" banner |
-| D6 | Login Google button hardcodes `role=boarder` | `googleAuthorizeUrl('login', 'boarder')` | Role resolved server-side; chooser decides for new users |
+| #   | Issue                                        | Current                                                                  | Desired                                                  |
+| --- | -------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------- |
+| D1  | `?error=` silently swallowed                 | `/auth/login?error=...` renders nothing                                  | Inline banner on all auth pages                          |
+| D2  | New Google user auto-created as boarder      | callback creates boarder immediately                                     | Route to role chooser first                              |
+| D3  | Landlord Google signup blocked               | error _"Please create landlord accounts with the landlord signup form."_ | Enabled, optional details                                |
+| D4  | Existing email account silently linked       | `updateGoogleIdentity` without consent                                   | Inline "link Google?" confirmation                       |
+| D5  | Cancel gives no feedback                     | error redirect, no visible notice                                        | "Google login was cancelled" banner                      |
+| D6  | Login Google button hardcodes `role=boarder` | `googleAuthorizeUrl('login', 'boarder')`                                 | Role resolved server-side; chooser decides for new users |
 
 ---
 
@@ -196,13 +193,13 @@ status-aware boarder landing is branch-only but not the cause of the bounce-back
 - **New endpoint** to complete the flow, e.g. `POST /auth/google/complete` (and
   `/api/auth/google/complete`):
   - Body: `{ pendingToken, role: 'boarder' | 'landlord', businessName?, description?, city?,
-    province?, phoneNumber? }` plus `link: true` for the existing-account case.
+province?, phoneNumber? }` plus `link: true` for the existing-account case.
   - Validates the pending token; creates the account for the chosen role (or links the identity
     for the existing-account case); returns the standard auth payload
     (`access_token`, `refresh_token`, `user`) so the frontend persists the session like the
     `#auth=` path does.
   - New boarder: `boarder_status: 'new'`, `is_verified: 1`, `email_verified: 1`, `account_status:
-    'active'`.
+'active'`.
   - New landlord: `is_verified: 0`, `email_verified: 1` (trust Google), `account_status: 'active'`
     (landing works; verification badge shows pending — confirm the exact gating that should apply,
     see §7 Open Questions). Name from Google; optional fields stored if provided.
@@ -262,7 +259,7 @@ Google Cloud Console.
 2. `bun run --cwd workers/api migrate:local` (apply D1 migrations to the local DB).
 3. Terminal A: `bun run cf:api:dev` (API at `http://localhost:8000`).
 4. Terminal B: `bun run web:dev` (frontend at `http://localhost:3000`).
-5. Open `http://localhost:3000/auth/login`, click *Continue with Google*, sign in with a test
+5. Open `http://localhost:3000/auth/login`, click _Continue with Google_, sign in with a test
    Google account.
 6. **Capture the final URL** — read the `error` param (and the API response/worker logs) to
    confirm which failure path fires locally. This both diagnoses the prod issue and validates the
@@ -272,17 +269,17 @@ Google Cloud Console.
 
 ### 6.2 Local E2E of the new flow (acceptance scenarios)
 
-| # | Scenario | Expected |
-| --- | --- | --- |
-| A1 | Fresh Google email, pick **Boarder** | Account created (`status new`); lands `/boarder/find-a-room`; session persisted; refresh keeps login |
-| A2 | Fresh Google email, pick **Landlord**, submit with all-optional fields empty | Landlord account created; lands `/landlord` with pending-verification banner; can open profile later and fill details |
-| A3 | Fresh Google email, pick **Landlord**, fill business name/phone/city | Stored on the landlord profile; lands `/landlord` |
-| A4 | Returning Google boarder | Skips chooser; lands per status (`new` → `/boarder/find-a-room`; `accepted` → `/boarder/confirm-booking`; etc.) |
-| A5 | Existing email/password account; same email via Google | Chooser shows link prompt; **Link** → logged into existing account (role preserved); **Cancel** → `/auth/login`, no changes |
-| A6 | Cancel on Google consent screen | `/auth/login` with "Google login was cancelled" banner |
-| A7 | Google OAuth creds removed locally | `/auth/login` with inline "Google OAuth is not configured" banner |
-| A8 | Google email that is already linked to a different Google account | Inline error banner with the linked-account message |
-| A9 | Email/password login still works; password login for a Google-only account still shows the "use Google login" notice | Unchanged behavior |
+| #   | Scenario                                                                                                             | Expected                                                                                                                    |
+| --- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| A1  | Fresh Google email, pick **Boarder**                                                                                 | Account created (`status new`); lands `/boarder/find-a-room`; session persisted; refresh keeps login                        |
+| A2  | Fresh Google email, pick **Landlord**, submit with all-optional fields empty                                         | Landlord account created; lands `/landlord` with pending-verification banner; can open profile later and fill details       |
+| A3  | Fresh Google email, pick **Landlord**, fill business name/phone/city                                                 | Stored on the landlord profile; lands `/landlord`                                                                           |
+| A4  | Returning Google boarder                                                                                             | Skips chooser; lands per status (`new` → `/boarder/find-a-room`; `accepted` → `/boarder/confirm-booking`; etc.)             |
+| A5  | Existing email/password account; same email via Google                                                               | Chooser shows link prompt; **Link** → logged into existing account (role preserved); **Cancel** → `/auth/login`, no changes |
+| A6  | Cancel on Google consent screen                                                                                      | `/auth/login` with "Google login was cancelled" banner                                                                      |
+| A7  | Google OAuth creds removed locally                                                                                   | `/auth/login` with inline "Google OAuth is not configured" banner                                                           |
+| A8  | Google email that is already linked to a different Google account                                                    | Inline error banner with the linked-account message                                                                         |
+| A9  | Email/password login still works; password login for a Google-only account still shows the "use Google login" notice | Unchanged behavior                                                                                                          |
 
 ### 6.3 Prod verification (after the fix merges to `main`)
 
@@ -297,7 +294,7 @@ Google Cloud Console.
 ## 7. Open Questions / Decisions to Confirm During Implementation
 
 1. **Landlord dashboard gating** — should Google-created landlord accounts be `account_status:
-   'active'` (can browse the shell, sees pending banner) or `pending_verification` (tighter)?
+'active'` (can browse the shell, sees pending banner) or `pending_verification` (tighter)?
    User intent: "landlord dashboard obviously can't do anything" → they should land in the
    landlord area with a pending banner; confirm no route hard-blocks unverified landlords.
 2. **Pending-token mechanism** — `#google-pending={jwt}` fragment + `POST /auth/google/complete`

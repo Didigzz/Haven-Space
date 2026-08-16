@@ -135,9 +135,7 @@ function BoardersPage() {
       void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
     },
     onError: err =>
-      setError(
-        err instanceof ApiRequestError ? err.message : 'Failed to update leave request.'
-      ),
+      setError(err instanceof ApiRequestError ? err.message : 'Failed to update leave request.'),
   });
 
   function openAdd() {

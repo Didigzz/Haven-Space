@@ -87,7 +87,7 @@ function ForgotPasswordPage() {
               placeholder="Enter your email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
             />
           </Field>
           <Button type="submit" disabled={submitting}>
@@ -106,7 +106,7 @@ function ForgotPasswordPage() {
               placeholder="000000"
               required
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             />
           </Field>
           <Button type="submit" disabled={submitting || code.length !== 6}>

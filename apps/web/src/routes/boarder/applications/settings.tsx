@@ -16,7 +16,7 @@ function ApplicationSettingsPage() {
   const [saved, setSaved] = useState(false);
 
   function toggle(key: keyof typeof prefs) {
-    setPrefs((p) => ({ ...p, [key]: !p[key] }));
+    setPrefs(p => ({ ...p, [key]: !p[key] }));
     setSaved(false);
   }
 

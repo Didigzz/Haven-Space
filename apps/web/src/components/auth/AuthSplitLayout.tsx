@@ -47,7 +47,9 @@ export function AuthSplitLayout({
           <h1 className="text-2xl font-bold text-ink">{title}</h1>
           {subtitle ? <p className="mt-1 text-sm text-gray-ink">{subtitle}</p> : null}
           <div className="mt-6">{children}</div>
-          {footer ? <div className="mt-6 border-t border-gray-100 pt-4 text-sm">{footer}</div> : null}
+          {footer ? (
+            <div className="mt-6 border-t border-gray-100 pt-4 text-sm">{footer}</div>
+          ) : null}
         </div>
       </div>
     </div>

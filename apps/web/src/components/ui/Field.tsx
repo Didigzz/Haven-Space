@@ -1,4 +1,9 @@
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from 'react';
 
 export function Field({
   label,
@@ -20,7 +25,8 @@ export function Field({
   );
 }
 
-const inputClasses = 'w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none';
+const inputClasses =
+  'w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none';
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={inputClasses} {...props} />;

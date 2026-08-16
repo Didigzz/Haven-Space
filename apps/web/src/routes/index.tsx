@@ -36,8 +36,8 @@ function HomePage() {
               Haven Space is a next-gen boarding house platform
             </strong>{' '}
             bridging traditional property rentals with modern digital convenience. We provide a
-            seamless, verified experience for boarders by integrating smart search, secure
-            payments, and trusted landlord connections.
+            seamless, verified experience for boarders by integrating smart search, secure payments,
+            and trusted landlord connections.
           </p>
           <img
             src="/assets/images/public/find_illustratin.png"

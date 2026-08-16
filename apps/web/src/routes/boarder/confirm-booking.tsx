@@ -36,14 +36,13 @@ function ConfirmBookingPage() {
   });
 
   const confirm = useMutation({
-    mutationFn: (applicationId: number) =>
-      confirmApplication(token!, applicationId, paymentMethod),
+    mutationFn: (applicationId: number) => confirmApplication(token!, applicationId, paymentMethod),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['accepted'] });
       void queryClient.invalidateQueries({ queryKey: ['tenancy'] });
       void navigate({ to: '/boarder/tenancy' });
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to confirm booking.'),
   });
 
@@ -65,23 +64,21 @@ function ConfirmBookingPage() {
         />
       ) : (
         <div className="flex flex-col gap-4">
-          {acceptedList.map((app) => (
+          {acceptedList.map(app => (
             <Card key={String(app.id ?? app.application_id)}>
               <h2 className="font-semibold">
                 {String(app.property_name ?? app.title ?? 'Accepted application')}
               </h2>
               <p className="text-sm text-gray-ink">
                 {String(app.room_number ?? app.room ?? '')} · ₱
-                {Number(
-                  app.room_price ?? app.monthly_rent ?? app.price ?? 0
-                ).toLocaleString()}
+                {Number(app.room_price ?? app.monthly_rent ?? app.price ?? 0).toLocaleString()}
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
                 <Field label="Payment method" htmlFor="paymentMethod">
                   <SelectInput
                     id="paymentMethod"
                     value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    onChange={e => setPaymentMethod(e.target.value)}
                   >
                     <option value="gcash">GCash</option>
                     <option value="bank_transfer">Bank transfer</option>

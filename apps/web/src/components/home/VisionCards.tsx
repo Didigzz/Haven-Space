@@ -35,7 +35,7 @@ export function VisionCards() {
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          {CARDS.map((card) => (
+          {CARDS.map(card => (
             <div
               key={card.title}
               className={`rounded-xl border border-gray-100 border-t-4 bg-cream p-6 shadow-card ${card.accent}`}

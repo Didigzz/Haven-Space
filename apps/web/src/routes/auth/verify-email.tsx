@@ -59,7 +59,7 @@ function VerifyEmailPage() {
             name="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
           />
         </Field>
         <Button type="button" onClick={handleResend} disabled={sending}>

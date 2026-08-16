@@ -11,7 +11,7 @@ const LOGOS = [
 function Track() {
   return (
     <div className="flex items-center gap-[42px]">
-      {LOGOS.map((logo) => (
+      {LOGOS.map(logo => (
         <img key={logo.alt} src={logo.src} alt={logo.alt} loading="lazy" />
       ))}
     </div>

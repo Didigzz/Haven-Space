@@ -44,10 +44,7 @@ function HavenAiPage() {
         setStreamingContent(prev => prev + delta);
       });
       if (result.success && result.response) {
-        setHistory(prev => [
-          ...prev,
-          { role: 'assistant', content: result.response ?? '' },
-        ]);
+        setHistory(prev => [...prev, { role: 'assistant', content: result.response ?? '' }]);
       } else {
         setError(result.error ?? 'AI assistant unavailable. Please try again later.');
       }
