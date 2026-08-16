@@ -1,4 +1,8 @@
-import { listAuthorizedLandlords, type AuthorizedLandlordRow } from './property-access';
+import {
+  accessiblePropertyClause,
+  listAuthorizedLandlords,
+  type AuthorizedLandlordRow,
+} from './property-access';
 
 export interface LandlordPropertyListRow {
   id: number;
@@ -604,12 +608,12 @@ export async function findLandlordPropertyForUpdate(
           gender_preference
         FROM properties
         WHERE id = ?
-          AND landlord_id = ?
           AND deleted_at IS NULL
+          AND ${accessiblePropertyClause()}
         LIMIT 1
       `
     )
-    .bind(propertyId, landlordId)
+    .bind(propertyId, landlordId, landlordId)
     .first<LandlordPropertyUpdateRow>();
 }
 
@@ -678,7 +682,8 @@ export async function updateLandlordProperty(
             status = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-          AND landlord_id = ?
+          AND deleted_at IS NULL
+          AND ${accessiblePropertyClause()}
       `
     )
     .bind(
@@ -693,6 +698,7 @@ export async function updateLandlordProperty(
       input.genderPreference,
       input.status,
       input.propertyId,
+      input.landlordId,
       input.landlordId
     )
     .run();
@@ -785,6 +791,7 @@ export async function findLandlordPropertyIdentity(
   propertyId: number,
   landlordId: number
 ): Promise<LandlordPropertyIdentityRow | null> {
+  // Owner-only: used to guard property deletion, which stays owner-only.
   return await db
     .prepare(
       `
@@ -797,6 +804,27 @@ export async function findLandlordPropertyIdentity(
       `
     )
     .bind(propertyId, landlordId)
+    .first<LandlordPropertyIdentityRow>();
+}
+
+export async function findAccessibleLandlordPropertyIdentity(
+  db: D1Database,
+  propertyId: number,
+  landlordId: number
+): Promise<LandlordPropertyIdentityRow | null> {
+  // Access-aware: used for property edits/photos that shared landlords may do.
+  return await db
+    .prepare(
+      `
+        SELECT id, title
+        FROM properties
+        WHERE id = ?
+          AND deleted_at IS NULL
+          AND ${accessiblePropertyClause()}
+        LIMIT 1
+      `
+    )
+    .bind(propertyId, landlordId, landlordId)
     .first<LandlordPropertyIdentityRow>();
 }
 
