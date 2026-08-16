@@ -29,6 +29,8 @@ function SettingsPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -46,10 +48,14 @@ function SettingsPage() {
       first_name?: string;
       last_name?: string;
       phone_number?: string;
+      city?: string | null;
+      province?: string | null;
     };
     setFirstName(user.first_name ?? '');
     setLastName(user.last_name ?? '');
     setPhone(user.phone_number ?? '');
+    setCity(user.city ?? '');
+    setProvince(user.province ?? '');
     setSeeded(true);
   }
 
@@ -59,6 +65,8 @@ function SettingsPage() {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         phone_number: phone.trim() || null,
+        city: city.trim() || null,
+        province: province.trim() || null,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -145,6 +153,24 @@ function SettingsPage() {
                 onChange={e => setPhone(e.target.value)}
               />
             </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="City" htmlFor="city">
+                <TextInput
+                  id="city"
+                  placeholder="e.g., Quezon City"
+                  value={city}
+                  onChange={e => setCity(e.target.value)}
+                />
+              </Field>
+              <Field label="Province" htmlFor="province">
+                <TextInput
+                  id="province"
+                  placeholder="e.g., Metro Manila"
+                  value={province}
+                  onChange={e => setProvince(e.target.value)}
+                />
+              </Field>
+            </div>
             <Button type="submit" disabled={saveProfile.isPending}>
               {saveProfile.isPending ? 'Saving…' : 'Save profile'}
             </Button>

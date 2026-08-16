@@ -10,6 +10,8 @@ export interface UserProfileRow {
   email_verified: number;
   account_status: string;
   boarder_status: string | null;
+  city: string | null;
+  province: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -49,22 +51,25 @@ export async function findUserProfileById(
     .prepare(
       `
         SELECT
-          id,
-          first_name,
-          last_name,
-          email,
-          phone_number,
-          avatar_url,
-          role,
-          is_verified,
-          email_verified,
-          account_status,
-          boarder_status,
-          created_at,
-          updated_at
-        FROM users
-        WHERE id = ?
-          AND deleted_at IS NULL
+          u.id,
+          u.first_name,
+          u.last_name,
+          u.email,
+          u.phone_number,
+          u.avatar_url,
+          u.role,
+          u.is_verified,
+          u.email_verified,
+          u.account_status,
+          u.boarder_status,
+          lp.city,
+          lp.province,
+          u.created_at,
+          u.updated_at
+        FROM users u
+        LEFT JOIN landlord_profiles lp ON lp.user_id = u.id
+        WHERE u.id = ?
+          AND u.deleted_at IS NULL
         LIMIT 1
       `
     )
@@ -75,7 +80,14 @@ export async function findUserProfileById(
 export async function updateUserProfile(
   db: D1Database,
   userId: number,
-  input: { firstName: string; lastName: string; phoneNumber: string | null }
+  role: UserProfileRow['role'],
+  input: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string | null;
+    city: string | null;
+    province: string | null;
+  }
 ): Promise<void> {
   await db
     .prepare(
@@ -91,6 +103,23 @@ export async function updateUserProfile(
     )
     .bind(input.firstName, input.lastName, input.phoneNumber, userId)
     .run();
+
+  // City/province live on the landlord profile (only relevant for landlords).
+  if (role === 'landlord') {
+    await db
+      .prepare(
+        `
+          INSERT INTO landlord_profiles (user_id, city, province)
+          VALUES (?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET
+            city = excluded.city,
+            province = excluded.province,
+            updated_at = CURRENT_TIMESTAMP
+        `
+      )
+      .bind(userId, input.city, input.province)
+      .run();
+  }
 }
 
 export async function updateUserAvatarUrl(
