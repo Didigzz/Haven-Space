@@ -40,17 +40,35 @@ export function handleOAuthHash(): AuthUser | null {
 }
 
 /**
- * Role-based redirect target after login/registration. Boarders land on
- * /boarder; the status-aware boarder redirect (find-a-room / applications /
- * confirm-booking) lands with the boarder dashboard in Phase 3.
+ * Role-based redirect target after login/registration, status-aware for
+ * boarders: an accepted-but-unconfirmed application lands the boarder on the
+ * confirm-booking page (per the accepted-boarder landing decision); other
+ * statuses follow the API's boarderRedirectPath mapping.
  */
-export function redirectPathForUser(user: AuthUser): '/admin' | '/landlord' | '/boarder' {
+export function redirectPathForUser(user: AuthUser): string {
   switch (user.role) {
     case 'admin':
       return '/admin';
     case 'landlord':
       return '/landlord';
     case 'boarder':
+    default:
+      return boarderRedirectPath(user);
+  }
+}
+
+function boarderRedirectPath(user: AuthUser): string {
+  switch (user.boarder_status) {
+    case 'accepted':
+      return '/boarder/confirm-booking';
+    case 'confirmed':
+      return '/boarder';
+    case 'applied_pending':
+    case 'pending_confirmation':
+    case 'rejected':
+      return '/boarder/applications';
+    case 'new':
+    case 'browsing':
     default:
       return '/boarder';
   }

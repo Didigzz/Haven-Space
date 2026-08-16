@@ -296,6 +296,8 @@ function boarderRedirectPath(user: Record<string, unknown>): string {
 
   switch (status) {
     case 'accepted':
+      return '/boarder/confirm-booking';
+    case 'confirmed':
       return '/boarder';
     case 'applied_pending':
     case 'pending_confirmation':

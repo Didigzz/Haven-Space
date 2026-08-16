@@ -323,13 +323,30 @@ export async function createLandlordProfile(
 }
 
 export async function determineBoarderStatus(db: D1Database, boarderId: number): Promise<string> {
+  const confirmed = await db
+    .prepare(
+      `
+        SELECT COUNT(*) as count
+        FROM applications
+        WHERE boarder_id = ?
+          AND status = 'confirmed'
+          AND deleted_at IS NULL
+      `
+    )
+    .bind(boarderId)
+    .first<{ count: number }>();
+
+  if (Number(confirmed?.count ?? 0) > 0) {
+    return 'confirmed';
+  }
+
   const accepted = await db
     .prepare(
       `
         SELECT COUNT(*) as count
         FROM applications
         WHERE boarder_id = ?
-          AND status IN ('accepted', 'confirmed')
+          AND status = 'accepted'
           AND deleted_at IS NULL
       `
     )
