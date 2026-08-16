@@ -1,14 +1,18 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Protected } from '../../../components/auth/Protected';
+import { RoleShell } from '../../../components/layout/RoleShell';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, SelectInput } from '../../../components/ui/Field';
 import { Spinner } from '../../../components/ui/Spinner';
+import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../../lib/api/http';
 import { confirmApplication, deleteApplication, getApplication } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
+import { BOARDER_NAV } from '../../../lib/nav';
 
 export const Route = createFileRoute('/boarder/applications/$id')({
   component: ApplicationDetailPage,
@@ -53,27 +57,27 @@ function ApplicationDetailPage() {
   const isAccepted = app.status === 'accepted';
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <Link
-        to="/boarder/applications"
-        className="mb-4 inline-block text-sm text-primary hover:underline"
-      >
-        ← Back to applications
-      </Link>
+    <Protected role="boarder">
+      <RoleShell title="Application" nav={BOARDER_NAV}>
+        <div className="mx-auto max-w-2xl">
+          <Link
+            to="/boarder/applications"
+            className="mb-4 inline-block text-sm text-primary hover:underline"
+          >
+            ← Back to applications
+          </Link>
 
-      {error ? (
-        <div className="mb-4">
-          <ErrorState message={error} />
-        </div>
-      ) : null}
+          {error ? (
+            <div className="mb-4">
+              <ErrorState message={error} />
+            </div>
+          ) : null}
 
-      <Card>
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">{app.property_title ?? `Application #${app.id}`}</h1>
-          <span className="rounded-full bg-mint px-3 py-1 text-sm capitalize">
-            {String(app.status).replace(/_/g, ' ')}
-          </span>
-        </div>
+          <Card>
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-bold">{app.property_title ?? `Application #${app.id}`}</h1>
+              <StatusBadge status={String(app.status)} />
+            </div>
         <p className="mt-1 text-gray-ink">
           Room {app.room_title ?? '—'} · ₱{(app.room_price ?? 0).toLocaleString()} / month
         </p>
@@ -110,13 +114,15 @@ function ApplicationDetailPage() {
 
       <div className="mt-6">
         <Button
-          className="bg-red-600 hover:bg-red-700"
+          variant="danger"
           onClick={() => remove.mutate()}
           disabled={remove.isPending || isAccepted}
         >
           {remove.isPending ? 'Deleting…' : 'Delete application'}
         </Button>
       </div>
-    </div>
+        </div>
+      </RoleShell>
+    </Protected>
   );
 }

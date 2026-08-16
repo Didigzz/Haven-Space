@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextArea, TextInput } from '../../components/ui/Field';
+import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { ApiRequestError } from '../../lib/api/http';
@@ -81,7 +82,10 @@ function TenancyPage() {
             </div>
           ) : null}
           <Card>
-            <h1 className="text-xl font-bold">{String(data.property_name ?? 'Your tenancy')}</h1>
+            <div className="flex items-center gap-3">
+              <Icon name="document" size={28} className="shrink-0" />
+              <h1 className="text-xl font-bold">{String(data.property_name ?? 'Your tenancy')}</h1>
+            </div>
             <p className="mt-1 text-gray-ink">
               {String(data.address ?? '')}
               {data.city ? `, ${String(data.city)}` : ''}

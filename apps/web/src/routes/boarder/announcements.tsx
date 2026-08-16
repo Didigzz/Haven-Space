@@ -6,6 +6,7 @@ import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { getBoarderAnnouncements, viewAnnouncement } from '../../lib/api/boarder';
@@ -48,6 +49,13 @@ function AnnouncementsPage() {
 
   return (
     <RoleShell title="Announcements" nav={BOARDER_NAV}>
+      <div className="mb-6 flex items-center gap-3">
+        <Icon name="announcement" size={28} />
+        <div>
+          <h2 className="text-2xl font-bold text-ink">Announcements</h2>
+          <p className="text-sm text-gray-ink">Updates from your landlord and property.</p>
+        </div>
+      </div>
       {announcements.isLoading ? (
         <Spinner />
       ) : announcements.error ? (
@@ -61,7 +69,7 @@ function AnnouncementsPage() {
               key={announcement.id}
               type="button"
               onClick={() => open(announcement)}
-              className="rounded-lg border border-gray-200 bg-white p-4 text-left hover:border-primary"
+              className="rounded-xl border border-gray-100 bg-white p-5 text-left shadow-card transition-shadow hover:shadow-pop"
             >
               <div className="flex items-center justify-between gap-3">
                 <h2 className="font-semibold">{announcement.title}</h2>

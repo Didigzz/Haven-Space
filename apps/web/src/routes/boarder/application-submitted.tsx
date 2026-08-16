@@ -2,20 +2,24 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
+import { Icon } from '../../components/ui/Icon';
 import { BOARDER_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/boarder/application-submitted')({
   component: () => (
     <Protected role="boarder">
       <RoleShell title="Application submitted" nav={BOARDER_NAV}>
-        <Card className="mx-auto max-w-lg text-center">
-          <h1 className="text-2xl font-bold">Application submitted!</h1>
+        <Card className="mx-auto max-w-lg py-10 text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-mint">
+            <Icon name="shieldCheck" size={28} />
+          </span>
+          <h1 className="mt-4 text-2xl font-bold text-ink">Application submitted!</h1>
           <p className="mt-2 text-gray-ink">
-            The landlord will review your application and you'll be notified of their decision.
+            The landlord will review your application and you&apos;ll be notified of their decision.
           </p>
           <Link
             to="/boarder/applications"
-            className="mt-4 inline-block text-primary hover:underline"
+            className="mt-5 inline-block rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
           >
             View your applications
           </Link>

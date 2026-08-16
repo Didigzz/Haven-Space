@@ -27,7 +27,12 @@ export function FindARoomContent({
 
   return (
     <main className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Find a room</h1>
+      <div className="mb-6 rounded-2xl bg-mint px-6 py-8">
+        <h1 className="text-3xl font-bold text-ink">Find a room</h1>
+        <p className="mt-1 text-gray-ink">
+          Browse verified boarding houses and rooms near you.
+        </p>
+      </div>
       <PropertySearchFilters value={filters} onChange={setFilters} />
       {query.isLoading ? (
         <Spinner />

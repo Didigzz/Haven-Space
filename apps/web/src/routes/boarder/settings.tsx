@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
+import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
 import { ApiRequestError } from '../../lib/api/http';
 import { changePassword } from '../../lib/api/auth';
@@ -112,7 +113,9 @@ function SettingsPage() {
         {savedMessage ? <div className="rounded-md bg-mint p-3 text-sm">{savedMessage}</div> : null}
 
         <Card>
-          <h2 className="text-lg font-semibold">Profile</h2>
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Icon name="user" size={20} /> Profile
+          </h2>
           <form className="mt-4 flex flex-col gap-4" onSubmit={handleProfileSubmit}>
             <div className="grid grid-cols-2 gap-3">
               <Field label="First name" htmlFor="firstName">
@@ -146,7 +149,9 @@ function SettingsPage() {
         </Card>
 
         <Card>
-          <h2 className="text-lg font-semibold">Profile picture</h2>
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Icon name="photo" size={20} /> Profile picture
+          </h2>
           <div className="mt-4 flex items-center gap-3">
             <label className="cursor-pointer rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50">
               Choose an image
@@ -170,7 +175,9 @@ function SettingsPage() {
         </Card>
 
         <Card>
-          <h2 className="text-lg font-semibold">Change password</h2>
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Icon name="settings" size={20} /> Change password
+          </h2>
           <form className="mt-4 flex flex-col gap-4" onSubmit={handlePasswordSubmit}>
             <Field label="Current password" htmlFor="currentPassword">
               <TextInput
