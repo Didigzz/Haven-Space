@@ -437,6 +437,36 @@ describe('application read routes', () => {
         { first: { ...applicationDetail, status: 'accepted' } },
       ])
     );
+    const confirmedResponse = await app.request(
+      'http://localhost/api/landlord/applications/20/status',
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({ status: 'accepted' }),
+      },
+      createSequenceEnv([
+        { first: landlordUser },
+        { first: { ...applicationDetail, status: 'confirmed' } },
+      ])
+    );
+    const endedResponse = await app.request(
+      'http://localhost/api/landlord/applications/20/status',
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({ status: 'rejected' }),
+      },
+      createSequenceEnv([
+        { first: landlordUser },
+        { first: { ...applicationDetail, status: 'ended' } },
+      ])
+    );
 
     expect(missingResponse.status).toBe(403);
     expect(await missingResponse.json()).toEqual({ error: 'Application not found' });
@@ -446,6 +476,16 @@ describe('application read routes', () => {
 
     expect(processedResponse.status).toBe(403);
     expect(await processedResponse.json()).toEqual({
+      error: 'Application has already been processed',
+    });
+
+    expect(confirmedResponse.status).toBe(403);
+    expect(await confirmedResponse.json()).toEqual({
+      error: 'Application has already been processed',
+    });
+
+    expect(endedResponse.status).toBe(403);
+    expect(await endedResponse.json()).toEqual({
       error: 'Application has already been processed',
     });
   });
@@ -540,6 +580,67 @@ describe('application read routes', () => {
     expect(await invalidIdResponse.json()).toEqual({ error: 'Application not found' });
   });
 
+  it('blocks withdrawing a confirmed application (state machine)', async () => {
+    const response = await app.request(
+      'http://localhost/api/boarder/applications/20',
+      {
+        method: 'DELETE',
+        headers: { 'X-User-ID': '7' },
+      },
+      createSequenceEnv([
+        { first: boarderUser },
+        { first: { ...applicationDetail, status: 'confirmed' } },
+      ])
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: 'This application can no longer be withdrawn. Contact your landlord for assistance.',
+    });
+  });
+
+  it('blocks withdrawing an already-ended application (state machine)', async () => {
+    const response = await app.request(
+      'http://localhost/api/boarder/applications/20',
+      {
+        method: 'DELETE',
+        headers: { 'X-User-ID': '7' },
+      },
+      createSequenceEnv([
+        { first: boarderUser },
+        { first: { ...applicationDetail, status: 'rejected' } },
+      ])
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: 'This application can no longer be withdrawn. Contact your landlord for assistance.',
+    });
+  });
+
+  it('marks a withdrawn application as cancelled before soft-deleting it', async () => {
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/boarder/applications/20',
+      {
+        method: 'DELETE',
+        headers: { 'X-User-ID': '7' },
+      },
+      createSequenceEnv(
+        [
+          { first: boarderUser },
+          { first: { ...applicationDetail, status: 'accepted' } },
+          { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
+        ],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ message: 'Application deleted successfully' });
+    expect(capturedBinds).toEqual([[7], [20], [20]]);
+  });
+
   it('rejects delete when the boarder does not own the application', async () => {
     const capturedBinds: unknown[][] = [];
     const response = await app.request(
@@ -604,7 +705,7 @@ describe('application read routes', () => {
       ['cash', 20],
       [100],
       ['accepted', 7],
-      ['cancelled', 7, 20, 'pending', 'accepted', 'confirmed'],
+      ['cancelled', 7, 20, 'pending', 'accepted'],
       [20],
     ]);
   });

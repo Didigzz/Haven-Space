@@ -1,5 +1,6 @@
 import { Hono, type Context } from 'hono';
 
+import { canTransition } from '../lib/application-status';
 import type { Env } from '../env';
 import { authenticateUser, authorizeUser, type AuthenticatedUser } from '../lib/auth';
 import { requireD1 } from '../lib/d1';
@@ -24,7 +25,10 @@ import {
 } from '../repositories/applications';
 
 const applicationRoutes = new Hono<{ Bindings: Env }>();
-const validApplicationStatuses = new Set(['pending', 'accepted', 'rejected', 'cancelled']);
+// Landlords may only move an application forward to accepted or rejected; every
+// other transition (confirm, withdraw, end) is driven by a different endpoint
+// and validated against the state machine.
+const validApplicationStatuses = new Set(['accepted', 'rejected']);
 
 function parseRouteId(value: string | undefined): number | null {
   if (!value) {
@@ -211,6 +215,16 @@ applicationRoutes.delete('/api/boarder/applications/:id', async c => {
     return errorResponse(403, 'Unauthorized');
   }
 
+  // Withdrawal is only allowed while the application is still actionable
+  // (pending or accepted). Confirmed bookings must go through the leave
+  // request flow; terminal statuses are immutable.
+  if (!canTransition(application.status, 'cancelled')) {
+    return errorResponse(
+      409,
+      'This application can no longer be withdrawn. Contact your landlord for assistance.'
+    );
+  }
+
   await softDeleteApplication(db, applicationId);
 
   return jsonResponse({ message: 'Application deleted successfully' });
@@ -241,7 +255,7 @@ applicationRoutes.post('/api/boarder/applications/:id/confirm', async c => {
     return errorResponse(403, 'Unauthorized');
   }
 
-  if (application.status !== 'accepted') {
+  if (!canTransition(application.status, 'confirmed')) {
     return errorResponse(403, 'Only accepted applications can be confirmed');
   }
 
@@ -341,7 +355,7 @@ applicationRoutes.patch('/api/landlord/applications/:id/status', async c => {
     return errorResponse(403, 'Unauthorized');
   }
 
-  if (['accepted', 'rejected'].includes(application.status)) {
+  if (!canTransition(application.status, status)) {
     return errorResponse(403, 'Application has already been processed');
   }
 

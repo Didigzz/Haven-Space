@@ -5,20 +5,18 @@ import { authenticateUser, authorizeUser, type AuthenticatedUser } from '../lib/
 import { requireD1 } from '../lib/d1';
 import { errorResponse, jsonResponse } from '../lib/http';
 import { isJsonRecord, type JsonRecord } from '../lib/validation';
-import { freeRoom } from '../repositories/applications';
 import {
   approvePendingLeaveRequest,
   buildLeaveMessage,
-  cancelPendingBoarderPayments,
-  completeLeaveRequest,
   createLeaveConversation,
   createLeaveMessage,
+  declinePendingLeaveRequest,
   findBoarderName,
   findCurrentTenancy,
   findLeaveConversation,
   findPendingLeaveRequest,
   formatTenancy,
-  resetBoarderStatus,
+  submitLeaveRequest,
   touchConversation,
 } from '../repositories/tenancy';
 
@@ -134,6 +132,13 @@ tenancyRoutes.post('/api/boarder/leave-request', async c => {
     );
   }
 
+  if (tenancy.leave_request_status === 'pending') {
+    return errorResponse(
+      409,
+      'You already have a pending leave request. Please wait for your landlord to review it before submitting another.'
+    );
+  }
+
   const boarderName = [boarder.first_name, boarder.last_name].filter(Boolean).join(' ').trim();
   const leaveMessage = buildLeaveMessage(
     boarderName,
@@ -164,10 +169,7 @@ tenancyRoutes.post('/api/boarder/leave-request', async c => {
 
   const messageId = await createLeaveMessage(db, conversationId, user.user_id, leaveMessage.text);
 
-  await completeLeaveRequest(db, Number(tenancy.application_id), user.user_id, reason, leaveDate);
-  await freeRoom(db, Number(tenancy.room_id));
-  await resetBoarderStatus(db, user.user_id);
-  await cancelPendingBoarderPayments(db, user.user_id);
+  await submitLeaveRequest(db, Number(tenancy.application_id), user.user_id, reason, leaveDate);
 
   return jsonResponse({
     success: true,
@@ -206,11 +208,45 @@ tenancyRoutes.post('/api/landlord/approve-leave-request', async c => {
     return errorResponse(404, 'Leave request not found or already processed');
   }
 
-  await approvePendingLeaveRequest(db, applicationId);
+  await approvePendingLeaveRequest(db, applicationId, request.boarder_id, Number(request.room_id));
 
   return jsonResponse({
     success: true,
     message: 'Leave request approved successfully',
+    data: {
+      application_id: applicationId,
+      boarder_name: [request.first_name, request.last_name].filter(Boolean).join(' ').trim(),
+      intended_leave_date: request.intended_leave_date,
+    },
+  });
+});
+
+tenancyRoutes.post('/api/landlord/decline-leave-request', async c => {
+  const db = requireD1(c.env);
+  const user = await requireLandlord(c);
+
+  if (user instanceof Response) {
+    return user;
+  }
+
+  const body = await readJsonBody(c.req.raw);
+  const applicationId = positiveInt(body, 'application_id');
+
+  if (!applicationId) {
+    return errorResponse(400, 'Application ID is required');
+  }
+
+  const request = await findPendingLeaveRequest(db, applicationId, user.user_id);
+
+  if (!request) {
+    return errorResponse(404, 'Leave request not found or already processed');
+  }
+
+  await declinePendingLeaveRequest(db, applicationId);
+
+  return jsonResponse({
+    success: true,
+    message: 'Leave request declined successfully',
     data: {
       application_id: applicationId,
       boarder_name: [request.first_name, request.last_name].filter(Boolean).join(' ').trim(),
