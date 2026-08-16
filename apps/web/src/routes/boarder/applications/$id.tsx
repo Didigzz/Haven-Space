@@ -69,19 +69,15 @@ function ApplicationDetailPage() {
 
       <Card>
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">{app.property?.title ?? app.room?.title ?? `Application #${app.id}`}</h1>
+          <h1 className="text-xl font-bold">{app.property_title ?? `Application #${app.id}`}</h1>
           <span className="rounded-full bg-mint px-3 py-1 text-sm capitalize">
             {String(app.status).replace(/_/g, ' ')}
           </span>
         </div>
         <p className="mt-1 text-gray-ink">
-          Room {app.room?.room_number ?? '—'} · ₱{app.room?.price?.toLocaleString() ?? '—'} / month
+          Room {app.room_title ?? '—'} · ₱{(app.room_price ?? 0).toLocaleString()} / month
         </p>
-        {app.property ? (
-          <p className="text-sm text-gray-ink">
-            {app.property.address}, {app.property.city}
-          </p>
-        ) : null}
+        <p className="text-sm text-gray-ink">{app.property_address}</p>
         {app.message ? (
           <p className="mt-3 rounded-md bg-cream p-3 text-sm">{app.message}</p>
         ) : null}

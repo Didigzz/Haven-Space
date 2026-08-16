@@ -49,13 +49,13 @@ function ApplicationsPage() {
               params={{ id: String(row.id) }}
               className="font-medium text-primary hover:underline"
             >
-              {row.property?.title ?? row.room?.title ?? `Application #${row.id}`}
+              {row.property_title ?? `Application #${row.id}`}
             </Link>
           ),
         },
         {
           header: 'Room',
-          cell: (row) => row.room?.room_number ?? '—',
+          cell: (row) => row.room_title ?? '—',
         },
         {
           header: 'Status',

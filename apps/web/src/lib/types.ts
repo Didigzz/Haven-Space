@@ -257,16 +257,24 @@ export interface SavedListingsResponse {
 
 export interface ApplicationSummary {
   id: number;
-  room_id: number;
+  boarder_id: number;
   landlord_id: number;
-  property_id?: number;
+  room_id: number;
+  message: string | null;
   status: string;
-  message: string;
+  payment_method: string | null;
+  confirmed_at: string | null;
   created_at: string;
-  room?: { room_number: string; price: number; title?: string };
-  property?: { title: string; address: string; city: string; image: string };
-  landlord?: { first_name: string; last_name: string };
-  boarder?: { first_name: string; last_name: string; email: string };
+  updated_at: string;
+  room_title: string | null;
+  room_price: number;
+  property_title: string;
+  property_address: string;
+  property_id: number;
+  first_name: string;
+  last_name: string;
+  email?: string | null;
+  landlord_email?: string | null;
 }
 
 export interface ApplicationsResponse {
@@ -322,7 +330,12 @@ export interface AcceptedApplicationsResponse {
 }
 
 export interface DashboardStatsResponse {
-  data: { occupancy: number; revenue: number; renewals: number; payment_alerts: number };
+  data: {
+    occupancy: { rate: number; total_rooms: number; occupied_rooms: number; trend: number };
+    revenue: { monthly: number; currency: 'PHP'; trend: number };
+    renewals: { upcoming_count: number; period: string };
+    payment_alerts: { due_soon: number; overdue: number };
+  };
 }
 
 export interface LandlordProperty {
@@ -393,9 +406,30 @@ export interface UploadPhotosResponse {
   data: { urls?: string[]; photos?: Array<Record<string, unknown>>; errors?: string[] };
 }
 
+export interface LandlordBoarder {
+  id: number;
+  application_id: number;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  room_id: number | null;
+  room_title: string | null;
+  rent: number;
+  deposit: number;
+  move_in_date: string | null;
+  application_message: string | null;
+  status: string;
+  leave_request_status: string;
+  intended_leave_date: string | null;
+  payment_status: string;
+  payment_due_day: number;
+}
+
 export interface BoardersResponse {
   success: true;
-  data: { boarders: Array<Record<string, unknown>>; total_count: number };
+  data: { boarders: LandlordBoarder[]; total_count: number };
 }
 
 export interface BoarderMutationResponse {
@@ -407,9 +441,20 @@ export interface LandlordApplicationsResponse {
   data: ApplicationSummary[];
 }
 
+export interface LandlordAnnouncement {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  priority: string;
+  publish_date: string;
+  view_count: number;
+  target_property: string;
+}
+
 export interface LandlordAnnouncementsResponse {
   success: true;
-  data: { announcements: Announcement[]; total_count: number };
+  data: { announcements: LandlordAnnouncement[]; total_count: number };
 }
 
 export interface NotificationItem {

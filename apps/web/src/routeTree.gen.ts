@@ -37,6 +37,19 @@ import { Route as BoarderSettingsRouteImport } from './routes/boarder/settings';
 import { Route as BoarderTenancyRouteImport } from './routes/boarder/tenancy';
 import { Route as FindARoomIndexRouteImport } from './routes/find-a-room/index';
 import { Route as LandlordIndexRouteImport } from './routes/landlord/index';
+import { Route as LandlordActivityRouteImport } from './routes/landlord/activity';
+import { Route as LandlordAnnouncementsRouteImport } from './routes/landlord/announcements';
+import { Route as LandlordApplicationsRouteImport } from './routes/landlord/applications';
+import { Route as LandlordBoardersRouteImport } from './routes/landlord/boarders';
+import { Route as LandlordCalendarRouteImport } from './routes/landlord/calendar';
+import { Route as LandlordListingsRouteImport } from './routes/landlord/listings';
+import { Route as LandlordMapsRouteImport } from './routes/landlord/maps';
+import { Route as LandlordMessagesRouteImport } from './routes/landlord/messages';
+import { Route as LandlordOnboardingRouteImport } from './routes/landlord/onboarding';
+import { Route as LandlordPaymentsRouteImport } from './routes/landlord/payments';
+import { Route as LandlordPricingRouteImport } from './routes/landlord/pricing';
+import { Route as LandlordPropertiesRouteImport } from './routes/landlord/properties';
+import { Route as LandlordSettingsRouteImport } from './routes/landlord/settings';
 import { Route as LandlordVerificationRouteImport } from './routes/landlord/verification';
 import { Route as LegalPrivacyPolicyRouteImport } from './routes/legal/privacy-policy';
 import { Route as LegalTermsOfServiceRouteImport } from './routes/legal/terms-of-service';
@@ -52,8 +65,14 @@ import { Route as BoarderFindARoomIdRouteImport } from './routes/boarder/find-a-
 import { Route as BoarderPaymentsIndexRouteImport } from './routes/boarder/payments/index';
 import { Route as BoarderPaymentsPayRouteImport } from './routes/boarder/payments/pay';
 import { Route as BoarderRoomsIdRouteImport } from './routes/boarder/rooms/$id';
+import { Route as LandlordListingsIndexRouteImport } from './routes/landlord/listings/index';
+import { Route as LandlordListingsCreateRouteImport } from './routes/landlord/listings/create';
+import { Route as LandlordPaymentsIndexRouteImport } from './routes/landlord/payments/index';
+import { Route as LandlordPaymentsRecordRouteImport } from './routes/landlord/payments/record';
 import { Route as BoarderFindARoomIdIndexRouteImport } from './routes/boarder/find-a-room/$id/index';
 import { Route as BoarderFindARoomIdApplyRouteImport } from './routes/boarder/find-a-room/$id/apply';
+import { Route as LandlordListingsIdEditRouteImport } from './routes/landlord/listings/$id/edit';
+import { Route as LandlordRoomsIdEditRouteImport } from './routes/landlord/rooms/$id/edit';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -195,6 +214,71 @@ const LandlordIndexRoute = LandlordIndexRouteImport.update({
   path: '/landlord/',
   getParentRoute: () => rootRouteImport,
 } as any);
+const LandlordActivityRoute = LandlordActivityRouteImport.update({
+  id: '/landlord/activity',
+  path: '/landlord/activity',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordAnnouncementsRoute = LandlordAnnouncementsRouteImport.update({
+  id: '/landlord/announcements',
+  path: '/landlord/announcements',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordApplicationsRoute = LandlordApplicationsRouteImport.update({
+  id: '/landlord/applications',
+  path: '/landlord/applications',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordBoardersRoute = LandlordBoardersRouteImport.update({
+  id: '/landlord/boarders',
+  path: '/landlord/boarders',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordCalendarRoute = LandlordCalendarRouteImport.update({
+  id: '/landlord/calendar',
+  path: '/landlord/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordListingsRoute = LandlordListingsRouteImport.update({
+  id: '/landlord/listings',
+  path: '/landlord/listings',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordMapsRoute = LandlordMapsRouteImport.update({
+  id: '/landlord/maps',
+  path: '/landlord/maps',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordMessagesRoute = LandlordMessagesRouteImport.update({
+  id: '/landlord/messages',
+  path: '/landlord/messages',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordOnboardingRoute = LandlordOnboardingRouteImport.update({
+  id: '/landlord/onboarding',
+  path: '/landlord/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordPaymentsRoute = LandlordPaymentsRouteImport.update({
+  id: '/landlord/payments',
+  path: '/landlord/payments',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordPricingRoute = LandlordPricingRouteImport.update({
+  id: '/landlord/pricing',
+  path: '/landlord/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordPropertiesRoute = LandlordPropertiesRouteImport.update({
+  id: '/landlord/properties',
+  path: '/landlord/properties',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordSettingsRoute = LandlordSettingsRouteImport.update({
+  id: '/landlord/settings',
+  path: '/landlord/settings',
+  getParentRoute: () => rootRouteImport,
+} as any);
 const LandlordVerificationRoute = LandlordVerificationRouteImport.update({
   id: '/landlord/verification',
   path: '/landlord/verification',
@@ -270,6 +354,26 @@ const BoarderRoomsIdRoute = BoarderRoomsIdRouteImport.update({
   path: '/boarder/rooms/$id',
   getParentRoute: () => rootRouteImport,
 } as any);
+const LandlordListingsIndexRoute = LandlordListingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LandlordListingsRoute,
+} as any);
+const LandlordListingsCreateRoute = LandlordListingsCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => LandlordListingsRoute,
+} as any);
+const LandlordPaymentsIndexRoute = LandlordPaymentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LandlordPaymentsRoute,
+} as any);
+const LandlordPaymentsRecordRoute = LandlordPaymentsRecordRouteImport.update({
+  id: '/record',
+  path: '/record',
+  getParentRoute: () => LandlordPaymentsRoute,
+} as any);
 const BoarderFindARoomIdIndexRoute = BoarderFindARoomIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -279,6 +383,16 @@ const BoarderFindARoomIdApplyRoute = BoarderFindARoomIdApplyRouteImport.update({
   id: '/apply',
   path: '/apply',
   getParentRoute: () => BoarderFindARoomIdRoute,
+} as any);
+const LandlordListingsIdEditRoute = LandlordListingsIdEditRouteImport.update({
+  id: '/$id/edit',
+  path: '/$id/edit',
+  getParentRoute: () => LandlordListingsRoute,
+} as any);
+const LandlordRoomsIdEditRoute = LandlordRoomsIdEditRouteImport.update({
+  id: '/landlord/rooms/$id/edit',
+  path: '/landlord/rooms/$id/edit',
+  getParentRoute: () => rootRouteImport,
 } as any);
 
 export interface FileRoutesByFullPath {
@@ -306,6 +420,19 @@ export interface FileRoutesByFullPath {
   '/boarder/payments': typeof BoarderPaymentsRouteWithChildren;
   '/boarder/settings': typeof BoarderSettingsRoute;
   '/boarder/tenancy': typeof BoarderTenancyRoute;
+  '/landlord/activity': typeof LandlordActivityRoute;
+  '/landlord/announcements': typeof LandlordAnnouncementsRoute;
+  '/landlord/applications': typeof LandlordApplicationsRoute;
+  '/landlord/boarders': typeof LandlordBoardersRoute;
+  '/landlord/calendar': typeof LandlordCalendarRoute;
+  '/landlord/listings': typeof LandlordListingsRouteWithChildren;
+  '/landlord/maps': typeof LandlordMapsRoute;
+  '/landlord/messages': typeof LandlordMessagesRoute;
+  '/landlord/onboarding': typeof LandlordOnboardingRoute;
+  '/landlord/payments': typeof LandlordPaymentsRouteWithChildren;
+  '/landlord/pricing': typeof LandlordPricingRoute;
+  '/landlord/properties': typeof LandlordPropertiesRoute;
+  '/landlord/settings': typeof LandlordSettingsRoute;
   '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
@@ -321,11 +448,17 @@ export interface FileRoutesByFullPath {
   '/boarder/find-a-room/$id': typeof BoarderFindARoomIdRouteWithChildren;
   '/boarder/payments/pay': typeof BoarderPaymentsPayRoute;
   '/boarder/rooms/$id': typeof BoarderRoomsIdRoute;
+  '/landlord/listings/create': typeof LandlordListingsCreateRoute;
+  '/landlord/payments/record': typeof LandlordPaymentsRecordRoute;
   '/auth/signup/': typeof AuthSignupIndexRoute;
   '/boarder/applications/': typeof BoarderApplicationsIndexRoute;
   '/boarder/find-a-room/': typeof BoarderFindARoomIndexRoute;
   '/boarder/payments/': typeof BoarderPaymentsIndexRoute;
+  '/landlord/listings/': typeof LandlordListingsIndexRoute;
+  '/landlord/payments/': typeof LandlordPaymentsIndexRoute;
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute;
+  '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute;
+  '/landlord/rooms/$id/edit': typeof LandlordRoomsIdEditRoute;
   '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute;
 }
 export interface FileRoutesByTo {
@@ -349,6 +482,17 @@ export interface FileRoutesByTo {
   '/boarder/messages': typeof BoarderMessagesRoute;
   '/boarder/settings': typeof BoarderSettingsRoute;
   '/boarder/tenancy': typeof BoarderTenancyRoute;
+  '/landlord/activity': typeof LandlordActivityRoute;
+  '/landlord/announcements': typeof LandlordAnnouncementsRoute;
+  '/landlord/applications': typeof LandlordApplicationsRoute;
+  '/landlord/boarders': typeof LandlordBoardersRoute;
+  '/landlord/calendar': typeof LandlordCalendarRoute;
+  '/landlord/maps': typeof LandlordMapsRoute;
+  '/landlord/messages': typeof LandlordMessagesRoute;
+  '/landlord/onboarding': typeof LandlordOnboardingRoute;
+  '/landlord/pricing': typeof LandlordPricingRoute;
+  '/landlord/properties': typeof LandlordPropertiesRoute;
+  '/landlord/settings': typeof LandlordSettingsRoute;
   '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
@@ -363,11 +507,17 @@ export interface FileRoutesByTo {
   '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute;
   '/boarder/payments/pay': typeof BoarderPaymentsPayRoute;
   '/boarder/rooms/$id': typeof BoarderRoomsIdRoute;
+  '/landlord/listings/create': typeof LandlordListingsCreateRoute;
+  '/landlord/payments/record': typeof LandlordPaymentsRecordRoute;
   '/auth/signup': typeof AuthSignupIndexRoute;
   '/boarder/applications': typeof BoarderApplicationsIndexRoute;
   '/boarder/find-a-room': typeof BoarderFindARoomIndexRoute;
   '/boarder/payments': typeof BoarderPaymentsIndexRoute;
+  '/landlord/listings': typeof LandlordListingsIndexRoute;
+  '/landlord/payments': typeof LandlordPaymentsIndexRoute;
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute;
+  '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute;
+  '/landlord/rooms/$id/edit': typeof LandlordRoomsIdEditRoute;
   '/boarder/find-a-room/$id': typeof BoarderFindARoomIdIndexRoute;
 }
 export interface FileRoutesById {
@@ -396,6 +546,19 @@ export interface FileRoutesById {
   '/boarder/payments': typeof BoarderPaymentsRouteWithChildren;
   '/boarder/settings': typeof BoarderSettingsRoute;
   '/boarder/tenancy': typeof BoarderTenancyRoute;
+  '/landlord/activity': typeof LandlordActivityRoute;
+  '/landlord/announcements': typeof LandlordAnnouncementsRoute;
+  '/landlord/applications': typeof LandlordApplicationsRoute;
+  '/landlord/boarders': typeof LandlordBoardersRoute;
+  '/landlord/calendar': typeof LandlordCalendarRoute;
+  '/landlord/listings': typeof LandlordListingsRouteWithChildren;
+  '/landlord/maps': typeof LandlordMapsRoute;
+  '/landlord/messages': typeof LandlordMessagesRoute;
+  '/landlord/onboarding': typeof LandlordOnboardingRoute;
+  '/landlord/payments': typeof LandlordPaymentsRouteWithChildren;
+  '/landlord/pricing': typeof LandlordPricingRoute;
+  '/landlord/properties': typeof LandlordPropertiesRoute;
+  '/landlord/settings': typeof LandlordSettingsRoute;
   '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
@@ -411,11 +574,17 @@ export interface FileRoutesById {
   '/boarder/find-a-room/$id': typeof BoarderFindARoomIdRouteWithChildren;
   '/boarder/payments/pay': typeof BoarderPaymentsPayRoute;
   '/boarder/rooms/$id': typeof BoarderRoomsIdRoute;
+  '/landlord/listings/create': typeof LandlordListingsCreateRoute;
+  '/landlord/payments/record': typeof LandlordPaymentsRecordRoute;
   '/auth/signup/': typeof AuthSignupIndexRoute;
   '/boarder/applications/': typeof BoarderApplicationsIndexRoute;
   '/boarder/find-a-room/': typeof BoarderFindARoomIndexRoute;
   '/boarder/payments/': typeof BoarderPaymentsIndexRoute;
+  '/landlord/listings/': typeof LandlordListingsIndexRoute;
+  '/landlord/payments/': typeof LandlordPaymentsIndexRoute;
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute;
+  '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute;
+  '/landlord/rooms/$id/edit': typeof LandlordRoomsIdEditRoute;
   '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute;
 }
 export interface FileRouteTypes {
@@ -445,6 +614,19 @@ export interface FileRouteTypes {
     | '/boarder/payments'
     | '/boarder/settings'
     | '/boarder/tenancy'
+    | '/landlord/activity'
+    | '/landlord/announcements'
+    | '/landlord/applications'
+    | '/landlord/boarders'
+    | '/landlord/calendar'
+    | '/landlord/listings'
+    | '/landlord/maps'
+    | '/landlord/messages'
+    | '/landlord/onboarding'
+    | '/landlord/payments'
+    | '/landlord/pricing'
+    | '/landlord/properties'
+    | '/landlord/settings'
     | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
@@ -460,11 +642,17 @@ export interface FileRouteTypes {
     | '/boarder/find-a-room/$id'
     | '/boarder/payments/pay'
     | '/boarder/rooms/$id'
+    | '/landlord/listings/create'
+    | '/landlord/payments/record'
     | '/auth/signup/'
     | '/boarder/applications/'
     | '/boarder/find-a-room/'
     | '/boarder/payments/'
+    | '/landlord/listings/'
+    | '/landlord/payments/'
     | '/boarder/find-a-room/$id/apply'
+    | '/landlord/listings/$id/edit'
+    | '/landlord/rooms/$id/edit'
     | '/boarder/find-a-room/$id/';
   fileRoutesByTo: FileRoutesByTo;
   to:
@@ -488,6 +676,17 @@ export interface FileRouteTypes {
     | '/boarder/messages'
     | '/boarder/settings'
     | '/boarder/tenancy'
+    | '/landlord/activity'
+    | '/landlord/announcements'
+    | '/landlord/applications'
+    | '/landlord/boarders'
+    | '/landlord/calendar'
+    | '/landlord/maps'
+    | '/landlord/messages'
+    | '/landlord/onboarding'
+    | '/landlord/pricing'
+    | '/landlord/properties'
+    | '/landlord/settings'
     | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
@@ -502,11 +701,17 @@ export interface FileRouteTypes {
     | '/boarder/applications/settings'
     | '/boarder/payments/pay'
     | '/boarder/rooms/$id'
+    | '/landlord/listings/create'
+    | '/landlord/payments/record'
     | '/auth/signup'
     | '/boarder/applications'
     | '/boarder/find-a-room'
     | '/boarder/payments'
+    | '/landlord/listings'
+    | '/landlord/payments'
     | '/boarder/find-a-room/$id/apply'
+    | '/landlord/listings/$id/edit'
+    | '/landlord/rooms/$id/edit'
     | '/boarder/find-a-room/$id';
   id:
     | '__root__'
@@ -534,6 +739,19 @@ export interface FileRouteTypes {
     | '/boarder/payments'
     | '/boarder/settings'
     | '/boarder/tenancy'
+    | '/landlord/activity'
+    | '/landlord/announcements'
+    | '/landlord/applications'
+    | '/landlord/boarders'
+    | '/landlord/calendar'
+    | '/landlord/listings'
+    | '/landlord/maps'
+    | '/landlord/messages'
+    | '/landlord/onboarding'
+    | '/landlord/payments'
+    | '/landlord/pricing'
+    | '/landlord/properties'
+    | '/landlord/settings'
     | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
@@ -549,11 +767,17 @@ export interface FileRouteTypes {
     | '/boarder/find-a-room/$id'
     | '/boarder/payments/pay'
     | '/boarder/rooms/$id'
+    | '/landlord/listings/create'
+    | '/landlord/payments/record'
     | '/auth/signup/'
     | '/boarder/applications/'
     | '/boarder/find-a-room/'
     | '/boarder/payments/'
+    | '/landlord/listings/'
+    | '/landlord/payments/'
     | '/boarder/find-a-room/$id/apply'
+    | '/landlord/listings/$id/edit'
+    | '/landlord/rooms/$id/edit'
     | '/boarder/find-a-room/$id/';
   fileRoutesById: FileRoutesById;
 }
@@ -582,6 +806,19 @@ export interface RootRouteChildren {
   BoarderPaymentsRoute: typeof BoarderPaymentsRouteWithChildren;
   BoarderSettingsRoute: typeof BoarderSettingsRoute;
   BoarderTenancyRoute: typeof BoarderTenancyRoute;
+  LandlordActivityRoute: typeof LandlordActivityRoute;
+  LandlordAnnouncementsRoute: typeof LandlordAnnouncementsRoute;
+  LandlordApplicationsRoute: typeof LandlordApplicationsRoute;
+  LandlordBoardersRoute: typeof LandlordBoardersRoute;
+  LandlordCalendarRoute: typeof LandlordCalendarRoute;
+  LandlordListingsRoute: typeof LandlordListingsRouteWithChildren;
+  LandlordMapsRoute: typeof LandlordMapsRoute;
+  LandlordMessagesRoute: typeof LandlordMessagesRoute;
+  LandlordOnboardingRoute: typeof LandlordOnboardingRoute;
+  LandlordPaymentsRoute: typeof LandlordPaymentsRouteWithChildren;
+  LandlordPricingRoute: typeof LandlordPricingRoute;
+  LandlordPropertiesRoute: typeof LandlordPropertiesRoute;
+  LandlordSettingsRoute: typeof LandlordSettingsRoute;
   LandlordVerificationRoute: typeof LandlordVerificationRoute;
   LegalPrivacyPolicyRoute: typeof LegalPrivacyPolicyRoute;
   LegalTermsOfServiceRoute: typeof LegalTermsOfServiceRoute;
@@ -592,6 +829,7 @@ export interface RootRouteChildren {
   FindARoomIndexRoute: typeof FindARoomIndexRoute;
   LandlordIndexRoute: typeof LandlordIndexRoute;
   BoarderRoomsIdRoute: typeof BoarderRoomsIdRoute;
+  LandlordRoomsIdEditRoute: typeof LandlordRoomsIdEditRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -792,6 +1030,97 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordIndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/landlord/activity': {
+      id: '/landlord/activity';
+      path: '/landlord/activity';
+      fullPath: '/landlord/activity';
+      preLoaderRoute: typeof LandlordActivityRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/announcements': {
+      id: '/landlord/announcements';
+      path: '/landlord/announcements';
+      fullPath: '/landlord/announcements';
+      preLoaderRoute: typeof LandlordAnnouncementsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/applications': {
+      id: '/landlord/applications';
+      path: '/landlord/applications';
+      fullPath: '/landlord/applications';
+      preLoaderRoute: typeof LandlordApplicationsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/boarders': {
+      id: '/landlord/boarders';
+      path: '/landlord/boarders';
+      fullPath: '/landlord/boarders';
+      preLoaderRoute: typeof LandlordBoardersRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/calendar': {
+      id: '/landlord/calendar';
+      path: '/landlord/calendar';
+      fullPath: '/landlord/calendar';
+      preLoaderRoute: typeof LandlordCalendarRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/listings': {
+      id: '/landlord/listings';
+      path: '/landlord/listings';
+      fullPath: '/landlord/listings';
+      preLoaderRoute: typeof LandlordListingsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/maps': {
+      id: '/landlord/maps';
+      path: '/landlord/maps';
+      fullPath: '/landlord/maps';
+      preLoaderRoute: typeof LandlordMapsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/messages': {
+      id: '/landlord/messages';
+      path: '/landlord/messages';
+      fullPath: '/landlord/messages';
+      preLoaderRoute: typeof LandlordMessagesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/onboarding': {
+      id: '/landlord/onboarding';
+      path: '/landlord/onboarding';
+      fullPath: '/landlord/onboarding';
+      preLoaderRoute: typeof LandlordOnboardingRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/payments': {
+      id: '/landlord/payments';
+      path: '/landlord/payments';
+      fullPath: '/landlord/payments';
+      preLoaderRoute: typeof LandlordPaymentsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/pricing': {
+      id: '/landlord/pricing';
+      path: '/landlord/pricing';
+      fullPath: '/landlord/pricing';
+      preLoaderRoute: typeof LandlordPricingRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/properties': {
+      id: '/landlord/properties';
+      path: '/landlord/properties';
+      fullPath: '/landlord/properties';
+      preLoaderRoute: typeof LandlordPropertiesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/settings': {
+      id: '/landlord/settings';
+      path: '/landlord/settings';
+      fullPath: '/landlord/settings';
+      preLoaderRoute: typeof LandlordSettingsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/landlord/verification': {
       id: '/landlord/verification';
       path: '/landlord/verification';
@@ -897,6 +1226,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BoarderRoomsIdRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/landlord/listings/': {
+      id: '/landlord/listings/';
+      path: '/';
+      fullPath: '/landlord/listings/';
+      preLoaderRoute: typeof LandlordListingsIndexRouteImport;
+      parentRoute: typeof LandlordListingsRoute;
+    };
+    '/landlord/listings/create': {
+      id: '/landlord/listings/create';
+      path: '/create';
+      fullPath: '/landlord/listings/create';
+      preLoaderRoute: typeof LandlordListingsCreateRouteImport;
+      parentRoute: typeof LandlordListingsRoute;
+    };
+    '/landlord/payments/': {
+      id: '/landlord/payments/';
+      path: '/';
+      fullPath: '/landlord/payments/';
+      preLoaderRoute: typeof LandlordPaymentsIndexRouteImport;
+      parentRoute: typeof LandlordPaymentsRoute;
+    };
+    '/landlord/payments/record': {
+      id: '/landlord/payments/record';
+      path: '/record';
+      fullPath: '/landlord/payments/record';
+      preLoaderRoute: typeof LandlordPaymentsRecordRouteImport;
+      parentRoute: typeof LandlordPaymentsRoute;
+    };
     '/boarder/find-a-room/$id/': {
       id: '/boarder/find-a-room/$id/';
       path: '/';
@@ -910,6 +1267,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/boarder/find-a-room/$id/apply';
       preLoaderRoute: typeof BoarderFindARoomIdApplyRouteImport;
       parentRoute: typeof BoarderFindARoomIdRoute;
+    };
+    '/landlord/listings/$id/edit': {
+      id: '/landlord/listings/$id/edit';
+      path: '/$id/edit';
+      fullPath: '/landlord/listings/$id/edit';
+      preLoaderRoute: typeof LandlordListingsIdEditRouteImport;
+      parentRoute: typeof LandlordListingsRoute;
+    };
+    '/landlord/rooms/$id/edit': {
+      id: '/landlord/rooms/$id/edit';
+      path: '/landlord/rooms/$id/edit';
+      fullPath: '/landlord/rooms/$id/edit';
+      preLoaderRoute: typeof LandlordRoomsIdEditRouteImport;
+      parentRoute: typeof rootRouteImport;
     };
   }
 }
@@ -984,6 +1355,36 @@ const BoarderPaymentsRouteWithChildren = BoarderPaymentsRoute._addFileChildren(
   BoarderPaymentsRouteChildren
 );
 
+interface LandlordListingsRouteChildren {
+  LandlordListingsCreateRoute: typeof LandlordListingsCreateRoute;
+  LandlordListingsIndexRoute: typeof LandlordListingsIndexRoute;
+  LandlordListingsIdEditRoute: typeof LandlordListingsIdEditRoute;
+}
+
+const LandlordListingsRouteChildren: LandlordListingsRouteChildren = {
+  LandlordListingsCreateRoute: LandlordListingsCreateRoute,
+  LandlordListingsIndexRoute: LandlordListingsIndexRoute,
+  LandlordListingsIdEditRoute: LandlordListingsIdEditRoute,
+};
+
+const LandlordListingsRouteWithChildren = LandlordListingsRoute._addFileChildren(
+  LandlordListingsRouteChildren
+);
+
+interface LandlordPaymentsRouteChildren {
+  LandlordPaymentsRecordRoute: typeof LandlordPaymentsRecordRoute;
+  LandlordPaymentsIndexRoute: typeof LandlordPaymentsIndexRoute;
+}
+
+const LandlordPaymentsRouteChildren: LandlordPaymentsRouteChildren = {
+  LandlordPaymentsRecordRoute: LandlordPaymentsRecordRoute,
+  LandlordPaymentsIndexRoute: LandlordPaymentsIndexRoute,
+};
+
+const LandlordPaymentsRouteWithChildren = LandlordPaymentsRoute._addFileChildren(
+  LandlordPaymentsRouteChildren
+);
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForLandlordsRoute: ForLandlordsRoute,
@@ -1009,6 +1410,19 @@ const rootRouteChildren: RootRouteChildren = {
   BoarderPaymentsRoute: BoarderPaymentsRouteWithChildren,
   BoarderSettingsRoute: BoarderSettingsRoute,
   BoarderTenancyRoute: BoarderTenancyRoute,
+  LandlordActivityRoute: LandlordActivityRoute,
+  LandlordAnnouncementsRoute: LandlordAnnouncementsRoute,
+  LandlordApplicationsRoute: LandlordApplicationsRoute,
+  LandlordBoardersRoute: LandlordBoardersRoute,
+  LandlordCalendarRoute: LandlordCalendarRoute,
+  LandlordListingsRoute: LandlordListingsRouteWithChildren,
+  LandlordMapsRoute: LandlordMapsRoute,
+  LandlordMessagesRoute: LandlordMessagesRoute,
+  LandlordOnboardingRoute: LandlordOnboardingRoute,
+  LandlordPaymentsRoute: LandlordPaymentsRouteWithChildren,
+  LandlordPricingRoute: LandlordPricingRoute,
+  LandlordPropertiesRoute: LandlordPropertiesRoute,
+  LandlordSettingsRoute: LandlordSettingsRoute,
   LandlordVerificationRoute: LandlordVerificationRoute,
   LegalPrivacyPolicyRoute: LegalPrivacyPolicyRoute,
   LegalTermsOfServiceRoute: LegalTermsOfServiceRoute,
@@ -1019,6 +1433,7 @@ const rootRouteChildren: RootRouteChildren = {
   FindARoomIndexRoute: FindARoomIndexRoute,
   LandlordIndexRoute: LandlordIndexRoute,
   BoarderRoomsIdRoute: BoarderRoomsIdRoute,
+  LandlordRoomsIdEditRoute: LandlordRoomsIdEditRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,0 +1,107 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Protected } from '../../components/auth/Protected';
+import { RoleShell } from '../../components/layout/RoleShell';
+import { Button } from '../../components/ui/Button';
+import { DataTable } from '../../components/ui/DataTable';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { Spinner } from '../../components/ui/Spinner';
+import { ApiRequestError } from '../../lib/api/http';
+import { getApplications, patchApplicationStatus } from '../../lib/api/landlord';
+import { useAuth } from '../../lib/auth-context';
+import { LANDLORD_NAV } from '../../lib/nav';
+import type { ApplicationSummary } from '../../lib/types';
+
+export const Route = createFileRoute('/landlord/applications')({
+  component: () => (
+    <Protected role="landlord">
+      <ApplicationsPage />
+    </Protected>
+  ),
+});
+
+function ApplicationsPage() {
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+
+  const applications = useQuery({
+    queryKey: ['landlord-applications'],
+    queryFn: () => getApplications(token!),
+    enabled: Boolean(token),
+  });
+
+  const patchStatus = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
+      patchApplicationStatus(token!, id, status),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['landlord-applications'] });
+    },
+    onError: (err) =>
+      setError(err instanceof ApiRequestError ? err.message : 'Failed to update application.'),
+  });
+
+  if (applications.isLoading) return <Spinner />;
+  if (applications.error) return <ErrorState message={applications.error.message} />;
+  if (!applications.data || applications.data.data.length === 0) {
+    return <EmptyState title="No applications" description="Boarder applications appear here." />;
+  }
+
+  return (
+    <div>
+      {error ? (
+        <div className="mb-4">
+          <ErrorState message={error} />
+        </div>
+      ) : null}
+      <DataTable<ApplicationSummary>
+        rows={applications.data.data}
+        keyFor={(row) => row.id}
+        columns={[
+          {
+            header: 'Property',
+            cell: (row) => row.property_title,
+          },
+          {
+            header: 'Room',
+            cell: (row) => `${row.room_title} · ₱${row.room_price.toLocaleString()}`,
+          },
+          {
+            header: 'Boarder',
+            cell: (row) => `${row.first_name} ${row.last_name}`,
+          },
+          {
+            header: 'Status',
+            cell: (row) => (
+              <span className="capitalize">{String(row.status).replace(/_/g, ' ')}</span>
+            ),
+          },
+          {
+            header: 'Actions',
+            cell: (row) =>
+              row.status === 'pending' ? (
+                <div className="flex gap-2">
+                  <Button
+                    className="px-2 py-1 text-xs"
+                    onClick={() => patchStatus.mutate({ id: row.id, status: 'accepted' })}
+                    disabled={patchStatus.isPending}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    className="bg-red-600 px-2 py-1 text-xs hover:bg-red-700"
+                    onClick={() => patchStatus.mutate({ id: row.id, status: 'rejected' })}
+                    disabled={patchStatus.isPending}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              ) : null,
+          },
+        ]}
+      />
+    </div>
+  );
+}
