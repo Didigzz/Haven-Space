@@ -4,13 +4,13 @@ Haven Space is a boarding house platform for boarders, landlords, and admins.
 
 ## Stack
 
-| Layer    | Technology                                   |
-| -------- | -------------------------------------------- |
-| Frontend | TanStack Start (React) on Cloudflare Workers |
-| API      | TypeScript Cloudflare Worker with Hono       |
-| Database | Cloudflare D1                                |
-| Uploads  | UploadThing                                  |
-| Tooling  | Bun, Wrangler, ESLint, Prettier              |
+| Layer    | Technology                                 |
+| -------- | ------------------------------------------ |
+| Frontend | TanStack Start (React) on Cloudflare Pages |
+| API      | TypeScript Cloudflare Worker with Hono     |
+| Database | Cloudflare D1                              |
+| Uploads  | UploadThing                                |
+| Tooling  | Bun, Wrangler, ESLint, Prettier            |
 
 ## Backend Status
 
@@ -27,6 +27,9 @@ bun install
 bun install --cwd workers/api
 bun install --cwd apps/web
 ```
+
+> The root `bun install` only covers repo-level tooling; the app and API have their own
+> lockfiles and dependencies.
 
 Run the Worker API locally:
 
@@ -91,42 +94,30 @@ The override is saved in `localStorage.havenSpaceApiBaseUrl`.
 The API Worker's `ALLOWED_ORIGINS` (or `APP_ORIGIN`) must include the frontend's origin so browser requests are accepted:
 
 - local frontend: `http://localhost:3000`
-- production frontend: the web Worker's origin (e.g. `https://haven-space-web.<account>.workers.dev`, or a custom domain if one is added)
+- production frontend: `https://haven-space.pages.dev` (the `haven-space` Cloudflare Pages project)
 
 ## Legacy Design Reference (`client/`)
 
-The `client/` folder holds the legacy vanilla HTML/CSS/JS frontend. It is kept as the design
-reference: the TanStack homepage and FAQ were rebuilt to match it. The homepage was aligned as
-follows:
-
-- Removed the border and shadow around the `main.png` app preview image.
-- Removed the "Voices / Real Stories, Real Impact" testimonials section (kept on Our Story, which still carries it in the reference).
-- Restyled the FAQ section (light-gray `#f8f9fa` background, left-aligned header with pill badge, underline category tabs, card-style accordion items) to match the reference.
-
-Preview the reference locally:
-
-```bash
-bun run client:dev
-```
-
-The reference is served at `http://localhost:8788` (redirects to `views/public/index.html`).
+The `client/` folder holds the legacy vanilla HTML/CSS/JS frontend. It is kept only as a local
+design reference (git-ignored): the TanStack homepage and FAQ were rebuilt to match it. It is not
+part of the app or any deploy.
 
 ## Scripts
 
-| Command                    | Description                                 |
-| -------------------------- | ------------------------------------------- |
-| `bun run client:dev`       | Serve the legacy `/client` design reference |
-| `bun run cf:api:dev`       | Run the Worker API locally                  |
-| `bun run cf:api:test`      | Run Worker API tests                        |
-| `bun run cf:api:typecheck` | Typecheck Worker API code                   |
-| `bun run cf:api:deploy`    | Deploy the production Worker                |
-| `bun run web:dev`          | Run the TanStack Start frontend locally     |
-| `bun run web:test`         | Run frontend tests                          |
-| `bun run web:typecheck`    | Typecheck frontend code                     |
-| `bun run web:build`        | Build the frontend output                   |
-| `bun run web:deploy`       | Deploy the frontend Worker                  |
-| `bun run deploy`           | Deploy Worker API and frontend              |
-| `bun run format`           | Format files with Prettier                  |
+| Command                    | Description                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| `bun run cf:api:dev`       | Run the Worker API locally                                                              |
+| `bun run cf:api:test`      | Run Worker API tests                                                                    |
+| `bun run cf:api:typecheck` | Typecheck Worker API code                                                               |
+| `bun run cf:api:deploy`    | Deploy the production API Worker                                                        |
+| `bun run web:dev`          | Run the TanStack Start frontend locally                                                 |
+| `bun run web:test`         | Run frontend tests                                                                      |
+| `bun run web:typecheck`    | Typecheck frontend code                                                                 |
+| `bun run web:build`        | Build the frontend output                                                               |
+| `bun run pages:build`      | Assemble the Cloudflare Pages bundle (`_worker.js` + assets) into `apps/web/dist/pages` |
+| `bun run web:deploy`       | Build and deploy the frontend to Cloudflare Pages (`haven-space`)                       |
+| `bun run deploy`           | Deploy API Worker and frontend to Cloudflare Pages                                      |
+| `bun run format`           | Format files with Prettier                                                              |
 
 ## Production Deploy
 
@@ -136,7 +127,20 @@ Deploy the full Cloudflare stack:
 bun run deploy
 ```
 
-The production frontend is served by the `haven-space-web` Worker (see `apps/web/wrangler.jsonc`). Add the frontend origin to the API Worker's `ALLOWED_ORIGINS`/`APP_ORIGIN` as described under CORS above.
+The frontend is built with Vite + `@cloudflare/vite-plugin` in Worker mode
+(`apps/web/wrangler.jsonc`); `scripts/build-pages.mjs` then assembles a Cloudflare Pages
+"advanced mode" bundle (`_worker.js` + static assets + `_routes.json`) into `apps/web/dist/pages`,
+which is uploaded to the `haven-space` Pages project (production site:
+`https://haven-space.pages.dev`). Run the pieces individually with
+`bun run web:build` / `bun run pages:build` / `bun run web:deploy`.
+
+Git auto-deployments on the `haven-space` Pages project are **disabled** — deploys happen either
+manually (above) or via CI. The GitHub Actions workflow (`.github/workflows/deploy.yml`) runs the
+API tests and typechecks on every push to `main`, then deploys the web app to Cloudflare Pages
+and the `haven-space-api` Worker. Pull requests get Cloudflare Pages preview deployments. The
+workflow needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+
+Add the frontend origin to the API Worker's `ALLOWED_ORIGINS`/`APP_ORIGIN` as described under CORS above.
 
 ## Deferred Work
 

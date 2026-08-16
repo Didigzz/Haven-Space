@@ -4,8 +4,8 @@ Haven Space is a boarding house platform connecting boarders and landlords, with
 
 ## Project Overview
 
-- **Frontend:** TanStack Start (React) with SSR, file-based routing, and Tailwind CSS, running on Cloudflare Workers.
-  - **Hosting:** Cloudflare Workers (see `apps/web/wrangler.jsonc`).
+- **Frontend:** TanStack Start (React) with SSR, file-based routing, and Tailwind CSS, running on Cloudflare Pages (`haven-space` project, `https://haven-space.pages.dev`).
+  - **Hosting:** Cloudflare Pages. The app builds in Worker mode (`apps/web/wrangler.jsonc`); `scripts/build-pages.mjs` assembles the Pages bundle (`apps/web/dist/pages`: `_worker.js` + assets + `_routes.json`).
   - **Architecture:** Server functions (`createServerFn`) for data fetching, React Query for client state, `Protected` + `RoleShell` for role-based shells.
 - **Backend:** RESTful API built with TypeScript and [Hono](https://hono.dev/).
   - **Hosting:** Cloudflare Workers.
@@ -27,8 +27,9 @@ Haven Space is a boarding house platform connecting boarders and landlords, with
     - `/routes`: Hono route definitions.
     - `/lib`: Shared utilities (auth, validation, HTTP helpers).
   - `/migrations`: D1 database migrations.
+- `/scripts`: Build scripts, including `build-pages.mjs` (assembles the Cloudflare Pages bundle).
 - `/docs`: Detailed project documentation (design, schemas, manuals).
-- `schema_simple.sql`: Reference SQL schema for the D1 database.
+- `.github/workflows/deploy.yml`: CI — checks (typechecks + API tests) gate production deploys to Cloudflare Pages and the API Worker on push to `main`, and Pages preview deployments on pull requests.
 
 ## Key Commands
 
@@ -37,6 +38,7 @@ Haven Space is a boarding house platform connecting boarders and landlords, with
 ```bash
 bun install
 bun install --cwd workers/api
+bun install --cwd apps/web
 ```
 
 ### Development
@@ -55,9 +57,14 @@ bun install --cwd workers/api
 
 ### Deployment
 
-- **Full Deploy:** `bun run deploy` (Deploys both Worker API and frontend)
+- **Full Deploy:** `bun run deploy` (Deploys both the API Worker and the frontend)
 - **Deploy API:** `bun run cf:api:deploy`
-- **Deploy Frontend:** `bun run web:deploy`
+- **Deploy Frontend:** `bun run web:deploy` (builds the app, runs `scripts/build-pages.mjs`, then `wrangler pages deploy` to the `haven-space` project)
+- **Pages bundle only:** `bun run pages:build` (assemble `apps/web/dist/pages` from the Worker-mode build)
+
+Git auto-deployments on the `haven-space` Pages project are **disabled**; deployments happen via
+CI (`.github/workflows/deploy.yml`) or manually with the commands above. CI requires the
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
 
 ## Development Conventions
 
