@@ -11,15 +11,17 @@ const STYLES: Record<string, string> = {
   banned: 'bg-red-100 text-red-700',
   flagged: 'bg-red-100 text-red-700',
   suspended: 'bg-orange-100 text-orange-700',
+  ended: 'bg-gray-100 text-gray-600',
+  cancelled: 'bg-gray-100 text-gray-600',
 };
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, label }: { status: string; label?: string }) {
   const style = STYLES[status] ?? 'bg-gray-100 text-gray-600';
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${style}`}
     >
-      {status.replaceAll('_', ' ')}
+      {label ?? status.replaceAll('_', ' ')}
     </span>
   );
 }

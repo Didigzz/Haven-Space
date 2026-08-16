@@ -15,6 +15,8 @@ import { StatusBadge } from '../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../lib/api/http';
 import {
   addBoarder,
+  approveLeaveRequest,
+  declineLeaveRequest,
   getBoarders,
   getProperties,
   getRooms,
@@ -115,6 +117,29 @@ function BoardersPage() {
       setError(err instanceof ApiRequestError ? err.message : 'Failed to remove boarder.'),
   });
 
+  const respond = useMutation({
+    mutationFn: ({
+      applicationId,
+      action,
+    }: {
+      applicationId: number;
+      action: 'approve' | 'decline';
+    }) =>
+      action === 'approve'
+        ? approveLeaveRequest(token!, applicationId)
+        : declineLeaveRequest(token!, applicationId),
+    onSuccess: () => {
+      // Approval frees the room and changes occupancy, so refresh rooms too.
+      void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
+      void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyIdNumber] });
+      void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
+    },
+    onError: err =>
+      setError(
+        err instanceof ApiRequestError ? err.message : 'Failed to update leave request.'
+      ),
+  });
+
   function openAdd() {
     setForm(EMPTY_FORM);
     setError(null);
@@ -205,25 +230,64 @@ function BoardersPage() {
               cell: row => `₱${row.rent.toLocaleString()}`,
             },
             {
+              header: 'Status',
+              cell: row => {
+                if (row.leave_request_status === 'pending') {
+                  return <StatusBadge status="pending" label="Leave requested" />;
+                }
+                if (row.leave_request_status === 'approved') {
+                  return <StatusBadge status="approved" label="Leaving approved" />;
+                }
+                return <StatusBadge status="active" />;
+              },
+            },
+            {
               header: 'Actions',
-              cell: row => (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="text-sm text-primary hover:underline"
-                    onClick={() => openEdit(row)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="text-sm text-red-600 hover:underline"
-                    onClick={() => remove.mutate(row.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ),
+              cell: row => {
+                const isPendingLeave = row.leave_request_status === 'pending';
+                return (
+                  <div className="flex items-center gap-2">
+                    {isPendingLeave ? (
+                      <>
+                        <button
+                          type="button"
+                          className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
+                          disabled={respond.isPending}
+                          onClick={() =>
+                            respond.mutate({ applicationId: row.application_id, action: 'approve' })
+                          }
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          className="text-sm text-red-600 hover:underline disabled:opacity-50"
+                          disabled={respond.isPending}
+                          onClick={() =>
+                            respond.mutate({ applicationId: row.application_id, action: 'decline' })
+                          }
+                        >
+                          Decline
+                        </button>
+                      </>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="text-sm text-primary hover:underline"
+                      onClick={() => openEdit(row)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="text-sm text-red-600 hover:underline"
+                      onClick={() => remove.mutate(row.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              },
             },
           ]}
         />

@@ -1,8 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Protected } from '../../../components/auth/Protected';
-import { RoleShell } from '../../../components/layout/RoleShell';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ErrorState } from '../../../components/ui/ErrorState';
@@ -12,7 +10,6 @@ import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../../lib/api/http';
 import { confirmApplication, deleteApplication, getApplication } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
-import { BOARDER_NAV } from '../../../lib/nav';
 
 export const Route = createFileRoute('/boarder/applications/$id')({
   component: ApplicationDetailPage,
@@ -35,7 +32,7 @@ function ApplicationDetailPage() {
   const confirm = useMutation({
     mutationFn: () => confirmApplication(token!, Number(id), paymentMethod),
     onSuccess: () => void navigate({ to: '/boarder/confirm-booking' }),
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to confirm booking.'),
   });
 
@@ -45,7 +42,7 @@ function ApplicationDetailPage() {
       void queryClient.invalidateQueries({ queryKey: ['applications'] });
       void navigate({ to: '/boarder/applications' });
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to delete application.'),
   });
 
@@ -55,36 +52,33 @@ function ApplicationDetailPage() {
 
   const app = application.data.data;
   const isAccepted = app.status === 'accepted';
+  const isWithdrawable = app.status === 'pending' || app.status === 'accepted';
 
   return (
-    <Protected role="boarder">
-      <RoleShell title="Application" nav={BOARDER_NAV}>
-        <div className="mx-auto max-w-2xl">
-          <Link
-            to="/boarder/applications"
-            className="mb-4 inline-block text-sm text-primary hover:underline"
-          >
-            ← Back to applications
-          </Link>
+    <div className="mx-auto max-w-2xl">
+      <Link
+        to="/boarder/applications"
+        className="mb-4 inline-block text-sm text-primary hover:underline"
+      >
+        ← Back to applications
+      </Link>
 
-          {error ? (
-            <div className="mb-4">
-              <ErrorState message={error} />
-            </div>
-          ) : null}
+      {error ? (
+        <div className="mb-4">
+          <ErrorState message={error} />
+        </div>
+      ) : null}
 
-          <Card>
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold">{app.property_title ?? `Application #${app.id}`}</h1>
-              <StatusBadge status={String(app.status)} />
-            </div>
+      <Card>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold">{app.property_title ?? `Application #${app.id}`}</h1>
+          <StatusBadge status={String(app.status)} />
+        </div>
         <p className="mt-1 text-gray-ink">
           Room {app.room_title ?? '—'} · ₱{(app.room_price ?? 0).toLocaleString()} / month
         </p>
         <p className="text-sm text-gray-ink">{app.property_address}</p>
-        {app.message ? (
-          <p className="mt-3 rounded-md bg-cream p-3 text-sm">{app.message}</p>
-        ) : null}
+        {app.message ? <p className="mt-3 rounded-md bg-cream p-3 text-sm">{app.message}</p> : null}
       </Card>
 
       {isAccepted ? (
@@ -98,7 +92,7 @@ function ApplicationDetailPage() {
               <SelectInput
                 id="paymentMethod"
                 value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
+                onChange={e => setPaymentMethod(e.target.value)}
               >
                 <option value="gcash">GCash</option>
                 <option value="bank_transfer">Bank transfer</option>
@@ -112,21 +106,25 @@ function ApplicationDetailPage() {
         </Card>
       ) : null}
 
-      <div className="mt-6">
-        <Button
-          variant="danger"
-          onClick={() => remove.mutate()}
-          disabled={remove.isPending}
-        >
-          {remove.isPending
-            ? 'Withdrawing…'
-            : isAccepted
+      {isWithdrawable ? (
+        <div className="mt-6">
+          <Button variant="danger" onClick={() => remove.mutate()} disabled={remove.isPending}>
+            {remove.isPending
+              ? 'Withdrawing…'
+              : isAccepted
               ? 'Withdraw application'
-              : 'Delete application'}
-        </Button>
-      </div>
+              : 'Withdraw application'}
+          </Button>
         </div>
-      </RoleShell>
-    </Protected>
+      ) : app.status === 'confirmed' ? (
+        <p className="mt-6 rounded-md bg-mint px-4 py-3 text-sm text-ink">
+          Your booking is confirmed. To end this tenancy, use{' '}
+          <Link to="/boarder/tenancy" className="font-semibold text-primary hover:underline">
+            My Tenancy
+          </Link>{' '}
+          to request to leave.
+        </p>
+      ) : null}
+    </div>
   );
 }
