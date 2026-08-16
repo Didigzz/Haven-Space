@@ -8,6 +8,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { LandlordRoomList } from '../../components/rooms/LandlordRoomList';
 import { getProperties } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
 import { LANDLORD_NAV } from '../../lib/nav';
@@ -46,6 +47,7 @@ function PropertiesPage() {
         <DataTable<LandlordProperty>
           rows={properties.data.data.properties}
           keyFor={row => row.id}
+          expandable={row => <LandlordRoomList token={token!} propertyId={row.id} />}
           columns={[
             {
               header: 'Name',

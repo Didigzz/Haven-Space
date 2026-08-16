@@ -7,6 +7,7 @@ import { ErrorState } from '../../../../components/ui/ErrorState';
 import { Icon } from '../../../../components/ui/Icon';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../components/ui/Field';
 import { Spinner } from '../../../../components/ui/Spinner';
+import { LandlordRoomList } from '../../../../components/rooms/LandlordRoomList';
 import { ApiRequestError } from '../../../../lib/api/http';
 import { getProperty, updateListing, uploadPropertyPhotos } from '../../../../lib/api/landlord';
 import { useAuth } from '../../../../lib/auth-context';
@@ -361,6 +362,8 @@ function EditListingPage() {
             </ul>
           ) : null}
         </section>
+
+        <LandlordRoomList token={token!} propertyId={propertyId} />
       </Card>
     </div>
   );
