@@ -52,7 +52,7 @@ function ApplicationsPage() {
   }
 
   return (
-    <div>
+    <RoleShell title="Applications" nav={LANDLORD_NAV}>
       {error ? (
         <div className="mb-4">
           <ErrorState message={error} />
@@ -109,6 +109,6 @@ function ApplicationsPage() {
           },
         ]}
       />
-    </div>
+    </RoleShell>
   );
 }

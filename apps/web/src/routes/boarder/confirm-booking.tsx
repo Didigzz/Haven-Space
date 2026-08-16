@@ -72,7 +72,9 @@ function ConfirmBookingPage() {
               </h2>
               <p className="text-sm text-gray-ink">
                 {String(app.room_number ?? app.room ?? '')} · ₱
-                {Number(app.monthly_rent ?? app.price ?? 0).toLocaleString()}
+                {Number(
+                  app.room_price ?? app.monthly_rent ?? app.price ?? 0
+                ).toLocaleString()}
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
                 <Field label="Payment method" htmlFor="paymentMethod">
