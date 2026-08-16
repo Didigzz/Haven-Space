@@ -66,6 +66,20 @@ function createSqliteD1(db: Database): D1Database {
           };
         },
       } as unknown as D1PreparedStatement),
+    batch: async (statements: D1PreparedStatement[]) => {
+      const results: D1Result[] = [];
+
+      for (const statement of statements) {
+        const result = await (
+          statement as unknown as {
+            run: () => Promise<D1Result>;
+          }
+        ).run();
+        results.push(result);
+      }
+
+      return results;
+    },
   } as unknown as D1Database;
 }
 

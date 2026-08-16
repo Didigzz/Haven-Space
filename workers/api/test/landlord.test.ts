@@ -458,7 +458,7 @@ describe('landlord property routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [100],
       ['456 Rizal Ave', 'Quezon City', 'Metro Manila', 14.6, 121, 100],
       [
@@ -473,6 +473,7 @@ describe('landlord property routes', () => {
         'female',
         'hidden',
         10,
+        3,
         3,
       ],
       [10],
@@ -522,7 +523,7 @@ describe('landlord property routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [
         'Pine House',
         'Near campus',
@@ -535,6 +536,7 @@ describe('landlord property routes', () => {
         'any',
         'available',
         10,
+        3,
         3,
       ],
       [10],
@@ -580,7 +582,7 @@ describe('landlord property routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [
         'Pine House',
         'Near campus',
@@ -593,6 +595,7 @@ describe('landlord property routes', () => {
         'any',
         'available',
         10,
+        3,
         3,
       ],
       [10, 'https://utfs.io/f/removed-key'],
@@ -637,7 +640,7 @@ describe('landlord property routes', () => {
     expect(await inaccessibleResponse.json()).toEqual({
       error: 'Property not found or access denied',
     });
-    expect(capturedBinds).toEqual([[3], [404, 3]]);
+    expect(capturedBinds).toEqual([[3], [404, 3, 3]]);
   });
 
   it('requires a landlord role for listing updates', async () => {
