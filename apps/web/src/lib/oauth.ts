@@ -3,6 +3,16 @@ import { getApiBaseUrl } from './config';
 import type { AuthUser } from './types';
 
 /**
+ * Allow only same-origin relative paths (a single leading '/', no '//') so a
+ * `?redirect=`/OAuth `redirect` value can never become an open redirect.
+ */
+export function sanitizeRedirect(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  if (!value.startsWith('/') || value.startsWith('//')) return null;
+  return value;
+}
+
+/**
  * Parse the `#auth={payload}` hash fragment the Google OAuth callback
  * redirects back to (see the Worker's handleGoogleCallback), persist the
  * session, and return the authenticated user. Returns null when no hash
@@ -76,17 +86,21 @@ function boarderRedirectPath(user: AuthUser): string {
 
 /**
  * Build the Google OAuth authorize URL for the given action and role. The role
- * is a hint only — for a brand-new email the role chooser decides.
+ * is a hint only — for a brand-new email the role chooser decides. An optional
+ * relative `redirect` path is carried through the OAuth state so the callback
+ * can send the user back to where they started (e.g. /haven-ai).
  */
 export function googleAuthorizeUrl(
   action: 'login' | 'signup',
-  role: 'boarder' | 'landlord'
+  role: 'boarder' | 'landlord',
+  redirect?: string | null
 ): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const params = new URLSearchParams({ action, role, origin });
+  const safeRedirect = sanitizeRedirect(redirect);
+  if (safeRedirect) params.set('redirect', safeRedirect);
 
-  return `${getApiBaseUrl()}/auth/google/authorize?action=${action}&role=${role}&origin=${encodeURIComponent(
-    origin
-  )}`;
+  return `${getApiBaseUrl()}/auth/google/authorize?${params.toString()}`;
 }
 
 /**
@@ -102,6 +116,8 @@ export interface GooglePendingSession {
   picture: string | null;
   action: 'login' | 'signup';
   link: boolean;
+  /** Sanitized relative path to return to after completing the flow. */
+  redirect: string | null;
 }
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
@@ -134,6 +150,7 @@ export function parseGooglePendingToken(token: string): GooglePendingSession | n
     picture: typeof payload.picture === 'string' ? payload.picture : null,
     action: payload.action === 'signup' ? 'signup' : 'login',
     link: payload.link === true,
+    redirect: sanitizeRedirect(typeof payload.redirect === 'string' ? payload.redirect : null),
   };
 }
 
@@ -174,11 +191,18 @@ export function clearGooglePendingHash(): void {
 }
 
 /**
- * Shared `?error=` search-param reader for the auth pages (TanStack
- * validateSearch). Used so the API-provided OAuth failure messages are surfaced
- * as inline banners instead of being silently dropped.
+ * Shared `?error=` / `?redirect=` search-param reader for the auth pages
+ * (TanStack validateSearch). Error surfaces API-provided OAuth failure
+ * messages as inline banners; redirect carries a sanitized return-to path.
  */
-export function authErrorSearch(search: Record<string, unknown>): { error?: string } {
+export function authErrorSearch(search: Record<string, unknown>): {
+  error?: string;
+  redirect?: string;
+} {
   const error = typeof search.error === 'string' ? search.error.trim() : '';
-  return error ? { error } : {};
+  const redirect = sanitizeRedirect(typeof search.redirect === 'string' ? search.redirect : null);
+  const result: { error?: string; redirect?: string } = {};
+  if (error) result.error = error;
+  if (redirect) result.redirect = redirect;
+  return result;
 }

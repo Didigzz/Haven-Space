@@ -107,7 +107,30 @@ test('parseGooglePendingToken reads the claims of a google_pending token', () =>
     picture: 'https://example.com/g.jpg',
     action: 'signup',
     link: false,
+    redirect: null,
   });
+});
+
+test('parseGooglePendingToken reads a sanitized redirect claim', () => {
+  const token = makePendingToken({
+    type: 'google_pending',
+    googleId: 'google-sub-redirect',
+    email: 'redirect@example.com',
+    redirect: '/haven-ai',
+    link: false,
+  });
+
+  expect(parseGooglePendingToken(token)?.redirect).toBe('/haven-ai');
+
+  const malicious = makePendingToken({
+    type: 'google_pending',
+    googleId: 'google-sub-open',
+    email: 'open@example.com',
+    redirect: '//evil.example.com',
+    link: false,
+  });
+
+  expect(parseGooglePendingToken(malicious)?.redirect).toBeNull();
 });
 
 test('parseGooglePendingToken detects link-confirm mode', () => {

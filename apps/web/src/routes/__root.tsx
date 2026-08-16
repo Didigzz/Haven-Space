@@ -9,7 +9,12 @@ import {
 } from '@tanstack/react-router';
 import { useEffect, useState, type ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth-context';
-import { handleGooglePendingHash, handleOAuthHash, redirectPathForUser } from '../lib/oauth';
+import {
+  handleGooglePendingHash,
+  handleOAuthHash,
+  redirectPathForUser,
+  sanitizeRedirect,
+} from '../lib/oauth';
 import appCss from '../styles/app.css?url';
 
 export const Route = createRootRoute({
@@ -63,11 +68,22 @@ function RootComponent() {
   const navigate = useNavigate();
 
   // Handle the Google OAuth `#auth=` callback hash on any page, and route
-  // `#google-pending=` sessions to the role chooser.
+  // `#google-pending=` sessions to the role chooser. When the callback carries
+  // a `?redirect=` (set by the API from the OAuth state), return the user there
+  // instead of the default role home — e.g. back to /haven-ai. If the user is
+  // already on that page, stay put so the page can pick up pending state.
   useEffect(() => {
     const user = handleOAuthHash();
     if (user) {
-      void navigate({ to: redirectPathForUser(user) });
+      const redirect = sanitizeRedirect(
+        typeof window === 'undefined'
+          ? null
+          : new URLSearchParams(window.location.search).get('redirect')
+      );
+      const target = redirect ?? redirectPathForUser(user);
+      if (window.location.pathname !== target) {
+        void navigate({ to: target });
+      }
       return;
     }
     if (handleGooglePendingHash()) void navigate({ to: '/auth/choose-role' });

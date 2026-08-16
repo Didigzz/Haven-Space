@@ -1,12 +1,17 @@
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Link, createFileRoute, useSearch } from '@tanstack/react-router';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { Icon } from '../../components/ui/Icon';
+import { authErrorSearch, sanitizeRedirect } from '../../lib/oauth';
 
 export const Route = createFileRoute('/auth/choose')({
+  validateSearch: authErrorSearch,
   component: ChoosePage,
 });
 
 function ChoosePage() {
+  const { redirect: rawRedirect } = useSearch({ from: '/auth/choose' });
+  const redirect = sanitizeRedirect(rawRedirect) ?? undefined;
+
   return (
     <AuthSplitLayout
       title="Join Haven Space"
@@ -24,6 +29,7 @@ function ChoosePage() {
       <div className="flex flex-col gap-3">
         <Link
           to="/auth/signup"
+          search={{ redirect }}
           className="flex items-center gap-4 rounded-xl border-2 border-primary bg-white px-4 py-4 text-left hover:bg-mint"
         >
           <Icon name="search" size={28} className="shrink-0" />
@@ -34,6 +40,7 @@ function ChoosePage() {
         </Link>
         <Link
           to="/auth/signup/landlord"
+          search={{ redirect }}
           className="flex items-center gap-4 rounded-xl border-2 border-gray-200 bg-white px-4 py-4 text-left hover:border-primary hover:bg-mint"
         >
           <Icon name="buildingOffice" size={28} className="shrink-0" />

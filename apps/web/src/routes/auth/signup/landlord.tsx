@@ -34,7 +34,7 @@ const ID_TYPES = [
 ];
 
 function LandlordSignupPage() {
-  const { error: searchError } = useSearch({ from: '/auth/signup/landlord' });
+  const { error: searchError, redirect } = useSearch({ from: '/auth/signup/landlord' });
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -56,8 +56,8 @@ function LandlordSignupPage() {
 
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: redirectPathForUser(user) });
-  }, [navigate]);
+    if (user) void navigate({ to: redirect ?? redirectPathForUser(user) });
+  }, [navigate, redirect]);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm(f => ({ ...f, [key]: value }));
@@ -96,7 +96,7 @@ function LandlordSignupPage() {
         idType: form.idType,
         idNumber: form.idNumber.trim(),
       });
-      void navigate({ to: '/landlord/verification' });
+      void navigate({ to: redirect ?? '/landlord/verification' });
     } catch (err) {
       setError(
         err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
@@ -125,7 +125,7 @@ function LandlordSignupPage() {
 
       <GoogleButton
         onClick={() => {
-          window.location.href = googleAuthorizeUrl('signup', 'landlord');
+          window.location.href = googleAuthorizeUrl('signup', 'landlord', redirect);
         }}
       />
       <AuthDivider />

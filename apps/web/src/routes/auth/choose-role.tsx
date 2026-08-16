@@ -22,7 +22,9 @@ export const Route = createFileRoute('/auth/choose-role')({
 type Step = 'role' | 'landlord-details';
 
 function ChooseRolePage() {
-  const { error: searchError } = useSearch({ from: '/auth/choose-role' });
+  const { error: searchError, redirect: searchRedirect } = useSearch({
+    from: '/auth/choose-role',
+  });
   const { completeGoogle } = useAuth();
   const navigate = useNavigate();
   const handled = useRef(false);
@@ -66,7 +68,7 @@ function ChooseRolePage() {
     setError(null);
     try {
       const user = await completeGoogle({ pendingToken: pending.token, ...input });
-      void navigate({ to: redirectPathForUser(user) });
+      void navigate({ to: session?.redirect ?? searchRedirect ?? redirectPathForUser(user) });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
       setBusy(false);
