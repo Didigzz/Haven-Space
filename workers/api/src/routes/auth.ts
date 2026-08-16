@@ -234,7 +234,7 @@ function authErrorRedirect(
   action: OAuthAction,
   message: string
 ): Response {
-  const path = action === 'signup' ? '/auth/signup.html' : '/auth/login.html';
+  const path = action === 'signup' ? '/auth/signup' : '/auth/login';
   const url = new URL(path, origin.endsWith('/') ? origin : `${origin}/`);
   url.searchParams.set('error', message);
 
@@ -296,24 +296,24 @@ function boarderRedirectPath(user: Record<string, unknown>): string {
 
   switch (status) {
     case 'accepted':
-      return '/boarder/index.html';
+      return '/boarder';
     case 'applied_pending':
     case 'pending_confirmation':
     case 'rejected':
-      return '/boarder/applications-dashboard/index.html';
+      return '/boarder/applications';
     case 'new':
     case 'browsing':
     default:
-      return '/boarder/find-a-room/index.html';
+      return '/boarder/find-a-room';
   }
 }
 
 function redirectPathForUser(user: Record<string, unknown>): string {
   switch (user.role) {
     case 'admin':
-      return '/admin/index.html';
+      return '/admin';
     case 'landlord':
-      return '/landlord/index.html';
+      return '/landlord';
     case 'boarder':
     default:
       return boarderRedirectPath(user);

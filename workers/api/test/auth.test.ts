@@ -273,9 +273,7 @@ describe('auth routes', () => {
     };
 
     expect(callback.status).toBe(302);
-    expect(location.origin + location.pathname).toBe(
-      'http://localhost:4173/boarder/find-a-room/index.html'
-    );
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/boarder/find-a-room');
     expect(authPayload.access_token).toBeString();
     expect(authPayload.user).toMatchObject({
       email: 'new.google@example.com',

@@ -62,10 +62,13 @@ bunx wrangler secret put GOOGLE_CLIENT_SECRET --env=""
 bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 ```
 
-For Google auth, register the Worker callback URL in Google Cloud, for example:
+For Google auth, register both callback URLs as **Authorized redirect URIs** on the OAuth client
+(`608119021847-prh01e77aid25pk175jd7o8pcm7ngequ.apps.googleusercontent.com`) in Google Cloud
+Console → APIs & Services → Credentials:
 
 ```text
 https://haven-space-api.floresaybaez574.workers.dev/api/auth/google/callback
+http://localhost:8000/api/auth/google/callback
 ```
 
 ## Frontend API URL

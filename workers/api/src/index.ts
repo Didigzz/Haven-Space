@@ -5,6 +5,7 @@ import type { Env } from './env';
 import { HttpError, jsonResponse, responseFromError } from './lib/http';
 import accountRoutes from './routes/account';
 import adminRoutes from './routes/admin';
+import aiRoutes from './routes/ai';
 import announcementRoutes from './routes/announcements';
 import applicationRoutes from './routes/applications';
 import authRoutes from './routes/auth';
@@ -85,6 +86,7 @@ app.route('/', adminRoutes);
 app.route('/', notificationRoutes);
 app.route('/', tenancyRoutes);
 app.route('/', announcementRoutes);
+app.route('/', aiRoutes);
 app.route('/', deferredRoutes);
 
 app.notFound(c => {
