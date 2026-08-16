@@ -72,6 +72,7 @@ import { Route as LandlordPaymentsIndexRouteImport } from './routes/landlord/pay
 import { Route as LandlordPaymentsRecordRouteImport } from './routes/landlord/payments/record'
 import { Route as BoarderFindARoomIdIndexRouteImport } from './routes/boarder/find-a-room/$id/index'
 import { Route as BoarderFindARoomIdApplyRouteImport } from './routes/boarder/find-a-room/$id/apply'
+import { Route as BoarderFindARoomIdTourRouteImport } from './routes/boarder/find-a-room/$id/tour'
 import { Route as LandlordListingsIdEditRouteImport } from './routes/landlord/listings/$id/edit'
 import { Route as LandlordListingsRoomsIdEditRouteImport } from './routes/landlord/listings/rooms/$id/edit'
 
@@ -393,6 +394,11 @@ const BoarderFindARoomIdApplyRoute = BoarderFindARoomIdApplyRouteImport.update({
   path: '/apply',
   getParentRoute: () => BoarderFindARoomIdRoute,
 } as any)
+const BoarderFindARoomIdTourRoute = BoarderFindARoomIdTourRouteImport.update({
+  id: '/tour',
+  path: '/tour',
+  getParentRoute: () => BoarderFindARoomIdRoute,
+} as any)
 const LandlordListingsIdEditRoute = LandlordListingsIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -468,6 +474,7 @@ export interface FileRoutesByFullPath {
   '/landlord/listings/': typeof LandlordListingsIndexRoute
   '/landlord/payments/': typeof LandlordPaymentsIndexRoute
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute
+  '/boarder/find-a-room/$id/tour': typeof BoarderFindARoomIdTourRoute
   '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute
   '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute
   '/landlord/listings/rooms/$id/edit': typeof LandlordListingsRoomsIdEditRoute
@@ -528,6 +535,7 @@ export interface FileRoutesByTo {
   '/landlord/listings': typeof LandlordListingsIndexRoute
   '/landlord/payments': typeof LandlordPaymentsIndexRoute
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute
+  '/boarder/find-a-room/$id/tour': typeof BoarderFindARoomIdTourRoute
   '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute
   '/boarder/find-a-room/$id': typeof BoarderFindARoomIdIndexRoute
   '/landlord/listings/rooms/$id/edit': typeof LandlordListingsRoomsIdEditRoute
@@ -596,6 +604,7 @@ export interface FileRoutesById {
   '/landlord/listings/': typeof LandlordListingsIndexRoute
   '/landlord/payments/': typeof LandlordPaymentsIndexRoute
   '/boarder/find-a-room/$id/apply': typeof BoarderFindARoomIdApplyRoute
+  '/boarder/find-a-room/$id/tour': typeof BoarderFindARoomIdTourRoute
   '/landlord/listings/$id/edit': typeof LandlordListingsIdEditRoute
   '/boarder/find-a-room/$id/': typeof BoarderFindARoomIdIndexRoute
   '/landlord/listings/rooms/$id/edit': typeof LandlordListingsRoomsIdEditRoute
@@ -665,6 +674,7 @@ export interface FileRouteTypes {
     | '/landlord/listings/'
     | '/landlord/payments/'
     | '/boarder/find-a-room/$id/apply'
+    | '/boarder/find-a-room/$id/tour'
     | '/landlord/listings/$id/edit'
     | '/boarder/find-a-room/$id/'
     | '/landlord/listings/rooms/$id/edit'
@@ -725,6 +735,7 @@ export interface FileRouteTypes {
     | '/landlord/listings'
     | '/landlord/payments'
     | '/boarder/find-a-room/$id/apply'
+    | '/boarder/find-a-room/$id/tour'
     | '/landlord/listings/$id/edit'
     | '/boarder/find-a-room/$id'
     | '/landlord/listings/rooms/$id/edit'
@@ -792,6 +803,7 @@ export interface FileRouteTypes {
     | '/landlord/listings/'
     | '/landlord/payments/'
     | '/boarder/find-a-room/$id/apply'
+    | '/boarder/find-a-room/$id/tour'
     | '/landlord/listings/$id/edit'
     | '/boarder/find-a-room/$id/'
     | '/landlord/listings/rooms/$id/edit'
@@ -1291,6 +1303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BoarderFindARoomIdApplyRouteImport
       parentRoute: typeof BoarderFindARoomIdRoute
     }
+    '/boarder/find-a-room/$id/tour': {
+      id: '/boarder/find-a-room/$id/tour'
+      path: '/tour'
+      fullPath: '/boarder/find-a-room/$id/tour'
+      preLoaderRoute: typeof BoarderFindARoomIdTourRouteImport
+      parentRoute: typeof BoarderFindARoomIdRoute
+    }
     '/landlord/listings/$id/edit': {
       id: '/landlord/listings/$id/edit'
       path: '/$id/edit'
@@ -1339,11 +1358,13 @@ const BoarderApplicationsRouteWithChildren =
 
 interface BoarderFindARoomIdRouteChildren {
   BoarderFindARoomIdApplyRoute: typeof BoarderFindARoomIdApplyRoute
+  BoarderFindARoomIdTourRoute: typeof BoarderFindARoomIdTourRoute
   BoarderFindARoomIdIndexRoute: typeof BoarderFindARoomIdIndexRoute
 }
 
 const BoarderFindARoomIdRouteChildren: BoarderFindARoomIdRouteChildren = {
   BoarderFindARoomIdApplyRoute: BoarderFindARoomIdApplyRoute,
+  BoarderFindARoomIdTourRoute: BoarderFindARoomIdTourRoute,
   BoarderFindARoomIdIndexRoute: BoarderFindARoomIdIndexRoute,
 }
 
