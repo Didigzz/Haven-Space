@@ -420,41 +420,43 @@ export async function acceptPropertyInvitation(
     throw new Error('Invitation not found');
   }
 
-  const updateResult = await db
-    .prepare(
-      `
-        UPDATE property_invitations
-        SET status = 'accepted',
-            accepted_at = CURRENT_TIMESTAMP,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-          AND status = 'pending'
-          AND deleted_at IS NULL
-      `
-    )
-    .bind(input.invitationId)
-    .run();
+  // Run the status update and the access grant in a single D1 transaction so a
+  // failed insert (e.g. a unique-constraint race) rolls back the "accepted"
+  // update instead of leaving an accepted invitation with no active access.
+  const [updateResult, insertResult] = await db.batch([
+    db
+      .prepare(
+        `
+          UPDATE property_invitations
+          SET status = 'accepted',
+              accepted_at = CURRENT_TIMESTAMP,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+            AND status = 'pending'
+            AND deleted_at IS NULL
+        `
+      )
+      .bind(input.invitationId),
+    db
+      .prepare(
+        `
+          INSERT INTO property_access (
+            property_id,
+            landlord_id,
+            granted_by,
+            invitation_id
+          )
+          VALUES (?, ?, ?, ?)
+        `
+      )
+      .bind(invitation.property_id, invitation.invitee_id, input.grantedBy, input.invitationId),
+  ]);
 
   if (Number(updateResult.meta.changes ?? 0) === 0) {
     throw new Error('Invitation is not pending');
   }
 
-  const result = await db
-    .prepare(
-      `
-        INSERT INTO property_access (
-          property_id,
-          landlord_id,
-          granted_by,
-          invitation_id
-        )
-        VALUES (?, ?, ?, ?)
-      `
-    )
-    .bind(invitation.property_id, invitation.invitee_id, input.grantedBy, input.invitationId)
-    .run();
-
-  return insertedId(result, 'Property access');
+  return insertedId(insertResult, 'Property access');
 }
 
 export async function rejectPropertyInvitation(
@@ -874,10 +876,10 @@ export async function deleteInvitationNotifications(
         WHERE user_id = ?
           AND type = 'property_invitation'
           AND deleted_at IS NULL
-          AND (metadata LIKE ? OR metadata LIKE ?)
+          AND json_extract(metadata, '$.invitation_id') = ?
       `
     )
-    .bind(inviteeId, `%"invitation_id":${invitationId},%`, `%"invitation_id":${invitationId}}`)
+    .bind(inviteeId, invitationId)
     .run();
 }
 
