@@ -137,6 +137,13 @@ export interface RegisterInput {
   email: string;
   password: string;
   role: 'boarder' | 'landlord';
+  businessName?: string;
+  businessDescription?: string;
+  city?: string;
+  province?: string;
+  phoneNumber?: string;
+  idType?: string;
+  idNumber?: string;
 }
 
 export interface RegisterResponse {
@@ -214,6 +221,20 @@ export interface MeResponse {
 export interface ResetResponse {
   success?: boolean;
   message: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  request_id?: number;
+  is_google_user?: boolean;
+  action?: string;
+}
+
+export interface VerifyResetCodeResponse {
+  message: string;
+  valid: boolean;
+  user_id?: number;
+  request_id?: number;
 }
 
 export interface ProfileResponse {

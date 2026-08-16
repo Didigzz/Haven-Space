@@ -16,12 +16,23 @@ import { Route as MapsRouteImport } from './routes/maps';
 import { Route as OurStoryRouteImport } from './routes/our-story';
 import { Route as PublicMapsRouteImport } from './routes/public-maps';
 import { Route as TeamsRouteImport } from './routes/teams';
+import { Route as AdminIndexRouteImport } from './routes/admin/index';
+import { Route as AuthChooseRouteImport } from './routes/auth/choose';
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password';
 import { Route as AuthLoginRouteImport } from './routes/auth/login';
+import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password';
+import { Route as AuthSignupRouteImport } from './routes/auth/signup';
+import { Route as AuthVerifyEmailRouteImport } from './routes/auth/verify-email';
+import { Route as BoarderIndexRouteImport } from './routes/boarder/index';
 import { Route as FindARoomIndexRouteImport } from './routes/find-a-room/index';
+import { Route as LandlordIndexRouteImport } from './routes/landlord/index';
+import { Route as LandlordVerificationRouteImport } from './routes/landlord/verification';
 import { Route as LegalPrivacyPolicyRouteImport } from './routes/legal/privacy-policy';
 import { Route as LegalTermsOfServiceRouteImport } from './routes/legal/terms-of-service';
 import { Route as LegalUserAgreementRouteImport } from './routes/legal/user-agreement';
 import { Route as RoomsIdRouteImport } from './routes/rooms/$id';
+import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index';
+import { Route as AuthSignupLandlordRouteImport } from './routes/auth/signup/landlord';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,14 +69,59 @@ const TeamsRoute = TeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => rootRouteImport,
 } as any);
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AuthChooseRoute = AuthChooseRouteImport.update({
+  id: '/auth/choose',
+  path: '/auth/choose',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any);
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any);
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
+  id: '/auth/verify-email',
+  path: '/auth/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const BoarderIndexRoute = BoarderIndexRouteImport.update({
+  id: '/boarder/',
+  path: '/boarder/',
+  getParentRoute: () => rootRouteImport,
+} as any);
 const FindARoomIndexRoute = FindARoomIndexRouteImport.update({
   id: '/find-a-room/',
   path: '/find-a-room/',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordIndexRoute = LandlordIndexRouteImport.update({
+  id: '/landlord/',
+  path: '/landlord/',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LandlordVerificationRoute = LandlordVerificationRouteImport.update({
+  id: '/landlord/verification',
+  path: '/landlord/verification',
   getParentRoute: () => rootRouteImport,
 } as any);
 const LegalPrivacyPolicyRoute = LegalPrivacyPolicyRouteImport.update({
@@ -88,6 +144,16 @@ const RoomsIdRoute = RoomsIdRouteImport.update({
   path: '/rooms/$id',
   getParentRoute: () => rootRouteImport,
 } as any);
+const AuthSignupIndexRoute = AuthSignupIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthSignupRoute,
+} as any);
+const AuthSignupLandlordRoute = AuthSignupLandlordRouteImport.update({
+  id: '/landlord',
+  path: '/landlord',
+  getParentRoute: () => AuthSignupRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
@@ -97,12 +163,23 @@ export interface FileRoutesByFullPath {
   '/our-story': typeof OurStoryRoute;
   '/public-maps': typeof PublicMapsRoute;
   '/teams': typeof TeamsRoute;
+  '/auth/choose': typeof AuthChooseRoute;
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute;
   '/auth/login': typeof AuthLoginRoute;
+  '/auth/reset-password': typeof AuthResetPasswordRoute;
+  '/auth/signup': typeof AuthSignupRouteWithChildren;
+  '/auth/verify-email': typeof AuthVerifyEmailRoute;
+  '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
   '/legal/user-agreement': typeof LegalUserAgreementRoute;
   '/rooms/$id': typeof RoomsIdRoute;
+  '/admin/': typeof AdminIndexRoute;
+  '/boarder/': typeof BoarderIndexRoute;
   '/find-a-room/': typeof FindARoomIndexRoute;
+  '/landlord/': typeof LandlordIndexRoute;
+  '/auth/signup/landlord': typeof AuthSignupLandlordRoute;
+  '/auth/signup/': typeof AuthSignupIndexRoute;
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
@@ -112,12 +189,22 @@ export interface FileRoutesByTo {
   '/our-story': typeof OurStoryRoute;
   '/public-maps': typeof PublicMapsRoute;
   '/teams': typeof TeamsRoute;
+  '/auth/choose': typeof AuthChooseRoute;
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute;
   '/auth/login': typeof AuthLoginRoute;
+  '/auth/reset-password': typeof AuthResetPasswordRoute;
+  '/auth/verify-email': typeof AuthVerifyEmailRoute;
+  '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
   '/legal/user-agreement': typeof LegalUserAgreementRoute;
   '/rooms/$id': typeof RoomsIdRoute;
+  '/admin': typeof AdminIndexRoute;
+  '/boarder': typeof BoarderIndexRoute;
   '/find-a-room': typeof FindARoomIndexRoute;
+  '/landlord': typeof LandlordIndexRoute;
+  '/auth/signup/landlord': typeof AuthSignupLandlordRoute;
+  '/auth/signup': typeof AuthSignupIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -128,12 +215,23 @@ export interface FileRoutesById {
   '/our-story': typeof OurStoryRoute;
   '/public-maps': typeof PublicMapsRoute;
   '/teams': typeof TeamsRoute;
+  '/auth/choose': typeof AuthChooseRoute;
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute;
   '/auth/login': typeof AuthLoginRoute;
+  '/auth/reset-password': typeof AuthResetPasswordRoute;
+  '/auth/signup': typeof AuthSignupRouteWithChildren;
+  '/auth/verify-email': typeof AuthVerifyEmailRoute;
+  '/landlord/verification': typeof LandlordVerificationRoute;
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute;
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute;
   '/legal/user-agreement': typeof LegalUserAgreementRoute;
   '/rooms/$id': typeof RoomsIdRoute;
+  '/admin/': typeof AdminIndexRoute;
+  '/boarder/': typeof BoarderIndexRoute;
   '/find-a-room/': typeof FindARoomIndexRoute;
+  '/landlord/': typeof LandlordIndexRoute;
+  '/auth/signup/landlord': typeof AuthSignupLandlordRoute;
+  '/auth/signup/': typeof AuthSignupIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -145,12 +243,23 @@ export interface FileRouteTypes {
     | '/our-story'
     | '/public-maps'
     | '/teams'
+    | '/auth/choose'
+    | '/auth/forgot-password'
     | '/auth/login'
+    | '/auth/reset-password'
+    | '/auth/signup'
+    | '/auth/verify-email'
+    | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
     | '/legal/user-agreement'
     | '/rooms/$id'
-    | '/find-a-room/';
+    | '/admin/'
+    | '/boarder/'
+    | '/find-a-room/'
+    | '/landlord/'
+    | '/auth/signup/landlord'
+    | '/auth/signup/';
   fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
@@ -160,12 +269,22 @@ export interface FileRouteTypes {
     | '/our-story'
     | '/public-maps'
     | '/teams'
+    | '/auth/choose'
+    | '/auth/forgot-password'
     | '/auth/login'
+    | '/auth/reset-password'
+    | '/auth/verify-email'
+    | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
     | '/legal/user-agreement'
     | '/rooms/$id'
-    | '/find-a-room';
+    | '/admin'
+    | '/boarder'
+    | '/find-a-room'
+    | '/landlord'
+    | '/auth/signup/landlord'
+    | '/auth/signup';
   id:
     | '__root__'
     | '/'
@@ -175,12 +294,23 @@ export interface FileRouteTypes {
     | '/our-story'
     | '/public-maps'
     | '/teams'
+    | '/auth/choose'
+    | '/auth/forgot-password'
     | '/auth/login'
+    | '/auth/reset-password'
+    | '/auth/signup'
+    | '/auth/verify-email'
+    | '/landlord/verification'
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
     | '/legal/user-agreement'
     | '/rooms/$id'
-    | '/find-a-room/';
+    | '/admin/'
+    | '/boarder/'
+    | '/find-a-room/'
+    | '/landlord/'
+    | '/auth/signup/landlord'
+    | '/auth/signup/';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -191,12 +321,21 @@ export interface RootRouteChildren {
   OurStoryRoute: typeof OurStoryRoute;
   PublicMapsRoute: typeof PublicMapsRoute;
   TeamsRoute: typeof TeamsRoute;
+  AuthChooseRoute: typeof AuthChooseRoute;
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute;
   AuthLoginRoute: typeof AuthLoginRoute;
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute;
+  AuthSignupRoute: typeof AuthSignupRouteWithChildren;
+  AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute;
+  LandlordVerificationRoute: typeof LandlordVerificationRoute;
   LegalPrivacyPolicyRoute: typeof LegalPrivacyPolicyRoute;
   LegalTermsOfServiceRoute: typeof LegalTermsOfServiceRoute;
   LegalUserAgreementRoute: typeof LegalUserAgreementRoute;
   RoomsIdRoute: typeof RoomsIdRoute;
+  AdminIndexRoute: typeof AdminIndexRoute;
+  BoarderIndexRoute: typeof BoarderIndexRoute;
   FindARoomIndexRoute: typeof FindARoomIndexRoute;
+  LandlordIndexRoute: typeof LandlordIndexRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -250,6 +389,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamsRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/admin/': {
+      id: '/admin/';
+      path: '/admin';
+      fullPath: '/admin/';
+      preLoaderRoute: typeof AdminIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/auth/choose': {
+      id: '/auth/choose';
+      path: '/auth/choose';
+      fullPath: '/auth/choose';
+      preLoaderRoute: typeof AuthChooseRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password';
+      path: '/auth/forgot-password';
+      fullPath: '/auth/forgot-password';
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/auth/login': {
       id: '/auth/login';
       path: '/auth/login';
@@ -257,11 +417,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/auth/reset-password': {
+      id: '/auth/reset-password';
+      path: '/auth/reset-password';
+      fullPath: '/auth/reset-password';
+      preLoaderRoute: typeof AuthResetPasswordRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/auth/signup': {
+      id: '/auth/signup';
+      path: '/auth/signup';
+      fullPath: '/auth/signup';
+      preLoaderRoute: typeof AuthSignupRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/auth/verify-email': {
+      id: '/auth/verify-email';
+      path: '/auth/verify-email';
+      fullPath: '/auth/verify-email';
+      preLoaderRoute: typeof AuthVerifyEmailRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/boarder/': {
+      id: '/boarder/';
+      path: '/boarder';
+      fullPath: '/boarder/';
+      preLoaderRoute: typeof BoarderIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/find-a-room/': {
       id: '/find-a-room/';
       path: '/find-a-room';
       fullPath: '/find-a-room/';
       preLoaderRoute: typeof FindARoomIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/': {
+      id: '/landlord/';
+      path: '/landlord';
+      fullPath: '/landlord/';
+      preLoaderRoute: typeof LandlordIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/landlord/verification': {
+      id: '/landlord/verification';
+      path: '/landlord/verification';
+      fullPath: '/landlord/verification';
+      preLoaderRoute: typeof LandlordVerificationRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     '/legal/privacy-policy': {
@@ -292,8 +494,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoomsIdRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/auth/signup/': {
+      id: '/auth/signup/';
+      path: '/';
+      fullPath: '/auth/signup/';
+      preLoaderRoute: typeof AuthSignupIndexRouteImport;
+      parentRoute: typeof AuthSignupRoute;
+    };
+    '/auth/signup/landlord': {
+      id: '/auth/signup/landlord';
+      path: '/landlord';
+      fullPath: '/auth/signup/landlord';
+      preLoaderRoute: typeof AuthSignupLandlordRouteImport;
+      parentRoute: typeof AuthSignupRoute;
+    };
   }
 }
+
+interface AuthSignupRouteChildren {
+  AuthSignupLandlordRoute: typeof AuthSignupLandlordRoute;
+  AuthSignupIndexRoute: typeof AuthSignupIndexRoute;
+}
+
+const AuthSignupRouteChildren: AuthSignupRouteChildren = {
+  AuthSignupLandlordRoute: AuthSignupLandlordRoute,
+  AuthSignupIndexRoute: AuthSignupIndexRoute,
+};
+
+const AuthSignupRouteWithChildren = AuthSignupRoute._addFileChildren(AuthSignupRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -303,12 +531,21 @@ const rootRouteChildren: RootRouteChildren = {
   OurStoryRoute: OurStoryRoute,
   PublicMapsRoute: PublicMapsRoute,
   TeamsRoute: TeamsRoute,
+  AuthChooseRoute: AuthChooseRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthSignupRoute: AuthSignupRouteWithChildren,
+  AuthVerifyEmailRoute: AuthVerifyEmailRoute,
+  LandlordVerificationRoute: LandlordVerificationRoute,
   LegalPrivacyPolicyRoute: LegalPrivacyPolicyRoute,
   LegalTermsOfServiceRoute: LegalTermsOfServiceRoute,
   LegalUserAgreementRoute: LegalUserAgreementRoute,
   RoomsIdRoute: RoomsIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  BoarderIndexRoute: BoarderIndexRoute,
   FindARoomIndexRoute: FindARoomIndexRoute,
+  LandlordIndexRoute: LandlordIndexRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

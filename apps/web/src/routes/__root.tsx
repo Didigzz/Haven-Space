@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Outlet, createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
-import { useState, type ReactNode } from 'react';
+import { Outlet, createRootRoute, HeadContent, Scripts, useNavigate } from '@tanstack/react-router';
+import { useEffect, useState, type ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth-context';
+import { handleOAuthHash, redirectPathForUser } from '../lib/oauth';
 import appCss from '../styles/app.css?url';
 
 export const Route = createRootRoute({
@@ -18,6 +19,13 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
+  const navigate = useNavigate();
+
+  // Handle the Google OAuth `#auth=` callback hash on any page.
+  useEffect(() => {
+    const user = handleOAuthHash();
+    if (user) void navigate({ to: redirectPathForUser(user) });
+  }, [navigate]);
 
   return (
     <RootDocument>

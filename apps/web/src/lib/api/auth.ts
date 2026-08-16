@@ -1,11 +1,13 @@
 import { getApiBaseUrl } from '../config';
 import type {
   CheckEmailResponse,
+  ForgotPasswordResponse,
   LoginResponse,
   MeResponse,
   RegisterInput,
   RegisterResponse,
   ResetResponse,
+  VerifyResetCodeResponse,
 } from '../types';
 import { apiFetch } from './http';
 
@@ -52,22 +54,22 @@ export function changePassword(
   });
 }
 
-export function forgotPassword(email: string): Promise<ResetResponse> {
-  return apiFetch<ResetResponse>(base(), '/auth/forgot-password', {
+export function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  return apiFetch<ForgotPasswordResponse>(base(), '/auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
 }
 
-export function verifyResetCode(email: string, code: string): Promise<ResetResponse> {
-  return apiFetch<ResetResponse>(base(), '/auth/verify-reset-code', {
+export function verifyResetCode(email: string, code: string): Promise<VerifyResetCodeResponse> {
+  return apiFetch<VerifyResetCodeResponse>(base(), '/auth/verify-reset-code', {
     method: 'POST',
     body: JSON.stringify({ email, code }),
   });
 }
 
-export function resendResetCode(email: string): Promise<ResetResponse> {
-  return apiFetch<ResetResponse>(base(), '/auth/resend-reset-code', {
+export function resendResetCode(email: string): Promise<ForgotPasswordResponse> {
+  return apiFetch<ForgotPasswordResponse>(base(), '/auth/resend-reset-code', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
@@ -75,12 +77,12 @@ export function resendResetCode(email: string): Promise<ResetResponse> {
 
 export function resetPassword(
   email: string,
-  code: string,
+  requestId: number,
   newPassword: string
 ): Promise<ResetResponse> {
   return apiFetch<ResetResponse>(base(), '/auth/reset-password', {
     method: 'POST',
-    body: JSON.stringify({ email, code, new_password: newPassword }),
+    body: JSON.stringify({ email, request_id: requestId, new_password: newPassword }),
   });
 }
 
