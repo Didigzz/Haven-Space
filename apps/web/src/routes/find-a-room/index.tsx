@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
+import { PublicLayout } from '../../components/layout/PublicLayout';
 import { FindARoomContent } from '../../components/rooms/FindARoomContent';
 import { listPublicRooms } from '../../lib/api/public';
 import type { PublicListingsFilters } from '../../lib/types';
@@ -13,6 +14,10 @@ export const Route = createFileRoute('/find-a-room/')({
   loader: () => loadRooms({ data: { sort_by: 'newest', limit: 20, offset: 0 } }),
   component: () => {
     const initialData = Route.useLoaderData();
-    return <FindARoomContent initialData={initialData} />;
+    return (
+      <PublicLayout>
+        <FindARoomContent initialData={initialData} />
+      </PublicLayout>
+    );
   },
 });
