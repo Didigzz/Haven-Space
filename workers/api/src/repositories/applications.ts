@@ -54,6 +54,7 @@ export interface ApplicationDetailRow {
 export interface ApplicationRoomRow {
   id: number;
   property_id: number;
+  status: string;
 }
 
 export interface ExistingApplicationRow {
@@ -187,7 +188,7 @@ export async function findApplicationRoom(
   return await db
     .prepare(
       `
-        SELECT id, property_id
+        SELECT id, property_id, status
         FROM rooms
         WHERE id = ?
         LIMIT 1
@@ -195,6 +196,20 @@ export async function findApplicationRoom(
     )
     .bind(roomId)
     .first<ApplicationRoomRow>();
+}
+
+export async function occupyRoom(db: D1Database, roomId: number): Promise<void> {
+  await db
+    .prepare("UPDATE rooms SET status = 'occupied', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+    .bind(roomId)
+    .run();
+}
+
+export async function freeRoom(db: D1Database, roomId: number): Promise<void> {
+  await db
+    .prepare("UPDATE rooms SET status = 'available', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+    .bind(roomId)
+    .run();
 }
 
 export async function findExistingApplicationForRoom(

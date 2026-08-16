@@ -239,11 +239,12 @@ export async function updateAdminUserStatus(
 
 export async function listAdminProperties(
   db: D1Database,
-  moderationStatus: string
+  moderationStatus: string | null
 ): Promise<AdminPropertyRow[]> {
-  const rows = await db
-    .prepare(
-      `
+  const rows = moderationStatus
+    ? await db
+        .prepare(
+          `
         SELECT
           p.id,
           p.title,
@@ -259,9 +260,28 @@ export async function listAdminProperties(
         ORDER BY p.created_at DESC
         LIMIT 100
       `
-    )
-    .bind(moderationStatus)
-    .all<AdminPropertyRow>();
+        )
+        .bind(moderationStatus)
+        .all<AdminPropertyRow>()
+    : await db
+        .prepare(
+          `
+        SELECT
+          p.id,
+          p.title,
+          p.price,
+          p.listing_moderation_status,
+          u.first_name AS landlord_first,
+          u.last_name AS landlord_last,
+          u.email AS landlord_email
+        FROM properties p
+        JOIN users u ON p.landlord_id = u.id
+        WHERE p.deleted_at IS NULL
+        ORDER BY p.created_at DESC
+        LIMIT 100
+      `
+        )
+        .all<AdminPropertyRow>();
 
   return rows.results;
 }

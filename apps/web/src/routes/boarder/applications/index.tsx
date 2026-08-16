@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Protected } from '../../../components/auth/Protected';
 import { RoleShell } from '../../../components/layout/RoleShell';
 import { DataTable } from '../../../components/ui/DataTable';
@@ -8,7 +8,8 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 import { Icon } from '../../../components/ui/Icon';
 import { Spinner } from '../../../components/ui/Spinner';
 import { StatusBadge } from '../../../components/ui/StatusBadge';
-import { getApplications } from '../../../lib/api/boarder';
+import { ApiRequestError } from '../../../lib/api/http';
+import { deleteApplication, getApplications } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
 import { BOARDER_NAV } from '../../../lib/nav';
 import type { ApplicationSummary } from '../../../lib/types';
@@ -24,10 +25,20 @@ function formatDate(value: string | null): string {
 
 function ApplicationsPage() {
   const { token } = useAuth();
+  const queryClient = useQueryClient();
   const applications = useQuery({
     queryKey: ['applications'],
     queryFn: () => getApplications(token!),
     enabled: Boolean(token),
+  });
+
+  const withdraw = useMutation({
+    mutationFn: (id: number) => deleteApplication(token!, id),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['applications'] }),
+    onError: (err: Error) => {
+      const message = err instanceof ApiRequestError ? err.message : 'Failed to withdraw application.';
+      window.alert(message);
+    },
   });
 
   return (
@@ -77,6 +88,20 @@ function ApplicationsPage() {
               {
                 header: 'Submitted',
                 cell: (row) => formatDate(row.created_at),
+              },
+              {
+                header: 'Actions',
+                cell: (row) =>
+                  row.status === 'accepted' || row.status === 'pending' ? (
+                    <button
+                      type="button"
+                      className="text-sm text-red-600 hover:underline disabled:opacity-50"
+                      disabled={withdraw.isPending}
+                      onClick={() => withdraw.mutate(row.id)}
+                    >
+                      Withdraw
+                    </button>
+                  ) : null,
               },
             ]}
           />

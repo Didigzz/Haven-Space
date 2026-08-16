@@ -39,13 +39,9 @@ export function patchUserStatus(
 }
 
 export function getProperties(token: string): Promise<AdminPropertiesResponse> {
-  return apiFetch<AdminPropertiesResponse>(
-    base(),
-    '/api/admin/properties?moderation=pending_review',
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+  return apiFetch<AdminPropertiesResponse>(base(), '/api/admin/properties?moderation=all', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 export function patchPropertyStatus(

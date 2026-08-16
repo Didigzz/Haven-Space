@@ -116,9 +116,13 @@ function ApplicationDetailPage() {
         <Button
           variant="danger"
           onClick={() => remove.mutate()}
-          disabled={remove.isPending || isAccepted}
+          disabled={remove.isPending}
         >
-          {remove.isPending ? 'Deleting…' : 'Delete application'}
+          {remove.isPending
+            ? 'Withdrawing…'
+            : isAccepted
+              ? 'Withdraw application'
+              : 'Delete application'}
         </Button>
       </div>
         </div>

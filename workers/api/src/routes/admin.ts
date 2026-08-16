@@ -173,8 +173,9 @@ async function handleAdminProperties(c: Context<{ Bindings: Env }>) {
   }
 
   const moderation = c.req.query('moderation') || 'pending_review';
+  const moderationStatus = moderation === 'all' ? null : moderation;
 
-  return jsonResponse({ data: await listAdminProperties(db, moderation) });
+  return jsonResponse({ data: await listAdminProperties(db, moderationStatus) });
 }
 
 async function handleUpdateAdminProperty(c: Context<{ Bindings: Env }>) {

@@ -582,7 +582,7 @@ async function handleCreateListing(c: Context<{ Bindings: Env }>) {
     minStay: stringValue(body, 'propertyMinStay', '1 month') || '1 month',
     houseRules: JSON.stringify([]),
     genderPreference: stringValue(body, 'genderPreference', 'any') || 'any',
-    propertyRules: stringValue(body, 'propertyRules') || null,
+    propertyRules: stringValue(body, 'propertyRules'),
   });
   const roomIds: number[] = [];
 
@@ -596,6 +596,7 @@ async function handleCreateListing(c: Context<{ Bindings: Env }>) {
       roomNumber: room.roomNumber,
       roomType: room.roomType,
       capacity: room.capacity,
+      deposit: numberValue(body, 'propertyDeposit'),
     });
 
     roomIds.push(roomId);
@@ -810,6 +811,7 @@ async function updateListingRoomsIfNeeded(
         roomNumber,
         roomType,
         capacity: roomCapacity ?? 1,
+        deposit: Number(property.deposit ?? 0),
       });
     }
   } else if (newRoomCount < currentRoomCount) {

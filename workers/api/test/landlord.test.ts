@@ -210,8 +210,8 @@ describe('landlord property routes', () => {
         'any',
         'No smoking',
       ],
-      [10, 3, 'Room A', 4500, '', 'Room A', 'single', 1],
-      [10, 3, 'Room B', 4500, '', 'Room B', 'shared', 2],
+      [10, 3, 'Room A', 4500, '', 1000, 'Room A', 'single', 1],
+      [10, 3, 'Room B', 4500, '', 1000, 'Room B', 'shared', 2],
       [10, 'WiFi'],
       [10, 'Laundry'],
     ]);
@@ -311,6 +311,7 @@ describe('landlord property routes', () => {
       'Shared Room (2 persons) - Room 1',
       4500,
       '',
+      1000,
       'Room 1',
       'shared',
       2,
@@ -321,6 +322,7 @@ describe('landlord property routes', () => {
       'Shared Room (2 persons) - Room 2',
       4500,
       '',
+      1000,
       'Room 2',
       'shared',
       2,
@@ -475,8 +477,8 @@ describe('landlord property routes', () => {
       [10, 'WiFi'],
       [10, 'Kitchen'],
       [10],
-      [10, 3, 'Shared Room (2 persons) - Room 2', 5200, '', 'Room 2', 'shared', 2],
-      [10, 3, 'Shared Room (2 persons) - Room 3', 5200, '', 'Room 3', 'shared', 2],
+      [10, 3, 'Shared Room (2 persons) - Room 2', 5200, '', 1000, 'Room 2', 'shared', 2],
+      [10, 3, 'Shared Room (2 persons) - Room 3', 5200, '', 1000, 'Room 3', 'shared', 2],
       [2, 'shared', 5200, 10],
     ]);
   });

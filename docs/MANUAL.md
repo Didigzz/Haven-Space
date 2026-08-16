@@ -13,6 +13,7 @@
 ```bash
 bun install
 bun install --cwd workers/api
+bun install --cwd apps/web
 ```
 
 ## Local API
@@ -23,7 +24,7 @@ Run the Cloudflare Worker locally:
 bun run cf:api:dev
 ```
 
-The local API runs at `http://localhost:8787`.
+The local API runs at `http://localhost:8000`.
 
 ## D1
 
@@ -51,20 +52,40 @@ bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 
 ## Cloudflare Pages Frontend
 
-Build and serve the Cloudflare Pages output locally:
+The TanStack Start frontend (`apps/web`) is built by Vite + `@cloudflare/vite-plugin` in
+Worker mode, then `scripts/build-pages.mjs` assembles the Cloudflare Pages "advanced mode"
+bundle into `apps/web/dist/pages/` (`_worker.js` + static assets + `_routes.json`).
+
+Build the Pages bundle locally:
 
 ```bash
-bun run cf:pages:dev
+bun run web:build
+bun run pages:build
 ```
 
-Deploy the production Pages site:
+Deploy the production Pages site (`haven-space`, `https://haven-space.pages.dev`):
 
 ```bash
-bun run cf:pages:create
-bun run cf:pages:deploy
+bun run web:deploy
 ```
 
-In Cloudflare Pages, keep the `haven-space` production branch set to `main`.
+or the whole stack (API Worker + Pages frontend):
+
+```bash
+bun run deploy
+```
+
+The `haven-space` Pages project uses Cloudflare's **git integration** (connected to this GitHub
+repo): every pull request gets a Cloudflare preview build (bot comment + check with a preview
+URL, like Vercel), and every push to `main` deploys to production. Manual deploys (above) still
+work as a fallback. CI (`.github/workflows/deploy.yml`) only deploys the `haven-space-api` Worker
+on push to `main`; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository
+secrets.
+
+The Pages project's git build settings (build command
+`bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build-pages.mjs`,
+output dir `apps/web/dist/pages`) are configured so that any git-triggered or dashboard build
+also produces the correct `_worker.js` + assets deployment.
 
 After changing `APP_ORIGIN` in `workers/api/wrangler.jsonc`, redeploy the Worker:
 
@@ -74,7 +95,7 @@ bun run cf:api:deploy
 
 The frontend defaults to the Worker API:
 
-- local: `http://localhost:8787`
+- local: `http://localhost:8000`
 - production: `https://haven-space-api.floresaybaez574.workers.dev`
 
 You can override the API URL with:

@@ -5,6 +5,7 @@ import { authenticateUser, authorizeUser, type AuthenticatedUser } from '../lib/
 import { requireD1 } from '../lib/d1';
 import { errorResponse, jsonResponse } from '../lib/http';
 import { isJsonRecord, type JsonRecord } from '../lib/validation';
+import { freeRoom } from '../repositories/applications';
 import {
   approvePendingLeaveRequest,
   buildLeaveMessage,
@@ -164,6 +165,7 @@ tenancyRoutes.post('/api/boarder/leave-request', async c => {
   const messageId = await createLeaveMessage(db, conversationId, user.user_id, leaveMessage.text);
 
   await completeLeaveRequest(db, Number(tenancy.application_id), user.user_id, reason, leaveDate);
+  await freeRoom(db, Number(tenancy.room_id));
   await resetBoarderStatus(db, user.user_id);
   await cancelPendingBoarderPayments(db, user.user_id);
 

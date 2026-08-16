@@ -1,0 +1,75 @@
+name: Checks & Cloudflare Deploy
+
+# Runs on every push to main and every pull request: typechecks and API tests
+# must pass before anything is deployed.
+#
+# The web app (`haven-space` Cloudflare Pages project) is deployed by the
+# Cloudflare git integration (build command + `dist/pages` output dir), which
+# builds every PR as a preview and every push to main as production.
+#
+#   push to main  -> production: `haven-space-api` Worker only.
+#   pull request  -> checks & tests; Cloudflare's own bot handles preview builds.
+#
+# Required repository secrets (not available to PRs from forks):
+#   CLOUDFLARE_API_TOKEN  - API token with "Workers Scripts: Edit"
+#   CLOUDFLARE_ACCOUNT_ID - the Cloudflare account id (fab94f3e8a58d3b3509d01f11a67b843)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  checks:
+    name: Typechecks & API tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install API dependencies
+        run: bun install --cwd workers/api
+
+      - name: Install web dependencies
+        run: bun install --cwd apps/web
+
+      - name: Typecheck API
+        run: bun run cf:api:typecheck
+
+      - name: Typecheck web
+        run: bun run web:typecheck
+
+      - name: Run API tests
+        run: bun run cf:api:test
+
+  deploy-api:
+    name: Deploy API Worker (production)
+    needs: checks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install API dependencies
+        run: bun install --cwd workers/api
+
+      - name: Deploy to Cloudflare Workers (haven-space-api)
+        working-directory: workers/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler deploy --env=""
