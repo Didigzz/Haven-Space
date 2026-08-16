@@ -1,6 +1,6 @@
 # Haven Space — Multi-Landlord Property Access & Invitation Feature Spec
 
-**Status:** Draft (for review — no code changes made yet)
+**Status:** Implemented — this spec describes the shipped multi-landlord property access feature (PR #87).
 **Scope:** Backend API (`workers/api`) + Frontend (`apps/web`) + Database migrations
 
 ---
