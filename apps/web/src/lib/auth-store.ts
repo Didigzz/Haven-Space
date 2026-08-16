@@ -1,8 +1,21 @@
 import type { AuthUser } from './types';
 
-const TOKEN_KEY = 'token';
-const REFRESH_KEY = 'refresh_token';
-const USER_KEY = 'user';
+export const TOKEN_KEY = 'token';
+export const REFRESH_KEY = 'refresh_token';
+export const USER_KEY = 'user';
+
+/**
+ * Dispatched on `window` after the session is written or cleared, so the auth
+ * context (and any other in-page listener) can re-sync from localStorage
+ * immediately — no page reload needed. Fires in the same tab; cross-tab sync
+ * rides the browser's `storage` event instead.
+ */
+export const AUTH_CHANGED_EVENT = 'haven:auth-changed';
+
+function notifyAuthChanged(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
+}
 
 export interface StoredAuth {
   token: string | null;
@@ -32,6 +45,7 @@ export function setStoredAuth(
   localStorage.setItem(TOKEN_KEY, token);
   if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  notifyAuthChanged();
 }
 
 export function clearStoredAuth(): void {
@@ -40,6 +54,7 @@ export function clearStoredAuth(): void {
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem('user_id');
   localStorage.removeItem('haven_state');
+  notifyAuthChanged();
 }
 
 export function tokenExpiry(token: string): number | null {

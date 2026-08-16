@@ -13,6 +13,7 @@ import { ApiRequestError } from '../../lib/api/http';
 import { changePassword } from '../../lib/api/auth';
 import { getProfile, updateProfile, uploadAvatar } from '../../lib/api/account';
 import { useAuth } from '../../lib/auth-context';
+import { setStoredAuth } from '../../lib/auth-store';
 import { BOARDER_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/boarder/settings')({
@@ -43,7 +44,11 @@ function SettingsPage() {
   // Seed the form once the profile loads.
   const [seeded, setSeeded] = useState(false);
   if (profile.data && !seeded) {
-    const user = profile.data.user as { first_name?: string; last_name?: string; phone_number?: string };
+    const user = profile.data.user as {
+      first_name?: string;
+      last_name?: string;
+      phone_number?: string;
+    };
     setFirstName(user.first_name ?? '');
     setLastName(user.last_name ?? '');
     setPhone(user.phone_number ?? '');
@@ -57,21 +62,25 @@ function SettingsPage() {
         last_name: lastName.trim(),
         phone_number: phone.trim() || null,
       }),
-    onSuccess: () => {
+    onSuccess: data => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
+      // Write the fresh user to the store so the navbar/user menu updates
+      // immediately (AUTH_CHANGED_EVENT re-syncs the auth context).
+      setStoredAuth(token!, undefined, data.user);
       setSavedMessage('Profile updated.');
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update profile.'),
   });
 
   const avatar = useMutation({
     mutationFn: (file: File) => uploadAvatar(token!, file),
-    onSuccess: () => {
+    onSuccess: data => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setStoredAuth(token!, undefined, data.user);
       setSavedMessage('Avatar updated.');
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to upload avatar.'),
   });
 
@@ -82,7 +91,7 @@ function SettingsPage() {
       setNewPassword('');
       setSavedMessage('Password changed.');
     },
-    onError: (err) =>
+    onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to change password.'),
   });
 
@@ -122,14 +131,14 @@ function SettingsPage() {
                 <TextInput
                   id="firstName"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={e => setFirstName(e.target.value)}
                 />
               </Field>
               <Field label="Last name" htmlFor="lastName">
                 <TextInput
                   id="lastName"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={e => setLastName(e.target.value)}
                 />
               </Field>
             </div>
@@ -139,7 +148,7 @@ function SettingsPage() {
                 type="tel"
                 placeholder="+63 9XX XXX XXXX"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={e => setPhone(e.target.value)}
               />
             </Field>
             <Button type="submit" disabled={saveProfile.isPending}>
@@ -160,7 +169,7 @@ function SettingsPage() {
                 accept="image/*"
                 className="hidden"
                 disabled={avatar.isPending}
-                onChange={(e) => {
+                onChange={e => {
                   const file = e.target.files?.[0];
                   if (file) {
                     setError(null);
@@ -186,7 +195,7 @@ function SettingsPage() {
                 autoComplete="current-password"
                 required
                 value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                onChange={e => setCurrentPassword(e.target.value)}
               />
             </Field>
             <Field label="New password" htmlFor="newPassword">
@@ -197,7 +206,7 @@ function SettingsPage() {
                 required
                 minLength={8}
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={e => setNewPassword(e.target.value)}
               />
             </Field>
             <Button type="submit" disabled={password.isPending}>

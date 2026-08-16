@@ -13,6 +13,7 @@ import { ApiRequestError } from '../../lib/api/http';
 import { changePassword } from '../../lib/api/auth';
 import { getProfile, updateProfile, uploadAvatar } from '../../lib/api/account';
 import { useAuth } from '../../lib/auth-context';
+import { setStoredAuth } from '../../lib/auth-store';
 import { LANDLORD_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/landlord/settings')({
@@ -68,8 +69,11 @@ function SettingsPage() {
         city: city.trim() || null,
         province: province.trim() || null,
       }),
-    onSuccess: () => {
+    onSuccess: data => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
+      // Write the fresh user to the store so the navbar/user menu updates
+      // immediately (AUTH_CHANGED_EVENT re-syncs the auth context).
+      setStoredAuth(token!, undefined, data.user);
       setSavedMessage('Profile updated.');
     },
     onError: err =>
@@ -78,8 +82,9 @@ function SettingsPage() {
 
   const avatar = useMutation({
     mutationFn: (file: File) => uploadAvatar(token!, file),
-    onSuccess: () => {
+    onSuccess: data => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setStoredAuth(token!, undefined, data.user);
       setSavedMessage('Avatar updated.');
     },
     onError: err =>

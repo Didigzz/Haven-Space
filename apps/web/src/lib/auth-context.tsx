@@ -15,7 +15,15 @@ import {
   register as apiRegister,
   type GoogleCompleteInput,
 } from './api/auth';
-import { clearStoredAuth, getStoredAuth, setStoredAuth } from './auth-store';
+import {
+  AUTH_CHANGED_EVENT,
+  clearStoredAuth,
+  getStoredAuth,
+  REFRESH_KEY,
+  setStoredAuth,
+  TOKEN_KEY,
+  USER_KEY,
+} from './auth-store';
 import type { AuthUser, RegisterInput } from './types';
 
 interface AuthContextValue {
@@ -41,12 +49,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  const syncFromStorage = useCallback(() => {
+    const stored = getStoredAuth();
+    setToken(stored.token);
+    setUser(stored.user);
+  }, []);
+
   useEffect(() => {
     const stored = getStoredAuth();
     setToken(stored.token);
     setUser(stored.user);
     setIsHydrated(true);
-  }, []);
+
+    // Keep the session in React state whenever the store changes outside this
+    // component: same-tab writes (Google OAuth callback, profile saves) fire
+    // AUTH_CHANGED_EVENT, and other tabs fire the browser `storage` event.
+    // Both re-read localStorage so the navbar updates instantly.
+    function handleAuthChanged() {
+      syncFromStorage();
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (event.key === TOKEN_KEY || event.key === REFRESH_KEY || event.key === USER_KEY) {
+        syncFromStorage();
+      }
+    }
+
+    window.addEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [syncFromStorage]);
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await apiLogin(email, password);
