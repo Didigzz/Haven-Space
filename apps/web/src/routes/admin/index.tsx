@@ -362,7 +362,9 @@ function AdminOverview() {
             empty={!users.data?.data.length}
             emptyTitle="No users found"
           >
-            <DataTable rows={users.data!.data} columns={userColumns} keyFor={row => row.id} />
+            {users.data ? (
+              <DataTable rows={users.data.data} columns={userColumns} keyFor={row => row.id} />
+            ) : null}
           </AdminTab>
         )}
 
@@ -371,13 +373,15 @@ function AdminOverview() {
             isLoading={properties.isLoading}
             error={properties.error}
             empty={!properties.data?.data.length}
-            emptyTitle="No properties pending review"
+            emptyTitle="No properties found"
           >
-            <DataTable
-              rows={properties.data!.data}
-              columns={propertyColumns}
-              keyFor={row => row.id}
-            />
+            {properties.data ? (
+              <DataTable
+                rows={properties.data.data}
+                columns={propertyColumns}
+                keyFor={row => row.id}
+              />
+            ) : null}
           </AdminTab>
         )}
 
@@ -430,11 +434,13 @@ function AdminOverview() {
             empty={!landlords.data?.data.length}
             emptyTitle="No landlords found"
           >
-            <DataTable
-              rows={landlords.data!.data}
-              columns={landlordColumns}
-              keyFor={row => row.id}
-            />
+            {landlords.data ? (
+              <DataTable
+                rows={landlords.data.data}
+                columns={landlordColumns}
+                keyFor={row => row.id}
+              />
+            ) : null}
           </AdminTab>
         )}
 
