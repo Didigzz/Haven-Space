@@ -152,6 +152,31 @@ describe('landlord boarder routes', () => {
     expect(capturedBinds).toEqual([[3], [10, 3], [10, 3]]);
   });
 
+  it('maps pending and approved leave requests to leaving statuses', async () => {
+    const pendingRow: LandlordBoarderRow = { ...boarderRow, leave_request_status: 'pending' };
+    const approvedRow: LandlordBoarderRow = { ...boarderRow, leave_request_status: 'approved' };
+
+    const response = await app.request(
+      'http://localhost/api/landlord/boarders?propertyId=10',
+      {
+        headers: {
+          'X-User-ID': '3',
+        },
+      },
+      createSequenceEnv([
+        { first: landlordUser },
+        { first: propertyRow },
+        { all: [pendingRow, approvedRow] },
+      ])
+    );
+
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      data: { boarders: Array<{ application_id: number; status: string }> };
+    };
+    expect(body.data.boarders.map(b => b.status)).toEqual(['leaving', 'leaving_approved']);
+  });
+
   it('returns an empty boarder list from the clean route alias', async () => {
     const response = await app.request(
       'http://localhost/api/landlord/boarders?propertyId=10',
