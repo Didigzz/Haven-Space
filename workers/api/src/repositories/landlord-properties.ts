@@ -1,3 +1,5 @@
+import { listAuthorizedLandlords, type AuthorizedLandlordRow } from './property-access';
+
 export interface LandlordPropertyListRow {
   id: number;
   title: string;
@@ -10,6 +12,7 @@ export interface LandlordPropertyListRow {
   price: number;
   status: string;
   listing_moderation_status: string;
+  role: 'owner' | 'shared';
   created_at: string | null;
   rooms_count: number;
   occupied_rooms: number;
@@ -36,6 +39,7 @@ export interface LandlordPropertyDetailRow {
   property_rules: string | null;
   status: string;
   listing_moderation_status: string;
+  role: 'owner' | 'shared';
   created_at: string | null;
   rooms_count: number;
   occupied_rooms: number;
@@ -105,6 +109,7 @@ export interface LandlordPropertyDetailResult {
   property: LandlordPropertyDetailRow;
   amenities: string[];
   photos: string[];
+  authorized_landlords: AuthorizedLandlordRow[];
 }
 
 export interface CreateLandlordPropertyInput {
@@ -270,6 +275,7 @@ export async function listLandlordProperties(
           p.price,
           p.status,
           p.listing_moderation_status,
+          CASE WHEN p.landlord_id = ? THEN 'owner' ELSE 'shared' END as role,
           p.created_at,
           COUNT(DISTINCT r.id) as rooms_count,
           COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
@@ -289,7 +295,15 @@ export async function listLandlordProperties(
         LEFT JOIN rooms r ON p.id = r.property_id
           AND r.deleted_at IS NULL
         LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
-        WHERE p.landlord_id = ?
+        WHERE (
+            p.landlord_id = ?
+            OR p.id IN (
+              SELECT pa.property_id
+              FROM property_access pa
+              WHERE pa.landlord_id = ?
+                AND pa.removed_at IS NULL
+            )
+          )
           AND p.deleted_at IS NULL
         GROUP BY
           p.id,
@@ -308,7 +322,7 @@ export async function listLandlordProperties(
         ORDER BY p.created_at DESC
       `
     )
-    .bind(landlordId)
+    .bind(landlordId, landlordId, landlordId)
     .all<LandlordPropertyListRow>();
   const properties = result.results ?? [];
   const propertyIds = properties.map(property => Number(property.id));
@@ -846,6 +860,7 @@ export async function getLandlordPropertyDetail(
           p.property_rules,
           p.status,
           p.listing_moderation_status,
+          CASE WHEN p.landlord_id = ? THEN 'owner' ELSE 'shared' END as role,
           p.created_at,
           COUNT(DISTINCT r.id) as rooms_count,
           COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
@@ -854,7 +869,15 @@ export async function getLandlordPropertyDetail(
         LEFT JOIN rooms r ON p.id = r.property_id
           AND r.deleted_at IS NULL
         WHERE p.id = ?
-          AND p.landlord_id = ?
+          AND (
+            p.landlord_id = ?
+            OR p.id IN (
+              SELECT pa.property_id
+              FROM property_access pa
+              WHERE pa.landlord_id = ?
+                AND pa.removed_at IS NULL
+            )
+          )
           AND p.deleted_at IS NULL
         GROUP BY
           p.id,
@@ -878,21 +901,24 @@ export async function getLandlordPropertyDetail(
         LIMIT 1
       `
     )
-    .bind(propertyId, landlordId)
+    .bind(landlordId, propertyId, landlordId, landlordId)
     .first<LandlordPropertyDetailRow>();
 
   if (!property) {
     return null;
   }
 
-  const [amenities, photos] = await Promise.all([
+  const isOwner = property.role === 'owner';
+  const [amenities, photos, authorizedLandlords] = await Promise.all([
     listLandlordAmenities(db, [propertyId]),
     listLandlordPhotos(db, [propertyId]),
+    isOwner ? listAuthorizedLandlords(db, propertyId) : Promise.resolve([]),
   ]);
 
   return {
     property,
     amenities: amenities.get(propertyId) ?? [],
     photos: photos.get(propertyId) ?? [],
+    authorized_landlords: authorizedLandlords,
   };
 }
