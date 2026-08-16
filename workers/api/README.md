@@ -26,9 +26,10 @@ Deploy production after Cloudflare authentication is configured:
 bun run cf:api:deploy
 ```
 
-Production CORS is configured for the Cloudflare Pages frontend at
-`https://haven-space.pages.dev`. If the Pages project gets a custom domain later,
-add that origin to `APP_ORIGIN` in `wrangler.jsonc` and redeploy the Worker.
+Production CORS is configured for the TanStack Start frontend Worker at
+`https://haven-space-web.<account>.workers.dev`. If the frontend gets a custom
+domain later, add that origin to `APP_ORIGIN` in `wrangler.jsonc` and redeploy
+the Worker. During local development, `http://localhost:3000` must be allowed.
 
 ## Secrets
 
@@ -224,10 +225,10 @@ bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 
 ## Frontend API Override
 
-During Phase 7 testing, point the static frontend at a Worker API without editing files by opening any page with:
+Point the TanStack Start frontend at a Worker API without editing files by opening any page with:
 
 ```text
 ?apiBaseUrl=http://localhost:8000
 ```
 
-The value is saved to `localStorage.havenSpaceApiBaseUrl`. Clear that key to return to the default Worker API.
+The value is saved to `localStorage.havenSpaceApiBaseUrl`. Clear that key to return to the default Worker API. See `apps/web/src/lib/config.ts`.

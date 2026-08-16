@@ -5,7 +5,7 @@ import { join, relative } from 'node:path';
 const repoRoot = join(import.meta.dir, '..', '..', '..');
 const skippedDirs = new Set(['.git', 'dist', 'node_modules', '.wrangler']);
 const scannedRoots = [
-  'client',
+  'apps/web/src',
   'workers/api/src',
   'workers/api/test',
   'workers/api/README.md',

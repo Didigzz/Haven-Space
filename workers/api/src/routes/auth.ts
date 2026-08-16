@@ -167,7 +167,7 @@ function randomToken(bytes = 24): string {
 }
 
 function configuredOrigins(env: Env): string[] {
-  return (env.APP_ORIGIN || env.ALLOWED_ORIGINS || env.APP_BASE_URL || 'http://localhost:8788')
+  return (env.APP_ORIGIN || env.ALLOWED_ORIGINS || env.APP_BASE_URL || 'http://localhost:3000')
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
@@ -221,7 +221,7 @@ function frontendOrigin(c: Context<{ Bindings: Env }>): string {
     return requestedOrigin;
   }
 
-  return allowedOrigins[0] ?? 'http://localhost:8788';
+  return allowedOrigins[0] ?? 'http://localhost:3000';
 }
 
 function frontendUrl(origin: string, path: string): string {

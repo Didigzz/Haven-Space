@@ -9,14 +9,14 @@
   },
   "vars": {
     "APP_ENV": "production",
-    "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:8788,http://localhost:4173"
+    "APP_ORIGIN": "https://haven-space-web.floresaybaez574.workers.dev,http://localhost:3000,http://localhost:4173"
   },
   "env": {
     "staging": {
       "name": "haven-space-api-staging",
       "vars": {
         "APP_ENV": "staging",
-        "APP_ORIGIN": "https://staging.haven-space.pages.dev,http://localhost:8788,http://localhost:4173"
+        "APP_ORIGIN": "https://haven-space-web.floresaybaez574.workers.dev,http://localhost:3000,http://localhost:4173"
       }
     }
   },

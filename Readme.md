@@ -4,13 +4,13 @@ Haven Space is a boarding house platform for boarders, landlords, and admins.
 
 ## Stack
 
-| Layer    | Technology                             |
-| -------- | -------------------------------------- |
-| Frontend | Cloudflare Pages static site           |
-| API      | TypeScript Cloudflare Worker with Hono |
-| Database | Cloudflare D1                          |
-| Uploads  | UploadThing                            |
-| Tooling  | Bun, Wrangler, ESLint, Prettier        |
+| Layer    | Technology                                   |
+| -------- | -------------------------------------------- |
+| Frontend | TanStack Start (React) on Cloudflare Workers |
+| API      | TypeScript Cloudflare Worker with Hono       |
+| Database | Cloudflare D1                                |
+| Uploads  | UploadThing                                  |
+| Tooling  | Bun, Wrangler, ESLint, Prettier              |
 
 ## Backend Status
 
@@ -25,6 +25,7 @@ Install dependencies:
 ```bash
 bun install
 bun install --cwd workers/api
+bun install --cwd apps/web
 ```
 
 Run the Worker API locally:
@@ -35,13 +36,13 @@ bun run cf:api:dev
 
 The local API default is `http://localhost:8000`.
 
-Run the Cloudflare Pages frontend locally:
+Run the TanStack Start frontend locally:
 
 ```bash
-bun run dev
+bun run web:dev
 ```
 
-The local Pages URL is `http://localhost:8788`.
+The local frontend URL is `http://localhost:3000`.
 
 Apply D1 migrations:
 
@@ -72,7 +73,7 @@ https://haven-space-api.floresaybaez574.workers.dev/api/auth/google/callback
 The frontend defaults to:
 
 - local: `http://localhost:8000`
-- production: `https://haven-space-api.floresaybaez574.workers.dev`
+- production: `https://haven-space-api.floresaybaez574.workers.dev` (set as the `API_BASE_URL` var in `apps/web/wrangler.jsonc`)
 
 Override it without editing files:
 
@@ -82,28 +83,30 @@ Override it without editing files:
 
 The override is saved in `localStorage.havenSpaceApiBaseUrl`.
 
+## CORS
+
+The API Worker's `ALLOWED_ORIGINS` (or `APP_ORIGIN`) must include the frontend's origin so browser requests are accepted:
+
+- local frontend: `http://localhost:3000`
+- production frontend: the web Worker's origin (e.g. `https://haven-space-web.<account>.workers.dev`, or a custom domain if one is added)
+
 ## Scripts
 
-| Command                    | Description                  |
-| -------------------------- | ---------------------------- |
-| `bun run cf:api:dev`       | Run the Worker locally       |
-| `bun run cf:api:test`      | Run Worker tests             |
-| `bun run cf:api:typecheck` | Typecheck Worker code        |
-| `bun run cf:api:deploy`    | Deploy the production Worker |
-| `bun run cf:pages:dev`     | Run Cloudflare Pages locally |
-| `bun run cf:pages:deploy`  | Deploy Cloudflare Pages      |
-| `bun run deploy`           | Deploy Worker and Pages      |
-| `bun run build`            | Build static frontend output |
-| `bun run lint`             | Lint frontend JavaScript     |
-| `bun run format`           | Format files with Prettier   |
+| Command                    | Description                             |
+| -------------------------- | --------------------------------------- |
+| `bun run cf:api:dev`       | Run the Worker API locally              |
+| `bun run cf:api:test`      | Run Worker API tests                    |
+| `bun run cf:api:typecheck` | Typecheck Worker API code               |
+| `bun run cf:api:deploy`    | Deploy the production Worker            |
+| `bun run web:dev`          | Run the TanStack Start frontend locally |
+| `bun run web:test`         | Run frontend tests                      |
+| `bun run web:typecheck`    | Typecheck frontend code                 |
+| `bun run web:build`        | Build the frontend output               |
+| `bun run web:deploy`       | Deploy the frontend Worker              |
+| `bun run deploy`           | Deploy Worker API and frontend          |
+| `bun run format`           | Format files with Prettier              |
 
 ## Production Deploy
-
-Create the Pages project once if it does not exist yet:
-
-```bash
-bun run cf:pages:create
-```
 
 Deploy the full Cloudflare stack:
 
@@ -111,7 +114,7 @@ Deploy the full Cloudflare stack:
 bun run deploy
 ```
 
-The expected production frontend is `https://haven-space.pages.dev`. In Cloudflare Pages, set the project production branch to `main`.
+The production frontend is served by the `haven-space-web` Worker (see `apps/web/wrangler.jsonc`). Add the frontend origin to the API Worker's `ALLOWED_ORIGINS`/`APP_ORIGIN` as described under CORS above.
 
 ## Deferred Work
 

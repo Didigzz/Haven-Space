@@ -4,9 +4,9 @@ Haven Space is a boarding house platform connecting boarders and landlords, with
 
 ## Project Overview
 
-- **Frontend:** Static Multi-Page Application (MPA) using vanilla HTML, CSS, and modern JavaScript.
-  - **Hosting:** Cloudflare Pages.
-  - **Architecture:** Modular JS with dynamic imports based on `data-view` attributes on the `<body>` tag.
+- **Frontend:** TanStack Start (React) with SSR, file-based routing, and Tailwind CSS, running on Cloudflare Workers.
+  - **Hosting:** Cloudflare Workers (see `apps/web/wrangler.jsonc`).
+  - **Architecture:** Server functions (`createServerFn`) for data fetching, React Query for client state, `Protected` + `RoleShell` for role-based shells.
 - **Backend:** RESTful API built with TypeScript and [Hono](https://hono.dev/).
   - **Hosting:** Cloudflare Workers.
   - **Database:** Cloudflare D1 (Distributed SQL).
@@ -16,20 +16,17 @@ Haven Space is a boarding house platform connecting boarders and landlords, with
 
 ## Project Structure
 
-- `/client`: Frontend source code.
-  - `/js`: Modular JavaScript components.
-    - `/auth`: Authentication logic (login, signup, etc.).
-    - `/shared`: Shared utilities (icons, routing, toast, theme).
-    - `/views`: View-specific initialization logic.
-  - `/css`: Stylesheets.
-  - `/assets`: Images, SVGs, and other static assets.
+- `/apps/web`: TanStack Start frontend.
+  - `/src/routes`: File-based TanStack routes (public, auth, boarder, landlord, admin).
+  - `/src/components`: React components (`ui/`, `layout/`, `rooms/`, `auth/`).
+  - `/src/lib`: API clients (`api/`), types, auth context, nav config.
+  - `/src/styles`: Single Tailwind CSS entry.
 - `/workers/api`: Cloudflare Worker API.
   - `/src`: TypeScript source.
     - `/repositories`: Data access layer using D1.
     - `/routes`: Hono route definitions.
     - `/lib`: Shared utilities (auth, validation, HTTP helpers).
   - `/migrations`: D1 database migrations.
-- `/scripts`: Build and maintenance scripts.
 - `/docs`: Detailed project documentation (design, schemas, manuals).
 - `schema_simple.sql`: Reference SQL schema for the D1 database.
 
@@ -44,22 +41,23 @@ bun install --cwd workers/api
 
 ### Development
 
-- **Run Frontend:** `bun run dev` (Starts Cloudflare Pages local dev server at `http://localhost:8788`)
-- **Run API:** `bun run cf:api:dev` (Starts Worker local dev server at `http://localhost:8787`)
+- **Run Frontend:** `bun run web:dev` (TanStack Start dev server at `http://localhost:3000`)
+- **Run API:** `bun run cf:api:dev` (Starts Worker local dev server at `http://localhost:8000`)
 - **Database Migrations (Local):** `bun run --cwd workers/api migrate:local`
 
 ### Testing & Quality
 
+- **Typecheck Frontend:** `bun run web:typecheck`
+- **Test Frontend:** `bun run web:test`
 - **Typecheck API:** `bun run cf:api:typecheck`
 - **Test API:** `bun run cf:api:test`
-- **Lint Frontend:** `bun run lint`
 - **Format Code:** `bun run format`
 
 ### Deployment
 
-- **Full Deploy:** `bun run deploy` (Deploys both Worker and Pages)
+- **Full Deploy:** `bun run deploy` (Deploys both Worker API and frontend)
 - **Deploy API:** `bun run cf:api:deploy`
-- **Deploy Pages:** `bun run cf:pages:deploy`
+- **Deploy Frontend:** `bun run web:deploy`
 
 ## Development Conventions
 
@@ -72,10 +70,10 @@ bun install --cwd workers/api
 
 ### Frontend
 
-- **Modular JS:** Organize logic into ES modules in `client/js`.
-- **View Initialization:** Views are initialized via `client/js/main.ts` which detects `data-view` on the body.
-- **API Communication:** Use `CONFIG.API_BASE_URL` from `client/js/config.ts` for all API calls.
-- **Icons:** Use the centralized icon library via `getIcon` in `client/js/shared/icons.ts`.
+- **File-based routes:** Add pages as `.tsx` files under `apps/web/src/routes`; regenerate the route tree with `bun run web:build`.
+- **Server functions:** Fetch API data with `createServerFn` from `@tanstack/react-start`; keep mutations in `apps/web/src/lib/api/*`.
+- **Role shells:** Wrap role pages in `<Protected role="...">` + `<RoleShell>`; configure nav in `apps/web/src/lib/nav.ts`.
+- **UI primitives:** Reuse `components/ui/*` (Card, DataTable, Modal, Button, Field).
 
 ### General
 

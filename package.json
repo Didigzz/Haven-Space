@@ -5,26 +5,25 @@
   "description": "Boarding house platform connecting boarders and landlords",
   "main": "index.js",
   "scripts": {
-    "dev": "bun run cf:pages:dev",
-    "start": "bun run cf:pages:dev",
+    "dev": "bun run web:dev",
+    "start": "bun run web:dev",
     "server": "bun run cf:api:dev",
     "db:setup": "bun run --cwd workers/api migrate:local",
     "db:reset": "echo \"D1 reset is manual. Delete/recreate the local D1 database, then run bun run db:setup.\"",
     "db:reset:force": "echo \"D1 reset is manual. Delete/recreate the local D1 database, then run bun run db:setup.\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint client/js --ext .ts",
-    "lint:fix": "eslint --fix client/js --ext .ts",
-    "build": "bun scripts/build.ts",
-    "deploy": "bun run cf:api:deploy && bun run cf:pages:deploy",
+    "deploy": "bun run cf:api:deploy && bun run web:deploy",
     "cf:api:dev": "bun run --cwd workers/api dev",
     "cf:api:deploy": "bun run --cwd workers/api deploy",
     "cf:api:deploy:staging": "bun run --cwd workers/api deploy:staging",
     "cf:api:typecheck": "bun run --cwd workers/api typecheck",
     "cf:api:test": "bun run --cwd workers/api test",
-    "cf:pages:create": "bunx wrangler pages project create haven-space --production-branch=main --compatibility-date=2026-05-28",
-    "cf:pages:dev": "bun run build && bunx wrangler pages dev dist --port 8788 --compatibility-date=2026-05-28",
-    "cf:pages:deploy": "bun run build && bunx wrangler pages deploy dist --project-name haven-space --branch main",
+    "web:dev": "bun run --cwd apps/web dev",
+    "web:build": "bun run --cwd apps/web build",
+    "web:deploy": "bun run --cwd apps/web deploy",
+    "web:test": "bun run --cwd apps/web test",
+    "web:typecheck": "bun run --cwd apps/web typecheck",
     "prepare": "husky install"
   },
   "keywords": [
@@ -48,10 +47,6 @@
     "prettier": "^2.8.8"
   },
   "lint-staged": {
-    "client/js/**/*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ],
     "workers/api/**/*.{ts,json,md,yaml,yml}": [
       "prettier --write"
     ],

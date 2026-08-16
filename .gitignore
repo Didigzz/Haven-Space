@@ -38,7 +38,6 @@ qoder.json
 # Storage uploads (user uploaded files)
 storage/uploads/
 server/storage/uploads/
-client/uploads/
 
 # Local storage and property uploads
 functions/storage/
