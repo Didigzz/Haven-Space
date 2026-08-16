@@ -11,6 +11,7 @@ import {
   createApplication,
   findApplicationById,
   findApplicationRoom,
+  occupyRoom,
   findExistingApplicationForRoom,
   hardDeleteApplication,
   listBoarderApplications,
@@ -143,6 +144,10 @@ applicationRoutes.post('/api/boarder/applications', async c => {
     return errorResponse(400, 'Invalid room_id: Room does not exist');
   }
 
+  if (String(room.status ?? '').toLowerCase() === 'occupied') {
+    return errorResponse(400, 'This room is already occupied and can no longer be applied to');
+  }
+
   const existingApplication = await findExistingApplicationForRoom(db, user.user_id, roomId);
 
   if (existingApplication) {
@@ -241,6 +246,7 @@ applicationRoutes.post('/api/boarder/applications/:id/confirm', async c => {
   }
 
   await confirmApplicationBooking(db, applicationId, paymentMethod);
+  await occupyRoom(db, Number(application.room_id));
   await updateBoarderStatus(db, user.user_id, 'accepted');
   await cancelOtherBoarderApplications(db, user.user_id, applicationId);
 
