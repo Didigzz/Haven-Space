@@ -20,8 +20,7 @@
     "web:deploy": "bun run --cwd apps/web deploy",
     "pages:build": "bun scripts/build-pages.mjs",
     "web:test": "bun run --cwd apps/web test",
-    "web:typecheck": "bun run --cwd apps/web typecheck",
-    "prepare": "husky install"
+    "web:typecheck": "bun run --cwd apps/web typecheck"
   },
   "keywords": [
     "boarding-house",
@@ -32,15 +31,6 @@
   "author": "Haven Space Team",
   "license": "MIT",
   "devDependencies": {
-    "@commitlint/cli": "^17.6.5",
-    "@commitlint/config-conventional": "^17.6.5",
-    "husky": "^8.0.3",
-    "lint-staged": "^13.2.2",
     "prettier": "^2.8.8"
-  },
-  "lint-staged": {
-    "**/*.{ts,html,css,scss,md,json,yaml,yml}": [
-      "prettier --write"
-    ]
   }
 }

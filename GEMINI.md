@@ -80,4 +80,4 @@ bun install --cwd workers/api
 ### General
 
 - **Naming:** Use `camelCase` for JavaScript/TypeScript variables and functions, `snake_case` for database columns and API response fields (where matching DB schema).
-- **Commits:** Follow conventional commit messages. A husky pre-commit hook is in place.
+- **Commits:** Follow conventional commit messages.
