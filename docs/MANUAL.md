@@ -75,11 +75,12 @@ or the whole stack (API Worker + Pages frontend):
 bun run deploy
 ```
 
-Git auto-deployments on the `haven-space` Pages project are **disabled** — the production
-branch is `main`, but deploys only happen via CI (`.github/workflows/deploy.yml`: typechecks +
-API tests, then `wrangler pages deploy` on push to `main`; preview deployments on pull
-requests) or manually with the commands above. CI needs the `CLOUDFLARE_API_TOKEN` and
-`CLOUDFLARE_ACCOUNT_ID` repository secrets.
+The `haven-space` Pages project uses Cloudflare's **git integration** (connected to this GitHub
+repo): every pull request gets a Cloudflare preview build (bot comment + check with a preview
+URL, like Vercel), and every push to `main` deploys to production. Manual deploys (above) still
+work as a fallback. CI (`.github/workflows/deploy.yml`) only deploys the `haven-space-api` Worker
+on push to `main`; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository
+secrets.
 
 The Pages project's git build settings (build command
 `bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build-pages.mjs`,

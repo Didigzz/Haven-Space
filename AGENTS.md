@@ -29,7 +29,7 @@ Haven Space is a boarding house platform connecting boarders and landlords, with
   - `/migrations`: D1 database migrations.
 - `/scripts`: Build scripts, including `build-pages.mjs` (assembles the Cloudflare Pages bundle).
 - `/docs`: Detailed project documentation (design, schemas, manuals).
-- `.github/workflows/deploy.yml`: CI — checks (typechecks + API tests) gate production deploys to Cloudflare Pages and the API Worker on push to `main`, and Pages preview deployments on pull requests.
+- `.github/workflows/deploy.yml`: CI — checks (typechecks + API tests) gate the API Worker production deploy on push to `main`. The web app is deployed by the Cloudflare Pages git integration (bot previews on pull requests, production on push to `main`).
 
 ## Key Commands
 
@@ -62,9 +62,13 @@ bun install --cwd apps/web
 - **Deploy Frontend:** `bun run web:deploy` (builds the app, runs `scripts/build-pages.mjs`, then `wrangler pages deploy` to the `haven-space` project)
 - **Pages bundle only:** `bun run pages:build` (assemble `apps/web/dist/pages` from the Worker-mode build)
 
-Git auto-deployments on the `haven-space` Pages project are **disabled**; deployments happen via
-CI (`.github/workflows/deploy.yml`) or manually with the commands above. CI requires the
-`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+The `haven-space` Pages project uses Cloudflare's **git integration** (connected to this GitHub
+repo): every pull request gets a Cloudflare preview build with a comment + check, and every push
+to `main` deploys to production — no `wrangler pages deploy` in CI needed. The Pages project's
+git build settings are: build command
+`bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build-pages.mjs`,
+output dir `apps/web/dist/pages` (assembled by `scripts/build-pages.mjs`). CI requires the
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets for the API Worker deploy.
 
 ## Development Conventions
 

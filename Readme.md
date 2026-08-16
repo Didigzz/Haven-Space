@@ -134,11 +134,15 @@ which is uploaded to the `haven-space` Pages project (production site:
 `https://haven-space.pages.dev`). Run the pieces individually with
 `bun run web:build` / `bun run pages:build` / `bun run web:deploy`.
 
-Git auto-deployments on the `haven-space` Pages project are **disabled** — deploys happen either
-manually (above) or via CI. The GitHub Actions workflow (`.github/workflows/deploy.yml`) runs the
-API tests and typechecks on every push to `main`, then deploys the web app to Cloudflare Pages
-and the `haven-space-api` Worker. Pull requests get Cloudflare Pages preview deployments. The
-workflow needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+The `haven-space` Pages project uses Cloudflare's **git integration** (connected to this GitHub
+repo): every pull request gets a Cloudflare preview build — a bot comment + check with a unique
+preview URL, just like Vercel — and every push to `main` deploys to production. The project's git
+build settings are: build command
+`bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build-pages.mjs`,
+output dir `apps/web/dist/pages`. Manual deploys (above) still work as a fallback. The GitHub
+Actions workflow (`.github/workflows/deploy.yml`) runs the API tests and typechecks on every push
+to `main`, then deploys only the `haven-space-api` Worker; it needs the `CLOUDFLARE_API_TOKEN`
+and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
 
 Add the frontend origin to the API Worker's `ALLOWED_ORIGINS`/`APP_ORIGIN` as described under CORS above.
 

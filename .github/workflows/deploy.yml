@@ -3,13 +3,15 @@ name: Checks & Cloudflare Deploy
 # Runs on every push to main and every pull request: typechecks and API tests
 # must pass before anything is deployed.
 #
-#   push to main  -> production: web app to the `haven-space` Cloudflare Pages
-#                    project (direct upload; git auto-deployments on the Pages
-#                    project are disabled) and the `haven-space-api` Worker.
-#   pull request  -> preview deployment of the web app to Cloudflare Pages.
+# The web app (`haven-space` Cloudflare Pages project) is deployed by the
+# Cloudflare git integration (build command + `dist/pages` output dir), which
+# builds every PR as a preview and every push to main as production.
+#
+#   push to main  -> production: `haven-space-api` Worker only.
+#   pull request  -> checks & tests; Cloudflare's own bot handles preview builds.
 #
 # Required repository secrets (not available to PRs from forks):
-#   CLOUDFLARE_API_TOKEN  - API token with "Pages: Edit" and "Workers Scripts: Edit"
+#   CLOUDFLARE_API_TOKEN  - API token with "Workers Scripts: Edit"
 #   CLOUDFLARE_ACCOUNT_ID - the Cloudflare account id (fab94f3e8a58d3b3509d01f11a67b843)
 
 on:
@@ -47,37 +49,6 @@ jobs:
       - name: Run API tests
         run: bun run cf:api:test
 
-  deploy:
-    name: Deploy web to Cloudflare Pages (production)
-    needs: checks
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install web dependencies
-        run: bun install --cwd apps/web
-
-      - name: Build web app
-        run: bun run web:build
-
-      - name: Assemble Pages bundle (_worker.js + assets)
-        run: bun run pages:build
-
-      - name: Deploy to Cloudflare Pages (haven-space, production)
-        working-directory: apps/web
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: bunx wrangler pages deploy dist/pages --project-name haven-space --branch main
-
   deploy-api:
     name: Deploy API Worker (production)
     needs: checks
@@ -102,34 +73,3 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: bunx wrangler deploy --env=""
-
-  preview:
-    name: Deploy preview to Cloudflare Pages
-    needs: checks
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install web dependencies
-        run: bun install --cwd apps/web
-
-      - name: Build web app
-        run: bun run web:build
-
-      - name: Assemble Pages bundle (_worker.js + assets)
-        run: bun run pages:build
-
-      - name: Deploy to Cloudflare Pages (haven-space, preview)
-        working-directory: apps/web
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: bunx wrangler pages deploy dist/pages --project-name haven-space --branch "${{ github.head_ref }}"
