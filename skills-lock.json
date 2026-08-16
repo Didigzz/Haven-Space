@@ -7,6 +7,12 @@
       "skillPath": "skills/agents-sdk/SKILL.md",
       "computedHash": "01515ef239bee4ab1464d0eb735a857de3832a304fccd9315bf439837c053e62"
     },
+    "browser-use": {
+      "source": "browser-use/browser-use",
+      "sourceType": "github",
+      "skillPath": "skills/browser-use/SKILL.md",
+      "computedHash": "a492bf9f37505b25db445be6894ff2137b66539181a5c9e39331e261c6c4dca0"
+    },
     "cloudflare": {
       "source": "cloudflare/skills",
       "sourceType": "github",
