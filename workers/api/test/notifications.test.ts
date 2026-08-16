@@ -228,4 +228,41 @@ describe('notification routes', () => {
       error: 'Access denied. Boarders only.',
     });
   });
+
+  it('shows property-access notifications to landlords', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedNotificationData(sqlite);
+    sqlite.exec(`
+      INSERT INTO notifications (id, user_id, type, title, message, metadata, is_read, created_at)
+      VALUES
+        (401, 3, 'property_invitation', 'Property access invitation', 'Ada Admin invited you to manage \"Pine House\".', '{"invitation_id":55,"property_id":10}', 0, '2026-05-13 08:00:00'),
+        (402, 3, 'property_access_removed', 'Access removed', 'Your access to \"Pine House\" has been removed.', '{"property_id":10}', 1, '2026-05-14 08:00:00');
+    `);
+    const env = createEnv(sqlite);
+
+    const response = await app.request(
+      'http://localhost/api/notifications?limit=20&offset=0',
+      { headers: { 'X-User-ID': '3' } },
+      env
+    );
+    const body = (await response.json()) as {
+      data: Array<{ id: number; type: string; metadata: unknown }>;
+      unread_count: number;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.data).toHaveLength(3);
+    expect(body.data[0]).toMatchObject({
+      id: 402,
+      type: 'property_access_removed',
+      metadata: { property_id: 10 },
+    });
+    expect(body.data[1]).toMatchObject({
+      id: 401,
+      type: 'property_invitation',
+      metadata: { invitation_id: 55, property_id: 10 },
+    });
+    expect(body.unread_count).toBe(2);
+  });
 });
