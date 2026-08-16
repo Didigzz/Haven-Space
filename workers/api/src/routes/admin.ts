@@ -313,8 +313,10 @@ async function handleAdminPropertyAccess(c: Context<{ Bindings: Env }>) {
       continue;
     }
 
-    const authorizedLandlords = await listAuthorizedLandlords(db, Number(row.property_id));
-    const pendingInvitations = await listPendingInvitationsForProperty(db, Number(row.property_id));
+    const [authorizedLandlords, pendingInvitations] = await Promise.all([
+      listAuthorizedLandlords(db, Number(row.property_id)),
+      listPendingInvitationsForProperty(db, Number(row.property_id)),
+    ]);
 
     properties.push({
       id: Number(row.property_id),
