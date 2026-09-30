@@ -1,4 +1,5 @@
 import { BROWSE_LISTINGS_PATH } from './routes';
+import type { AuthUser } from './types';
 
 export interface NavItem {
   to: string;
@@ -70,3 +71,32 @@ export const LANDLORD_NAV: NavItem[] = [
 export const ADMIN_NAV: NavItem[] = [
   { to: '/admin', label: 'Overview', icon: 'home', group: 'Operations' },
 ];
+
+/** Every destination the account menu's primary entry can take. */
+export type AccountHomePath = '/admin' | '/landlord' | '/boarder' | '/boarder/applications';
+
+export interface AccountMenuEntry {
+  to: AccountHomePath;
+  label: string;
+}
+
+/**
+ * The account menu's primary entry (`UserMenu`).
+ *
+ * A boarder without a confirmed tenancy lands on their applications list — the
+ * dashboard is gated behind a confirmed booking (`pre-tenancy-boarder-nav-spec`
+ * D5) — so the entry reads "Application" and links straight there instead of
+ * bouncing through `/boarder`. Once the booking is confirmed the entry becomes
+ * the real "Dashboard". Landlords and admins are unaffected.
+ */
+export function accountHomeEntry(
+  role: AuthUser['role'] | undefined,
+  boarderStatus?: string
+): AccountMenuEntry {
+  if (role === 'admin') return { to: '/admin', label: 'Dashboard' };
+  if (role === 'landlord') return { to: '/landlord', label: 'Dashboard' };
+
+  return boarderStatus === 'confirmed'
+    ? { to: '/boarder', label: 'Dashboard' }
+    : { to: '/boarder/applications', label: 'Application' };
+}

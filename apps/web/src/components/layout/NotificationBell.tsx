@@ -94,7 +94,7 @@ export function NotificationBell() {
         type="button"
         aria-label={`Notifications${unreadCount ? ` (${unreadCount} unread)` : ''}`}
         onClick={() => setOpen(value => !value)}
-        className="relative rounded-md p-2 text-gray-700 hover:bg-gray-100"
+        className="relative rounded-md p-2 text-gray-ink hover:bg-subtle"
       >
         <svg
           className="h-5 w-5"
@@ -110,15 +110,15 @@ export function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         ) : null}
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-40 mt-2 w-96 max-w-[90vw] rounded-lg border border-gray-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+        <div className="absolute right-0 z-40 mt-2 w-96 max-w-[90vw] rounded-lg border border-border bg-surface shadow-lg">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <p className="font-semibold">Notifications</p>
             {unreadCount > 0 ? (
               <button
@@ -135,9 +135,9 @@ export function NotificationBell() {
           {list.isLoading ? (
             <p className="px-4 py-6 text-center text-sm text-gray-ink">Loading…</p>
           ) : list.error ? (
-            <p className="px-4 py-6 text-center text-sm text-red-600">{list.error.message}</p>
+            <p className="px-4 py-6 text-center text-sm text-error-ink">{list.error.message}</p>
           ) : list.data && list.data.data.length > 0 ? (
-            <ul className="max-h-80 divide-y divide-gray-100 overflow-y-auto">
+            <ul className="max-h-80 divide-y divide-border overflow-y-auto">
               {list.data.data.map(notification => {
                 const invitationId =
                   notification.type === 'property_invitation'
@@ -149,7 +149,7 @@ export function NotificationBell() {
                     <div className="min-w-0 flex-1">
                       <p
                         className={`text-sm ${
-                          notification.is_read ? 'text-gray-700' : 'font-semibold'
+                          notification.is_read ? 'text-gray-ink' : 'font-semibold'
                         }`}
                       >
                         {notification.title}
@@ -157,7 +157,7 @@ export function NotificationBell() {
                       {notification.message ? (
                         <p className="mt-0.5 text-sm text-gray-ink">{notification.message}</p>
                       ) : null}
-                      <p className="mt-0.5 text-xs text-gray-400">
+                      <p className="mt-0.5 text-xs text-muted">
                         {formatWhen(notification.created_at)}
                       </p>
                       {invitationId !== null ? (
@@ -165,7 +165,7 @@ export function NotificationBell() {
                           <button
                             type="button"
                             disabled={respondInvitation.isPending}
-                            className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-ink transition-colors hover:bg-gray-50 disabled:opacity-50"
+                            className="rounded-full border border-border-strong px-3 py-1 text-xs font-medium text-gray-ink transition-colors hover:bg-subtle disabled:opacity-50"
                             onClick={() =>
                               respondInvitation.mutate({ invitationId, action: 'reject' })
                             }
@@ -175,7 +175,7 @@ export function NotificationBell() {
                           <button
                             type="button"
                             disabled={respondInvitation.isPending}
-                            className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+                            className="rounded-full bg-primary-strong px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
                             onClick={() =>
                               respondInvitation.mutate({ invitationId, action: 'accept' })
                             }
@@ -201,7 +201,7 @@ export function NotificationBell() {
                         type="button"
                         aria-label="Delete notification"
                         title="Delete"
-                        className="text-xs text-red-500 hover:underline"
+                        className="text-xs text-error-ink hover:underline"
                         onClick={() => remove.mutate(notification.id)}
                       >
                         Delete
@@ -216,7 +216,7 @@ export function NotificationBell() {
           )}
 
           {list.data && list.data.data.length > 0 ? (
-            <div className="border-t border-gray-200 px-4 py-2">
+            <div className="border-t border-border px-4 py-2">
               <Button type="button" className="w-full text-sm" onClick={() => setOpen(false)}>
                 Close
               </Button>
