@@ -24,6 +24,27 @@ export const BOARDER_NAV: NavItem[] = [
   { to: '/boarder/settings', label: 'Settings', icon: 'settings', group: 'Account' },
 ];
 
+/**
+ * Sidebar for boarders without a confirmed tenancy (`boarder_status` !==
+ * 'confirmed'): enough to discover rooms, apply, and manage the account —
+ * nothing that only makes sense once they live in a boarding house (spec
+ * `pre-tenancy-boarder-nav` R1/R2/R4). Rendered as a single `Main` group.
+ */
+export const BOARDER_LIMITED_NAV: NavItem[] = [
+  { to: '/boarder/applications', label: 'Applications', icon: 'application', group: 'Main' },
+  { to: BROWSE_LISTINGS_PATH, label: 'Find a Room', icon: 'search', group: 'Main' },
+  { to: '/boarder/settings', label: 'Settings', icon: 'settings', group: 'Main' },
+];
+
+/**
+ * Pure status → sidebar mapping for boarders. Only a `confirmed` booking
+ * (active tenancy) unlocks the full list; every other status — including an
+ * unknown/undefined one (fail-safe, spec R14) — gets the limited list.
+ */
+export function getBoarderNav(status: string | undefined): NavItem[] {
+  return status === 'confirmed' ? BOARDER_NAV : BOARDER_LIMITED_NAV;
+}
+
 export const LANDLORD_NAV: NavItem[] = [
   { to: '/landlord', label: 'Dashboard', icon: 'home', group: 'Main' },
   { to: '/landlord/listings', label: 'My Listings', icon: 'list', group: 'Main' },
