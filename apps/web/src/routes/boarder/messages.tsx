@@ -1,26 +1,29 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { RequireTenancy } from '../../components/boarder/FeatureGate';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { Icon } from '../../components/ui/Icon';
-import { BOARDER_NAV } from '../../lib/nav';
+import { PlaceholderPage } from '../../components/ui/PlaceholderPage';
+import { useBoarderNav } from '../../lib/useBoarderNav';
 
 export const Route = createFileRoute('/boarder/messages')({
-  component: () => (
+  component: MessagesPage,
+});
+
+function MessagesPage() {
+  const nav = useBoarderNav();
+  return (
     <Protected role="boarder">
-      <RoleShell title="Messages" nav={BOARDER_NAV}>
-        <div className="mb-5 flex items-center gap-3">
-          <Icon name="chat" size={28} />
-          <div>
-            <h2 className="text-2xl font-bold text-ink">Messages</h2>
-            <p className="text-sm text-gray-ink">Chat with your landlord.</p>
-          </div>
-        </div>
-        <EmptyState
-          title="Messages coming soon"
-          description="In-app messaging with landlords is on the roadmap."
-        />
+      <RoleShell nav={nav}>
+        <RequireTenancy>
+          <PlaceholderPage
+            icon="chat"
+            title="Messages"
+            subtitle="Chat with your landlord."
+            notice="Messages coming soon"
+            message="In-app messaging with landlords is on the roadmap."
+          />
+        </RequireTenancy>
       </RoleShell>
     </Protected>
-  ),
-});
+  );
+}

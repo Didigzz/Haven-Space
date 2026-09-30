@@ -8,7 +8,7 @@ export const Route = createFileRoute('/boarder/payments/')({
       <div className="mb-5 flex items-center gap-3">
         <Icon name="payment" size={28} />
         <div>
-          <h2 className="text-2xl font-bold text-ink">Payments</h2>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Payments</h1>
           <p className="text-sm text-gray-ink">Your rent and billing history.</p>
         </div>
       </div>

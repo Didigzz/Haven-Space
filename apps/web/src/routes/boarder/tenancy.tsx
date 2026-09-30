@@ -12,11 +12,12 @@ import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { RequireTenancy } from '../../components/boarder/FeatureGate';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import { getTenancy, leaveRequest } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
-import { BOARDER_NAV } from '../../lib/nav';
+import { useBoarderNav } from '../../lib/useBoarderNav';
 
 export const Route = createFileRoute('/boarder/tenancy')({
   component: () => (
@@ -28,6 +29,7 @@ export const Route = createFileRoute('/boarder/tenancy')({
 
 function TenancyPage() {
   const { token } = useAuth();
+  const nav = useBoarderNav();
   const queryClient = useQueryClient();
   const { toasts, push, dismiss } = useToasts();
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -72,101 +74,107 @@ function TenancyPage() {
     typeof data?.leave_request_status === 'string' ? data.leave_request_status : 'none';
 
   return (
-    <RoleShell title="Tenancy" nav={BOARDER_NAV}>
-      <ToastStack toasts={toasts} onDismiss={dismiss} />
-      {tenancy.isLoading ? (
-        <Spinner />
-      ) : !data ? (
-        <EmptyState
-          title="No active tenancy"
-          description="Once your booking is confirmed, your tenancy details appear here."
-        />
-      ) : leaveStatus === 'pending' ? (
-        <PendingLeaveState data={data} />
-      ) : (
-        <div className="max-w-2xl">
-          {error ? (
-            <div className="mb-4">
-              <ErrorState message={error} />
-            </div>
-          ) : null}
-          <Card>
-            <div className="flex items-center gap-3">
-              <Icon name="document" size={28} className="shrink-0" />
-              <h1 className="text-xl font-bold">{String(data.property_name ?? 'Your tenancy')}</h1>
-            </div>
-            <p className="mt-1 text-gray-ink">
-              {String(data.address ?? '')}
-              {data.city ? `, ${String(data.city)}` : ''}
-              {data.province ? `, ${String(data.province)}` : ''}
-            </p>
-            <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <dt className="text-sm text-gray-ink">Room</dt>
-                <dd className="font-medium">
-                  {String(data.room_number ?? data.room_title ?? '—')}
-                </dd>
+    <RoleShell nav={nav}>
+      <RequireTenancy>
+        <ToastStack toasts={toasts} onDismiss={dismiss} />
+        {tenancy.isLoading ? (
+          <Spinner />
+        ) : !data ? (
+          <EmptyState
+            title="No active tenancy"
+            description="Once your booking is confirmed, your tenancy details appear here."
+          />
+        ) : leaveStatus === 'pending' ? (
+          <PendingLeaveState data={data} />
+        ) : (
+          <div className="max-w-2xl">
+            {error ? (
+              <div className="mb-4">
+                <ErrorState message={error} />
               </div>
-              <div>
-                <dt className="text-sm text-gray-ink">Monthly rent</dt>
-                <dd className="font-medium">₱{Number(data.monthly_rent ?? 0).toLocaleString()}</dd>
+            ) : null}
+            <Card>
+              <div className="flex items-center gap-3">
+                <Icon name="document" size={28} className="shrink-0" />
+                <h1 className="text-xl font-bold">
+                  {String(data.property_name ?? 'Your tenancy')}
+                </h1>
               </div>
-              <div>
-                <dt className="text-sm text-gray-ink">Move-in date</dt>
-                <dd className="font-medium">{String(data.tenancy_start_date ?? '—')}</dd>
+              <p className="mt-1 text-gray-ink">
+                {String(data.address ?? '')}
+                {data.city ? `, ${String(data.city)}` : ''}
+                {data.province ? `, ${String(data.province)}` : ''}
+              </p>
+              <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <dt className="text-sm text-gray-ink">Room</dt>
+                  <dd className="font-medium">
+                    {String(data.room_number ?? data.room_title ?? '—')}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-ink">Monthly rent</dt>
+                  <dd className="font-medium">
+                    ₱{Number(data.monthly_rent ?? 0).toLocaleString()}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-ink">Move-in date</dt>
+                  <dd className="font-medium">{String(data.tenancy_start_date ?? '—')}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-ink">Deposit</dt>
+                  <dd className="font-medium">₱{Number(data.deposit ?? 0).toLocaleString()}</dd>
+                </div>
+              </dl>
+              <div className="mt-4">
+                <Button
+                  className="border border-primary bg-surface text-primary hover:bg-mint"
+                  onClick={() => setLeaveOpen(true)}
+                >
+                  Request to leave
+                </Button>
               </div>
-              <div>
-                <dt className="text-sm text-gray-ink">Deposit</dt>
-                <dd className="font-medium">₱{Number(data.deposit ?? 0).toLocaleString()}</dd>
-              </div>
-            </dl>
-            <div className="mt-4">
-              <Button
-                className="border border-primary bg-white text-primary hover:bg-mint"
-                onClick={() => setLeaveOpen(true)}
-              >
-                Request to leave
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+            </Card>
+          </div>
+        )}
 
-      <Modal open={leaveOpen} title="Request to leave" onClose={() => setLeaveOpen(false)}>
-        <form className="flex flex-col gap-4" onSubmit={handleLeaveSubmit}>
-          <Field label="Reason" htmlFor="reason">
-            <TextInput
-              id="reason"
-              placeholder="e.g., Moving to a new city"
-              required
-              value={reason}
-              onChange={e => setReason(e.target.value)}
-            />
-          </Field>
-          <Field label="Leave date" htmlFor="leaveDate">
-            <TextInput
-              id="leaveDate"
-              type="date"
-              required
-              value={leaveDate}
-              onChange={e => setLeaveDate(e.target.value)}
-            />
-          </Field>
-          <Field label="Message" htmlFor="leaveMessage">
-            <TextArea
-              id="leaveMessage"
-              rows={3}
-              placeholder="Anything the landlord should know…"
-              required
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-            />
-          </Field>
-          <Button type="submit" disabled={leave.isPending}>
-            {leave.isPending ? 'Submitting…' : 'Submit request'}
-          </Button>
-        </form>
-      </Modal>
+        <Modal open={leaveOpen} title="Request to leave" onClose={() => setLeaveOpen(false)}>
+          <form className="flex flex-col gap-4" onSubmit={handleLeaveSubmit}>
+            <Field label="Reason" htmlFor="reason">
+              <TextInput
+                id="reason"
+                placeholder="e.g., Moving to a new city"
+                required
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+              />
+            </Field>
+            <Field label="Leave date" htmlFor="leaveDate">
+              <TextInput
+                id="leaveDate"
+                type="date"
+                required
+                value={leaveDate}
+                onChange={e => setLeaveDate(e.target.value)}
+              />
+            </Field>
+            <Field label="Message" htmlFor="leaveMessage">
+              <TextArea
+                id="leaveMessage"
+                rows={3}
+                placeholder="Anything the landlord should know…"
+                required
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+              />
+            </Field>
+            <Button type="submit" disabled={leave.isPending}>
+              {leave.isPending ? 'Submitting…' : 'Submit request'}
+            </Button>
+          </form>
+        </Modal>
+      </RequireTenancy>
     </RoleShell>
   );
 }

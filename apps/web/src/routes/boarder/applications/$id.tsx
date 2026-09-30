@@ -10,6 +10,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../../lib/api/http';
 import { confirmApplication, deleteApplication, getApplication } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
+import { BOARDER_STATUS_KEY } from '../../../lib/useBoarderNav';
 import { setPendingToast } from '../../../lib/toast';
 
 export const Route = createFileRoute('/boarder/applications/$id')({
@@ -33,6 +34,9 @@ function ApplicationDetailPage() {
   const confirm = useMutation({
     mutationFn: () => confirmApplication(token!, Number(id), paymentMethod),
     onSuccess: () => {
+      // Confirming the booking flips boarder_status to 'confirmed' — refresh it
+      // so the sidebar expands to the full nav immediately (spec R15).
+      void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
       setPendingToast('success', 'Booking confirmed!');
       void navigate({ to: '/boarder/confirm-booking' });
     },
@@ -44,6 +48,7 @@ function ApplicationDetailPage() {
     mutationFn: () => deleteApplication(token!, Number(id)),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['applications'] });
+      void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
       setPendingToast('success', 'Application withdrawn.');
       void navigate({ to: '/boarder/applications' });
     },

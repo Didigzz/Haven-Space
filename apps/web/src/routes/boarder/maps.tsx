@@ -1,26 +1,36 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
-import { Icon } from '../../components/ui/Icon';
-import { BOARDER_NAV } from '../../lib/nav';
+import { LOCATION_SUBTITLE, MapEmbed } from '../../components/rooms/MapEmbed';
+import { MapLocationControl } from '../../components/rooms/MapLocationControl';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { mapUrlForCoordinates } from '../../lib/maps';
+import { useBoarderNav } from '../../lib/useBoarderNav';
+import { useMapLocation } from '../../lib/useMapLocation';
 
 export const Route = createFileRoute('/boarder/maps')({
-  component: () => (
+  component: MapsPage,
+});
+
+function MapsPage() {
+  const nav = useBoarderNav();
+  const location = useMapLocation();
+  const pin = location.coordinates;
+  return (
     <Protected role="boarder">
-      <RoleShell title="Maps" nav={BOARDER_NAV}>
-        <div className="mb-5 flex items-center gap-3">
-          <Icon name="map" size={28} />
-          <div>
-            <h2 className="text-2xl font-bold text-ink">Explore the map</h2>
-            <p className="text-sm text-gray-ink">Find boarding houses around you.</p>
-          </div>
-        </div>
-        <iframe
+      <RoleShell nav={nav}>
+        <PageHeader
+          icon="map"
+          title="Explore the map"
+          subtitle={pin ? LOCATION_SUBTITLE : 'Find boarding houses and available rooms near you.'}
+        />
+        <MapLocationControl state={location} />
+        <MapEmbed
           title="Haven Space map"
-          src="https://www.google.com/maps?q=boarding+house+Philippines&output=embed"
-          className="h-[70vh] w-full rounded-xl border border-gray-200 shadow-card"
+          heightClass="h-[70vh]"
+          url={pin ? mapUrlForCoordinates(pin.latitude, pin.longitude) : undefined}
         />
       </RoleShell>
     </Protected>
-  ),
-});
+  );
+}

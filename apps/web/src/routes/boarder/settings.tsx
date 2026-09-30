@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, PasswordInput, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Spinner } from '../../components/ui/Spinner';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
@@ -15,7 +16,7 @@ import { changePassword } from '../../lib/api/auth';
 import { getProfile, updateProfile, uploadAvatar } from '../../lib/api/account';
 import { useAuth } from '../../lib/auth-context';
 import { setStoredAuth } from '../../lib/auth-store';
-import { BOARDER_NAV } from '../../lib/nav';
+import { useBoarderNav } from '../../lib/useBoarderNav';
 
 export const Route = createFileRoute('/boarder/settings')({
   component: () => (
@@ -27,6 +28,7 @@ export const Route = createFileRoute('/boarder/settings')({
 
 function SettingsPage() {
   const { token } = useAuth();
+  const nav = useBoarderNav();
   const queryClient = useQueryClient();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -115,7 +117,8 @@ function SettingsPage() {
   if (profile.isLoading) return <Spinner />;
 
   return (
-    <RoleShell title="Settings" nav={BOARDER_NAV}>
+    <RoleShell nav={nav}>
+      <PageHeader title="Settings" />
       <div className="flex max-w-2xl flex-col gap-6">
         <ToastStack toasts={toasts} onDismiss={dismiss} />
         {error ? <ErrorState message={error} /> : null}
@@ -161,7 +164,7 @@ function SettingsPage() {
             <Icon name="photo" size={20} /> Profile picture
           </h2>
           <div className="mt-4 flex items-center gap-3">
-            <label className="cursor-pointer rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50">
+            <label className="cursor-pointer rounded-md border border-border-strong px-4 py-2 text-sm font-medium hover:bg-subtle">
               Choose an image
               <input
                 type="file"
