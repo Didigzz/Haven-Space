@@ -27,19 +27,10 @@ function configuredCorsOrigins(env: Env, requestOrigin: string): string[] {
     .filter(Boolean);
 }
 
-function isLocalhostOrigin(value: string): boolean {
-  try {
-    const { hostname } = new URL(value);
-    return (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname === '::1' ||
-      hostname === '[::1]'
-    );
-  } catch {
-    return false;
-  }
-}
+// SECURITY: the trusted-origin families for credentialed CORS. Widening either
+// regex widens who may call this API with cookies — do not loosen without review.
+const PAGES_ORIGIN = /^https:\/\/([a-z0-9-]+\.)*haven-space\.pages\.dev$/;
+const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
 function resolveOrigin(requestOrigin: string, env: Env): string {
   const origins = configuredCorsOrigins(env, requestOrigin);
@@ -53,10 +44,18 @@ function resolveOrigin(requestOrigin: string, env: Env): string {
   }
 
   if (
+    requestOrigin &&
+    PAGES_ORIGIN.test(requestOrigin) &&
+    origins.some(origin => PAGES_ORIGIN.test(origin))
+  ) {
+    return requestOrigin;
+  }
+
+  if (
     env.APP_ENV !== 'production' &&
     requestOrigin &&
-    isLocalhostOrigin(requestOrigin) &&
-    origins.some(origin => isLocalhostOrigin(origin))
+    LOCALHOST_ORIGIN.test(requestOrigin) &&
+    origins.some(origin => LOCALHOST_ORIGIN.test(origin))
   ) {
     return requestOrigin;
   }
