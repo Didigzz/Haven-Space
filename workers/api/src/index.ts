@@ -10,7 +10,6 @@ import announcementRoutes from './routes/announcements';
 import applicationRoutes from './routes/applications';
 import authRoutes from './routes/auth';
 import boarderRoutes from './routes/boarder';
-import deferredRoutes from './routes/deferred';
 import landlordRoutes from './routes/landlord';
 import notificationRoutes from './routes/notifications';
 import propertiesRoutes from './routes/properties';
@@ -105,7 +104,6 @@ app.route('/', notificationRoutes);
 app.route('/', tenancyRoutes);
 app.route('/', announcementRoutes);
 app.route('/', aiRoutes);
-app.route('/', deferredRoutes);
 
 app.notFound(c => {
   return jsonResponse({ error: 'Route not found' }, 404);
