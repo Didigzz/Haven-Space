@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
-import { Button } from '../ui/Button';
+import { Button, buttonClasses } from '../ui/Button';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { ErrorState } from '../ui/ErrorState';
 import { Field, SelectInput, TextInput } from '../ui/Field';
@@ -96,7 +96,7 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Rooms</h2>
+            <h2 className="text-lg font-semibold tracking-tight">Rooms</h2>
             <p className="mt-1 text-sm text-gray-ink">
               Edit each room&apos;s price, status, and photos, or add new rooms.
             </p>
@@ -121,7 +121,7 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
         ) : (rooms.data?.data.rooms.length ?? 0) === 0 ? (
           <p className="mt-4 text-sm text-gray-ink">No rooms on this listing yet.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-gray-100 rounded-lg border border-gray-200">
+          <ul className="mt-4 divide-y divide-border rounded-xl border border-border/70 bg-surface">
             {rooms.data!.data.rooms.map(room => (
               <li
                 key={room.id}
@@ -140,18 +140,18 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
                     to="/landlord/listings/rooms/$id/edit"
                     params={{ id: String(room.id) }}
                     search={{ propertyId: String(propertyId) }}
-                    className="rounded-full border border-primary px-3 py-1 text-sm font-semibold text-primary hover:bg-mint"
+                    className={buttonClasses({ variant: 'outline', size: 'sm' })}
                   >
                     Edit room
                   </Link>
-                  <button
-                    type="button"
-                    className="text-sm text-red-600 hover:underline disabled:opacity-50"
+                  <Button
+                    variant="dangerGhost"
+                    size="sm"
                     disabled={removeRoom.isPending}
                     onClick={() => setPendingDelete(room)}
                   >
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </li>
             ))}
@@ -162,7 +162,9 @@ export function LandlordRoomList({ token, propertyId }: { token: string; propert
       <Modal open={addRoomOpen} title="Add a room" onClose={() => setAddRoomOpen(false)}>
         <form className="flex flex-col gap-4" onSubmit={handleAddRoom}>
           {roomError ? (
-            <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{roomError}</div>
+            <div className="rounded-md bg-error-tint px-3 py-2 text-sm text-error-ink">
+              {roomError}
+            </div>
           ) : null}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Room number" htmlFor="room_number">

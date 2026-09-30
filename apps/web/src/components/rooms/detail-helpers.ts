@@ -71,12 +71,12 @@ export function isRoomAvailable(room: RoomDetail): boolean {
 export function roomStatusLabel(room: RoomDetail): { label: string; className: string } {
   const status = (room.status || '').toLowerCase();
   if (status === 'occupied' || status === 'full') {
-    return { label: 'Occupied', className: 'bg-red-100 text-red-700' };
+    return { label: 'Occupied', className: 'bg-error-tint text-error-ink' };
   }
   if (status === 'limited' || status === 'few-left') {
-    return { label: 'Limited', className: 'bg-amber-100 text-amber-700' };
+    return { label: 'Limited', className: 'bg-warning-tint text-warning-ink' };
   }
-  return { label: 'Available', className: 'bg-green-100 text-green-700' };
+  return { label: 'Available', className: 'bg-success-tint text-success-ink' };
 }
 
 export function genderInfo(preference: string): {
