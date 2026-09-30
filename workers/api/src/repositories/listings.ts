@@ -139,9 +139,21 @@ function publicListingsWhere(filters: PublicListingFilters): {
   const params: Array<string | number> = [];
 
   if (filters.search) {
-    conditions.push('(p.title LIKE ? OR a.address_line_1 LIKE ? OR p.description LIKE ?)');
-    const searchParam = `%${filters.search}%`;
-    params.push(searchParam, searchParam, searchParam);
+    // Match against the location columns too (city/province), and treat commas as
+    // separate terms so "Sampaloc, Manila" (as sent by the popular-location chips)
+    // matches a property whose city is Sampaloc and province is Manila.
+    const terms = filters.search
+      .split(',')
+      .map(term => term.trim())
+      .filter(Boolean);
+
+    for (const term of terms) {
+      conditions.push(
+        '(p.title LIKE ? OR a.address_line_1 LIKE ? OR p.description LIKE ? OR a.city LIKE ? OR a.province LIKE ?)'
+      );
+      const searchParam = `%${term}%`;
+      params.push(searchParam, searchParam, searchParam, searchParam, searchParam);
+    }
   }
 
   if (filters.priceMin !== null) {

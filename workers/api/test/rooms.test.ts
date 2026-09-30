@@ -265,8 +265,70 @@ describe('room routes', () => {
     expect(response.status).toBe(200);
     expect(body.data.limit).toBe(50);
     expect(body.data.offset).toBe(3);
-    expect(capturedBinds[0]).toEqual(['%cebu%', '%cebu%', '%cebu%', 1000, 5000]);
-    expect(capturedBinds[1]).toEqual(['%cebu%', '%cebu%', '%cebu%', 1000, 5000, 50, 3]);
+    expect(capturedBinds[0]).toEqual([
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      1000,
+      5000,
+    ]);
+    expect(capturedBinds[1]).toEqual([
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      1000,
+      5000,
+      50,
+      3,
+    ]);
+  });
+
+  it('matches popular-location search values against city and province', async () => {
+    // Regression: the popular-location chips send "City, Province" (e.g. "Sampaloc, Manila"),
+    // which previously matched no row because the search only looked at title/address/description.
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/rooms/public?search=Sampaloc%2C%20Manila',
+      {},
+      createSequenceEnv(
+        [{ first: { total_count: 0 } }, { all: [] }, { all: [] }, { all: [] }, { all: [] }],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(capturedBinds[0]).toEqual([
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Manila%',
+      '%Manila%',
+      '%Manila%',
+      '%Manila%',
+      '%Manila%',
+    ]);
+  });
+
+  it('ignores comma-only search values', async () => {
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/rooms/public?search=,,',
+      {},
+      createSequenceEnv(
+        [{ first: { total_count: 0 } }, { all: [] }, { all: [] }, { all: [] }, { all: [] }],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(200);
+    // No terms → no search clause, so nothing is bound for the where clause.
+    expect(capturedBinds[0]).toEqual([]);
   });
 
   it('returns room detail with the PHP response envelope', async () => {
