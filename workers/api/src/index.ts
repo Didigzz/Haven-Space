@@ -73,6 +73,25 @@ app.use(
   })
 );
 
+// The `X-User-ID` header and `?user_id=` query parameter let a caller skip the
+// bearer token entirely and act as any account (used by the test suite). That is
+// only acceptable while developing locally, so they are refused outright in
+// every other environment — including the deployed `staging`/`production` workers.
+const SIMULATION_ENVS = new Set(['local', 'test', 'development', 'dev']);
+
+app.use('*', async (c, next) => {
+  if (!SIMULATION_ENVS.has(c.env.APP_ENV ?? '')) {
+    const simulatesUser =
+      Boolean(c.req.header('X-User-ID')) || new URL(c.req.url).searchParams.has('user_id');
+
+    if (simulatesUser) {
+      return jsonResponse({ error: 'Invalid or expired token' }, 401);
+    }
+  }
+
+  return next();
+});
+
 app.route('/', systemRoutes);
 app.route('/', authRoutes);
 app.route('/', accountRoutes);
