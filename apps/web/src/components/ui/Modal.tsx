@@ -3,16 +3,25 @@ import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from './Icon';
 
+const SIZES = {
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+} as const;
+
 export function Modal({
   open,
   title,
   onClose,
   children,
+  size = 'md',
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
+  /** `md` matches the original max-w-lg; wider panels opt in explicitly. */
+  size?: keyof typeof SIZES;
 }) {
   // Trap focus / close on escape can be added, basic is close on esc
   useEffect(() => {
@@ -40,7 +49,7 @@ export function Modal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-            className="relative w-full max-w-lg rounded-2xl bg-white/90 shadow-2xl backdrop-blur-xl border border-white/20 p-6"
+            className={`relative w-full ${SIZES[size]} max-h-[90vh] overflow-y-auto rounded-2xl border border-white/20 bg-surface/90 p-6 shadow-pop backdrop-blur-xl`}
             onClick={e => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -49,7 +58,7 @@ export function Modal({
                 type="button"
                 aria-label="Close"
                 onClick={onClose}
-                className="rounded-full p-1.5 hover:bg-black/5 active:scale-[0.97] transition-all duration-100 ease-out"
+                className="rounded-full p-1.5 hover:bg-ink/5 active:scale-[0.97] transition-all duration-100 ease-out"
               >
                 <Icon name="x" className="h-5 w-5" />
               </button>

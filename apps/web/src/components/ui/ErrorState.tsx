@@ -1,5 +1,7 @@
 export function ErrorState({ message }: { message: string }) {
   return (
-    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">{message}</div>
+    <div className="rounded-xl border border-error-border bg-error-tint p-4 text-error-ink">
+      {message}
+    </div>
   );
 }
