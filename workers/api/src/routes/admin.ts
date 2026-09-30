@@ -25,6 +25,11 @@ import {
   updateLandlordVerification,
 } from '../repositories/admin-landlords';
 import {
+  createLandlordVerificationNotification,
+  setVerificationNote,
+  setVerificationStatus,
+} from '../repositories/landlord-verification';
+import {
   countLandlordCreatedData,
   createPropertyInvitation,
   createPropertyInvitationNotification,
@@ -100,6 +105,22 @@ async function handleAdminLandlords(c: Context<{ Bindings: Env }>) {
   return jsonResponse({ data: landlords });
 }
 
+const landlordVerificationActions = ['approve', 'reject', 'request_documents'] as const;
+
+type LandlordVerificationAction = (typeof landlordVerificationActions)[number];
+
+function isLandlordVerificationAction(value: string): value is LandlordVerificationAction {
+  return (landlordVerificationActions as readonly string[]).includes(value);
+}
+
+/**
+ * Applies an admin decision to a landlord's verification bundle.
+ *
+ * `approve` is gated on all four documents being on file — the modal disables the
+ * button for the same reason, and this endpoint is the enforcement point. `reject`
+ * records an optional reason the landlord sees. `request_documents` nudges the
+ * landlord without changing the bundle status.
+ */
 async function handleUpdateAdminLandlord(c: Context<{ Bindings: Env }>) {
   const db = requireD1(c.env);
   const user = await requireAdmin(c);
@@ -111,13 +132,40 @@ async function handleUpdateAdminLandlord(c: Context<{ Bindings: Env }>) {
   const body = await readJsonObject(c.req.raw);
   const landlordId = Number.parseInt(String(body.landlordId ?? ''), 10);
   const action = String(body.action ?? '');
+  const reason = String(body.reason ?? '').trim() || null;
 
   if (!Number.isFinite(landlordId) || landlordId <= 0 || !action) {
     return errorResponse(400, 'Missing required fields: landlordId, action');
   }
 
-  if (action !== 'approve' && action !== 'reject') {
-    return errorResponse(400, 'Invalid action. Use approve or reject');
+  if (!isLandlordVerificationAction(action)) {
+    return errorResponse(400, 'Invalid action. Use approve, reject or request_documents');
+  }
+
+  const landlord = await getAdminLandlordDetail(db, landlordId);
+
+  if (!landlord) {
+    return errorResponse(404, 'Landlord not found');
+  }
+
+  if (action === 'approve' && !landlord.documents_complete) {
+    return errorResponse(409, 'All four verification documents are required before approval');
+  }
+
+  const actorVal = user as unknown as { user_id: number; id?: number };
+  const actorId = actorVal.user_id ?? actorVal.id ?? 0;
+
+  if (action === 'request_documents') {
+    await setVerificationNote(db, landlordId, reason);
+    await createLandlordVerificationNotification(db, {
+      landlordId,
+      landlordName: formatUserName(landlord.first_name, landlord.last_name),
+      decision: 'request_documents',
+      reason,
+    });
+    await insertAdminAuditLog(db, actorId, 'landlord_verification', [landlordId], action);
+
+    return jsonResponse({ message: 'Verification documents requested' });
   }
 
   const changes = await updateLandlordVerification(db, landlordId, action);
@@ -125,6 +173,19 @@ async function handleUpdateAdminLandlord(c: Context<{ Bindings: Env }>) {
   if (changes === 0) {
     return errorResponse(404, 'Landlord not found');
   }
+
+  await setVerificationStatus(db, landlordId, {
+    status: action === 'approve' ? 'approved' : 'rejected',
+    note: reason,
+    reviewedBy: actorId,
+  });
+  await createLandlordVerificationNotification(db, {
+    landlordId,
+    landlordName: formatUserName(landlord.first_name, landlord.last_name),
+    decision: action === 'approve' ? 'approved' : 'rejected',
+    reason,
+  });
+  await insertAdminAuditLog(db, actorId, 'landlord_verification', [landlordId], action);
 
   return jsonResponse({ message: 'Landlord verification updated successfully' });
 }

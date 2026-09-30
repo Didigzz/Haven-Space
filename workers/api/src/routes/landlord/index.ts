@@ -7,6 +7,7 @@ import invitationsRoutes from './invitations';
 import listingsRoutes from './listings';
 import propertiesRoutes from './properties';
 import roomsRoutes from './rooms';
+import verificationRoutes from './verification';
 
 const landlordRoutes = new Hono<{ Bindings: Env }>();
 
@@ -16,5 +17,6 @@ landlordRoutes.route('/api/landlord', roomsRoutes);
 landlordRoutes.route('/api/landlord', boardersRoutes);
 landlordRoutes.route('/api/landlord', dashboardRoutes);
 landlordRoutes.route('/api/landlord', invitationsRoutes);
+landlordRoutes.route('/api/landlord', verificationRoutes);
 
 export default landlordRoutes;
