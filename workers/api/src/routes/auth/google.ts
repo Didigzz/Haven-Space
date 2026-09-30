@@ -39,8 +39,7 @@ import {
   redirectResponse,
   requireGoogleConfig,
   userHashPayload,
-  boarderRedirectPath,
-  redirectPathForUser,
+  resolvePostAuthPath,
   oauthAction,
   oauthRole,
   authErrorRedirect,
@@ -433,7 +432,7 @@ export async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promi
 
       const { accessToken, refreshToken } = await authTokens(user, c.env.JWT_SECRET);
       const formattedUser = await formatUserResponse(db, user);
-      const redirectPath = safeRedirectPath(state?.redirect) ?? redirectPathForUser(formattedUser);
+      const redirectPath = resolvePostAuthPath(formattedUser, state?.redirect);
       const redirectUrl = new URL(redirectPath, `${origin}/`);
       // Carried so the frontend's global OAuth hash handler can send the user
       // back to the page they started from (e.g. /haven-ai) instead of the
