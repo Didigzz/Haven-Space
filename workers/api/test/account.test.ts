@@ -644,3 +644,81 @@ describe('account, profile, password, and onboarding routes', () => {
     });
   });
 });
+
+describe('request simulation is dev-only (W6 regression)', () => {
+  it('refuses the X-User-ID header when APP_ENV is production', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = { ...createEnv(sqlite), APP_ENV: 'production' };
+
+    const response = await app.request(
+      'http://localhost/api/users/profile',
+      { headers: { 'X-User-ID': '2' } },
+      env
+    );
+
+    expect(response.status).toBe(401);
+    const body = (await response.json()) as { error: string };
+    expect(body.error).toBe('Invalid or expired token');
+  });
+
+  it('refuses the ?user_id= query parameter when APP_ENV is production', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = { ...createEnv(sqlite), APP_ENV: 'production' };
+
+    const response = await app.request('http://localhost/api/users/profile?user_id=2', {}, env);
+
+    expect(response.status).toBe(401);
+  });
+
+  it('refuses the X-User-ID header when APP_ENV is staging', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = { ...createEnv(sqlite), APP_ENV: 'staging' };
+
+    const response = await app.request(
+      'http://localhost/api/users/profile',
+      { headers: { 'X-User-ID': '2' } },
+      env
+    );
+
+    expect(response.status).toBe(401);
+  });
+
+  it('still accepts a real bearer token in production', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = { ...createEnv(sqlite), APP_ENV: 'production' };
+    const token = await signJwt({ user_id: 2 }, 'test-secret', 60 * 60);
+
+    const response = await app.request(
+      'http://localhost/api/users/profile',
+      { headers: { Authorization: `Bearer ${token}` } },
+      env
+    );
+
+    expect(response.status).toBe(200);
+  });
+
+  it('keeps simulating a signed-in user in local and test environments', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+
+    for (const appEnv of ['local', 'test']) {
+      const env = { ...createEnv(sqlite), APP_ENV: appEnv };
+      const response = await app.request(
+        'http://localhost/api/users/profile',
+        { headers: { 'X-User-ID': '2' } },
+        env
+      );
+
+      expect(response.status).toBe(200);
+    }
+  });
+});
