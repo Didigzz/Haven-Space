@@ -167,11 +167,6 @@ export interface SaveListingResponse {
   data: { id: number; property_id: number; room_id: number | null; saved_at: string };
 }
 
-export interface DeleteSavedListingResponse {
-  success: true;
-  message: string;
-}
-
 export interface ApiErrorBody {
   error?: string;
   message?: string;
@@ -545,6 +540,22 @@ export interface AdminUsersResponse {
   meta: { total: number; limit: number; offset: number };
 }
 
+export interface AdminAuditLogEntry {
+  id: number;
+  actor_id: number;
+  actor_name: string | null;
+  actor_email: string | null;
+  entity: string;
+  action: string;
+  ids: number[];
+  created_at: string;
+}
+
+export interface AdminAuditLogResponse {
+  data: AdminAuditLogEntry[];
+  meta: { total: number; limit: number; offset: number };
+}
+
 export interface AdminPropertyRow {
   id: number;
   title: string;
@@ -566,6 +577,7 @@ export interface AdminApplicationRow {
   boarder_first: string;
   boarder_last: string;
   boarder_email: string;
+  landlord_id: number;
   landlord_first: string;
   landlord_last: string;
   room_title: string | null;
@@ -675,4 +687,77 @@ export interface PropertyAccessHistoryResponse {
 
 export interface AdminLandlordsResponse {
   data: AdminLandlordRow[];
+}
+
+export interface AdminLandlordDocumentRow {
+  document_type: string;
+  file_name: string;
+  file_size: number | null;
+  file_type: string | null;
+  file_url: string;
+  uploaded_at: string;
+}
+
+export interface AdminLandlordLocationRow {
+  address_line_1: string;
+  city: string;
+  province: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+/**
+ * Admin detail view of one landlord: the header the review modal shows, plus the
+ * verification bundle with the server-computed approve gate.
+ */
+export interface AdminLandlordDetail {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_verified: number;
+  created_at: string;
+  boarding_house_name: string | null;
+  property_locations: AdminLandlordLocationRow[];
+  verification_status: string;
+  verification_note: string | null;
+  documents_complete: boolean;
+  missing_documents: string[];
+  documents: AdminLandlordDocumentRow[];
+}
+
+export interface AdminLandlordDetailResponse {
+  data: AdminLandlordDetail;
+}
+
+/** One verification slot as the landlord's own page renders it, missing files included. */
+export interface LandlordVerificationDocumentSlot {
+  document_type: string;
+  label: string;
+  hint: string;
+  accepts_pdf: boolean;
+  submitted: boolean;
+  file_name: string | null;
+  file_size: number | null;
+  file_type: string | null;
+  file_url: string | null;
+  uploaded_at: string | null;
+}
+
+export interface LandlordVerificationData {
+  verification_status: string;
+  note: string | null;
+  reviewed_at: string | null;
+  documents_complete: boolean;
+  missing_documents: string[];
+  documents: LandlordVerificationDocumentSlot[];
+}
+
+export interface LandlordVerificationResponse {
+  data: LandlordVerificationData;
+}
+
+export interface LandlordVerificationDocumentUploadResponse {
+  message: string;
+  data: LandlordVerificationData & { document_type?: string; file_url?: string };
 }
