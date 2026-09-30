@@ -1,6 +1,8 @@
 import { getApiBaseUrl } from '../config';
 import type {
   AdminApplicationsResponse,
+  AdminAuditLogResponse,
+  AdminLandlordDetailResponse,
   AdminLandlordsResponse,
   AdminPropertiesResponse,
   AdminPropertyAccessResponse,
@@ -22,6 +24,12 @@ export function getSummary(token: string): Promise<AdminSummaryResponse> {
 
 export function getUsers(token: string): Promise<AdminUsersResponse> {
   return apiFetch<AdminUsersResponse>(base(), '/api/admin/users', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getAuditLog(token: string): Promise<AdminAuditLogResponse> {
+  return apiFetch<AdminAuditLogResponse>(base(), '/api/admin/audit-log', {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
@@ -161,15 +169,28 @@ export function getLandlords(token: string): Promise<AdminLandlordsResponse> {
 export function updateLandlordVerification(
   token: string,
   landlordId: number,
-  action: 'approve' | 'reject'
+  action: 'approve' | 'reject' | 'request_documents',
+  reason?: string
 ): Promise<{ message: string }> {
   return apiFetch(
     base(),
     '/api/admin/landlords',
     jsonOptions(token, {
       method: 'POST',
-      body: JSON.stringify({ landlordId, action }),
+      body: JSON.stringify({ landlordId, action, reason: reason?.trim() || null }),
     })
+  );
+}
+
+/** Landlord header plus the verification bundle shown in the review modal. */
+export function getLandlordDetail(
+  token: string,
+  landlordId: number
+): Promise<AdminLandlordDetailResponse> {
+  return apiFetch<AdminLandlordDetailResponse>(
+    base(),
+    `/api/admin/landlords?id=${encodeURIComponent(landlordId)}`,
+    { headers: { Authorization: `Bearer ${token}` } }
   );
 }
 
