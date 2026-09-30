@@ -11,6 +11,7 @@ import {
   getAdminSettings,
   getAdminSummary,
   insertAdminAuditLog,
+  listAdminAuditLog,
   listAdminProperties,
   listAdminUsers,
   updateAdminApplicationStatus,
@@ -126,6 +127,22 @@ async function handleUpdateAdminLandlord(c: Context<{ Bindings: Env }>) {
   }
 
   return jsonResponse({ message: 'Landlord verification updated successfully' });
+}
+
+async function handleAdminAuditLog(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const user = await requireAdmin(c);
+
+  if (!user) {
+    return errorResponse(403, 'Access denied. Admins only.');
+  }
+
+  const { data, meta } = await listAdminAuditLog(db, {
+    limit: c.req.query('limit'),
+    offset: c.req.query('offset'),
+  });
+
+  return jsonResponse({ data, meta });
 }
 
 async function handleAdminSummary(c: Context<{ Bindings: Env }>) {
@@ -785,6 +802,7 @@ adminRoutes.get(
 adminRoutes.get('/api/admin/landlords', handleAdminLandlords);
 adminRoutes.post('/api/admin/landlords', handleUpdateAdminLandlord);
 adminRoutes.get('/api/admin/summary', handleAdminSummary);
+adminRoutes.get('/api/admin/audit-log', handleAdminAuditLog);
 adminRoutes.get('/api/admin/users', handleAdminUsers);
 adminRoutes.patch('/api/admin/users', handleUpdateAdminUser);
 adminRoutes.get('/api/admin/properties', handleAdminProperties);
