@@ -70,6 +70,9 @@ function roleVisibleTypes(role: string): string[] | null {
       'booking_confirmed',
       'property_invitation',
       'property_access_removed',
+      'landlord_verification_approved',
+      'landlord_verification_rejected',
+      'landlord_verification_documents_requested',
     ];
   }
 
