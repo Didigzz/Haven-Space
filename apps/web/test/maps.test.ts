@@ -18,6 +18,7 @@ import {
   type UserCoordinates,
 } from '../src/lib/geolocation';
 import { useMapLocation } from '../src/lib/useMapLocation';
+import { mapSubtitle } from '../src/components/rooms/MapEmbed';
 
 const SRC_DIR = join(import.meta.dir, '..', 'src');
 
@@ -293,12 +294,46 @@ test('no lookup runs on mount without an opt-in', async () => {
 
 // --- Source-scan guards --------------------------------------------------------------------
 
-test('every map surface renders the shared location control', () => {
+/**
+ * Surfaces that follow the user. `/public-maps` is deliberately **absent** (spec
+ * `public-maps-view-only`): it is a view-only overview for visitors, so it neither renders the
+ * control nor mounts the hook. Keep this list and the guard below in step — one asserts the
+ * feature is still everywhere it belongs, the other that it never comes back here.
+ */
+const LOCATION_SURFACES = [
+  'routes/maps.tsx',
+  'routes/boarder/maps.tsx',
+  'routes/landlord/maps.tsx',
+  'components/rooms/RoomDetailView.tsx',
+];
+
+test('every location-enabled surface renders the shared location control', () => {
   // `MapEmbed` is the frame only — the pages (and the listing detail) own the control row.
-  for (const file of [...MAP_ROUTES, 'components/rooms/RoomDetailView.tsx']) {
+  for (const file of LOCATION_SURFACES) {
     const source = readFileSync(join(SRC_DIR, file), 'utf8');
     expect(source).toContain('MapLocationControl');
   }
+});
+
+test('the public map is view-only: no control and no geolocation wiring', () => {
+  // Dropping any of these would silently re-enable "use my location" on a page that must never
+  // ask for a position, so the absence is asserted rather than assumed.
+  const source = readFileSync(join(SRC_DIR, 'routes/public-maps.tsx'), 'utf8');
+  expect(source).not.toContain('MapLocationControl');
+  expect(source).not.toContain('useMapLocation');
+  expect(source).not.toContain('geolocation');
+  expect(source).not.toContain('LOCATION_SUBTITLE');
+  expect(source).not.toContain('mapUrlForCoordinates');
+  // No runtime position on this surface: the embed uses its own Malaybalay default.
+  expect(source).not.toContain('url=');
+  // It still renders a map — and points at the interactive one.
+  expect(source).toContain('<MapEmbed');
+  expect(source).toContain('to="/maps"');
+});
+
+test('the public map keeps the Malaybalay subtitle', () => {
+  // The page has no location state left, so `mapSubtitle()` is its only subtitle.
+  expect(mapSubtitle()).toBe(`Browse boarding houses around ${MAP_LOCATION_QUERY}.`);
 });
 
 test('navigator.geolocation is only touched by the geolocation module', () => {

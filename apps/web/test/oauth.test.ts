@@ -4,8 +4,10 @@ import {
   clearGooglePendingHash,
   handleGooglePendingHash,
   handleOAuthHash,
+  isForeignRolePath,
   parseGooglePendingToken,
   redirectPathForUser,
+  resolvePostAuthPath,
 } from '../src/lib/oauth';
 import type { AuthUser } from '../src/lib/types';
 
@@ -32,8 +34,11 @@ test('redirectPathForUser maps landlord to /landlord', () => {
   expect(redirectPathForUser(user('landlord'))).toBe('/landlord');
 });
 
-test('redirectPathForUser maps a new boarder to find-a-room', () => {
-  expect(redirectPathForUser(user('boarder'))).toBe('/boarder/find-a-room');
+test('redirectPathForUser maps a new boarder to the public browse page', () => {
+  expect(redirectPathForUser(user('boarder'))).toBe('/find-a-room');
+  expect(redirectPathForUser({ ...user('boarder'), boarder_status: 'browsing' })).toBe(
+    '/find-a-room'
+  );
 });
 
 test('redirectPathForUser maps a confirmed boarder to the boarder dashboard', () => {
@@ -53,6 +58,36 @@ test('redirectPathForUser maps a pending/rejected boarder to applications', () =
   expect(redirectPathForUser({ ...user('boarder'), boarder_status: 'rejected' })).toBe(
     '/boarder/applications'
   );
+});
+
+test("resolvePostAuthPath honours a return path inside the user's own area", () => {
+  expect(resolvePostAuthPath(user('boarder'), '/boarder/find-a-room/3/apply')).toBe(
+    '/boarder/find-a-room/3/apply'
+  );
+  expect(resolvePostAuthPath(user('landlord'), '/landlord/listings')).toBe('/landlord/listings');
+  // Public paths are reachable by anyone (e.g. returning from /haven-ai).
+  expect(resolvePostAuthPath(user('landlord'), '/haven-ai')).toBe('/haven-ai');
+});
+
+test("resolvePostAuthPath falls back when the return path is another role's area", () => {
+  // A landlord who followed a boarder apply link must not be dropped onto the
+  // boarder shell only to be bounced straight back out by Protected.
+  expect(resolvePostAuthPath(user('landlord'), '/boarder/find-a-room/3/apply')).toBe('/landlord');
+  expect(resolvePostAuthPath(user('admin'), '/boarder/messages')).toBe('/admin');
+  expect(resolvePostAuthPath(user('boarder'), '/landlord/settings')).toBe('/find-a-room');
+});
+
+test('resolvePostAuthPath ignores missing or unsafe return paths', () => {
+  expect(resolvePostAuthPath(user('boarder'))).toBe('/find-a-room');
+  expect(resolvePostAuthPath(user('boarder'), null)).toBe('/find-a-room');
+  expect(resolvePostAuthPath(user('boarder'), '//evil.example.com')).toBe('/find-a-room');
+});
+
+test("isForeignRolePath only flags the other roles' areas", () => {
+  expect(isForeignRolePath('boarder', '/boarder/find-a-room')).toBe(false);
+  expect(isForeignRolePath('boarder', '/landlord')).toBe(true);
+  expect(isForeignRolePath('landlord', '/haven-ai')).toBe(false);
+  expect(isForeignRolePath('admin', '/admin/users')).toBe(false);
 });
 
 test('handleOAuthHash returns null when no auth hash is present', () => {
