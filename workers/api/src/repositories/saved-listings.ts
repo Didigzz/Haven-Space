@@ -151,6 +151,42 @@ export async function createSavedListing(
   roomId: number | null
 ): Promise<{ id: number; savedAt: string }> {
   const savedAt = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+  // saved_listings carries UNIQUE(boarder_id, property_id) but deletes are soft
+  // (deleted_at), so re-saving an unsaved listing must revive the old row — a
+  // plain INSERT would violate the unique index and surface as a 500.
+  const revived = await db
+    .prepare(
+      `
+        UPDATE saved_listings
+        SET room_id = ?, saved_at = ?, deleted_at = NULL
+        WHERE boarder_id = ?
+          AND property_id = ?
+          AND deleted_at IS NOT NULL
+      `
+    )
+    .bind(roomId, savedAt, boarderId, propertyId)
+    .run();
+
+  if ((revived.meta.changes ?? 0) > 0) {
+    const row = await db
+      .prepare(
+        `
+          SELECT id
+          FROM saved_listings
+          WHERE boarder_id = ? AND property_id = ?
+          LIMIT 1
+        `
+      )
+      .bind(boarderId, propertyId)
+      .first<{ id: number }>();
+
+    return {
+      id: Number(row?.id ?? 0),
+      savedAt,
+    };
+  }
+
   const result = await db
     .prepare(
       `
