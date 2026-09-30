@@ -6,6 +6,15 @@ export interface NavItem {
   label: string;
   icon: string;
   group: string;
+  /**
+   * Search params for a destination that shares its path with its siblings.
+   *
+   * Admin's eight sections all live on `/admin`, so `to` alone cannot tell them
+   * apart — without this, every one of them matches every other one and the
+   * whole list renders active at once (`admin-apple-ui-restructure` D16/D28).
+   * Optional, so no existing landlord/boarder item changes (D20).
+   */
+  search?: Record<string, string>;
 }
 
 export const BOARDER_NAV: NavItem[] = [
@@ -68,9 +77,111 @@ export const LANDLORD_NAV: NavItem[] = [
   { to: '/landlord/settings', label: 'Settings', icon: 'settings', group: 'Account' },
 ];
 
-export const ADMIN_NAV: NavItem[] = [
-  { to: '/admin', label: 'Overview', icon: 'home', group: 'Operations' },
+/**
+ * The admin console's sections.
+ *
+ * `?tab=` values are kebab-case and are the URL contract; internal code should
+ * use these keys, never the raw string (`admin-apple-ui-restructure` D30).
+ */
+export const ADMIN_SECTION_KEYS = [
+  'overview',
+  'users',
+  'properties',
+  'applications',
+  'landlords',
+  'property-access',
+  'settings',
+  'audit',
+] as const;
+
+export type AdminSectionKey = (typeof ADMIN_SECTION_KEYS)[number];
+
+/** An absent or unrecognised `?tab=` lands here, never on a blank pane (D25). */
+export const DEFAULT_ADMIN_SECTION: AdminSectionKey = 'overview';
+
+/** Non-throwing: an unknown value resolves to the default rather than erroring. */
+export function toAdminSectionKey(value: unknown): AdminSectionKey {
+  return typeof value === 'string' && (ADMIN_SECTION_KEYS as readonly string[]).includes(value)
+    ? (value as AdminSectionKey)
+    : DEFAULT_ADMIN_SECTION;
+}
+
+/**
+ * The admin console's navigation — the single source of truth for each
+ * section's label, icon and search value (`admin-apple-ui-restructure` R2/R4).
+ *
+ * Section headings and the breadcrumb trail both read their wording from here,
+ * so the sidebar, the page and the trail can never drift apart (they did: the
+ * heading said "Command Center" while this list said "Overview").
+ */
+export const ADMIN_NAV: (NavItem & { search: { tab: AdminSectionKey } })[] = [
+  {
+    to: '/admin',
+    label: 'Overview',
+    icon: 'home',
+    group: 'Operations',
+    search: { tab: 'overview' },
+  },
+  {
+    to: '/admin',
+    label: 'Users',
+    icon: 'users',
+    group: 'Operations',
+    search: { tab: 'users' },
+  },
+  {
+    to: '/admin',
+    label: 'Properties',
+    icon: 'list',
+    group: 'Operations',
+    search: { tab: 'properties' },
+  },
+  {
+    to: '/admin',
+    label: 'Applications',
+    icon: 'application',
+    group: 'Operations',
+    search: { tab: 'applications' },
+  },
+  {
+    to: '/admin',
+    label: 'Landlords',
+    icon: 'shieldCheck',
+    group: 'Operations',
+    search: { tab: 'landlords' },
+  },
+  {
+    to: '/admin',
+    label: 'Property Access',
+    icon: 'users',
+    group: 'Access & audit',
+    search: { tab: 'property-access' },
+  },
+  {
+    to: '/admin',
+    label: 'Audit log',
+    icon: 'document',
+    group: 'Access & audit',
+    search: { tab: 'audit' },
+  },
+  {
+    to: '/admin',
+    label: 'Settings',
+    icon: 'settings',
+    group: 'System',
+    search: { tab: 'settings' },
+  },
 ];
+
+/**
+ * `?tab=` value → section label, for the breadcrumb trail.
+ *
+ * Lives here rather than in `topbar` so the shared layout component never has
+ * to reach into `components/admin/*` (`admin-apple-ui-restructure` R11).
+ */
+export const ADMIN_SECTION_LABELS: Record<string, string> = Object.fromEntries(
+  ADMIN_NAV.map(item => [item.search.tab, item.label])
+);
 
 /** Every destination the account menu's primary entry can take. */
 export type AccountHomePath = '/admin' | '/landlord' | '/boarder' | '/boarder/applications';
