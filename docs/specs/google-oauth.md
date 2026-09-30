@@ -80,7 +80,7 @@ landlord signup form.'`; otherwise **auto-creates a boarder** account
 | boarder `accepted`                                              | `/boarder/confirm-booking` |
 | boarder `confirmed`                                             | `/boarder`                 |
 | boarder `applied_pending` / `pending_confirmation` / `rejected` | `/boarder/applications`    |
-| boarder `new` / `browsing`                                      | `/boarder/find-a-room`     |
+| boarder `new` / `browsing`                                      | `/find-a-room`             |
 
 ### 2.4 Where the prod "does nothing" comes from
 
@@ -122,7 +122,8 @@ status-aware boarder landing is branch-only but not the cause of the bounce-back
    carrying a short-lived pending session token (see §5.2 for the mechanism).
 4. Chooser shows **Boarder** / **Landlord** cards.
    - **Boarder** → account created immediately (role `boarder`, `boarder_status: 'new'`,
-     `is_verified: 1`, `email_verified: 1` — trust Google) → lands on **`/boarder/find-a-room`**.
+     `is_verified: 1`, `email_verified: 1` — trust Google) → lands on **`/find-a-room`** (the
+     public browse page; amended by `boarder-find-a-room-redirect-spec.md`).
    - **Landlord** → optional pre-filled form appears (name/email already filled from Google;
      business/property name, phone, city, province, description **all optional — only the role
      choice is required**) → on submit, account created (role `landlord`) → lands on the
@@ -217,7 +218,9 @@ province?, phoneNumber? }` plus `link: true` for the existing-account case.
       city, province) pre-filled with Google name/email; "Continue" proceeds with or without them.
     - **Link mode**: account-found notice + "Link Google account" / "Cancel" actions.
   - Calls the `google/complete` endpoint; on success persists via `setStoredAuth` and navigates
-    with `redirectPathForUser(user)` (landlord → `/landlord`; boarder → `/boarder/find-a-room`).
+    with `resolvePostAuthPath(user, redirect)` (landlord → `/landlord`; boarder → `/find-a-room`).
+    The helper wraps `redirectPathForUser(user)` and only honours the OAuth `redirect` when it
+    is reachable for the user's role.
   - Also renders `?error=` banners.
 - **Surfacing `?error=`**: on `/auth/login`, `/auth/signup`, `/auth/signup/landlord`, and
   `/auth/choose-role`, read the `error` search param (TanStack route `validateSearch`) and render
@@ -227,8 +230,10 @@ province?, phoneNumber? }` plus `link: true` for the existing-account case.
   decides for new users.
 - **Landlord signup page**: add a `GoogleButton` (`action=signup`) above the form, plus the
   `#auth=`/`#google-pending=` handling.
-- **`redirectPathForUser`**: unchanged semantics; ensure landlord → `/landlord` (with pending
-  banner) and new boarder → `/boarder/find-a-room`.
+- **`redirectPathForUser`**: landlord → `/landlord` (with pending banner) and new boarder →
+  `/find-a-room` (amended by `boarder-find-a-room-redirect-spec.md`). `resolvePostAuthPath`
+  applies this as the fallback whenever an explicit `redirect` is absent or belongs to another
+  role's area.
 
 ### 5.3 Tests
 
@@ -271,10 +276,10 @@ Google Cloud Console.
 
 | #   | Scenario                                                                                                             | Expected                                                                                                                    |
 | --- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| A1  | Fresh Google email, pick **Boarder**                                                                                 | Account created (`status new`); lands `/boarder/find-a-room`; session persisted; refresh keeps login                        |
+| A1  | Fresh Google email, pick **Boarder**                                                                                 | Account created (`status new`); lands `/find-a-room`; session persisted; refresh keeps login                                |
 | A2  | Fresh Google email, pick **Landlord**, submit with all-optional fields empty                                         | Landlord account created; lands `/landlord` with pending-verification banner; can open profile later and fill details       |
 | A3  | Fresh Google email, pick **Landlord**, fill business name/phone/city                                                 | Stored on the landlord profile; lands `/landlord`                                                                           |
-| A4  | Returning Google boarder                                                                                             | Skips chooser; lands per status (`new` → `/boarder/find-a-room`; `accepted` → `/boarder/confirm-booking`; etc.)             |
+| A4  | Returning Google boarder                                                                                             | Skips chooser; lands per status (`new` → `/find-a-room`; `accepted` → `/boarder/confirm-booking`; etc.)                     |
 | A5  | Existing email/password account; same email via Google                                                               | Chooser shows link prompt; **Link** → logged into existing account (role preserved); **Cancel** → `/auth/login`, no changes |
 | A6  | Cancel on Google consent screen                                                                                      | `/auth/login` with "Google login was cancelled" banner                                                                      |
 | A7  | Google OAuth creds removed locally                                                                                   | `/auth/login` with inline "Google OAuth is not configured" banner                                                           |

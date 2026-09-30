@@ -4,6 +4,12 @@
 
 **Status:** Spec only — approved for a manual browser walkthrough.
 
+> **Amended 2026-09-26 (`boarder-find-a-room-redirect-spec.md`).** The boarder browse grid was
+> retired: `/boarder/find-a-room` now redirects to the public `/find-a-room`, and
+> `/boarder/find-a-room/$id` redirects to `/rooms/$id`. Apply/tour still live under
+> `/boarder/find-a-room/$id/{apply,tour}`. Route lists and steps below are read with that in
+> mind; the run reports themselves are historical and left as recorded.
+
 ---
 
 ~~Run happy-path QA: landlord signup → admin approve → listing → boarder apply → accept → confirm~~ ✅ Done (`20260816-1519`)

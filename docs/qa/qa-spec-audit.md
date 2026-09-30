@@ -7,6 +7,11 @@ plan; no code has been changed.
 
 **Status:** Spec only — approved for a browser walkthrough.
 
+> **Amended 2026-09-26 (`boarder-find-a-room-redirect-spec.md`).** `/boarder/find-a-room` and
+> `/boarder/find-a-room/$id` are now redirects to `/find-a-room` and `/rooms/$id`, so they are no
+> longer a "duplicate UI" pair. The boarder browse surface is the public page; the in-shell
+> apply/tour routes are unchanged.
+
 ---
 
 Run the full-site navigability audit (public → auth → boarder → landlord → admin) with the preview browser
