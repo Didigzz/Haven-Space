@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, PasswordInput, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Spinner } from '../../components/ui/Spinner';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
@@ -119,122 +120,136 @@ function SettingsPage() {
     password.mutate();
   }
 
-  if (profile.isLoading) return <Spinner />;
-
   return (
-    <RoleShell title="Settings" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
+      <PageHeader
+        icon="settings"
+        title="Settings"
+        subtitle="Manage your account details and password."
+      />
+
       <div className="flex max-w-2xl flex-col gap-6">
         <ToastStack toasts={toasts} onDismiss={dismiss} />
         {error ? <ErrorState message={error} /> : null}
 
-        <Card>
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Icon name="user" size={20} /> Profile
-          </h2>
-          <form className="mt-4 flex flex-col gap-4" onSubmit={handleProfileSubmit}>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="First name" htmlFor="firstName">
-                <TextInput
-                  id="firstName"
-                  value={firstName}
-                  onChange={e => setFirstName(e.target.value)}
-                />
-              </Field>
-              <Field label="Last name" htmlFor="lastName">
-                <TextInput
-                  id="lastName"
-                  value={lastName}
-                  onChange={e => setLastName(e.target.value)}
-                />
-              </Field>
-            </div>
-            <Field label="Phone number" htmlFor="phone">
-              <TextInput
-                id="phone"
-                type="tel"
-                placeholder="+63 9XX XXX XXXX"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-              />
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="City" htmlFor="city">
-                <TextInput
-                  id="city"
-                  placeholder="e.g., Quezon City"
-                  value={city}
-                  onChange={e => setCity(e.target.value)}
-                />
-              </Field>
-              <Field label="Province" htmlFor="province">
-                <TextInput
-                  id="province"
-                  placeholder="e.g., Metro Manila"
-                  value={province}
-                  onChange={e => setProvince(e.target.value)}
-                />
-              </Field>
-            </div>
-            <Button type="submit" disabled={saveProfile.isPending}>
-              {saveProfile.isPending ? 'Saving…' : 'Save profile'}
-            </Button>
-          </form>
-        </Card>
+        {/* The shell stays mounted while the profile loads — the form used to
+            return before `RoleShell`, taking the sidebar with it (R24). */}
+        {profile.isLoading ? (
+          <Spinner />
+        ) : (
+          <>
+            <Card>
+              <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                <Icon name="user" size={20} /> Profile
+              </h2>
+              <form className="mt-4 flex flex-col gap-4" onSubmit={handleProfileSubmit}>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="First name" htmlFor="firstName">
+                    <TextInput
+                      id="firstName"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Last name" htmlFor="lastName">
+                    <TextInput
+                      id="lastName"
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                    />
+                  </Field>
+                </div>
+                <Field label="Phone number" htmlFor="phone">
+                  <TextInput
+                    id="phone"
+                    type="tel"
+                    placeholder="+63 9XX XXX XXXX"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                  />
+                </Field>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="City" htmlFor="city">
+                    <TextInput
+                      id="city"
+                      placeholder="e.g., Quezon City"
+                      value={city}
+                      onChange={e => setCity(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Province" htmlFor="province">
+                    <TextInput
+                      id="province"
+                      placeholder="e.g., Metro Manila"
+                      value={province}
+                      onChange={e => setProvince(e.target.value)}
+                    />
+                  </Field>
+                </div>
+                <Button type="submit" disabled={saveProfile.isPending}>
+                  {saveProfile.isPending ? 'Saving…' : 'Save profile'}
+                </Button>
+              </form>
+            </Card>
 
-        <Card>
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Icon name="photo" size={20} /> Profile picture
-          </h2>
-          <div className="mt-4 flex items-center gap-3">
-            <label className="cursor-pointer rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50">
-              Choose an image
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                disabled={avatar.isPending}
-                onChange={e => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setError(null);
-                    avatar.mutate(file);
-                  }
-                }}
-              />
-            </label>
-            {avatar.isPending ? <span className="text-sm text-gray-ink">Uploading…</span> : null}
-          </div>
-        </Card>
+            <Card>
+              <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                <Icon name="photo" size={20} /> Profile picture
+              </h2>
+              <div className="mt-4 flex items-center gap-3">
+                <label className="cursor-pointer rounded-full border border-border-strong px-4 py-2 text-sm font-medium transition-all duration-100 ease-out hover:bg-subtle active:scale-[0.97]">
+                  Choose an image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={avatar.isPending}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setError(null);
+                        avatar.mutate(file);
+                      }
+                    }}
+                  />
+                </label>
+                {avatar.isPending ? (
+                  <span className="text-sm text-gray-ink">Uploading…</span>
+                ) : null}
+              </div>
+            </Card>
 
-        <Card>
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Icon name="settings" size={20} /> Change password
-          </h2>
-          <form className="mt-4 flex flex-col gap-4" onSubmit={handlePasswordSubmit}>
-            <Field label="Current password" htmlFor="currentPassword">
-              <PasswordInput
-                id="currentPassword"
-                autoComplete="current-password"
-                required
-                value={currentPassword}
-                onChange={e => setCurrentPassword(e.target.value)}
-              />
-            </Field>
-            <Field label="New password" htmlFor="newPassword">
-              <PasswordInput
-                id="newPassword"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-              />
-            </Field>
-            <Button type="submit" disabled={password.isPending}>
-              {password.isPending ? 'Changing…' : 'Change password'}
-            </Button>
-          </form>
-        </Card>
+            <Card>
+              <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                <Icon name="settings" size={20} /> Change password
+              </h2>
+              <form className="mt-4 flex flex-col gap-4" onSubmit={handlePasswordSubmit}>
+                <Field label="Current password" htmlFor="currentPassword">
+                  <PasswordInput
+                    id="currentPassword"
+                    autoComplete="current-password"
+                    required
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                  />
+                </Field>
+                <Field label="New password" htmlFor="newPassword">
+                  <PasswordInput
+                    id="newPassword"
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                  />
+                </Field>
+                <Button type="submit" disabled={password.isPending}>
+                  {password.isPending ? 'Changing…' : 'Change password'}
+                </Button>
+              </form>
+            </Card>
+          </>
+        )}
       </div>
     </RoleShell>
   );

@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import { VerificationNotice } from '../../../components/landlord/VerificationNotice';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../../components/ui/Field';
-import { Icon } from '../../../components/ui/Icon';
+import { PageHeader } from '../../../components/ui/PageHeader';
 import { ApiRequestError } from '../../../lib/api/http';
 import { createListing } from '../../../lib/api/landlord';
 import { useAuth } from '../../../lib/auth-context';
@@ -27,7 +28,10 @@ const AMENITY_OPTIONS = [
 ];
 
 function CreateListingPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  // Unverified landlords cannot save a listing (API returns 403), so gate the form
+  // up front instead of letting them fill it in and fail at the end.
+  const needsVerification = !user?.is_verified;
   const navigate = useNavigate();
   const [form, setForm] = useState({
     propertyName: '',
@@ -76,6 +80,9 @@ function CreateListingPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    if (needsVerification) return;
+
     setError(null);
     submit.mutate();
   }
@@ -88,13 +95,13 @@ function CreateListingPage() {
       >
         ← Back to listings
       </Link>
-      <div className="mb-5 flex items-center gap-3">
-        <Icon name="list" size={28} />
-        <div>
-          <h1 className="text-2xl font-bold text-ink">Create listing</h1>
-          <p className="text-sm text-gray-ink">Tell boarders about your property.</p>
-        </div>
-      </div>
+      <PageHeader
+        icon="list"
+        title="Create listing"
+        subtitle="Tell boarders about your property."
+      />
+
+      {needsVerification ? <VerificationNotice /> : null}
 
       {error ? (
         <div className="mb-4">
@@ -103,7 +110,7 @@ function CreateListingPage() {
       ) : null}
 
       <Card>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <Field label="Property name" htmlFor="propertyName">
             <TextInput
               id="propertyName"
@@ -113,7 +120,7 @@ function CreateListingPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Property type" htmlFor="propertyType">
               <SelectInput
                 id="propertyType"
@@ -148,7 +155,7 @@ function CreateListingPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Monthly rent (₱)" htmlFor="propertyPrice">
               <TextInput
                 id="propertyPrice"
@@ -171,7 +178,7 @@ function CreateListingPage() {
             </Field>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             <Field label="Number of rooms" htmlFor="propertyRooms">
               <TextInput
                 id="propertyRooms"
@@ -215,7 +222,7 @@ function CreateListingPage() {
               onChange={e => set('propertyAddress', e.target.value)}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="City" htmlFor="propertyCity">
               <TextInput
                 id="propertyCity"
@@ -242,10 +249,10 @@ function CreateListingPage() {
                   key={amenity}
                   type="button"
                   onClick={() => toggleAmenity(amenity)}
-                  className={`rounded-full px-3 py-1 text-sm ${
+                  className={`rounded-full px-3 py-1.5 text-sm transition-all duration-100 ease-out active:scale-[0.96] ${
                     amenities.includes(amenity)
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 text-gray-ink hover:bg-gray-200'
+                      ? 'bg-primary-strong text-white'
+                      : 'bg-subtle text-gray-ink hover:bg-subtle'
                   }`}
                 >
                   {amenity}
@@ -254,8 +261,12 @@ function CreateListingPage() {
             </div>
           </div>
 
-          <Button type="submit" disabled={submit.isPending}>
-            {submit.isPending ? 'Creating…' : 'Create listing'}
+          <Button type="submit" disabled={submit.isPending || needsVerification}>
+            {needsVerification
+              ? 'Verify your account to publish'
+              : submit.isPending
+              ? 'Creating…'
+              : 'Create listing'}
           </Button>
         </form>
       </Card>

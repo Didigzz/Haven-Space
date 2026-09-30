@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import { VerificationNotice } from '../../../../../components/landlord/VerificationNotice';
 import { Button } from '../../../../../components/ui/Button';
 import { Card } from '../../../../../components/ui/Card';
 import { ErrorState } from '../../../../../components/ui/ErrorState';
-import { Icon } from '../../../../../components/ui/Icon';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../../components/ui/Field';
+import { PageHeader } from '../../../../../components/ui/PageHeader';
 import { Spinner } from '../../../../../components/ui/Spinner';
 import { ApiRequestError } from '../../../../../lib/api/http';
 import { getRooms, updateRoom, uploadRoomPhotos } from '../../../../../lib/api/landlord';
@@ -30,7 +31,9 @@ export const Route = createFileRoute('/landlord/listings/rooms/$id/edit')({
 function EditRoomPage() {
   const { id } = Route.useParams();
   const { propertyId } = useSearch({ from: '/landlord/listings/rooms/$id/edit' });
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  // Unverified landlords cannot save room edits (API returns 403) — see BUG-09.
+  const needsVerification = !user?.is_verified;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +122,9 @@ function EditRoomPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    if (needsVerification) return;
+
     setError(null);
     submit.mutate();
   }
@@ -151,13 +157,13 @@ function EditRoomPage() {
           >
             ← Back to listing
           </Link>
-          <div className="mb-5 flex items-center gap-3">
-            <Icon name="book" size={28} />
-            <div>
-              <h1 className="text-2xl font-bold text-ink">Edit room {room.room_number}</h1>
-              <p className="text-sm text-gray-ink">Update this room's details and photos.</p>
-            </div>
-          </div>
+          <PageHeader
+            icon="book"
+            title={`Edit room ${room.room_number}`}
+            subtitle="Update this room's details and photos."
+          />
+
+          {needsVerification ? <VerificationNotice /> : null}
 
           {error ? (
             <div className="mb-4">
@@ -166,8 +172,8 @@ function EditRoomPage() {
           ) : null}
 
           <Card>
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2 gap-3">
+            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-2 gap-4">
                 <Field label="Room number" htmlFor="room_number">
                   <TextInput
                     id="room_number"
@@ -189,7 +195,7 @@ function EditRoomPage() {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <Field label="Monthly rent (₱)" htmlFor="price">
                   <TextInput
                     id="price"
@@ -211,7 +217,7 @@ function EditRoomPage() {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-4">
                 <Field label="Capacity" htmlFor="capacity">
                   <TextInput
                     id="capacity"
@@ -253,19 +259,23 @@ function EditRoomPage() {
                 />
               </Field>
 
-              <Button type="submit" disabled={submit.isPending}>
-                {submit.isPending ? 'Saving…' : 'Save changes'}
+              <Button type="submit" disabled={submit.isPending || needsVerification}>
+                {needsVerification
+                  ? 'Verify your account to save'
+                  : submit.isPending
+                  ? 'Saving…'
+                  : 'Save changes'}
               </Button>
             </form>
 
             <section className="mt-8">
-              <h2 className="text-lg font-semibold">Photos</h2>
+              <h2 className="text-lg font-semibold tracking-tight">Photos</h2>
               {photoError ? (
                 <div className="mt-2">
                   <ErrorState message={photoError} />
                 </div>
               ) : null}
-              <label className="mt-3 block cursor-pointer rounded-md border border-dashed border-gray-300 p-4 text-center text-sm hover:bg-gray-50">
+              <label className="mt-3 block cursor-pointer rounded-xl border border-dashed border-border-strong p-4 text-center text-sm transition-colors hover:bg-subtle">
                 {uploading ? 'Uploading…' : 'Choose photos to upload (jpg/png/webp, max 5 MB each)'}
                 <input
                   type="file"
@@ -278,13 +288,10 @@ function EditRoomPage() {
               {room.photos.length > 0 ? (
                 <ul className="mt-3 grid grid-cols-3 gap-2">
                   {room.photos.map(photo => (
-                    <li
-                      key={photo.id}
-                      className="overflow-hidden rounded-md border border-gray-200"
-                    >
+                    <li key={photo.id} className="overflow-hidden rounded-xl border border-border">
                       <img src={photo.photo_url} alt="" className="h-24 w-full object-cover" />
                       {photo.is_cover ? (
-                        <span className="block bg-primary py-0.5 text-center text-xs text-white">
+                        <span className="block bg-primary-strong py-0.5 text-center text-xs text-white">
                           Cover
                         </span>
                       ) : null}

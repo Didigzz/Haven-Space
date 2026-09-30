@@ -4,11 +4,12 @@ import { useState, type FormEvent } from 'react';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Button } from '../../components/ui/Button';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { DataTable } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, SelectInput, TextInput } from '../../components/ui/Field';
-import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
@@ -62,6 +63,7 @@ function BoardersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<BoarderForm>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<LandlordBoarder | null>(null);
 
   const properties = useQuery({
     queryKey: ['landlord-properties'],
@@ -118,6 +120,7 @@ function BoardersPage() {
     mutationFn: (id: number) => removeBoarder(token!, id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
+      setPendingRemove(null);
       push({ tone: 'success', message: 'Boarder removed.' });
     },
     onError: err =>
@@ -177,7 +180,7 @@ function BoardersPage() {
   const boarderList = boarders.data?.data.boarders ?? [];
 
   return (
-    <RoleShell title="Boarders" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
       <ToastStack toasts={toasts} onDismiss={dismiss} />
       {error ? (
         <div className="mb-4">
@@ -185,15 +188,9 @@ function BoardersPage() {
         </div>
       ) : null}
 
-      <div className="mb-5 flex items-center gap-3">
-        <Icon name="users" size={28} />
-        <div>
-          <h2 className="text-2xl font-bold text-ink">Boarders</h2>
-          <p className="text-sm text-gray-ink">Manage the tenants in your properties.</p>
-        </div>
-      </div>
+      <PageHeader icon="users" title="Boarders" subtitle="Manage the tenants in your properties." />
 
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div className="w-72">
           <Field label="Property" htmlFor="propertyId">
             <SelectInput
@@ -215,6 +212,7 @@ function BoardersPage() {
 
       {!propertyIdNumber ? (
         <EmptyState
+          icon="buildingOffice"
           title="Select a property"
           description="Choose a property to see its boarders."
         />
@@ -223,7 +221,11 @@ function BoardersPage() {
       ) : boarders.error ? (
         <ErrorState message={boarders.error.message} />
       ) : boarderList.length === 0 ? (
-        <EmptyState title="No boarders" description="Add your first boarder to get started." />
+        <EmptyState
+          icon="users"
+          title="No boarders"
+          description="Add your first boarder to get started."
+        />
       ) : (
         <DataTable<LandlordBoarder>
           rows={boarderList}
@@ -256,45 +258,37 @@ function BoardersPage() {
               cell: row => {
                 const isPendingLeave = row.leave_request_status === 'pending';
                 return (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {isPendingLeave ? (
                       <>
-                        <button
-                          type="button"
-                          className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
+                        <Button
+                          variant="outline"
+                          size="sm"
                           disabled={respond.isPending}
                           onClick={() =>
                             respond.mutate({ applicationId: row.application_id, action: 'approve' })
                           }
                         >
                           Approve
-                        </button>
-                        <button
-                          type="button"
-                          className="text-sm text-red-600 hover:underline disabled:opacity-50"
+                        </Button>
+                        <Button
+                          variant="dangerGhost"
+                          size="sm"
                           disabled={respond.isPending}
                           onClick={() =>
                             respond.mutate({ applicationId: row.application_id, action: 'decline' })
                           }
                         >
                           Decline
-                        </button>
+                        </Button>
                       </>
                     ) : null}
-                    <button
-                      type="button"
-                      className="text-sm text-primary hover:underline"
-                      onClick={() => openEdit(row)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
                       Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="text-sm text-red-600 hover:underline"
-                      onClick={() => remove.mutate(row.id)}
-                    >
+                    </Button>
+                    <Button variant="dangerGhost" size="sm" onClick={() => setPendingRemove(row)}>
                       Remove
-                    </button>
+                    </Button>
                   </div>
                 );
               },
@@ -309,7 +303,7 @@ function BoardersPage() {
         onClose={() => setModalOpen(false)}
       >
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="First name" htmlFor="first_name">
               <TextInput
                 id="first_name"
@@ -364,6 +358,28 @@ function BoardersPage() {
           </Button>
         </form>
       </Modal>
+
+      {/* Removing a boarder destroys tenure data, so it confirms — the pattern
+          `LandlordRoomList` already uses for room deletes (R22). */}
+      <ConfirmDialog
+        open={pendingRemove !== null}
+        title="Remove boarder"
+        message={
+          <>
+            Remove{' '}
+            <strong>
+              {`${pendingRemove?.first_name ?? ''} ${pendingRemove?.last_name ?? ''}`.trim()}
+            </strong>
+            ? This cannot be undone.
+          </>
+        }
+        confirmLabel="Remove boarder"
+        busy={remove.isPending}
+        onConfirm={() => {
+          if (pendingRemove) remove.mutate(pendingRemove.id);
+        }}
+        onCancel={() => setPendingRemove(null)}
+      />
     </RoleShell>
   );
 }

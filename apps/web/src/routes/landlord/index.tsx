@@ -2,9 +2,11 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
+import { buttonClasses } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Spinner } from '../../components/ui/Spinner';
 import { getDashboardStats } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
@@ -30,13 +32,39 @@ function StatCard({
   icon: string;
 }) {
   return (
-    <Card className="flex items-start gap-3">
-      <Icon name={icon} size={24} className="shrink-0" />
+    <Card className="flex items-start gap-4">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mint text-primary">
+        <Icon name={icon} size={24} />
+      </span>
       <div className="min-w-0">
-        <p className="text-sm text-gray-ink">{label}</p>
-        <p className="mt-1 text-2xl font-bold text-ink">{value}</p>
+        <p className="text-[11px] font-medium uppercase tracking-wider text-gray-ink">{label}</p>
+        <p className="mt-1 text-2xl font-bold tracking-tight text-ink">{value}</p>
         {sub ? <p className="mt-1 text-sm text-gray-ink">{sub}</p> : null}
       </div>
+    </Card>
+  );
+}
+
+function QuickLinkCard({
+  title,
+  description,
+  to,
+  action,
+}: {
+  title: string;
+  description: string;
+  to: string;
+  action: string;
+}) {
+  return (
+    <Card className="flex flex-wrap items-center justify-between gap-4">
+      <div className="min-w-0">
+        <p className="font-semibold text-ink">{title}</p>
+        <p className="mt-0.5 text-sm text-gray-ink">{description}</p>
+      </div>
+      <Link to={to} className={buttonClasses({ variant: 'outline', size: 'sm' })}>
+        {action}
+      </Link>
     </Card>
   );
 }
@@ -50,46 +78,38 @@ function LandlordDashboard() {
   });
 
   return (
-    <RoleShell title="Landlord dashboard" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
       {user?.verification_status === 'pending' ? (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-sm text-amber-800">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning-border bg-warning-tint px-5 py-4">
+          <p className="text-sm text-warning-ink">
             Your account is pending verification. You can browse the dashboard, but your listings
             won&apos;t be visible to boarders until your identity is verified.
           </p>
           <Link
             to="/landlord/verification"
-            className="rounded-full bg-amber-800 px-4 py-1.5 text-sm font-semibold text-white hover:brightness-90"
+            className={buttonClasses({ size: 'sm', variant: 'warning' })}
           >
             Complete verification
           </Link>
         </div>
       ) : null}
 
-      {/* Greeting */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-ink">
-            {user?.first_name ? `Welcome back, ${user.first_name}` : 'Welcome back'}
-          </h2>
-          <p className="mt-1 text-sm text-gray-ink">
-            Manage your properties, boarders, and applications.
-          </p>
-        </div>
-        <Link
-          to="/landlord/listings/create"
-          className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
-        >
-          + Create listing
-        </Link>
-      </div>
+      <PageHeader
+        title={user?.first_name ? `Welcome back, ${user.first_name}` : 'Welcome back'}
+        subtitle="Manage your properties, boarders, and applications."
+        actions={
+          <Link to="/landlord/listings/create" className={buttonClasses()}>
+            + Create listing
+          </Link>
+        }
+      />
 
       {stats.isLoading ? (
         <Spinner />
       ) : stats.error ? (
         <ErrorState message={stats.error.message} />
       ) : stats.data ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Occupancy"
             value={`${stats.data.data.occupancy.rate.toFixed(0)}%`}
@@ -121,43 +141,25 @@ function LandlordDashboard() {
         </div>
       ) : null}
 
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-ink">My listings</p>
-            <p className="text-sm text-gray-ink">Edit your properties and rooms</p>
-          </div>
-          <Link
-            to="/landlord/listings"
-            className="rounded-full border-2 border-primary px-4 py-1.5 text-sm font-semibold text-primary hover:bg-mint"
-          >
-            Manage
-          </Link>
-        </Card>
-        <Card className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-ink">Applications</p>
-            <p className="text-sm text-gray-ink">Review boarder applications</p>
-          </div>
-          <Link
-            to="/landlord/applications"
-            className="rounded-full border-2 border-primary px-4 py-1.5 text-sm font-semibold text-primary hover:bg-mint"
-          >
-            Review
-          </Link>
-        </Card>
-        <Card className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-ink">Boarders</p>
-            <p className="text-sm text-gray-ink">Manage your tenants</p>
-          </div>
-          <Link
-            to="/landlord/boarders"
-            className="rounded-full border-2 border-primary px-4 py-1.5 text-sm font-semibold text-primary hover:bg-mint"
-          >
-            Manage
-          </Link>
-        </Card>
+      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
+        <QuickLinkCard
+          title="My listings"
+          description="Edit your properties and rooms"
+          to="/landlord/listings"
+          action="Manage"
+        />
+        <QuickLinkCard
+          title="Applications"
+          description="Review boarder applications"
+          to="/landlord/applications"
+          action="Review"
+        />
+        <QuickLinkCard
+          title="Boarders"
+          description="Manage your tenants"
+          to="/landlord/boarders"
+          action="Manage"
+        />
       </div>
     </RoleShell>
   );

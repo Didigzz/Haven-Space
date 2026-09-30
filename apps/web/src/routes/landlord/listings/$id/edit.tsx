@@ -1,11 +1,13 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import { VerificationNotice } from '../../../../components/landlord/VerificationNotice';
 import { Button } from '../../../../components/ui/Button';
 import { Card } from '../../../../components/ui/Card';
 import { ErrorState } from '../../../../components/ui/ErrorState';
 import { Icon } from '../../../../components/ui/Icon';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../components/ui/Field';
+import { PageHeader } from '../../../../components/ui/PageHeader';
 import { Spinner } from '../../../../components/ui/Spinner';
 import { LandlordRoomList } from '../../../../components/rooms/LandlordRoomList';
 import { ApiRequestError } from '../../../../lib/api/http';
@@ -31,7 +33,9 @@ const AMENITY_OPTIONS = [
 
 function EditListingPage() {
   const { id } = Route.useParams();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  // Unverified landlords cannot save edits (API returns 403) — see BUG-09.
+  const needsVerification = !user?.is_verified;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -163,6 +167,9 @@ function EditListingPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    if (needsVerification) return;
+
     setError(null);
     submit.mutate();
   }
@@ -179,13 +186,13 @@ function EditListingPage() {
       >
         ← Back to listings
       </Link>
-      <div className="mb-5 flex items-center gap-3">
-        <Icon name="list" size={28} />
-        <div>
-          <h1 className="text-2xl font-bold text-ink">Edit listing</h1>
-          <p className="text-sm text-gray-ink">Keep your property details up to date.</p>
-        </div>
-      </div>
+      <PageHeader
+        icon="list"
+        title="Edit listing"
+        subtitle="Keep your property details up to date."
+      />
+
+      {needsVerification ? <VerificationNotice /> : null}
 
       {error ? (
         <div className="mb-4">
@@ -194,7 +201,7 @@ function EditListingPage() {
       ) : null}
 
       <Card>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <Field label="Property name" htmlFor="name">
             <TextInput
               id="name"
@@ -204,7 +211,7 @@ function EditListingPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Property type" htmlFor="type">
               <SelectInput id="type" value={form.type} onChange={e => set('type', e.target.value)}>
                 <option value="boarding-house">Boarding house</option>
@@ -235,7 +242,7 @@ function EditListingPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Monthly rent (₱)" htmlFor="price">
               <TextInput
                 id="price"
@@ -258,7 +265,7 @@ function EditListingPage() {
             </Field>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             <Field label="Number of rooms" htmlFor="total_rooms">
               <TextInput
                 id="total_rooms"
@@ -299,7 +306,7 @@ function EditListingPage() {
               onChange={e => set('address', e.target.value)}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="City" htmlFor="city">
               <TextInput
                 id="city"
@@ -326,10 +333,10 @@ function EditListingPage() {
                   key={amenity}
                   type="button"
                   onClick={() => toggleAmenity(amenity)}
-                  className={`rounded-full px-3 py-1 text-sm ${
+                  className={`rounded-full px-3 py-1.5 text-sm transition-all duration-100 ease-out active:scale-[0.96] ${
                     amenities.includes(amenity)
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 text-gray-ink hover:bg-gray-200'
+                      ? 'bg-primary-strong text-white'
+                      : 'bg-subtle text-gray-ink hover:bg-subtle'
                   }`}
                 >
                   {amenity}
@@ -338,19 +345,23 @@ function EditListingPage() {
             </div>
           </div>
 
-          <Button type="submit" disabled={submit.isPending}>
-            {submit.isPending ? 'Saving…' : 'Save changes'}
+          <Button type="submit" disabled={submit.isPending || needsVerification}>
+            {needsVerification
+              ? 'Verify your account to save'
+              : submit.isPending
+              ? 'Saving…'
+              : 'Save changes'}
           </Button>
         </form>
 
         <section className="mt-8">
-          <h2 className="text-lg font-semibold">Photos</h2>
+          <h2 className="text-lg font-semibold tracking-tight">Photos</h2>
           {photoError ? (
             <div className="mt-2">
               <ErrorState message={photoError} />
             </div>
           ) : null}
-          <label className="mt-3 block cursor-pointer rounded-md border border-dashed border-gray-300 p-4 text-center text-sm hover:bg-gray-50">
+          <label className="mt-3 block cursor-pointer rounded-xl border border-dashed border-border-strong p-4 text-center text-sm transition-colors hover:bg-subtle">
             {uploading ? 'Uploading…' : 'Choose photos to upload (jpg/png/webp/gif, max 5 MB each)'}
             <input
               type="file"
@@ -365,7 +376,7 @@ function EditListingPage() {
               {photos.map(photo => (
                 <li
                   key={photo}
-                  className="relative overflow-hidden rounded-md border border-gray-200"
+                  className="relative overflow-hidden rounded-xl border border-border"
                 >
                   <img src={photo} alt="" className="h-24 w-full object-cover" />
                   {photosToDelete.includes(photo) ? (
@@ -375,7 +386,7 @@ function EditListingPage() {
                   ) : (
                     <button
                       type="button"
-                      className="absolute right-1 top-1 rounded bg-white/90 px-1.5 text-xs"
+                      className="absolute right-1 top-1 rounded-full bg-surface/90 px-2 py-0.5 text-xs transition-all duration-100 ease-out hover:bg-surface active:scale-[0.94]"
                       onClick={() => setPhotosToDelete(list => [...list, photo])}
                     >
                       ✕
@@ -395,7 +406,7 @@ function EditListingPage() {
           <div className="mb-3 flex items-center gap-3">
             <Icon name="users" size={22} className="shrink-0" />
             <div>
-              <h2 className="font-semibold text-ink">Authorized landlords</h2>
+              <h2 className="font-semibold tracking-tight text-ink">Authorized landlords</h2>
               <p className="text-sm text-gray-ink">
                 Landlords who can also manage this property. Only the Haven Space Admin can change
                 who has access.
@@ -403,7 +414,7 @@ function EditListingPage() {
             </div>
           </div>
           {authorizedLandlords.length > 0 ? (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-border rounded-xl border border-border/70">
               {authorizedLandlords.map(landlord => (
                 <li
                   key={landlord.id}
