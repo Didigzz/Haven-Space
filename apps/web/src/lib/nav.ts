@@ -1,3 +1,5 @@
+import { BROWSE_LISTINGS_PATH } from './routes';
+
 export interface NavItem {
   to: string;
   label: string;
@@ -9,7 +11,7 @@ export const BOARDER_NAV: NavItem[] = [
   { to: '/boarder', label: 'Dashboard', icon: 'home', group: 'Main' },
   { to: '/boarder/tenancy', label: 'My Tenancy', icon: 'document', group: 'Main' },
   { to: '/boarder/applications', label: 'Applications', icon: 'application', group: 'Main' },
-  { to: '/boarder/find-a-room', label: 'Find a Room', icon: 'search', group: 'Discovery' },
+  { to: BROWSE_LISTINGS_PATH, label: 'Find a Room', icon: 'search', group: 'Discovery' },
   { to: '/boarder/messages', label: 'Messages', icon: 'chat', group: 'Communication' },
   {
     to: '/boarder/announcements',
