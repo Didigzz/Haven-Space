@@ -170,6 +170,30 @@ describe('phase 7 flow smoke test', () => {
 
     expect(adminLogin.status).toBe(200);
 
+    // Approval now requires all four verification documents on file. Uploads have
+    // their own coverage in landlord-verification.test.ts, so seed a complete bundle
+    // here to keep this smoke test focused on the approval hand-off.
+    for (const documentType of [
+      'government_id',
+      'proof_of_ownership',
+      'business_permit',
+      'selfie_with_id',
+    ]) {
+      sqlite
+        .prepare(
+          `
+            INSERT INTO landlord_verification_documents (user_id, document_type, file_url, file_name)
+            VALUES (?, ?, ?, ?)
+          `
+        )
+        .run(
+          landlordSignupBody.user.id,
+          documentType,
+          `https://utfs.io/f/${documentType}-key`,
+          `${documentType}.jpg`
+        );
+    }
+
     const pendingLandlords = await app.request(
       'http://localhost/api/admin/landlords?status=pending',
       {
