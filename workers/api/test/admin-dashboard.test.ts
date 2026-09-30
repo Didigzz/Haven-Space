@@ -311,6 +311,64 @@ describe('admin dashboard routes', () => {
     ]);
   });
 
+  // Regression (BUG-10 / W5-A9): the audit table was write-only — no route served it,
+  // so admins could not see who performed which admin action.
+  it('serves the admin audit log newest-first with actor details and parsed ids', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+    sqlite.exec(`
+      INSERT INTO admin_audit_log (actor_id, entity, ids_json, action, created_at)
+      VALUES
+        (1, 'properties', '[10]', 'reject', '2026-05-10 09:00:00'),
+        (1, 'users', '[2,3]', 'suspended', '2026-05-11 09:00:00');
+    `);
+
+    const response = await app.request(
+      'http://localhost/api/admin/audit-log',
+      { headers: adminHeaders() },
+      createEnv(sqlite)
+    );
+    const body = (await response.json()) as {
+      data: Array<{
+        entity: string;
+        action: string;
+        ids: number[];
+        actor_name: string | null;
+        actor_email: string | null;
+      }>;
+      meta: { total: number };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.meta.total).toBe(2);
+    expect(body.data[0]).toMatchObject({
+      entity: 'users',
+      action: 'suspended',
+      ids: [2, 3],
+      actor_name: 'Ada Admin',
+      actor_email: 'admin@example.com',
+    });
+    expect(body.data[1]).toMatchObject({ entity: 'properties', action: 'reject', ids: [10] });
+  });
+
+  it('returns an empty audit log instead of failing when nothing happened yet', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+
+    const response = await app.request(
+      'http://localhost/api/admin/audit-log',
+      { headers: adminHeaders() },
+      createEnv(sqlite)
+    );
+    const body = (await response.json()) as { data: unknown[]; meta: { total: number } };
+
+    expect(response.status).toBe(200);
+    expect(body.data).toEqual([]);
+    expect(body.meta.total).toBe(0);
+  });
+
   it('requires admin role for admin dashboard routes', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
@@ -324,5 +382,19 @@ describe('admin dashboard routes', () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: 'Access denied. Admins only.' });
+  });
+
+  it('requires admin role for the audit log', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+
+    const response = await app.request(
+      'http://localhost/api/admin/audit-log',
+      { headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+
+    expect(response.status).toBe(403);
   });
 });

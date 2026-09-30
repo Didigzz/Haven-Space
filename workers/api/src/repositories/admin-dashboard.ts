@@ -44,6 +44,7 @@ export interface AdminApplicationRow {
   boarder_first: string;
   boarder_last: string;
   boarder_email: string;
+  landlord_id: number;
   landlord_first: string;
   landlord_last: string;
   room_title: string | null;
@@ -344,6 +345,7 @@ export async function getAdminApplications(db: D1Database): Promise<{
           bf.first_name AS boarder_first,
           bf.last_name AS boarder_last,
           bf.email AS boarder_email,
+          lf.id AS landlord_id,
           lf.first_name AS landlord_first,
           lf.last_name AS landlord_last,
           r.title AS room_title
@@ -436,6 +438,92 @@ export async function updateAdminApplicationStatus(
     .run();
 
   return result.meta.changes ?? 0;
+}
+
+export interface AdminAuditLogEntry {
+  id: number;
+  actor_id: number;
+  actor_name: string | null;
+  actor_email: string | null;
+  entity: string;
+  action: string;
+  ids: number[];
+  created_at: string;
+}
+
+interface AdminAuditLogRow {
+  id: number;
+  actor_id: number;
+  actor_name: string | null;
+  actor_email: string | null;
+  entity: string;
+  action: string;
+  ids_json: string;
+  created_at: string;
+}
+
+/**
+ * Read side of the admin audit trail. The table existed since migration 0017 and
+ * was only ever written to (BUG-10), so admins could not see who did what.
+ */
+export async function listAdminAuditLog(
+  db: D1Database,
+  input: { limit?: string; offset?: string } = {}
+): Promise<{ data: AdminAuditLogEntry[]; meta: { total: number; limit: number; offset: number } }> {
+  const limit = normalizeLimit(input.limit);
+  const offset = normalizeOffset(input.offset);
+
+  const total = await db
+    .prepare('SELECT COUNT(*) AS total FROM admin_audit_log')
+    .bind()
+    .first<{ total: number }>();
+
+  const rows = await db
+    .prepare(
+      `
+        SELECT
+          a.id,
+          a.actor_id,
+          a.entity,
+          a.action,
+          a.ids_json,
+          a.created_at,
+          trim(u.first_name || ' ' || u.last_name) AS actor_name,
+          u.email AS actor_email
+        FROM admin_audit_log a
+        LEFT JOIN users u ON u.id = a.actor_id
+        ORDER BY a.id DESC
+        LIMIT ? OFFSET ?
+      `
+    )
+    .bind(limit, offset)
+    .all<AdminAuditLogRow>();
+
+  const data = (rows.results ?? []).map((row): AdminAuditLogEntry => {
+    let ids: number[] = [];
+
+    try {
+      const parsed = JSON.parse(row.ids_json) as unknown;
+      if (Array.isArray(parsed)) {
+        ids = parsed.map(Number).filter(Number.isFinite);
+      }
+    } catch {
+      // malformed row: surface it as an empty id list rather than failing the page
+    }
+
+    return {
+      id: Number(row.id),
+      actor_id: Number(row.actor_id),
+      actor_name: row.actor_name ?? null,
+      actor_email: row.actor_email ?? null,
+      entity: row.entity,
+      action: row.action,
+      ids,
+      created_at: row.created_at,
+    };
+  });
+
+  return { data, meta: { total: total?.total ?? data.length, limit, offset } };
 }
 
 export async function insertAdminAuditLog(
