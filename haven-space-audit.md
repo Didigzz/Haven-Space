@@ -1,6 +1,11 @@
 # Audit Report: haven-space
 
 Generated: 2026-08-20
+
+> **Amended 2026-09-26 (`boarder-find-a-room-redirect-spec.md`).** The boarder tree no longer
+> contains a browse grid or listing detail under `apps/web/src/routes/boarder/find-a-room/`:
+> both are redirects to the public `/find-a-room` and `/rooms/$id`. References to that subtree
+> below describe the state at audit time.
 Scope: `C:/Users/Qwenzy/Desktop/haven-space` (monorepo: `apps/web` TanStack Start + `workers/api` Cloudflare Worker + legacy `client/` static frontend)
 Excluded from metrics: `node_modules/`, `.git/`, `dist/`, `.wrangler/`, `.codegraph/`, `.tanstack/`
 
