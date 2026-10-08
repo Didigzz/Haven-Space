@@ -14,7 +14,6 @@ import { Route as ForLandlordsRouteImport } from './routes/for-landlords'
 import { Route as HavenAiRouteImport } from './routes/haven-ai'
 import { Route as MapsRouteImport } from './routes/maps'
 import { Route as OurStoryRouteImport } from './routes/our-story'
-import { Route as PublicMapsRouteImport } from './routes/public-maps'
 import { Route as TeamsRouteImport } from './routes/teams'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AuthChooseRouteImport } from './routes/auth/choose'
@@ -31,7 +30,6 @@ import { Route as BoarderApplicationsRouteImport } from './routes/boarder/applic
 import { Route as BoarderConfirmBookingRouteImport } from './routes/boarder/confirm-booking'
 import { Route as BoarderFindARoomRouteImport } from './routes/boarder/find-a-room'
 import { Route as BoarderHouseRulesRouteImport } from './routes/boarder/house-rules'
-import { Route as BoarderMapsRouteImport } from './routes/boarder/maps'
 import { Route as BoarderMessagesRouteImport } from './routes/boarder/messages'
 import { Route as BoarderPaymentsRouteImport } from './routes/boarder/payments'
 import { Route as BoarderSettingsRouteImport } from './routes/boarder/settings'
@@ -103,11 +101,6 @@ const MapsRoute = MapsRouteImport.update({
 const OurStoryRoute = OurStoryRouteImport.update({
   id: '/our-story',
   path: '/our-story',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PublicMapsRoute = PublicMapsRouteImport.update({
-  id: '/public-maps',
-  path: '/public-maps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeamsRoute = TeamsRouteImport.update({
@@ -189,11 +182,6 @@ const BoarderFindARoomRoute = BoarderFindARoomRouteImport.update({
 const BoarderHouseRulesRoute = BoarderHouseRulesRouteImport.update({
   id: '/boarder/house-rules',
   path: '/boarder/house-rules',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BoarderMapsRoute = BoarderMapsRouteImport.update({
-  id: '/boarder/maps',
-  path: '/boarder/maps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BoarderMessagesRoute = BoarderMessagesRouteImport.update({
@@ -441,7 +429,6 @@ export interface FileRoutesByFullPath {
   '/haven-ai': typeof HavenAiRoute
   '/maps': typeof MapsRoute
   '/our-story': typeof OurStoryRoute
-  '/public-maps': typeof PublicMapsRoute
   '/teams': typeof TeamsRoute
   '/auth/choose': typeof AuthChooseRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
@@ -456,7 +443,6 @@ export interface FileRoutesByFullPath {
   '/boarder/confirm-booking': typeof BoarderConfirmBookingRoute
   '/boarder/find-a-room': typeof BoarderFindARoomRouteWithChildren
   '/boarder/house-rules': typeof BoarderHouseRulesRoute
-  '/boarder/maps': typeof BoarderMapsRoute
   '/boarder/messages': typeof BoarderMessagesRoute
   '/boarder/payments': typeof BoarderPaymentsRouteWithChildren
   '/boarder/settings': typeof BoarderSettingsRoute
@@ -513,7 +499,6 @@ export interface FileRoutesByTo {
   '/haven-ai': typeof HavenAiRoute
   '/maps': typeof MapsRoute
   '/our-story': typeof OurStoryRoute
-  '/public-maps': typeof PublicMapsRoute
   '/teams': typeof TeamsRoute
   '/auth/choose': typeof AuthChooseRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
@@ -525,7 +510,6 @@ export interface FileRoutesByTo {
   '/boarder/application-submitted': typeof BoarderApplicationSubmittedRoute
   '/boarder/confirm-booking': typeof BoarderConfirmBookingRoute
   '/boarder/house-rules': typeof BoarderHouseRulesRoute
-  '/boarder/maps': typeof BoarderMapsRoute
   '/boarder/messages': typeof BoarderMessagesRoute
   '/boarder/settings': typeof BoarderSettingsRoute
   '/boarder/tenancy': typeof BoarderTenancyRoute
@@ -579,7 +563,6 @@ export interface FileRoutesById {
   '/haven-ai': typeof HavenAiRoute
   '/maps': typeof MapsRoute
   '/our-story': typeof OurStoryRoute
-  '/public-maps': typeof PublicMapsRoute
   '/teams': typeof TeamsRoute
   '/auth/choose': typeof AuthChooseRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
@@ -594,7 +577,6 @@ export interface FileRoutesById {
   '/boarder/confirm-booking': typeof BoarderConfirmBookingRoute
   '/boarder/find-a-room': typeof BoarderFindARoomRouteWithChildren
   '/boarder/house-rules': typeof BoarderHouseRulesRoute
-  '/boarder/maps': typeof BoarderMapsRoute
   '/boarder/messages': typeof BoarderMessagesRoute
   '/boarder/payments': typeof BoarderPaymentsRouteWithChildren
   '/boarder/settings': typeof BoarderSettingsRoute
@@ -653,7 +635,6 @@ export interface FileRouteTypes {
     | '/haven-ai'
     | '/maps'
     | '/our-story'
-    | '/public-maps'
     | '/teams'
     | '/auth/choose'
     | '/auth/choose-role'
@@ -668,7 +649,6 @@ export interface FileRouteTypes {
     | '/boarder/confirm-booking'
     | '/boarder/find-a-room'
     | '/boarder/house-rules'
-    | '/boarder/maps'
     | '/boarder/messages'
     | '/boarder/payments'
     | '/boarder/settings'
@@ -725,7 +705,6 @@ export interface FileRouteTypes {
     | '/haven-ai'
     | '/maps'
     | '/our-story'
-    | '/public-maps'
     | '/teams'
     | '/auth/choose'
     | '/auth/choose-role'
@@ -737,7 +716,6 @@ export interface FileRouteTypes {
     | '/boarder/application-submitted'
     | '/boarder/confirm-booking'
     | '/boarder/house-rules'
-    | '/boarder/maps'
     | '/boarder/messages'
     | '/boarder/settings'
     | '/boarder/tenancy'
@@ -790,7 +768,6 @@ export interface FileRouteTypes {
     | '/haven-ai'
     | '/maps'
     | '/our-story'
-    | '/public-maps'
     | '/teams'
     | '/auth/choose'
     | '/auth/choose-role'
@@ -805,7 +782,6 @@ export interface FileRouteTypes {
     | '/boarder/confirm-booking'
     | '/boarder/find-a-room'
     | '/boarder/house-rules'
-    | '/boarder/maps'
     | '/boarder/messages'
     | '/boarder/payments'
     | '/boarder/settings'
@@ -863,7 +839,6 @@ export interface RootRouteChildren {
   HavenAiRoute: typeof HavenAiRoute
   MapsRoute: typeof MapsRoute
   OurStoryRoute: typeof OurStoryRoute
-  PublicMapsRoute: typeof PublicMapsRoute
   TeamsRoute: typeof TeamsRoute
   AuthChooseRoute: typeof AuthChooseRoute
   AuthChooseRoleRoute: typeof AuthChooseRoleRoute
@@ -878,7 +853,6 @@ export interface RootRouteChildren {
   BoarderConfirmBookingRoute: typeof BoarderConfirmBookingRoute
   BoarderFindARoomRoute: typeof BoarderFindARoomRouteWithChildren
   BoarderHouseRulesRoute: typeof BoarderHouseRulesRoute
-  BoarderMapsRoute: typeof BoarderMapsRoute
   BoarderMessagesRoute: typeof BoarderMessagesRoute
   BoarderPaymentsRoute: typeof BoarderPaymentsRouteWithChildren
   BoarderSettingsRoute: typeof BoarderSettingsRoute
@@ -947,13 +921,6 @@ declare module '@tanstack/react-router' {
       path: '/our-story'
       fullPath: '/our-story'
       preLoaderRoute: typeof OurStoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/public-maps': {
-      id: '/public-maps'
-      path: '/public-maps'
-      fullPath: '/public-maps'
-      preLoaderRoute: typeof PublicMapsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teams': {
@@ -1066,13 +1033,6 @@ declare module '@tanstack/react-router' {
       path: '/boarder/house-rules'
       fullPath: '/boarder/house-rules'
       preLoaderRoute: typeof BoarderHouseRulesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boarder/maps': {
-      id: '/boarder/maps'
-      path: '/boarder/maps'
-      fullPath: '/boarder/maps'
-      preLoaderRoute: typeof BoarderMapsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/boarder/messages': {
@@ -1514,7 +1474,6 @@ const rootRouteChildren: RootRouteChildren = {
   HavenAiRoute: HavenAiRoute,
   MapsRoute: MapsRoute,
   OurStoryRoute: OurStoryRoute,
-  PublicMapsRoute: PublicMapsRoute,
   TeamsRoute: TeamsRoute,
   AuthChooseRoute: AuthChooseRoute,
   AuthChooseRoleRoute: AuthChooseRoleRoute,
@@ -1529,7 +1488,6 @@ const rootRouteChildren: RootRouteChildren = {
   BoarderConfirmBookingRoute: BoarderConfirmBookingRoute,
   BoarderFindARoomRoute: BoarderFindARoomRouteWithChildren,
   BoarderHouseRulesRoute: BoarderHouseRulesRoute,
-  BoarderMapsRoute: BoarderMapsRoute,
   BoarderMessagesRoute: BoarderMessagesRoute,
   BoarderPaymentsRoute: BoarderPaymentsRouteWithChildren,
   BoarderSettingsRoute: BoarderSettingsRoute,
