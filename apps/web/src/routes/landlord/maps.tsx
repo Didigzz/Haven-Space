@@ -28,7 +28,7 @@ function LandlordMapsPage() {
         <MapLocationControl state={location} />
         <MapEmbed
           title="Haven Space map"
-          heightClass="h-[70vh]"
+          heightClass="h-[70vh] sm:h-[80vh]"
           url={pin ? mapUrlForCoordinates(pin.latitude, pin.longitude) : undefined}
         />
       </RoleShell>

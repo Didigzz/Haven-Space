@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
@@ -19,6 +19,7 @@ import {
 } from '../src/lib/geolocation';
 import { useMapLocation } from '../src/lib/useMapLocation';
 import { mapSubtitle } from '../src/components/rooms/MapEmbed';
+import { MAP_MODAL_TITLE } from '../src/components/rooms/MapModal';
 
 const SRC_DIR = join(import.meta.dir, '..', 'src');
 
@@ -33,21 +34,22 @@ function sourceFiles(dir: string): string[] {
   return found;
 }
 
-// Regression: all four map pages hardcoded their own nationwide search
+// Regression: the map pages used to hardcode their own nationwide search
 // (`?q=boarding+house+Philippines`), so none of them showed a meaningful location and the
 // strings drifted apart. The locale now lives in one module (spec `auth-hero-map-locale`).
-const MAP_ROUTES = [
-  'routes/maps.tsx',
-  'routes/public-maps.tsx',
-  'routes/boarder/maps.tsx',
-  'routes/landlord/maps.tsx',
-];
+// `routes/boarder/maps.tsx` was removed by spec `find-a-room-map-modal` (D19) — boarders reach the
+// map through the `/find-a-room` dialog instead. `routes/public-maps.tsx` was removed by spec
+// `hero-map-modal` — the home hero opens the same view-only map as a dialog.
+const MAP_ROUTES = ['routes/maps.tsx', 'routes/landlord/maps.tsx'];
 
 /** Every surface that shows a map, for the "no coordinates leave the device" scan below. */
 const MAP_SURFACE_FILES = [
   ...MAP_ROUTES,
+  // Hosts the view-only dialog, so it is a map surface even though it renders no frame itself.
+  'components/rooms/Hero.tsx',
   'components/rooms/MapEmbed.tsx',
   'components/rooms/MapLocationControl.tsx',
+  'components/rooms/MapModal.tsx',
   'components/rooms/RoomDetailView.tsx',
 ];
 
@@ -295,15 +297,15 @@ test('no lookup runs on mount without an opt-in', async () => {
 // --- Source-scan guards --------------------------------------------------------------------
 
 /**
- * Surfaces that follow the user. `/public-maps` is deliberately **absent** (spec
- * `public-maps-view-only`): it is a view-only overview for visitors, so it neither renders the
- * control nor mounts the hook. Keep this list and the guard below in step — one asserts the
- * feature is still everywhere it belongs, the other that it never comes back here.
+ * Surfaces that follow the user. The view-only home-hero dialog is deliberately **absent** (spec
+ * `hero-map-modal`): it is a read-only overview for visitors, so it neither renders the control nor
+ * mounts the hook. Keep this list and the guard below in step — one asserts the feature is still
+ * everywhere it belongs, the other that it never comes back to the hero.
  */
 const LOCATION_SURFACES = [
   'routes/maps.tsx',
-  'routes/boarder/maps.tsx',
   'routes/landlord/maps.tsx',
+  'components/rooms/MapModal.tsx',
   'components/rooms/RoomDetailView.tsx',
 ];
 
@@ -315,24 +317,40 @@ test('every location-enabled surface renders the shared location control', () =>
   }
 });
 
-test('the public map is view-only: no control and no geolocation wiring', () => {
-  // Dropping any of these would silently re-enable "use my location" on a page that must never
-  // ask for a position, so the absence is asserted rather than assumed.
-  const source = readFileSync(join(SRC_DIR, 'routes/public-maps.tsx'), 'utf8');
+test('the home hero map dialog is view-only: no control, no wiring, nothing to ask for a position', () => {
+  // Same reasoning the retired `/public-maps` page had: dropping any of these would silently
+  // re-enable "use my location" on a page that must never ask for a position, so the absence is
+  // asserted rather than assumed.
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/Hero.tsx'), 'utf8');
   expect(source).not.toContain('MapLocationControl');
   expect(source).not.toContain('useMapLocation');
   expect(source).not.toContain('geolocation');
   expect(source).not.toContain('LOCATION_SUBTITLE');
   expect(source).not.toContain('mapUrlForCoordinates');
-  // No runtime position on this surface: the embed uses its own Malaybalay default.
+  // No runtime position on this dialog: the embed uses its own Malaybalay default.
   expect(source).not.toContain('url=');
-  // It still renders a map — and points at the interactive one.
-  expect(source).toContain('<MapEmbed');
-  expect(source).toContain('to="/maps"');
+  // It still renders the dialog, and opts into the view-only variant.
+  expect(source).toContain('<MapModal');
+  expect(source).toContain('viewOnly');
 });
 
-test('the public map keeps the Malaybalay subtitle', () => {
-  // The page has no location state left, so `mapSubtitle()` is its only subtitle.
+test('the view-only map body is the interactive one minus every geolocation piece', () => {
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/MapModal.tsx'), 'utf8');
+  const body = source.slice(source.indexOf('function MapModalViewOnlyBody'));
+
+  expect(body).not.toContain('useMapLocation');
+  expect(body).not.toContain('MapLocationControl');
+  expect(body).not.toContain('mapUrlForCoordinates');
+  expect(body).not.toContain('LOCATION_SUBTITLE');
+  expect(body).not.toContain('url=');
+  // Same frame height as the interactive body, so the two dialogs are the same size.
+  expect(body).toContain('heightClass="h-[60vh] sm:h-[70vh]"');
+  // It still renders the map.
+  expect(body).toContain('<MapEmbed');
+});
+
+test('the view-only dialog keeps the Malaybalay subtitle', () => {
+  // No location state exists on that dialog, so `mapSubtitle()` is its only subtitle.
   expect(mapSubtitle()).toBe(`Browse boarding houses around ${MAP_LOCATION_QUERY}.`);
 });
 
@@ -365,4 +383,158 @@ test('only the opt-in flag is persisted, never coordinates', () => {
   expect(writers.map(file => file.slice(SRC_DIR.length + 1).replace(/\\/g, '/'))).toEqual([
     'lib/geolocation.ts',
   ]);
+});
+
+// --- The Find a Room map dialog (spec `find-a-room-map-modal`) ------------------------------
+
+test('Find a Room opens the map in place instead of navigating away', () => {
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/FindARoomContent.tsx'), 'utf8');
+
+  expect(source).toContain('<MapModal');
+  expect(source).toContain('setMapOpen(true)');
+  // The regression this whole spec exists for: the affordance used to be a link to /maps.
+  expect(source).not.toContain('to="/maps"');
+  expect(source).not.toContain("to='/maps'");
+});
+
+test('the map dialog is a host for the shared map pieces, not a copy', () => {
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/MapModal.tsx'), 'utf8');
+
+  expect(source).toContain('<Modal');
+  expect(source).toContain('useMapLocation');
+  expect(source).toContain('MapLocationControl');
+  expect(source).toContain('<MapEmbed');
+  // The frame keeps its phone height and steps up on desktop (spec `modal-desktop-width` R4).
+  expect(source).toContain('h-[60vh]');
+  expect(source).toContain('sm:h-[70vh]');
+  // The dialog takes the widest panel rather than the shared default. Spec `modal-desktop-width` D6
+  // supersedes D4 of `find-a-room-map-modal`, which pinned this to the default `md`. `md` now caps at
+  // 672px on desktop, so dropping this would leave the map 480px narrower than the request asked for.
+  expect(source).toContain('size="xl"');
+});
+
+// --- The dialog header row (spec `map-modal-header-row`) -------------------------------------
+
+test('the dialog subtitle is centred with the control pinned beside it', () => {
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/MapModal.tsx'), 'utf8');
+
+  // One row instead of the old subtitle line stacked above a right-aligned control (R1/R2).
+  expect(source).toContain('text-center');
+  expect(source).toContain('sm:absolute');
+  expect(source).toContain('sm:inset-x-0');
+  expect(source).toContain('sm:top-1/2');
+  // The symmetric gutter that keeps the centred text clear of the button (R3).
+  expect(source).toContain('sm:px-40');
+  // Pinned right, and the row keeps its height when the control renders null (R4/R5).
+  expect(source).toContain('sm:justify-end');
+  expect(source).toContain('sm:min-h-9');
+  // The ~8px gap: the wrapper cancels the control's own `mb-4` (R6). Deleting this as a mistake
+  // silently re-adds 8px, so it is asserted rather than assumed.
+  expect(source).toContain('-mb-4');
+  // Still rendered from the modal, not re-implemented.
+  expect(source).toContain('<MapLocationControl state={location} />');
+});
+
+test('the shared control was wrapped, not rewritten', () => {
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/MapLocationControl.tsx'), 'utf8');
+
+  // `MapLocationControl` owns its margin and alignment (spec D8), and the modal's row simply gives
+  // it a slot. If either goes, the wrapper's `-mb-4`/`sm:justify-end` stops doing anything.
+  expect(source).toContain('mb-4');
+  expect(source).toContain('justify-end');
+});
+
+test('the header-row rework is scoped to the /find-a-room dialog', () => {
+  const modal = readFileSync(join(SRC_DIR, 'components/rooms/MapModal.tsx'), 'utf8');
+
+  // The hero's view-only body keeps the old left-aligned subtitle (D1/D20).
+  const viewOnly = modal.slice(modal.indexOf('function MapModalViewOnlyBody'));
+  expect(viewOnly).not.toContain('text-center');
+  expect(viewOnly).not.toContain('sm:px-40');
+
+  // The other map surfaces keep their stacked layout (D1/D17).
+  for (const file of ['routes/maps.tsx', 'routes/landlord/maps.tsx']) {
+    expect(readFileSync(join(SRC_DIR, file), 'utf8')).not.toContain('sm:px-40');
+  }
+});
+
+// --- The home hero map dialog (spec `hero-map-modal`) ----------------------------------------
+
+test('the home hero opens the map in place instead of navigating away', () => {
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/Hero.tsx'), 'utf8');
+
+  expect(source).toContain('<MapModal');
+  expect(source).toContain('setMapOpen(true)');
+  expect(source).toContain('open={mapOpen}');
+  expect(source).toContain('<button');
+  // The regression this whole spec exists for: the affordance used to navigate to /public-maps.
+  expect(source).not.toContain('to="/public-maps"');
+  expect(source).not.toContain("to='/public-maps'");
+});
+
+test('the hero dialog and the browse dialog are the same panel', () => {
+  const hero = readFileSync(join(SRC_DIR, 'components/rooms/Hero.tsx'), 'utf8');
+  const modal = readFileSync(join(SRC_DIR, 'components/rooms/MapModal.tsx'), 'utf8');
+
+  // The hero passes no `size`: both dialogs take the one `MapModal` hard-codes, so they cannot
+  // drift apart (spec `hero-map-modal` D5).
+  expect(hero).not.toContain('size="xl"');
+  expect(modal).toContain('size="xl"');
+});
+
+/**
+ * Every map surface, with the frame height it must use (spec `modal-desktop-width` D8/D9).
+ *
+ * Each one steps up from 640px and keeps its existing phone height, so this scan is what stops a
+ * surface being forgotten or silently getting shorter on mobile.
+ */
+const MAP_FRAME_HEIGHTS: { file: string; heights: [string, string] }[] = [
+  { file: 'components/rooms/MapModal.tsx', heights: ['h-[60vh]', 'sm:h-[70vh]'] },
+  { file: 'routes/maps.tsx', heights: ['h-[60vh]', 'sm:h-[70vh]'] },
+  // Already the tallest on mobile, so it steps up to 80vh instead of 70vh.
+  { file: 'routes/landlord/maps.tsx', heights: ['h-[70vh]', 'sm:h-[80vh]'] },
+];
+
+test('every map frame is taller on desktop and unchanged on phones', () => {
+  for (const { file, heights } of MAP_FRAME_HEIGHTS) {
+    const source = readFileSync(join(SRC_DIR, file), 'utf8');
+    const declared = source.match(/heightClass="([^"]+)"/)?.[1];
+    expect(declared).toBe(`${heights[0]} ${heights[1]}`);
+  }
+});
+
+test('the dialog heading is the fixed one from the spec', () => {
+  expect(MAP_MODAL_TITLE).toBe('Find boarding houses near you');
+});
+
+test('the map body only exists while the dialog is open', () => {
+  const source = readFileSync(join(SRC_DIR, 'components/rooms/MapModal.tsx'), 'utf8');
+
+  // Structural guard, not cosmetic: with this gate removed, a remembered opt-in would run a
+  // geolocation lookup as soon as the host page loads, before the dialog is ever opened. Both
+  // bodies sit behind the same `open` gate — the view-only one just has nothing to run.
+  const gate = source.split('\n').find(line => line.includes('<MapModalBody'));
+  expect(gate).toBeDefined();
+  expect(gate).toContain('open ?');
+  expect(gate).toContain('viewOnly ?');
+});
+
+test('the retired boarder map route is gone', () => {
+  expect(existsSync(join(SRC_DIR, 'routes/boarder/maps.tsx'))).toBe(false);
+
+  const offenders = sourceFiles(SRC_DIR)
+    .filter(file => readFileSync(file, 'utf8').includes('/boarder/maps'))
+    .map(file => file.slice(SRC_DIR.length + 1).replace(/\\/g, '/'));
+  expect(offenders).toEqual([]);
+});
+
+test('the retired public map route is gone', () => {
+  expect(existsSync(join(SRC_DIR, 'routes/public-maps.tsx'))).toBe(false);
+
+  // The hero dialog replaced it as the only in-app entry point, so a leftover reference would be a
+  // dead link (spec `hero-map-modal` D4).
+  const offenders = sourceFiles(SRC_DIR)
+    .filter(file => readFileSync(file, 'utf8').includes('/public-maps'))
+    .map(file => file.slice(SRC_DIR.length + 1).replace(/\\/g, '/'));
+  expect(offenders).toEqual([]);
 });

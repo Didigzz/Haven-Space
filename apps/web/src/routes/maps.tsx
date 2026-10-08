@@ -20,7 +20,7 @@ function MapsPage() {
         <MapLocationControl state={location} />
         <MapEmbed
           title="Haven Space map"
-          heightClass="h-[60vh]"
+          heightClass="h-[60vh] sm:h-[70vh]"
           url={pin ? mapUrlForCoordinates(pin.latitude, pin.longitude) : undefined}
         />
       </div>

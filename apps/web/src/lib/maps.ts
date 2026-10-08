@@ -1,7 +1,7 @@
 /**
  * Canonical map locale (spec `auth-hero-map-locale`).
  *
- * Every embedded map page (`/maps`, `/public-maps`, `/boarder/maps`, `/landlord/maps`) used to
+ * Every embedded map page (`/maps`, `/landlord/maps`) and the map dialogs used to
  * hardcode its own nationwide Google search URL, so they drifted and none of them showed a
  * meaningful location. Keeping the location and zoom in one module means the pin, the zoom and
  * the page copy can only change together — prefer these constants over literal map URLs.
