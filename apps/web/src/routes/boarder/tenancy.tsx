@@ -128,10 +128,11 @@ function TenancyPage() {
                 </div>
               </dl>
               <div className="mt-4">
-                <Button
-                  className="border border-primary bg-surface text-primary hover:bg-mint"
-                  onClick={() => setLeaveOpen(true)}
-                >
+                {/* `outline` variant, not a hand-rolled className: Tailwind resolves conflicting
+                    classes by stylesheet order, so the default `primary` variant's `text-white` beat
+                    this override's `text-primary` — white text on the white panel, legible only on
+                    hover. Colour belongs to the variant. */}
+                <Button variant="outline" onClick={() => setLeaveOpen(true)}>
                   Request to leave
                 </Button>
               </div>

@@ -36,11 +36,11 @@ export function RestrictionBanner({
             </p>
           </div>
         </div>
-        <Button
-          onClick={onCompleteProfile}
-          variant="primary"
-          className="whitespace-nowrap bg-amber-600 hover:bg-amber-700"
-        >
+        {/* The `warning` variant is the amber CTA these "finish setting up" prompts use
+            (`VerificationNotice` does the same). The literal `bg-amber-600` this replaced lost to the
+            `primary` variant's `bg-primary-strong`, which is emitted later — so this button was
+            rendering brand green inside an amber banner. */}
+        <Button onClick={onCompleteProfile} variant="warning" className="whitespace-nowrap">
           Complete Profile
         </Button>
       </div>
