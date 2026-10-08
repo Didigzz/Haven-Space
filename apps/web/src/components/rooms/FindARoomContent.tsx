@@ -11,6 +11,7 @@ import type {
 import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
 import { Spinner } from '../ui/Spinner';
+import { MapModal } from './MapModal';
 
 const DEFAULT_FILTERS: PublicListingsFilters = { sort_by: 'newest', limit: 20, offset: 0 };
 
@@ -235,6 +236,9 @@ export function FindARoomContent({
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [searchInput, setSearchInput] = useState('');
+  // The map opens in place so a visitor never loses their filters or scroll position
+  // (spec `find-a-room-map-modal` D1/D6).
+  const [mapOpen, setMapOpen] = useState(false);
 
   const query = useQuery({
     queryKey: ['rooms', filters],
@@ -354,14 +358,15 @@ export function FindARoomContent({
                 className="shrink-0"
               />
             </button>
-            <Link
-              to="/maps"
+            <button
+              type="button"
+              onClick={() => setMapOpen(true)}
               className="inline-flex items-center gap-2 rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-mint"
               title="View Map"
             >
               <img src="/assets/svg/maps.svg" alt="" width={20} height={20} className="shrink-0" />
               Map
-            </Link>
+            </button>
           </form>
 
           {/* Location chips */}
@@ -707,6 +712,7 @@ export function FindARoomContent({
           </>
         )}
       </div>
+      <MapModal open={mapOpen} onClose={() => setMapOpen(false)} />
     </div>
   );
 }
