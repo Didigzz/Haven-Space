@@ -68,3 +68,5 @@ bun.lock
 
 # Agent session artifacts (opencode run-continuation state)
 .omo/
+
+.tmp-verify*
